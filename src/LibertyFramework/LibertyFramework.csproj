@@ -20,6 +20,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="ScriptHookDotNet">
       <HintPath>$(ScriptHookDotNetReference)</HintPath>
       <Private>False</Private>
@@ -28,6 +29,8 @@
   <ItemGroup>
     <Compile Include="RuntimeProbe.cs" />
     <Compile Include="Core\Logging\RuntimeLog.cs" />
+    <Compile Include="Core\Config\ProbeConfig.cs" />
+    <Compile Include="Core\Config\ProbeConfigLoader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

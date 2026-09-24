@@ -1,5 +1,6 @@
 using System;
 using GTA;
+using LibertyFramework.Core.Config;
 using LibertyFramework.Core.Logging;
 
 namespace LibertyFramework
@@ -8,13 +9,16 @@ namespace LibertyFramework
     public sealed class RuntimeProbe : Script
     {
         private bool disabled;
+        private readonly ProbeConfigLoader configLoader;
 
         public RuntimeProbe()
         {
             Interval = 10000;
             Tick += OnTick;
             AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
+            configLoader = new ProbeConfigLoader();
             RuntimeLog.Info("T-001 runtime probe started; assembly=" + GetType().Assembly.GetName().Version);
+            configLoader.Poll();
         }
 
         private void OnTick(object sender, EventArgs args)
@@ -26,7 +30,8 @@ namespace LibertyFramework
 
             try
             {
-                RuntimeLog.Info("T-001 heartbeat");
+                configLoader.Poll();
+                RuntimeLog.Info("T-001 heartbeat probe_label=" + configLoader.ActiveLabel);
             }
             catch (Exception error)
             {
