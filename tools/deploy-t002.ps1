@@ -28,7 +28,17 @@ if (-not (Test-Path -LiteralPath $sourceConfig)) { throw "Sample config is missi
 New-Item -ItemType Directory -Force -Path (Split-Path -Parent $targetDll) | Out-Null
 New-Item -ItemType Directory -Force -Path (Split-Path -Parent $targetConfig) | Out-Null
 if (Test-Path -LiteralPath $targetDll) {
-    Copy-Item -LiteralPath $targetDll -Destination "$targetDll.t001.bak" -Force
+    if ((Get-FileHash -LiteralPath $targetDll -Algorithm SHA256).Hash -ne
+        (Get-FileHash -LiteralPath $sourceDll -Algorithm SHA256).Hash) {
+        $backup = "$targetDll.t001.bak"
+        if (Test-Path -LiteralPath $backup) {
+            $suffix = (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' +
+                [Guid]::NewGuid().ToString('N').Substring(0, 8)
+            $backup = "$targetDll.$suffix.bak"
+        }
+        Copy-Item -LiteralPath $targetDll -Destination $backup
+        Write-Host "Backed up previous DLL: $backup"
+    }
 }
 Copy-Item -LiteralPath $sourceDll -Destination $targetDll -Force
 if (-not (Test-Path -LiteralPath $targetConfig)) {
