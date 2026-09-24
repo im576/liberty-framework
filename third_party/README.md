@@ -5,7 +5,7 @@ Nothing in this repository vendors a mod binary, proprietary game asset, or copi
 | Project | Role | License/permission | Handling |
 |---|---|---|---|
 | [FusionFix](https://github.com/ThirteenAG/GTAIV.EFLC.FusionFix) | CE fixes/overloader | GPL-3.0 in repository | Dependency and research reference; no source copied |
-| [ScriptHookDotNet CE fork](https://github.com/Tomasak/gta4_scripthookdotnet) | Proposed C# runtime | Check per-file upstream notices before redistribution | External install; no binary copied |
+| [ScriptHookDotNet CE fork](https://github.com/Tomasak/gta4_scripthookdotnet) | C# runtime (verified T-001) | Check per-file upstream notices before redistribution | External install; no binary copied |
 | [Liberty Tweaks](https://github.com/catsmackaroo/LibertyTweaks) | Feature/technique reference | No repository license found | Do not copy code or assets |
 | Real Recoil Enhanced CE | Recoil reference | Unknown | Verify permission before reuse |
 

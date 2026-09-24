@@ -1,5 +1,7 @@
 # HUD and crosshair
 
+> **Status (T-010):** the vanilla reticle, dot and health/armour ring are hidden by shrinking their hud.dat globals (restored on exit); LF draws a four-segment crosshair whose gap is the live spread cone, projected with `GET_VIEWPORT_POSITION_OF_COORD`. The sniper scope is untouched. Awaiting the playtest. Pass-1 notes follow.
+
 The gold-weapon reticle should be minimal, neutral, and communicate spread. It should not show target identity or health. This is a product requirement, not a claim that CE exposes a per-weapon HUD hook.
 
 Possible implementation paths to test in T-008, in order of least invasive change: game targeting options, supported native/ScriptHookDotNet HUD calls, and only then a documented hook. A global setting would need precise save/restore around gold-weapon selection and error handling; it may still fail during cover or missions. No native or memory address is validated yet.

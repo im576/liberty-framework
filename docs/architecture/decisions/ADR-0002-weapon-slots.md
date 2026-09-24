@@ -1,6 +1,6 @@
 # ADR-0002: Proposed separate gold weapon identities
 
-Status: **revised hypothesis; verify in T-007** (2026-09-24).
+Status: **accepted** (2026-09-24). In-game: `LF_GOLD_PISTOL`/`LF_GOLD_CARBINE`/`LF_GOLD_SHOTGUN` select as IDs 58/59/60 (owner playtests, logs). Each replaces its vanilla counterpart in the same inventory slot, so A/B comparison uses the DevTools switch (total ammo transferred). The gold look comes from a separate model variant (`lf_gold_pistol`, T-010 finish pipeline), not from replacing a vanilla asset. Earlier reasoning below is kept for history.
 
 Prefer separate weapon identifiers/assets over replacing vanilla pistol, rifle, and shotgun behavior. FusionFix v5.0.1's `ExtendedLimits` hook registers unknown weapon names starting at ID 58, and this installation already has `ExtendedLimits=1`. The first spike adds `LF_GOLD_PISTOL` to an overloader copy of the base `WeaponInfo.xml`, initially reusing the vanilla pistol model and stats so the test isolates identity. The ID 58 assignment is an assumption until observed in-game; other custom weapon registrations could change the order. ScriptHookDotNet can pass numeric weapon IDs to the game, but working selection, inventory coexistence, save/load, and mission behavior remain unverified.
 

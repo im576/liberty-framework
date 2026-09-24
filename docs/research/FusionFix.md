@@ -34,7 +34,11 @@
 Technique: **byte-pattern scanning** (`hook::pattern("F3 0F 59 05 ? ? ? ? ...")`) instead of hardcoded
 addresses. If we ever go C++, copy this *technique* (not code).
 
-## Important finding for recoil
+## Correction from the T-010 disassembly
+
+`RecoilFix` does not touch camera kick: its hook (`fixes.ixx`, pattern `F3 0F 59 05 ? ? ? ? EB ? E8 ? ? ? ? 84 C0`) sits in `CWeapon::DoAccuracy` and multiplies the **bullet-spread** input term by 0.65. LF's `spreadCalibration.tangentPerAccuracyUnit` includes that 0.65. See [MEMORY.md](../game-api/MEMORY.md). In GTA IV, "recoil" in these files mostly means spread.
+
+## Important finding for recoil (pass 1, partly superseded above)
 
 `sniper.ixx` patches an instruction that multiplies by a recoil constant (`F3 0F 59 05 ...` = `mulss xmm0, [addr]`).
 So **GTA IV has an internal recoil system with a global multiplier** [SOURCE]. A future C++ spike could

@@ -1,5 +1,7 @@
 # Research summary — pass 1 (2026-09-24)
 
+> **Status update (after T-010, 2026-09-24).** The unknowns below are answered: (1) SHDN loads on CE — verified T-001; (2) separate IDs 58/59/60 — verified T-007, but each shares its vanilla weapon's inventory slot; (3) free aim — answered offline as a *universal* switch (Auto-Aim pref + `DISABLE_PLAYER_LOCKON` + hud.dat globals), accepted by the owner; (4) aim camera — `CCamAimWeapon` pitch/heading fields found by pattern and validated at runtime (ADR-0004); (5) Real Recoil Enhanced CE permission — **still open**. Mafia III ideas now appear only as the B/C presets (lighter/heavier kick and recovery). Items 3–4 await the T-010 playtest. Below is the original pass-1 text.
+
 This is a source review, not an in-game verification. No game behavior or runtime compatibility has been tested by the project.
 
 ## Decisions supported by research

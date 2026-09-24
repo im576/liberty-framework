@@ -16,6 +16,7 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Verified in-game (by the human tester)
 
+- 2026-09-24 (owner report and logs): the T-007 carbine (ID 59) and shotgun (ID 60) identities selected and worked first try alongside the pistol (ID 58).
 - 2026-09-24 (tester report and fresh logs): Steam Complete Edition exe 1.2.0.59 and FusionFix 5.0.1 reach gameplay. Tomasak ScriptHookDotNet 1.7.1.8 loads the probe; startup, heartbeats, domain unload, and restart after `ReloadScripts` were logged, and gameplay continued. Bluetooth DualSense through a Steam Input community layout; in-game auto aim on. With the runtime installed, vanilla pistol aim, fire, reload, cover and vehicle shooting, and save/load passed. See [T-000](tasks/T-000-baseline.md) and [T-001](tasks/T-001-runtime-spike.md).
 - 2026-09-24 (tester report, screenshot, and fresh logs): The first DevTools panel opened, navigated, and closed with the controller; D-pad navigation also opened the phone. `LFWeaponGive` selected custom ID 58, and the vanilla handgun presence changed from true to false. Game heartbeats continued. Candidate firing and save/load have not been confirmed.
 - 2026-09-24 (tester report): The custom ID 58 pistol passed aim, fire, reload, cover, vehicle, and save/load checks; GTA IV was then closed for the revised menu install.
@@ -26,7 +27,7 @@ Keep it short: this is a dashboard, not a diary.
 | # | Question | Resolved by |
 |---|---|---|
 | Q1 | Resolved: ScriptHookDotNet 1.7.1.8 loads an x86 .NET Framework 4.0 DLL on CE 1.2.0.59 with FusionFix; reload succeeds. The maximum usable C# language level is not established. | T-001 |
-| Q2 | Resolved for the first pistol: custom ID 58 selects and passes core gameplay/save/load, and menu switching preserves total ammo. The same handgun slot cannot hold both variants simultaneously. Carbine/shotgun IDs 59/60 are staged but unverified. | T-007 |
+| Q2 | Resolved: custom IDs 58/59/60 select in game (owner report, logs), and menu switching preserves total ammo. A custom weapon and its vanilla counterpart cannot be carried at the same time (same slot). | T-007 |
 | Q3 | Answered offline (universal, accepted by owner): PREF_AUTO_AIM + DISABLE_PLAYER_LOCKON + hud.dat health/armour globals. In-game confirmation pending. | T-010 |
 | Q4 | Answered offline: CCamAimWeapon pitch/heading fields (+0x218/+0x21C) found via the SET_GAME_CAM_PITCH worker; runtime-validated before use. In-game confirmation pending. | T-010 |
 | Q5 | Answered offline: shrink/zero the hud.dat reticle globals the HUD copies every frame. In-game confirmation pending. | T-010 |

@@ -1,5 +1,7 @@
 # Controller and aim assist research
 
+> **Status (T-010):** the owner chose a universal free-aim switch instead of per-weapon: `PREF_AUTO_AIM` forced to 0, `DISABLE_PLAYER_LOCKON` every frame, and the target health/armour ring hidden, with the player's values saved to disk and restored. Stick curves, slowdown and magnetism are still future profile work. Controller: DualSense over Bluetooth through a Steam Input community layout (T-000); DevTools reads raw XInput. Pass-1 notes follow.
+
 The tester uses a controller through Steam. GTA IV's targeting mode, Steam Input mapping, and FusionFix sensitivity settings can all affect observations. [FusionFix's config](https://github.com/ThirteenAG/GTAIV.EFLC.FusionFix/blob/master/data/plugins/GTAIV.EFLC.FusionFix.ini) exposes gamepad sensitivity range options; record the actual values used during tests.
 
 The current repository has **no verified per-weapon free-aim switch**. Liberty Tweaks changes a targeting setting through an IV-SDK .NET API that is unavailable on Complete Edition; see [LibertyTweaks.md](LibertyTweaks.md). That suggests an experiment, not a portable solution.

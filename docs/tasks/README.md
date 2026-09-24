@@ -17,4 +17,16 @@ Batch compatible offline work and combine human checks into one gameplay session
 | T-009 | [Camera recoil API spike](T-009-camera-recoil.md) | T-001, T-007 | SUPERSEDED by T-010 |
 | T-010 | [Phase 1 integrated gunplay build](T-010-phase1-gunplay.md) | T-003, T-007 | NEEDS-PLAYTEST |
 
-Later tasks (spread/crosshair, live tuning, gold assets, teleports, debug overlay, controller polish, shoulder swap, switching while aiming) should be written after these spikes establish feasible APIs. Avoid speculative implementation cards with invented controls or native names.
+## Proposed next tasks (review 2026-09-24; not started, owner picks order)
+
+Write a full card before starting any of these. Avoid invented controls or native names.
+
+| ID | Proposal | Basis |
+|---|---|---|
+| T-011 | Gold finish for carbine and shotgun: two `finishes.json` variants (`w_m4`: `bm_m4a1`/`bm_m4a1_s`/`icon`, `gun@ak47`, `CM_WEAPONS_M4`; `w_shotgun`: `cj_shotgun_comp`/`cj_shotgun_comp_s`/`icon`, `gun@shotgun`, `CM_WEAPONS_SHOTGUN`), normal maps kept. No code change. Best after the pistol finish is proven in game. | HANDOFF §11 "if the gun is gold…"; textures listed from the installed `weapons.img` |
+| T-012 | DevTools completeness: Remove weapons / reset weapon state, weapon hash display; test range moving NPC, 100 m marker, reset vehicle; empty PLAYER/VEHICLES/WORLD pages as extension points | HANDOFF §15, §16, §21 |
+| T-013 | Debug overlay hit info: last hit bone, distance, damage, fire interval (RPM) | HANDOFF §22 |
+| T-014 | Aim profiles beyond on/off (vanilla / slowdown-only / light assist) if an engine control for slowdown/magnetism is found | HANDOFF §9 |
+| T-015 | Shoulder swap on CE (Liberty Tweaks behaviour as reference only) | HANDOFF §23, research/LibertyTweaks.md |
+| T-016 | Weapon switching while aiming (natives-only path) | HANDOFF §24, research/LibertyTweaks.md |
+| T-017 | Feel layer: small per-shot camera shake and subtle aiming FOV, config-driven | HANDOFF §13, §25; research/RealRecoil.md takeaways |

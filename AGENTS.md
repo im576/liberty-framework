@@ -29,6 +29,9 @@ Full original spec: `docs/HANDOFF.md`. Architecture: `docs/architecture/OVERVIEW
    task `DONE` until its own in-game evidence exists.
 2. **Vanilla must stay vanilla.** Only the gold test weapons may behave differently from the base
    game. Every gameplay change must be gated by "is the current weapon a registered test weapon?".
+   Owner-approved exception (T-010): free aim (no auto-aim/lock-on/health ring) and the LF crosshair
+   apply to all weapons while their DevTools toggles are on, and restore the player's settings when off.
+   Recoil and spread stay test-weapon-only.
 3. **Tuning values live in `config/`, never in code.** Code defines algorithms. JSON defines numbers.
    If you type a gameplay number (recoil, spread, speed, FOV, distance) into a `.cs` file, you are
    doing it wrong — add a config field instead (see `docs/architecture/CONFIG_SCHEMA.md`).
@@ -49,7 +52,7 @@ Full original spec: `docs/HANDOFF.md`. Architecture: `docs/architecture/OVERVIEW
    disabled — the game must keep running.
 10. **Don't over-engineer.** Build abstractions only for things the current task needs.
 
-## 4. Proposed tech stack (verify in T-000/T-001)
+## 4. Tech stack (verified in T-000/T-001)
 
 | Thing | Value |
 |---|---|
