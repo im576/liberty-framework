@@ -5,7 +5,7 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
-**Phase 0 — Research and environment.** T-000's baseline, T-001's runtime/reload and post-install pistol checks, and T-002's live config checks have passed owner playtests. T-003 DevTools and T-007 weapon identity are ready for implementation. No gameplay behavior is implemented. Weapon-slot choices are not yet verified in-game.
+**Phase 0 — Research and environment.** T-000's baseline, T-001's runtime/reload and post-install pistol checks, and T-002's live config checks have passed owner playtests. T-003's read-only DevTools menu is built offline and awaits guarded installation after GTA IV closes. T-007 weapon identity is ready for its spike. No gameplay behavior is implemented. Weapon-slot choices are not yet verified in-game.
 
 ## Key decisions (see `docs/architecture/decisions/`)
 
@@ -30,6 +30,7 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Changelog
 
+- 2026-09-24 — Built T-003's read-only DevTools menu for x86 with zero errors/warnings. L3+R3 and D-pad input paths are prepared but unverified in-game; existing game files were not changed while GTA IV ran.
 - 2026-09-24 — Owner confirmed all remaining pistol, vehicle, and save/load baseline checks passed with the runtime installed; T-000 and T-001 are DONE.
 - 2026-09-24 — Owner confirmed gameplay stayed responsive after the T-002 live config test; T-002 is DONE and T-003 is ready for implementation.
 - 2026-09-24 — T-002 live config test passed all three log checks in one session and restored the original config. GTA IV stayed running; awaiting tester confirmation of gameplay after the test.

@@ -8,6 +8,7 @@ namespace LibertyFramework
     // T-001 only verifies that a managed script can load and keep ticking on CE.
     public sealed class RuntimeProbe : Script
     {
+        internal static string ActiveProbeLabel = "none";
         private bool disabled;
         private readonly ProbeConfigLoader configLoader;
 
@@ -19,6 +20,7 @@ namespace LibertyFramework
             configLoader = new ProbeConfigLoader();
             RuntimeLog.Info("T-001 runtime probe started; assembly=" + GetType().Assembly.GetName().Version);
             configLoader.Poll();
+            ActiveProbeLabel = configLoader.ActiveLabel;
         }
 
         private void OnTick(object sender, EventArgs args)
@@ -31,6 +33,7 @@ namespace LibertyFramework
             try
             {
                 configLoader.Poll();
+                ActiveProbeLabel = configLoader.ActiveLabel;
                 RuntimeLog.Info("T-001 heartbeat probe_label=" + configLoader.ActiveLabel);
             }
             catch (Exception error)
