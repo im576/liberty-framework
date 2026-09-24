@@ -17,7 +17,10 @@ namespace LibertyFramework.DevTools
         private const ushort AButton = 0x1000;
         private const int ChordHoldMilliseconds = 700;
         private static readonly string[] Categories = {
-            "RUNTIME", "CONFIG", "WEAPON STATUS", "GIVE TEST PISTOL", "GIVE VANILLA PISTOL", "HELP"
+            "RUNTIME", "CONFIG", "WEAPON STATUS",
+            "GIVE TEST PISTOL", "GIVE VANILLA PISTOL",
+            "GIVE TEST CARBINE", "GIVE VANILLA CARBINE",
+            "GIVE TEST SHOTGUN", "GIVE VANILLA SHOTGUN", "HELP"
         };
         private readonly GTA.Font font;
         private bool disabled;
@@ -207,9 +210,8 @@ namespace LibertyFramework.DevTools
 
         private void ActivateSelection()
         {
-            if (selectedCategory < 2 || selectedCategory == 5) { return; }
-            if ((selectedCategory == 3 || selectedCategory == 4) &&
-                pendingConfirmation != selectedCategory)
+            if (selectedCategory < 2 || selectedCategory == Categories.Length - 1) { return; }
+            if (selectedCategory >= 3 && pendingConfirmation != selectedCategory)
             {
                 pendingConfirmation = selectedCategory;
                 lastActionMessage = "Press Cross/A again to confirm";
@@ -219,14 +221,19 @@ namespace LibertyFramework.DevTools
             pendingConfirmation = -1;
             try
             {
-                string result = selectedCategory == 2 ? WeaponSlotProbe.ReportStatus(Player) :
-                    selectedCategory == 3 ? WeaponSlotProbe.SelectCandidate(Player) :
-                    WeaponSlotProbe.SelectVanilla(Player);
-                lastActionMessage = result.Replace("T-007 weapon status ", "")
-                    .Replace("current_id", "ID")
-                    .Replace("candidate_present", "test")
-                    .Replace("vanilla_present", "vanilla")
-                    .Replace("handgun_ammo", "ammo");
+                string result;
+                switch (selectedCategory)
+                {
+                    case 2: result = WeaponSlotProbe.ReportStatus(Player); break;
+                    case 3: result = WeaponSlotProbe.SelectTestPistol(Player); break;
+                    case 4: result = WeaponSlotProbe.SelectVanillaPistol(Player); break;
+                    case 5: result = WeaponSlotProbe.SelectTestCarbine(Player); break;
+                    case 6: result = WeaponSlotProbe.SelectVanillaCarbine(Player); break;
+                    case 7: result = WeaponSlotProbe.SelectTestShotgun(Player); break;
+                    case 8: result = WeaponSlotProbe.SelectVanillaShotgun(Player); break;
+                    default: return;
+                }
+                lastActionMessage = result;
                 RuntimeLog.Info("devtools_action=" + Categories[selectedCategory]);
             }
             catch (Exception error)
@@ -242,12 +249,12 @@ namespace LibertyFramework.DevTools
             try
             {
                 args.Graphics.Scaling = FontScaling.Pixel;
-                args.Graphics.DrawRectangle(new RectangleF(36, 80, 470, 365), Color.FromArgb(195, 8, 12, 18));
+                args.Graphics.DrawRectangle(new RectangleF(36, 80, 470, 500), Color.FromArgb(195, 8, 12, 18));
                 args.Graphics.DrawText("LIBERTY DEVTOOLS", new RectangleF(52, 94, 430, 28),
                     TextAlignment.Left, font);
                 for (int index = 0; index < Categories.Length; index++)
                 {
-                    float y = 132 + (index * 32);
+                    float y = 132 + (index * 30);
                     if (index == selectedCategory)
                     {
                         args.Graphics.DrawRectangle(new RectangleF(48, y - 2, 442, 29),
@@ -259,16 +266,17 @@ namespace LibertyFramework.DevTools
 
                 string detail = selectedCategory == 0 ? "Runtime: active" :
                     selectedCategory == 1 ? "Probe: " + RuntimeProbe.ActiveProbeLabel :
-                    selectedCategory == 5 ? "L3+R3 close; D-pad move; Cross/A select" :
+                    selectedCategory == Categories.Length - 1 ?
+                        "L3+R3 close; D-pad move; Cross/A select" :
                     lastActionMessage.Length > 0 ? lastActionMessage :
                     "Press Cross/A to inspect or select";
-                args.Graphics.DrawText(detail, new RectangleF(52, 330, 430, 72),
+                args.Graphics.DrawText(detail, new RectangleF(52, 448, 430, 62),
                     TextAlignment.Left, font);
                 string footer = controllerConnected ?
                     "Controller ready; F10 and keyboard also work" :
                     "Controller not detected; F10 and keyboard work";
                 args.Graphics.DrawText(footer,
-                    new RectangleF(52, 410, 430, 26), TextAlignment.Left, font);
+                    new RectangleF(52, 545, 430, 26), TextAlignment.Left, font);
             }
             catch (Exception error)
             {

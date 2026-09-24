@@ -4,21 +4,25 @@ using LibertyFramework.Core.Logging;
 
 namespace LibertyFramework.WeaponProbe
 {
-    // T-007 diagnostic only. It never grants a weapon until the console command is used.
+    // T-007 diagnostics. Weapon grants only occur after a menu action or console command.
     public sealed class WeaponSlotProbe : Script
     {
-        internal const int CandidateId = 58;
-        private static readonly Weapon Candidate = (Weapon)CandidateId;
+        internal const int PistolId = 58;
+        internal const int CarbineId = 59;
+        internal const int ShotgunId = 60;
+        private static readonly Weapon TestPistol = (Weapon)PistolId;
+        private static readonly Weapon TestCarbine = (Weapon)CarbineId;
+        private static readonly Weapon TestShotgun = (Weapon)ShotgunId;
 
         public WeaponSlotProbe()
         {
             BindConsoleCommand("LFWeaponStatus", new ConsoleCommandDelegate(Status),
                 "- log the currently selected weapon identifier");
             BindConsoleCommand("LFWeaponGive", new ConsoleCommandDelegate(GiveCandidate),
-                "- grant and select the T-007 custom pistol candidate (requires its data override)");
+                "- select the T-007 test pistol (requires its data override)");
             BindConsoleCommand("LFWeaponVanilla", new ConsoleCommandDelegate(GiveVanilla),
-                "- grant and select the vanilla pistol");
-            RuntimeLog.Info("T-007 weapon probe commands registered; candidate_id=" + CandidateId);
+                "- select the vanilla pistol");
+            RuntimeLog.Info("T-007 weapon probe commands registered; candidate_ids=58,59,60");
         }
 
         private void Status(ParameterCollection parameters)
@@ -30,7 +34,7 @@ namespace LibertyFramework.WeaponProbe
         {
             Execute("give_candidate", delegate
             {
-                Game.Console.Print("[LibertyFramework] " + SelectCandidate(Player));
+                Game.Console.Print("[LibertyFramework] " + SelectTestPistol(Player));
             });
         }
 
@@ -38,58 +42,84 @@ namespace LibertyFramework.WeaponProbe
         {
             Execute("give_vanilla", delegate
             {
-                Game.Console.Print("[LibertyFramework] " + SelectVanilla(Player));
+                Game.Console.Print("[LibertyFramework] " + SelectVanillaPistol(Player));
             });
         }
 
-        internal static string SelectCandidate(Player player)
+        internal static string SelectTestPistol(Player player)
         {
-            int ammo;
-            bool hadHandgun = ReadCurrentHandgunAmmo(player, out ammo);
-            player.Character.Weapons.Select(Candidate);
-            if (hadHandgun) { player.Character.Weapons.FromType(Candidate).Ammo = ammo; }
-            return ReportStatus(player);
+            return SelectPair(player, TestPistol, Weapon.Handgun_Glock, true, 51);
         }
 
-        internal static string SelectVanilla(Player player)
+        internal static string SelectVanillaPistol(Player player)
         {
-            int ammo;
-            bool hadHandgun = ReadCurrentHandgunAmmo(player, out ammo);
-            player.Character.Weapons.Select(Weapon.Handgun_Glock);
-            if (hadHandgun) { player.Character.Weapons.Glock.Ammo = ammo; }
-            return ReportStatus(player);
+            return SelectPair(player, TestPistol, Weapon.Handgun_Glock, false, 51);
         }
 
-        private static bool ReadCurrentHandgunAmmo(Player player, out int ammo)
+        internal static string SelectTestCarbine(Player player)
         {
-            ammo = 0;
+            return SelectPair(player, TestCarbine, Weapon.Rifle_M4, true, 120);
+        }
+
+        internal static string SelectVanillaCarbine(Player player)
+        {
+            return SelectPair(player, TestCarbine, Weapon.Rifle_M4, false, 120);
+        }
+
+        internal static string SelectTestShotgun(Player player)
+        {
+            return SelectPair(player, TestShotgun, Weapon.Shotgun_Basic, true, 30);
+        }
+
+        internal static string SelectVanillaShotgun(Player player)
+        {
+            return SelectPair(player, TestShotgun, Weapon.Shotgun_Basic, false, 30);
+        }
+
+        private static string SelectPair(Player player, Weapon custom, Weapon vanilla, bool useCustom, int initialAmmo)
+        {
             if (player == null || player.Character == null) { throw new InvalidOperationException("Player is not ready"); }
-            if (player.Character.Weapons.FromType(Candidate).isPresent)
-            {
-                ammo = player.Character.Weapons.FromType(Candidate).Ammo;
-                return true;
-            }
-            if (player.Character.Weapons.Glock.isPresent)
-            {
-                ammo = player.Character.Weapons.Glock.Ammo;
-                return true;
-            }
-            return false;
+            bool customPresent = player.Character.Weapons.FromType(custom).isPresent;
+            bool vanillaPresent = player.Character.Weapons.FromType(vanilla).isPresent;
+            int ammo = customPresent ? player.Character.Weapons.FromType(custom).Ammo :
+                vanillaPresent ? player.Character.Weapons.FromType(vanilla).Ammo : 0;
+            Weapon target = useCustom ? custom : vanilla;
+            player.Character.Weapons.Select(target);
+            player.Character.Weapons.FromType(target).Ammo =
+                customPresent || vanillaPresent ? ammo : initialAmmo;
+            return ReportStatus(player);
         }
 
         internal static string ReportStatus(Player player)
         {
             if (player == null || player.Character == null) { throw new InvalidOperationException("Player is not ready"); }
             int current = (int)player.Character.Weapons.CurrentType;
-            bool candidatePresent = player.Character.Weapons.FromType(Candidate).isPresent;
-            bool vanillaPresent = player.Character.Weapons.Glock.isPresent;
-            int handgunAmmo = candidatePresent ? player.Character.Weapons.FromType(Candidate).Ammo :
-                vanillaPresent ? player.Character.Weapons.Glock.Ammo : 0;
-            string message = "T-007 weapon status current_id=" + current +
-                " candidate_present=" + candidatePresent + " vanilla_present=" + vanillaPresent +
-                " handgun_ammo=" + handgunAmmo;
-            RuntimeLog.Info(message);
-            return message;
+            int ammo = player.Character.Weapons.Current.Ammo;
+            bool pistolTest = player.Character.Weapons.FromType(TestPistol).isPresent;
+            bool pistolVanilla = player.Character.Weapons.Glock.isPresent;
+            bool carbineTest = player.Character.Weapons.FromType(TestCarbine).isPresent;
+            bool carbineVanilla = player.Character.Weapons.AssaultRifle_M4.isPresent;
+            bool shotgunTest = player.Character.Weapons.FromType(TestShotgun).isPresent;
+            bool shotgunVanilla = player.Character.Weapons.BasicShotgun.isPresent;
+            RuntimeLog.Info("T-007 weapon status current_id=" + current + " ammo=" + ammo +
+                " pistol_test=" + pistolTest + " pistol_vanilla=" + pistolVanilla +
+                " carbine_test=" + carbineTest + " carbine_vanilla=" + carbineVanilla +
+                " shotgun_test=" + shotgunTest + " shotgun_vanilla=" + shotgunVanilla);
+            return "ID=" + current + " " + LabelFor(current) + " ammo=" + ammo;
+        }
+
+        private static string LabelFor(int id)
+        {
+            switch (id)
+            {
+                case PistolId: return "TEST PISTOL";
+                case 7: return "VANILLA PISTOL";
+                case CarbineId: return "TEST CARBINE";
+                case 15: return "VANILLA CARBINE";
+                case ShotgunId: return "TEST SHOTGUN";
+                case 10: return "VANILLA SHOTGUN";
+                default: return "OTHER";
+            }
         }
 
         private void Execute(string action, Action operation)

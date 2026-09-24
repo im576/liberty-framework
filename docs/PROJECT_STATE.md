@@ -5,7 +5,7 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
-**Phase 0 — Research and environment.** T-000 through T-003 passed owner playtests. The revised controller menu prevents D-pad phone input and offers weapon actions. T-007's custom pistol ID 58 passed aim, fire, reload, cover, vehicle, and save/load checks. Menu switching between custom ID 58 and vanilla ID 7 preserved total handgun ammo. The game holds only one handgun at a time; carbine and shotgun identities remain to be built and tested. No custom gunplay or gold art is implemented.
+**Phase 0 — Research and environment.** T-000 through T-003 passed owner playtests. The revised controller menu prevents D-pad phone input and offers weapon actions. T-007's custom pistol ID 58 passed aim, fire, reload, cover, vehicle, and save/load checks. Menu switching between custom ID 58 and vanilla ID 7 preserved total handgun ammo. A local T-007 build now stages test carbine and shotgun names plus menu actions, expected IDs 59 and 60; they await guarded installation and playtest. No custom gunplay or gold art is implemented.
 
 ## Key decisions (see `docs/architecture/decisions/`)
 
@@ -25,7 +25,7 @@ Keep it short: this is a dashboard, not a diary.
 | # | Question | Resolved by |
 |---|---|---|
 | Q1 | Resolved: ScriptHookDotNet 1.7.1.8 loads an x86 .NET Framework 4.0 DLL on CE 1.2.0.59 with FusionFix; reload succeeds. The maximum usable C# language level is not established. | T-001 |
-| Q2 | Resolved for the first pistol: custom ID 58 selects and passes core gameplay/save/load, and menu switching preserves total ammo. The same handgun slot cannot hold both variants simultaneously. Can custom carbine and shotgun IDs behave likewise? | T-007 |
+| Q2 | Resolved for the first pistol: custom ID 58 selects and passes core gameplay/save/load, and menu switching preserves total ammo. The same handgun slot cannot hold both variants simultaneously. Carbine/shotgun IDs 59/60 are staged but unverified. | T-007 |
 | Q3 | How can lock-on / target snapping / reticle health ring be disabled **per weapon**? | T-008 |
 | Q4 | Which API actually moves the aim camera (pitch/yaw) for recoil kick on CE — a native, a SHDN wrapper, or memory? | T-009 |
 | Q5 | How to hide the vanilla reticle so we can draw our own crosshair? | T-008 |
@@ -33,6 +33,7 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Changelog
 
+- 2026-09-24 — Staged T-007 carbine and shotgun XML entries using base M4 and pump shotgun models/stats, added guarded menu actions and per-pair ammo transfer, and built x86 offline. The running game files were not changed.
 - 2026-09-24 — Owner confirmed the revised controller menu and weapon switching worked completely; T-003 is DONE. Logs independently confirm raw XInput input, menu actions, control lock/open-close, and handgun ammo continuity. T-007 advances to carbine/shotgun expansion.
 - 2026-09-24 — Owner confirmed all candidate pistol behavior checks passed. Added total-ammo transfer to the revised menu's handgun switch; x86 build passed while GTA IV was closed. Clip state and menu switch behavior remain unverified.
 - 2026-09-24 — After live feedback, added Weapon Status/Give Test Pistol/Give Vanilla Pistol to DevTools with confirmation for give actions. Revised menu temporarily disables player controls while open to prevent D-pad phone input; local x86 build passed, live test pending. No files under the running game were changed.
