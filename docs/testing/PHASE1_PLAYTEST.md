@@ -75,3 +75,16 @@ For each numbered section: pass / fail / notes. Attach `scripts\LibertyFramework
 ## 11. Agent B Feel and Presentation extension (T-011/T-013/T-014/T-016/T-017/T-021)
 
 Use the individual task cards for exact controls and observations. In one session, inspect both new gold finishes and HUD icons; cycle the carried loadout while holding aim; check holster visibility at every body slot, in a car/bike, after death/bust and after ReloadScripts; compare free and vanilla aim profiles; shoot a ped, vehicle and wall with the debug overlay on; compare gold versus vanilla shake/FOV. Report camera interruption, prop clipping and any failed restore. T-015 shoulder swap is blocked pending a validated CE camera offset control.
+
+## 12. Liberty Arsenal (T-020) — loadout, trunks, safehouses, death/arrest
+
+Full steps are in [T-020](../tasks/T-020-arsenal-core.md#human-test-steps). Quick pass:
+
+1. Safehouses are found automatically from the game's own safehouse map icons (log: `arsenal_safehouses_discovered count=N`, N > 0 once you have unlocked one). Walk to your safehouse door: log `arsenal_safehouse_enter`. If N stays 0, use DevTools > ARSENAL > **Mark safehouse here** at the door instead.
+2. Carry limit: give yourself a third long gun (shotgun, rifle, sniper, heavy). The least-recently-used long gun goes to your last car's trunk (`arsenal_overflow`). Stand behind that car, DevTools > ARSENAL: the boot opens and the weapon is listed under **Take** with its name and ammo.
+3. Store a weapon in a trunk, drive away, come back, take it. Repeat at the safehouse door.
+4. Death: with an owned weapon (stored and taken once) and a picked-up one, get wasted. At the safehouse, only the owned weapon is in the stash. Busted: everything carried is gone.
+5. During a mission or cutscene nothing is moved; after the mission ends, over-limit weapons go to storage.
+6. Liberty Vehicle Services (installed with this build): buy/register a car through it; that car's trunk keeps its contents across save/load.
+
+Also check: die **during a mission** and choose Retry. If the game gives your weapons back on retry, note whether owned weapons are now both on you and in the safehouse stash (possible duplicate; report it).
