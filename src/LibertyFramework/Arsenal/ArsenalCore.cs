@@ -81,10 +81,7 @@ namespace LibertyFramework.Arsenal
             }
             catch (Exception error)
             {
-                disabled = true;
-                RuntimeLog.Error("arsenal_disabled error=" + error);
-                CloseTrunkSafely();
-                if (ArsenalRegistry.CarriedWeapons == this) { ArsenalRegistry.CarriedWeapons = null; }
+                Disable(error);
             }
         }
 
@@ -250,8 +247,12 @@ namespace LibertyFramework.Arsenal
             foreach (WeaponRecord record in carried)
             {
                 RuntimeLog.Info("arsenal_loss reason=" + (busted ? "busted" : "wasted") + " id=" + record.WeaponId + " owned=" + record.Owned);
-                GTA.value.Weapon weapon = Player.Character.Weapons.FromType((Weapon)record.WeaponId);
-                if (weapon.isPresent) { weapon.Remove(); }
+                try
+                {
+                    GTA.value.Weapon weapon = Player.Character.Weapons.FromType((Weapon)record.WeaponId);
+                    if (weapon.isPresent) { weapon.Remove(); }
+                }
+                catch (Exception error) { RuntimeLog.Error("arsenal_loss_remove_failed id=" + record.WeaponId + " error=" + error); }
             }
             ArsenalPolicy.ResolveLoss(carried, busted, destination);
             pendingReplacements.Clear();
@@ -355,10 +356,21 @@ namespace LibertyFramework.Arsenal
 
         private List<MenuItem> BuildPage()
         {
+            if (disabled) { return new List<MenuItem> { MenuItem.Info(() => "Arsenal disabled; see log") }; }
+            try { return BuildPageCore(); }
+            catch (Exception error)
+            {
+                Disable(error);
+                return new List<MenuItem> { MenuItem.Info(() => "Arsenal disabled; see log") };
+            }
+        }
+
+        private List<MenuItem> BuildPageCore()
+        {
             List<MenuItem> items = new List<MenuItem>();
             if (config == null || state == null || Player == null || Player.Character == null)
                 { items.Add(MenuItem.Info(() => "Arsenal unavailable; see log")); return items; }
-            items.Add(MenuItem.Action("Mark safehouse here", MarkSafehouse));
+            items.Add(MenuItem.Action("Mark safehouse here", () => RunAction(MarkSafehouse)));
             if (!StorageAllowed())
                 { items.Add(MenuItem.Info(() => "Storage locked during mission or fade")); return items; }
             Ped ped = Player.Character;
@@ -388,12 +400,12 @@ namespace LibertyFramework.Arsenal
             foreach (WeaponRecord record in carried)
             {
                 WeaponRecord choice = record;
-                items.Add(MenuItem.Action("Store " + choice.WeaponId + " (" + choice.Ammo + ")", () => Store(choice, selected)));
+                items.Add(MenuItem.Action("Store " + choice.WeaponId + " (" + choice.Ammo + ")", () => RunAction(() => Store(choice, selected))));
             }
             foreach (WeaponRecord record in new List<WeaponRecord>(bin.Weapons))
             {
                 WeaponRecord choice = record;
-                items.Add(MenuItem.Action("Take " + choice.WeaponId + " (" + choice.Ammo + ")", () => Take(choice, selected)));
+                items.Add(MenuItem.Action("Take " + choice.WeaponId + " (" + choice.Ammo + ")", () => RunAction(() => Take(choice, selected))));
             }
             return items;
         }
@@ -443,6 +455,21 @@ namespace LibertyFramework.Arsenal
             return !Function.Call<bool>("GET_MISSION_FLAG") &&
                 !(Function.Call<bool>("HAS_CUTSCENE_LOADED") && !Function.Call<bool>("HAS_CUTSCENE_FINISHED")) &&
                 !Function.Call<bool>("IS_SCREEN_FADING") && !Function.Call<bool>("IS_SCREEN_FADED_OUT");
+        }
+
+        private string RunAction(Func<string> action)
+        {
+            if (disabled) { return "Arsenal disabled; see log"; }
+            try { return action(); }
+            catch (Exception error) { Disable(error); return "Arsenal disabled; see log"; }
+        }
+
+        private void Disable(Exception error)
+        {
+            disabled = true;
+            RuntimeLog.Error("arsenal_disabled error=" + error);
+            CloseTrunkSafely();
+            if (ArsenalRegistry.CarriedWeapons == this) { ArsenalRegistry.CarriedWeapons = null; }
         }
 
         private void CloseTrunk()
