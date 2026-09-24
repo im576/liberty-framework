@@ -25,3 +25,5 @@ Build/verify green; tests in `tools/verify/FeelChecks.cs` for slot mapping, hide
 6. Die or get busted while carrying weapons: props disappear. Run `ReloadScripts` from the ScriptHookDotNet console: no old floating props remain and only one set returns. Attach the log, especially `holster_orphan_removed` and `holsters_removed` lines.
 
 Offline: build 0 errors/0 warnings; verifier passes against GTAIV.exe and ScriptHook.dll. Placement and cutscene behaviour await the owner test. Because natives cannot run at DomainUnload, surviving props are journalled and removed on the next script tick after same-process reload.
+
+Known source-data limit: the installed IV `WeaponInfo.xml` gives `FTHROWER` no `<assets model>`, so ID 19 cannot display a prop. Episodic IDs 21–41 resolve `EPISODIC_N` from the current episode XML; the mapping needs in-game confirmation.

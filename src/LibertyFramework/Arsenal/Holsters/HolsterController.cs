@@ -114,20 +114,54 @@ namespace LibertyFramework.Arsenal.Holsters
                 if (slot == BodySlot.LongGun1) { firstLong = false; }
                 result.Add(new CarriedWeapon(weapon.WeaponId, weapon.Category, slot, weapon.WeaponId == held));
             }
+            if (Game.CurrentEpisode != GameEpisode.GTAIV)
+            {
+                for (int weaponId = 21; weaponId <= 41; weaponId++)
+                {
+                    GTA.value.Weapon instance = ped.Weapons.FromType((Weapon)weaponId);
+                    if (instance == null || !instance.isPresent) { continue; }
+                    WeaponCategory category = CategoryFor(instance.Slot);
+                    BodySlot slot = HolsterRules.SlotFor(category, firstLong);
+                    if (slot == BodySlot.LongGun1) { firstLong = false; }
+                    result.Add(new CarriedWeapon(weaponId, category, slot, weaponId == held));
+                }
+            }
             return result;
+        }
+
+        private static WeaponCategory CategoryFor(WeaponSlot slot)
+        {
+            switch (slot)
+            {
+                case WeaponSlot.Melee: return WeaponCategory.Melee;
+                case WeaponSlot.Handgun: return WeaponCategory.Handgun;
+                case WeaponSlot.Shotgun: return WeaponCategory.Shotgun;
+                case WeaponSlot.SMG: return WeaponCategory.SMG;
+                case WeaponSlot.Rifle: return WeaponCategory.Rifle;
+                case WeaponSlot.Sniper: return WeaponCategory.Sniper;
+                case WeaponSlot.Heavy: return WeaponCategory.Heavy;
+                case WeaponSlot.Thrown: return WeaponCategory.Thrown;
+                default: return WeaponCategory.Other;
+            }
         }
 
         private void Show(Ped ped, CarriedWeapon weapon)
         {
             HolsterWeapon entry = config.FindWeapon(weapon.WeaponId);
-            if (entry == null) { Remove(weapon.Slot); return; }
+            if (entry == null && (weapon.WeaponId < 21 || weapon.WeaponId > 41 || Game.CurrentEpisode == GameEpisode.GTAIV))
+            { Remove(weapon.Slot); return; }
+            string weaponType = entry != null ? entry.WeaponInfoType : "EPISODIC_" + (weapon.WeaponId - 20);
+            string xmlPath = entry != null ? WeaponInfoXml.ActivePath(LibertyPaths.GameDirectory) :
+                Path.Combine(LibertyPaths.GameDirectory, Path.Combine(Game.CurrentEpisode == GameEpisode.TLAD ? "TLAD" : "TBoGT",
+                    Path.Combine("common", Path.Combine("data", "WeaponInfo.xml"))));
+            string modelKey = xmlPath + "|" + weaponType;
             string modelName;
-            if (!modelNames.TryGetValue(entry.WeaponInfoType, out modelName))
+            if (!modelNames.TryGetValue(modelKey, out modelName))
             {
-                modelName = WeaponInfoXml.ModelFor(WeaponInfoXml.ActivePath(LibertyPaths.GameDirectory), entry.WeaponInfoType);
-                modelNames[entry.WeaponInfoType] = modelName;
+                modelName = WeaponInfoXml.ModelFor(xmlPath, weaponType);
+                modelNames[modelKey] = modelName;
                 if (string.IsNullOrEmpty(modelName))
-                { RuntimeLog.Error("holster_no_weaponinfo_model type=" + entry.WeaponInfoType + " id=" + entry.WeaponId); }
+                { RuntimeLog.Error("holster_no_weaponinfo_model type=" + weaponType + " id=" + weapon.WeaponId); }
             }
             if (string.IsNullOrEmpty(modelName)) { Remove(weapon.Slot); return; }
             int shown;
