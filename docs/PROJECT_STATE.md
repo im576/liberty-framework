@@ -5,7 +5,7 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
-**Phase 1 + Liberty Arsenal installed in the game (2026-09-24), awaiting one owner playtest.** Universal free aim, per-weapon recoil and real spread for test weapons 58/59/60, spread crosshair, gold pistol finish, and expanded DevTools are built and packaged in `staging/phase1`. Offline: 166/166 verification checks against the installed GTAIV.exe and ScriptHook.dll; install/rollback dry run byte-identical. No in-game evidence yet for any T-010 behaviour.
+**Phase 1 + Liberty Arsenal installed in the game (2026-09-24), awaiting one owner playtest.** Universal free aim, per-weapon recoil and real spread for test weapons 58/59/60, spread crosshair, gold pistol finish, and expanded DevTools plus the Arsenal features (T-011/T-013/T-014/T-016/T-017/T-020/T-021) and Liberty Vehicle Services CE are built and installed. Offline: 240/240 verification checks against the installed GTAIV.exe and ScriptHook.dll; install/rollback dry run byte-identical. No in-game evidence yet for any T-010 behaviour.
 
 ## Key decisions (see `docs/architecture/decisions/`)
 

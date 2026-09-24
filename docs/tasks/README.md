@@ -1,6 +1,6 @@
 # Task queue for agents
 
-**Current assignment:** T-010 Phase 1 integrated gunplay build is packaged in `staging/phase1` and awaits one owner playtest ([checklist](../testing/PHASE1_PLAYTEST.md)). T-000–T-003 are DONE; T-007's carbine/shotgun IDs 59/60 were confirmed by the owner (logs show both selected). The project owner alone marks a tested card `DONE`.
+**Current assignment:** Phase 1 (T-010) plus the Arsenal run (T-011, T-013, T-014, T-016, T-017, T-020, T-021) is installed in the game and awaits one owner playtest ([checklist](../testing/PHASE1_PLAYTEST.md)). T-000–T-003 are DONE; T-007's carbine/shotgun IDs 59/60 were confirmed by the owner (logs show both selected). The project owner alone marks a tested card `DONE`.
 
 Statuses: `READY` = agent can start; `NEEDS-PLAYTEST` = agent implementation awaits human test; `BLOCKED` = named dependency missing; `DONE` = human verified. Track each task's scope and evidence separately, and update [PROJECT_STATE.md](../PROJECT_STATE.md).
 
