@@ -36,6 +36,10 @@ namespace LibertyFramework.Arsenal
         private int revision;
         private Vehicle lastVehicle;
         private Vehicle openedTrunk;
+        private List<SafehouseRule> discoveredSafehouses = new List<SafehouseRule>();
+        private DateTime lastDiscoveryUtc = DateTime.MinValue;
+        private bool discoveryDisabled;
+        private bool overflowDeferredLogged;
 
         public ArsenalCore()
         {
@@ -62,6 +66,7 @@ namespace LibertyFramework.Arsenal
                 previousMoney = money;
                 RefreshLvs();
                 ObserveVehicle(ped);
+                DiscoverSafehouses();
                 ObserveSafehouse(ped);
                 PruneTemporaryTrunks();
                 if (openedTrunk != null && !DevToolsMenu.IsOpen) { CloseTrunk(); }
@@ -179,7 +184,13 @@ namespace LibertyFramework.Arsenal
             while ((overflow = ArsenalPolicy.OverflowIndex(config, carried, lastUsed)) >= 0)
             {
                 StorageBin destination = OverflowDestination();
-                if (destination == null) { RuntimeLog.Info("arsenal_overflow_deferred no_vehicle_or_safehouse"); break; }
+                if (destination == null)
+                {
+                    // Logged once per episode of waiting: this loop runs every tick until a car or safehouse is known.
+                    if (!overflowDeferredLogged) { overflowDeferredLogged = true; RuntimeLog.Info("arsenal_overflow_deferred no_vehicle_or_safehouse"); }
+                    break;
+                }
+                overflowDeferredLogged = false;
                 WeaponRecord moved = carried[overflow];
                 ArsenalRegistry.RaiseWeaponsRemoving("overflow");
                 ped.Weapons.FromType((Weapon)moved.WeaponId).Remove();
@@ -242,8 +253,16 @@ namespace LibertyFramework.Arsenal
         private void HandleLoss(bool busted)
         {
             ArsenalRegistry.RaiseWeaponsRemoving(busted ? "busted" : "wasted");
-            StorageBin destination = !busted && !string.IsNullOrEmpty(state.LastSafehouseId) ?
-                ArsenalPolicy.FindOrAdd(state.SafehouseStashes, state.LastSafehouseId) : null;
+            string safehouseId = state.LastSafehouseId;
+            if (!busted && string.IsNullOrEmpty(safehouseId))
+            {
+                // No safehouse visited yet this episode: the nearest known one keeps owned weapons from vanishing.
+                SafehouseRule nearest = NearestSafehouse(Player.Character.Position);
+                if (nearest != null) { safehouseId = nearest.Id; RuntimeLog.Info("arsenal_loss_nearest_safehouse id=" + nearest.Id); }
+            }
+            StorageBin destination = !busted && !string.IsNullOrEmpty(safehouseId) ?
+                ArsenalPolicy.FindOrAdd(state.SafehouseStashes, safehouseId) : null;
+            if (!busted && destination == null) { RuntimeLog.Error("arsenal_loss_no_safehouse owned weapons cannot be stored"); }
             foreach (WeaponRecord record in carried)
             {
                 RuntimeLog.Info("arsenal_loss reason=" + (busted ? "busted" : "wasted") + " id=" + record.WeaponId + " owned=" + record.Owned);
@@ -261,9 +280,70 @@ namespace LibertyFramework.Arsenal
             Persist();
         }
 
+        private List<SafehouseRule> AllSafehouses()
+        {
+            List<SafehouseRule> all = new List<SafehouseRule>(config.Safehouses);
+            all.AddRange(discoveredSafehouses);
+            return all;
+        }
+
+        private SafehouseRule NearestSafehouse(Vector3 position)
+        {
+            SafehouseRule best = null;
+            double bestDistance = double.MaxValue;
+            foreach (SafehouseRule house in AllSafehouses())
+            {
+                if (!string.Equals(house.Episode, episode, StringComparison.OrdinalIgnoreCase)) { continue; }
+                double distance = Distance(position, house.X, house.Y, house.Z);
+                if (distance < bestDistance) { bestDistance = distance; best = house; }
+            }
+            return best;
+        }
+
+        // The game marks every unlocked safehouse on the radar with its own sprite. Reading those blips gives
+        // real, story-aware safehouse positions without shipping coordinates. Runs every 10 s on the tick.
+        private void DiscoverSafehouses()
+        {
+            if (discoveryDisabled || config.SafehouseBlipSprite <= 0 || (DateTime.UtcNow - lastDiscoveryUtc).TotalSeconds < 10) { return; }
+            lastDiscoveryUtc = DateTime.UtcNow;
+            try
+            {
+                List<SafehouseRule> found = new List<SafehouseRule>();
+                int blip = Function.Call<int>("GET_FIRST_BLIP_INFO_ID", config.SafehouseBlipSprite);
+                for (int guard = 0; blip != 0 && guard < 32; guard++)
+                {
+                    if (Function.Call<bool>("DOES_BLIP_EXIST", blip))
+                    {
+                        Pointer coords = typeof(Vector3);
+                        Function.Call("GET_BLIP_COORDS", blip, coords);
+                        Vector3 position = (Vector3)coords;
+                        if (Math.Abs(position.X) > 1 || Math.Abs(position.Y) > 1)
+                        {
+                            SafehouseRule house = new SafehouseRule();
+                            house.Id = "blip_" + episode + "_" + ((int)Math.Round(position.X)) + "_" + ((int)Math.Round(position.Y));
+                            house.Name = "Safehouse (map)";
+                            house.Episode = episode;
+                            house.X = position.X; house.Y = position.Y; house.Z = position.Z;
+                            house.Radius = config.DiscoveredSafehouseRadiusMeters;
+                            house.Verified = true;
+                            found.Add(house);
+                        }
+                    }
+                    blip = Function.Call<int>("GET_NEXT_BLIP_INFO_ID", config.SafehouseBlipSprite);
+                }
+                if (found.Count != discoveredSafehouses.Count) { RuntimeLog.Info("arsenal_safehouses_discovered count=" + found.Count); }
+                discoveredSafehouses = found;
+            }
+            catch (Exception error)
+            {
+                discoveryDisabled = true;
+                RuntimeLog.Error("arsenal_safehouse_discovery_disabled use Mark safehouse here error=" + error.Message);
+            }
+        }
+
         private void ObserveSafehouse(Ped ped)
         {
-            foreach (SafehouseRule house in config.Safehouses)
+            foreach (SafehouseRule house in AllSafehouses())
             {
                 if (!string.Equals(house.Episode, episode, StringComparison.OrdinalIgnoreCase)) { continue; }
                 if (Distance(ped.Position, house.X, house.Y, house.Z) <= house.Radius && state.LastSafehouseId != house.Id)
@@ -388,7 +468,7 @@ namespace LibertyFramework.Arsenal
             }
             if (bin == null)
             {
-                foreach (SafehouseRule house in config.Safehouses)
+                foreach (SafehouseRule house in AllSafehouses())
                 {
                     if (house.Episode == episode && Distance(ped.Position, house.X, house.Y, house.Z) <= house.Radius)
                         { bin = ArsenalPolicy.FindOrAdd(state.SafehouseStashes, house.Id); break; }
@@ -400,14 +480,21 @@ namespace LibertyFramework.Arsenal
             foreach (WeaponRecord record in carried)
             {
                 WeaponRecord choice = record;
-                items.Add(MenuItem.Action("Store " + choice.WeaponId + " (" + choice.Ammo + ")", () => RunAction(() => Store(choice, selected))));
+                items.Add(MenuItem.Action("Store " + Describe(choice), () => RunAction(() => Store(choice, selected))));
             }
             foreach (WeaponRecord record in new List<WeaponRecord>(bin.Weapons))
             {
                 WeaponRecord choice = record;
-                items.Add(MenuItem.Action("Take " + choice.WeaponId + " (" + choice.Ammo + ")", () => RunAction(() => Take(choice, selected))));
+                items.Add(MenuItem.Action("Take " + Describe(choice), () => RunAction(() => Take(choice, selected))));
             }
             return items;
+        }
+
+        private static string Describe(WeaponRecord record)
+        {
+            LibertyFramework.Gunplay.GunplayController gunplay = LibertyFramework.Gunplay.GunplayController.Instance;
+            string name = LibertyFramework.Weapons.TestWeaponActions.LabelFor(gunplay != null ? gunplay.Config : null, record.WeaponId);
+            return name + "  (" + record.Ammo + " rounds" + (record.Owned ? ", owned" : "") + ")";
         }
 
         private string Store(WeaponRecord record, StorageBin bin)

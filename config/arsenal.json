@@ -18,5 +18,7 @@
     {"category": 7, "group": "longGun", "bodySlot": 4},
     {"category": 8, "group": "uncounted", "bodySlot": 0}
   ],
-  "safehouses": []
+  "safehouses": [],
+  "safehouseBlipSprite": 29,
+  "discoveredSafehouseRadiusMeters": 12.0
 }

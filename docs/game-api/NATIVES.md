@@ -18,6 +18,7 @@ Hashes and handler addresses are checked by `tools/verify.ps1` against `GTAIV.ex
 | `IS_PLAYER_BEING_ARRESTED()` | busted loss | registered 0x79A95BF9 | T-020 |
 | `IS_PLAYER_DEAD(player)` | wasted loss | registered 0x12AE0E27 | T-020 |
 | `IS_CAR_IN_WATER(vehicle)` | discard sunk temporary trunks | registered 0x0FF342B2 | T-020 |
+| `GET_FIRST_BLIP_INFO_ID(sprite)` / `GET_NEXT_BLIP_INFO_ID(sprite)` / `DOES_BLIP_EXIST(blip)` / `GET_BLIP_COORDS(blip, Vector3*)` | discover the game's own safehouse radar blips (sprite 29 = SHDN `BlipIcon.Building_Safehouse`) as Arsenal safehouses; failure disables discovery only | registered 0x3BD729E9 / 0x154932F0 / 0x590A6FF4 / 0x4C1E75DB | T-020 |
 
 Resolver anchors (not called, used to locate engine data): `IS_AUTO_AIMING_ON`, `IS_HUD_RETICULE_COMPLEX`, `GET_ROOT_CAM`, `IS_BULLET_IN_AREA`, `SET_GAME_CAM_PITCH`, `SET_GAME_CAM_HEADING`.
 

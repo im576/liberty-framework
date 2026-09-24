@@ -14,6 +14,8 @@ namespace LibertyFramework.Arsenal.Logic
                 config.PurchaseWindowMilliseconds < 0 || config.PurchaseWindowMilliseconds > 10000 ||
                 config.TrunkDistanceMeters <= 0 || config.TrunkRearOffsetMeters <= 0 || config.OwnedVehicleMatchMeters <= 0 || config.FallbackVehicleMatchMeters <= 0 ||
                 config.Categories == null || config.Safehouses == null) { throw new InvalidDataException("Invalid Arsenal limits or distances."); }
+            if (config.SafehouseBlipSprite < 0 || (config.SafehouseBlipSprite > 0 && !(config.DiscoveredSafehouseRadiusMeters > 0)))
+                { throw new InvalidDataException("safehouseBlipSprite needs a positive discoveredSafehouseRadiusMeters."); }
             HashSet<WeaponCategory> seen = new HashSet<WeaponCategory>();
             foreach (CategoryRule rule in config.Categories)
             {

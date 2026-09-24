@@ -27,6 +27,7 @@ namespace LibertyFramework.Arsenal.Holsters
         private bool disabled;
         private BodySlot selectedSlot = BodySlot.SidearmPrimary;
         private string configHash;
+        private DateTime lastConfigCheckUtc = DateTime.MinValue;
 
         public HolsterController()
         {
@@ -40,6 +41,9 @@ namespace LibertyFramework.Arsenal.Holsters
 
         private void LoadConfig()
         {
+            // Interval is 0 (every frame): check the file for edits at most once per second.
+            if (config != null && (DateTime.UtcNow - lastConfigCheckUtc).TotalMilliseconds < 1000) { return; }
+            lastConfigCheckUtc = DateTime.UtcNow;
             try
             {
                 byte[] bytes = JsonStore.ReadBytes(LibertyPaths.HolstersConfig);
@@ -76,7 +80,8 @@ namespace LibertyFramework.Arsenal.Holsters
                 bool inVehicle = ped.isInVehicle();
                 bool onBike = inVehicle && ped.CurrentVehicle != null && ped.CurrentVehicle.Model.isBike;
                 bool visible = HolsterRules.Visible(false, !ped.isDead,
-                    Natives.IsPlayerPlaying(player) && Natives.IsPlayerControlOn(player),
+                    // DevTools locks player control while open; keep props visible so Holsters nudges show live.
+                    Natives.IsPlayerPlaying(player) && (Natives.IsPlayerControlOn(player) || DevToolsMenu.IsOpen),
                     Natives.IsScreenFadedOut(), inVehicle, onBike, config.ShowOnBikes);
                 if (!visible) { Clear(); return; }
                 ICarriedWeaponsSource source = ArsenalRegistry.CarriedWeapons;

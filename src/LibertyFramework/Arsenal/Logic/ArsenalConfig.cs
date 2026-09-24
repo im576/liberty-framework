@@ -19,6 +19,10 @@ namespace LibertyFramework.Arsenal.Logic
         [DataMember(Name = "fallbackVehicleMatchMeters", IsRequired = true)] internal float FallbackVehicleMatchMeters;
         [DataMember(Name = "categories", IsRequired = true)] internal List<CategoryRule> Categories;
         [DataMember(Name = "safehouses", IsRequired = true)] internal List<SafehouseRule> Safehouses;
+        // Radar sprite of the game's own safehouse blips (ScriptHookDotNet BlipIcon.Building_Safehouse = 29);
+        // 0 disables discovery. Discovered safehouses join the configured list for the current episode.
+        [DataMember(Name = "safehouseBlipSprite", IsRequired = false)] internal int SafehouseBlipSprite;
+        [DataMember(Name = "discoveredSafehouseRadiusMeters", IsRequired = false)] internal float DiscoveredSafehouseRadiusMeters;
     }
 
 }
