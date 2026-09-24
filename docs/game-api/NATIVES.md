@@ -11,6 +11,13 @@ Hashes and handler addresses are checked by `tools/verify.ps1` against `GTAIV.ex
 | `IS_PAUSE_MENU_ACTIVE`, `IS_SCREEN_FADED_OUT`, `IS_PLAYER_PLAYING`, `IS_PLAYER_CONTROL_ON` | hide crosshair in menus/cutscenes; skip when not playing | registered | T-010 |
 | `GET_GROUND_Z_FOR_3D_COORD`, `REQUEST_COLLISION_AT_POSN`, `LOAD_SCENE`, `SET_CHAR_COORDINATES`, `SET_CHAR_HEADING` | teleports | registered | T-010 |
 | `CLEAR_WANTED_LEVEL` | test range helper | registered | T-010 |
+| `GET_CURRENT_EPISODE()` | separate Arsenal state for IV, TLAD, TBOGT | registered 0x7D7619D2 | T-020 |
+| `GET_MISSION_FLAG()` | defer Arsenal removals/storage during missions | registered 0x2BC64736 | T-020 |
+| `HAS_CUTSCENE_LOADED()` / `HAS_CUTSCENE_FINISHED()` | defer Arsenal removals while a loaded cutscene has not finished | registered 0x5DE43980 / 0x4ECE1AD2 | T-020 |
+| `IS_SCREEN_FADING()` | defer Arsenal removals during transitions | registered 0x73700561 | T-020 |
+| `IS_PLAYER_BEING_ARRESTED()` | busted loss | registered 0x79A95BF9 | T-020 |
+| `IS_PLAYER_DEAD(player)` | wasted loss | registered 0x12AE0E27 | T-020 |
+| `IS_CAR_IN_WATER(vehicle)` | discard sunk temporary trunks | registered 0x0FF342B2 | T-020 |
 
 Resolver anchors (not called, used to locate engine data): `IS_AUTO_AIMING_ON`, `IS_HUD_RETICULE_COMPLEX`, `GET_ROOT_CAM`, `IS_BULLET_IN_AREA`, `SET_GAME_CAM_PITCH`, `SET_GAME_CAM_HEADING`.
 

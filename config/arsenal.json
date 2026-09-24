@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "sidearmLimit": 2,
+  "longGunLimit": 2,
+  "meleeLimit": 1,
+  "purchaseWindowMilliseconds": 1500,
+  "trunkDistanceMeters": 2.5,
+  "trunkRearOffsetMeters": 2.0,
+  "ownedVehicleMatchMeters": 12.0,
+  "fallbackVehicleMatchMeters": 8.0,
+  "categories": [
+    {"category": 1, "group": "melee", "bodySlot": 5},
+    {"category": 2, "group": "sidearm", "bodySlot": 1},
+    {"category": 4, "group": "sidearm", "bodySlot": 2},
+    {"category": 3, "group": "longGun", "bodySlot": 3},
+    {"category": 5, "group": "longGun", "bodySlot": 4},
+    {"category": 6, "group": "longGun", "bodySlot": 4},
+    {"category": 7, "group": "longGun", "bodySlot": 4},
+    {"category": 8, "group": "uncounted", "bodySlot": 0}
+  ],
+  "safehouses": []
+}

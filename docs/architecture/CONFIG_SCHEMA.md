@@ -50,4 +50,10 @@ Polled every second; a valid change is applied live. DevTools "Save live values"
 
 ## Build-time: assets/finishes/finishes.json
 
+## Arsenal: arsenal.json (T-020)
+
+Required `schemaVersion:1`; `sidearmLimit:2`, `longGunLimit:2`, `meleeLimit:1`. `purchaseWindowMilliseconds` is the maximum elapsed time from money decrease to weapon gain for purchase ownership. `trunkDistanceMeters` is interaction distance from the boot; `trunkRearOffsetMeters` locates the boot behind the vehicle (SHDN vehicle local Y points forward). `ownedVehicleMatchMeters` matches LVS model hash and position; `fallbackVehicleMatchMeters` matches Arsenal's remembered vehicle marker. All distances are meters. `categories[]` maps each `WeaponCategory` enum number to `group` (`sidearm`, `longGun`, `melee`, `uncounted`) and `BodySlot` enum number. `safehouses[]` has `id`, `name`, `episode` (`iv`, `tlad`, `tbogt`), world `x/y/z`, `radius` meters, and `verified` boolean. The shipped list is empty because no sourced coordinates were provided; DevTools **Mark safehouse here** records the actual player coordinate, adds a verified entry, and writes `arsenal.json` with a backup.
+
+Per-episode `state/arsenal_<episode>.json` contains owned-carried IDs, persistent vehicle trunk bins, safehouse stash bins, last safehouse, and last vehicle marker. `JsonStore.Save` writes atomically and maintains `.bak`. A corrupt state file is renamed to `.corrupt_<UTC>` without changing the existing `.bak`, then state starts empty.
+
 Finish colour ramps (`shadowRgb`, `midRgb`, `highlightRgb`, `contrast`, `lift`, `gamma`) per texture role (`diffuse`, `specular`, `icon`) and model variants (`variantModel`, `baseModel`, `sourceImg`, `finish`, `animGroup`, `drawDistance`, `audioMaterial`, `weaponInfoType`, `textureRoles`). Add a finish or a weapon variant here and rerun `tools/package-phase1.ps1`.
