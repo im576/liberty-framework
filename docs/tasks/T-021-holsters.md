@@ -1,6 +1,6 @@
 # T-021 — Visible weapons on the body (holsters)
 
-Status: **READY** (Codex Agent B, branch `arsenal/feel`). Build from scratch: no code, files or offsets from Holsterable Weapons, Equip Gun or any other mod (technique only).
+Status: **NEEDS-PLAYTEST** (Codex Agent B, branch `arsenal/feel`). Built from scratch, using ScriptHookDotNet wrappers and documented natives.
 
 ## Requirements
 
@@ -17,4 +17,11 @@ Build/verify green; tests in `tools/verify/FeelChecks.cs` for slot mapping, hide
 
 ## Human test steps
 
-(Agent B fills in.)
+1. After the orchestrator installs the merged build, start on foot. Open Liberty DevTools with L3+R3 held (or F10). In WEAPONS, give all three gold test weapons (Cross twice), then close the menu.
+2. Hold the gold pistol. The carbine and shotgun should appear at separate back positions; the pistol should have no duplicate thigh prop. Select the carbine, then shotgun: the one in hand disappears from the back and the others return. Report colour and clipping.
+3. Equip a vanilla SMG and a melee weapon. Check the SMG at the left hip, pistol at the right thigh, and melee at the belt/back. Move, crouch and take cover; props should follow the body.
+4. Enter a car: props disappear. Exit: props return. Mount a bike: props remain visible with `showOnBikes=true`. During a cutscene/fade they should disappear and then return.
+5. Open DevTools > Holsters. Use Cross on `Next slot` and D-pad left/right on the Position/Rotation rows to nudge each slot. Close and inspect. Reopen, select `Save offsets` with Cross, and confirm `holsters.json.bak` exists.
+6. Die or get busted while carrying weapons: props disappear. Run `ReloadScripts` from the ScriptHookDotNet console: no old floating props remain and only one set returns. Attach the log, especially `holster_orphan_removed` and `holsters_removed` lines.
+
+Offline: build 0 errors/0 warnings; verifier passes against GTAIV.exe and ScriptHook.dll. Placement and cutscene behaviour await the owner test. Because natives cannot run at DomainUnload, surviving props are journalled and removed on the next script tick after same-process reload.
