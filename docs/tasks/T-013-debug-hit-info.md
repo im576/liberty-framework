@@ -1,0 +1,3 @@
+# T-013 — Debug overlay hit information
+
+Status: **READY** (Codex Agent B). Extend the existing debug overlay (`GunplayController.StatusLines`) with: last hit target (ped/vehicle/world), hit bone when a ped was hit, distance, damage dealt (health delta), and measured fire interval / RPM for the held weapon. Registered natives or SHDN wrappers only; only while the overlay is on (no cost otherwise). Human test: overlay values change sensibly when shooting the test-range peds.

@@ -1,0 +1,3 @@
+# T-014 — Aim profiles
+
+Status: **READY** (Codex Agent B). Replace the free-aim on/off with a config-selected profile: `vanilla` (restores the player's own settings), `free` (current behaviour), `slowdown` and `light` (assist variants). Implement a profile only if it is backed by a documented engine control (MEMORY.md / a registered native); otherwise the validator rejects it with a clear message and the card records what is missing. Keep restore-on-exit guarantees from `FreeAimMode`. Human test: switch profiles in config and compare aim feel.

@@ -27,6 +27,9 @@ $sources = @(
     (Get-ChildItem -LiteralPath (Join-Path $src 'Gunplay\Profiles') -Filter '*.cs').FullName
     (Get-ChildItem -LiteralPath (Join-Path $src 'Gunplay\Recoil') -Filter '*.cs').FullName
     (Get-ChildItem -LiteralPath (Join-Path $src 'Gunplay\Spread') -Filter '*.cs').FullName
+    (Get-ChildItem -LiteralPath (Join-Path $src 'Arsenal\Contracts') -Filter '*.cs').FullName
+    # Any folder named Logic holds ScriptHookDotNet-free code that the verifier can test (T-020/T-021 onward).
+    (Get-ChildItem -LiteralPath $src -Recurse -Directory -Filter 'Logic' | ForEach-Object { (Get-ChildItem -LiteralPath $_.FullName -Filter '*.cs').FullName })
 )
 New-Item -ItemType Directory -Force -Path (Split-Path -Parent $output) | Out-Null
 & $compiler /nologo /target:exe /platform:x86 /warn:4 "/out:$output" /reference:System.Runtime.Serialization.dll /reference:System.Xml.dll $sources

@@ -22,6 +22,10 @@ namespace LibertyFramework.Verify
                 NativeChecks.Run(args[0], args[1], check);
                 Console.WriteLine("== Gunplay logic and configuration");
                 LogicChecks.Run(args[1], check);
+                Console.WriteLine("== Arsenal core (T-020)");
+                ArsenalCoreChecks.Run(args[1], check);
+                Console.WriteLine("== Feel and presentation (T-011, T-013..T-017, T-021)");
+                FeelChecks.Run(args[1], check);
             }
             catch (Exception error)
             {

@@ -16,10 +16,20 @@ Batch compatible offline work and combine human checks into one gameplay session
 | T-008 | [Per-weapon aim and HUD spike](T-008-aim-hud.md) | T-007 | SUPERSEDED by T-010 (owner accepted universal free aim) |
 | T-009 | [Camera recoil API spike](T-009-camera-recoil.md) | T-001, T-007 | SUPERSEDED by T-010 |
 | T-010 | [Phase 1 integrated gunplay build](T-010-phase1-gunplay.md) | T-003, T-007 | NEEDS-PLAYTEST |
+| T-011 | [Gold carbine and shotgun](T-011-gold-finishes.md) | T-010 | READY — Codex Agent B |
+| T-013 | [Debug overlay hit info](T-013-debug-hit-info.md) | T-010 | READY — Codex Agent B |
+| T-014 | [Aim profiles](T-014-aim-profiles.md) | T-010 | READY — Codex Agent B |
+| T-015 | [Shoulder swap](T-015-shoulder-swap.md) | T-010 | READY — Codex Agent B |
+| T-016 | [Switch weapons while aiming](T-016-switch-while-aiming.md) | T-010, T-020 | READY — Codex Agent B |
+| T-017 | [Feel: shake and aiming FOV](T-017-feel-shake-fov.md) | T-010 | READY — Codex Agent B |
+| T-020 | [Liberty Arsenal core](T-020-arsenal-core.md) | T-010 | READY — Codex Agent A |
+| T-021 | [Visible weapons (holsters)](T-021-holsters.md) | T-020 contracts | READY — Codex Agent B |
 
-## Proposed next tasks (review 2026-09-24; not started, owner picks order)
+**Arsenal run (2026-09-24):** two Codex agents work in separate worktrees/branches (`arsenal/core` = Agent A, `arsenal/feel` = Agent B) against the shared contracts in `src/LibertyFramework/Arsenal/Contracts`; the orchestrator merges, reviews, packages and installs. T-012 (DevTools completeness) is deferred by the owner.
 
-Write a full card before starting any of these. Avoid invented controls or native names.
+## Backlog rationale (review 2026-09-24)
+
+Cards above supersede these rows; T-012 remains a proposal.
 
 | ID | Proposal | Basis |
 |---|---|---|

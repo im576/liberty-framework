@@ -74,9 +74,16 @@ namespace LibertyFramework.DevTools
             MenuPage range = new MenuPage("TEST RANGE", BuildRange);
             MenuPage inspect = new MenuPage("INSPECT STATE", BuildInspect);
             MenuPage help = new MenuPage("HELP", BuildHelp);
-            return new MenuPage("LIBERTY DEVTOOLS", () => new List<MenuItem> {
-                MenuItem.Page(weapons), MenuItem.Page(gunplay), MenuItem.Page(tuning), MenuItem.Page(presets),
-                MenuItem.Page(teleport), MenuItem.Page(range), MenuItem.Page(inspect), MenuItem.Page(help) });
+            return new MenuPage("LIBERTY DEVTOOLS", () =>
+            {
+                List<MenuItem> items = new List<MenuItem> {
+                    MenuItem.Page(weapons), MenuItem.Page(gunplay), MenuItem.Page(tuning), MenuItem.Page(presets),
+                    MenuItem.Page(teleport), MenuItem.Page(range), MenuItem.Page(inspect) };
+                // Pages registered by feature scripts (Arsenal, Holsters, ...), see DevToolsPages.
+                foreach (MenuPage page in DevToolsPages.All()) { items.Add(MenuItem.Page(page)); }
+                items.Add(MenuItem.Page(help));
+                return items;
+            });
         }
 
         private List<MenuItem> BuildWeapons()

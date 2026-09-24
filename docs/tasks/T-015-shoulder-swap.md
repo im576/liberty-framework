@@ -1,0 +1,3 @@
+# T-015 — Shoulder swap
+
+Status: **READY** (Codex Agent B). Controller-first shoulder swap while aiming (binding in config, default a button that does not conflict with aim/fire/cover/phone). Liberty Tweaks behaviour is reference only (no code). Prefer natives/SHDN camera APIs; memory access only under ADR-0004 (resolve, validate, restore) and documented in MEMORY.md. Must not break cover, vehicles or missions. Human test: swap left/right while aiming on foot and in cover.
