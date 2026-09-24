@@ -1,6 +1,6 @@
 # T-007 — Separate gold weapon identifier spike
 
-Status: **NEEDS-PLAYTEST (carbine/shotgun expansion)**. The first custom pistol identity and controller menu switch passed owner playtesting. A local build now stages separate test carbine and shotgun names and menu actions; it has not been installed while GTA IV runs. No finished gold art or custom gunplay.
+Status: **NEEDS-PLAYTEST (carbine/shotgun expansion installed)**. The first custom pistol identity and controller menu switch passed owner playtesting. Separate test carbine and shotgun names and menu actions are installed after GTA IV closed; in-game behavior is unverified. No finished gold art or custom gunplay.
 
 The staged `LF_GOLD_PISTOL` entry copies this machine's base `PISTOL` data and uses the existing `w_glock` model; no external art is redistributed. The source data comes from the owner's installed game. `ExtendedLimits=1` is already set. The first diagnostic script registers `LFWeaponStatus`, `LFWeaponGive`, and `LFWeaponVanilla` console commands. FusionFix's [v5.0.1 source](https://github.com/ThirteenAG/GTAIV.EFLC.FusionFix/blob/v5.0.1/source/limits.ixx) assigns the first custom name ID 58; the live log and owner screenshot confirmed that ID was selected. The guarded installer placed the generated XML at `update/common/data/WeaponInfo.xml`, leaving the original file intact. A hash-checked removal script reverses the override.
 
@@ -9,6 +9,8 @@ The x86 build completed with zero errors/warnings and the staged XML parsed with
 The custom pistol and vanilla pistol cannot be held in the same handgun slot at once with the current data. The controller menu switch is a diagnostic workaround; it transfers total ammo but does not preserve clip state or offer simultaneous inventory coexistence. The stable first pistol permits expanding the identity test to carbine and pump shotgun, with the same inventory limitation expected until tested.
 
 The next staged XML clones the installed M4 and SHOTGUN definitions as `LF_GOLD_CARBINE` and `LF_GOLD_SHOTGUN`, retaining `w_m4` and `w_shotgun` models and vanilla stats. Appending them after the pistol is expected to assign IDs 59 and 60 in FusionFix, but that order must be confirmed in-game. The expanded DevTools menu adds guarded GIVE TEST/VANILLA CARBINE and GIVE TEST/VANILLA SHOTGUN actions. Switching transfers total ammo within each weapon pair; when neither variant is carried, the diagnostic grant starts with 51 pistol, 120 carbine, or 30 shotgun rounds. The new staged XML contains 25 weapon entries, three more than the 22-entry base IV file. An upgrade script requires the existing override's receipt hash to match, backs up the pistol-only XML, and refuses to run while GTA IV is open.
+
+Installation check: after GTA IV closed, `upgrade-t007.ps1` backed up the pistol-only XML, installed the three-entry override, and updated its hash receipt. The DLL was rebuilt and deployed with a backup of the prior version. Installed DLL and XML hashes matched the local build/staging files; the receipt matched the XML, and the installed XML parsed with 25 entries. GTA IV was still closed at the end of verification.
 
 ## Next human test steps (one shutdown for carbine and shotgun)
 

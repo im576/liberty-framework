@@ -5,7 +5,7 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
-**Phase 0 — Research and environment.** T-000 through T-003 passed owner playtests. The revised controller menu prevents D-pad phone input and offers weapon actions. T-007's custom pistol ID 58 passed aim, fire, reload, cover, vehicle, and save/load checks. Menu switching between custom ID 58 and vanilla ID 7 preserved total handgun ammo. A local T-007 build now stages test carbine and shotgun names plus menu actions, expected IDs 59 and 60; they await guarded installation and playtest. No custom gunplay or gold art is implemented.
+**Phase 0 — Research and environment.** T-000 through T-003 passed owner playtests. The revised controller menu prevents D-pad phone input and offers weapon actions. T-007's custom pistol ID 58 passed aim, fire, reload, cover, vehicle, and save/load checks. Menu switching between custom ID 58 and vanilla ID 7 preserved total handgun ammo. The carbine/shotgun expansion is installed after a guarded shutdown; expected IDs 59 and 60 await in-game playtest. No custom gunplay or gold art is implemented.
 
 ## Key decisions (see `docs/architecture/decisions/`)
 
@@ -33,6 +33,7 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Changelog
 
+- 2026-09-24 — With GTA IV closed, installed the T-007 three-weapon XML override and matching DLL. Backup, hash receipt, XML parse, and installed file checks passed; next step is one in-game carbine/shotgun test.
 - 2026-09-24 — Staged T-007 carbine and shotgun XML entries using base M4 and pump shotgun models/stats, added guarded menu actions and per-pair ammo transfer, and built x86 offline. The running game files were not changed.
 - 2026-09-24 — Owner confirmed the revised controller menu and weapon switching worked completely; T-003 is DONE. Logs independently confirm raw XInput input, menu actions, control lock/open-close, and handgun ammo continuity. T-007 advances to carbine/shotgun expansion.
 - 2026-09-24 — Owner confirmed all candidate pistol behavior checks passed. Added total-ammo transfer to the revised menu's handgun switch; x86 build passed while GTA IV was closed. Clip state and menu switch behavior remain unverified.
