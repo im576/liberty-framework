@@ -2,7 +2,9 @@ param(
     [Parameter(Mandatory = $true)]
     [string] $GameDirectory,
     [Parameter(Mandatory = $true)]
-    [string] $ScriptHookDotNetReference
+    [string] $ScriptHookDotNetReference,
+    # Extracted Liberty Vehicle Services CE release (MIT, ekzestean); bundled as the vehicle base for Arsenal trunks.
+    [string] $LvsDirectory
 )
 
 # Builds the complete Phase 1 package into staging/phase1 without touching the game directory:
@@ -17,7 +19,7 @@ $stage = Join-Path $repoRoot 'staging\phase1'
 & (Join-Path $PSScriptRoot 'build.ps1') -ScriptHookDotNetReference $ScriptHookDotNetReference
 & (Join-Path $PSScriptRoot 'verify.ps1') -GameDirectory $game | Select-String -Pattern '^(FAIL|RESULT)'
 
-foreach ($child in @('scripts', 'update', 'previews')) {
+foreach ($child in @('scripts', 'update', 'previews', 'plugins')) {
     $path = Join-Path $stage $child
     if (Test-Path -LiteralPath $path) { Remove-Item -LiteralPath $path -Recurse -Force }
 }
@@ -72,6 +74,27 @@ Copy-Item -LiteralPath (Join-Path $repoRoot 'config\devtools\locations.json') -D
 Get-ChildItem -LiteralPath (Join-Path $repoRoot 'config\presets') -Filter '*.json' | ForEach-Object {
     Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $scriptsStage "LibertyFramework\config\presets\$($_.Name)")
 }
+# Arsenal (T-020) and holster (T-021) configs, when present.
+foreach ($name in @('arsenal.json', 'holsters.json')) {
+    $source = Join-Path $repoRoot "config\$name"
+    if (Test-Path -LiteralPath $source) { Copy-Item -LiteralPath $source -Destination (Join-Path $scriptsStage "LibertyFramework\config\$name") }
+}
+
+# Liberty Vehicle Services CE: the author's scripts folder plus the dashboard bridge it DllImports.
+# The LibertyCityPlates bridge is omitted (LibertyCityPlates is not installed).
+if ($LvsDirectory) {
+    $lvs = (Resolve-Path -LiteralPath $LvsDirectory).Path
+    if (-not (Test-Path -LiteralPath (Join-Path $lvs 'scripts\LibertyVehicleServicesCE.CS'))) { throw "Not an LVS release folder: $lvs" }
+    Copy-Item -LiteralPath (Join-Path $lvs 'scripts\LibertyVehicleServicesCE.CS') -Destination $scriptsStage
+    Copy-Item -LiteralPath (Join-Path $lvs 'scripts\LibertyVehicleServicesCE.ini') -Destination $scriptsStage
+    Copy-Item -LiteralPath (Join-Path $lvs 'scripts\LibertyVehicleServicesCE') -Destination $scriptsStage -Recurse
+    New-Item -ItemType Directory -Force -Path (Join-Path $stage 'plugins') | Out-Null
+    Copy-Item -LiteralPath (Join-Path $lvs 'plugins\000_LVSCE_Dashboard_Bridge.asi') -Destination (Join-Path $stage 'plugins')
+    # MIT requires the licence notice to travel with the files.
+    New-Item -ItemType Directory -Force -Path (Join-Path $scriptsStage 'LibertyVehicleServicesCE') | Out-Null
+    Copy-Item -LiteralPath (Join-Path $lvs 'LICENSE') -Destination (Join-Path $scriptsStage 'LibertyVehicleServicesCE\LICENSE.txt')
+    Copy-Item -LiteralPath (Join-Path $lvs 'CREDITS.md') -Destination (Join-Path $scriptsStage 'LibertyVehicleServicesCE\CREDITS.md')
+}
 
 # Manifest: relative path, SHA-256, and how the installer treats an existing file.
 $entries = @()
@@ -79,6 +102,8 @@ Get-ChildItem -LiteralPath $stage -Recurse -File | Where-Object { $_.FullName -n
     $relative = $_.FullName.Substring($stage.Length + 1)
     $policy = 'replace'
     if ($relative -match '^scripts\\LibertyFramework\\config\\(probe\.json|devtools\\locations\.json)$') { $policy = 'keep-existing' }
+    # The player's own LVS settings survive reinstalls.
+    if ($relative -eq 'scripts\LibertyVehicleServicesCE.ini') { $policy = 'keep-existing' }
     $entries += [ordered]@{ path = $relative; sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash; policy = $policy }
 }
 $manifest = [ordered]@{
