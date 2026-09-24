@@ -19,6 +19,9 @@ namespace LibertyFramework.Gunplay.Profiles
         [DataMember(Name = "weapons", IsRequired = true, Order = 6)] internal List<WeaponProfile> Weapons;
         [DataMember(Name = "tuning", IsRequired = true, Order = 7)] internal List<TuningParameter> Tuning;
         [DataMember(Name = "testRange", IsRequired = true, Order = 8)] internal TestRangeSettings TestRange;
+        [DataMember(Name = "feel", IsRequired = true, Order = 9)] internal FeelSettings Feel;
+        [DataMember(Name = "debugHit", IsRequired = true, Order = 10)] internal DebugHitSettings DebugHit;
+        [DataMember(Name = "switchWhileAiming", IsRequired = true, Order = 11)] internal AimingSwitchSettings SwitchWhileAiming;
 
         internal WeaponProfile FindWeapon(int weaponId)
         {

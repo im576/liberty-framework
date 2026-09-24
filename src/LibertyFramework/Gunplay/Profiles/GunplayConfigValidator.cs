@@ -13,12 +13,16 @@ namespace LibertyFramework.Gunplay.Profiles
             if (config.SchemaVersion != 1) { errors.Add("schemaVersion must be 1"); }
             if (config.FreeAim == null || config.Crosshair == null || config.SpreadCalibration == null ||
                 config.RecoilGlobal == null || config.Movement == null || config.Weapons == null ||
-                config.Tuning == null || config.TestRange == null)
+                config.Tuning == null || config.TestRange == null || config.Feel == null || config.DebugHit == null || config.SwitchWhileAiming == null)
             {
                 throw new InvalidDataException("missing top-level section");
             }
 
             CrosshairSettings crosshair = config.Crosshair;
+            if (config.FreeAim.Profile != "vanilla" && config.FreeAim.Profile != "free")
+            {
+                errors.Add("freeAim.profile must be vanilla or free; slowdown and light need a verified CE assist control (T-014)");
+            }
             Positive(errors, "crosshair.lineLengthPixels", crosshair.LineLengthPixels);
             Positive(errors, "crosshair.lineThicknessPixels", crosshair.LineThicknessPixels);
             NonNegative(errors, "crosshair.outlinePixels", crosshair.OutlinePixels);
@@ -38,6 +42,17 @@ namespace LibertyFramework.Gunplay.Profiles
             NonNegative(errors, "spreadCalibration.minimumAccuracyValue", calibration.MinimumAccuracyValue);
 
             RecoilGlobalSettings recoil = config.RecoilGlobal;
+            Positive(errors, "debugHit.scanRadiusMeters", config.DebugHit.ScanRadiusMeters);
+            Positive(errors, "debugHit.worldClassificationDelayMilliseconds", config.DebugHit.WorldClassificationDelayMilliseconds);
+            AimingSwitchSettings cycling = config.SwitchWhileAiming;
+            if ((cycling.PreviousButton != "DPadLeft" && cycling.PreviousButton != "DPadRight") ||
+                (cycling.NextButton != "DPadLeft" && cycling.NextButton != "DPadRight") ||
+                cycling.PreviousButton == cycling.NextButton)
+            { errors.Add("switchWhileAiming needs distinct DPadLeft/DPadRight buttons"); }
+            NonNegative(errors, "feel.shakePitchDegrees", config.Feel.ShakePitchDegrees);
+            NonNegative(errors, "feel.shakeHeadingDegrees", config.Feel.ShakeHeadingDegrees);
+            NonNegative(errors, "feel.aimFovReductionDegrees", config.Feel.AimFovReductionDegrees);
+            Positive(errors, "feel.fovSmoothingPerSecond", config.Feel.FovSmoothingPerSecond);
             if (recoil.RecoveryCancelStickThreshold <= 0 || recoil.RecoveryCancelStickThreshold > 1) { errors.Add("recoilGlobal.recoveryCancelStickThreshold must be in (0,1]"); }
             Positive(errors, "recoilGlobal.cameraValidationToleranceDegrees", recoil.CameraValidationToleranceDegrees);
             if (recoil.CameraValidationSamples < 1) { errors.Add("recoilGlobal.cameraValidationSamples must be >= 1"); }

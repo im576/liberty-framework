@@ -13,6 +13,7 @@ Polled every second; a valid change is applied live. DevTools "Save live values"
 | Section / field | Unit | Meaning |
 |---|---|---|
 | `freeAim.enabledOnStartup` | bool | start with universal free aim on |
+| `freeAim.profile` | `vanilla` / `free` | config-selected aim mode; `slowdown` and `light` are rejected until a verified CE control exists |
 | `freeAim.disableLockOn` / `forceAutoAimOff` / `hideTargetHealth` | bool | lock-on native, menu Auto-Aim pref, health/armour ring |
 | `crosshair.replaceVanillaReticle` | bool | hide vanilla reticle and draw the LF crosshair |
 | `crosshair.showForVanillaWeapons` | bool | LF crosshair also on non-test guns (static, from their own accuracy) |
@@ -29,6 +30,10 @@ Polled every second; a valid change is applied live. DevTools "Save live values"
 | `recoilGlobal.recoveryCancelStickThreshold` | 0–1 stick | right-stick deflection that hands recovery to the player |
 | `recoilGlobal.cameraValidationToleranceDegrees`, `cameraValidationSamples` | deg, count | aim-field validation before the first write |
 | `recoilGlobal.maximumDeltaSeconds` | s | frame-time clamp |
+| `feel.enabled`, `shakePitchDegrees`, `shakeHeadingDegrees` | bool, deg | registered test-weapon per-shot jitter applied after recoil through the validated aim camera |
+| `feel.aimFovReductionDegrees`, `fovSmoothingPerSecond` | deg, 1/s | test-weapon aiming field-of-view reduction and easing |
+| `debugHit.scanRadiusMeters`, `worldClassificationDelayMilliseconds` | m, ms | nearby entity scan and delay before a non-damaging shot is shown as world/unknown |
+| `switchWhileAiming.enabled`, `previousButton`, `nextButton` | bool, `DPadLeft` / `DPadRight` | select only T-020 carried weapons via SHDN while aim is held; controller bindings must differ |
 | `movement.movingSpeedThresholdMetersPerSecond`, `fullMovementPenaltySpeedMetersPerSecond` | m/s | movement penalty ramp |
 | `weapons[]` | — | registered test weapons (IDs 58+ only); see below |
 | `tuning[]` | key, step, min, max | parameters exposed in DevTools Live Tuning |
@@ -51,3 +56,11 @@ Polled every second; a valid change is applied live. DevTools "Save live values"
 ## Build-time: assets/finishes/finishes.json
 
 Finish colour ramps (`shadowRgb`, `midRgb`, `highlightRgb`, `contrast`, `lift`, `gamma`) per texture role (`diffuse`, `specular`, `icon`) and model variants (`variantModel`, `baseModel`, `sourceImg`, `finish`, `animGroup`, `drawDistance`, `audioMaterial`, `weaponInfoType`, `textureRoles`). Add a finish or a weapon variant here and rerun `tools/package-phase1.ps1`.
+
+## holsters.json (T-021)
+
+`schemaVersion: 1`, `enabled`, `showOnBikes`, `nudgePositionMeters`, `nudgeRotationDegrees`, `weapons[]` (`weaponId`, `weaponInfoType`, `category` numeric `WeaponCategory`), and `placements[]` (`slot`, ScriptHookDotNet `bone`, `position` in meters XYZ, `rotation` in degrees XYZ). A placement can optionally specify `category` and/or `model` to override a slot default. `weaponInfoType` selects the active WeaponInfo.xml entry, whose `<assets model>` determines the prop. The starting offsets require visual calibration in game; DevTools saves changes with a `.bak`.
+
+## T-011 finish variants
+
+`lf_gold_carbine` uses `w_m4` diffuse `bm_m4a1`, specular `bm_m4a1_s`, and `icon`; `lf_gold_shotgun` uses `w_shotgun` diffuse `cj_shotgun_comp`, specular `cj_shotgun_comp_s`, and `icon`. Their normal maps are retained.

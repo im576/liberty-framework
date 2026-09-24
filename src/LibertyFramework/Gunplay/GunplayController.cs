@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using GTA;
+using LibertyFramework.Arsenal.Contracts;
 using LibertyFramework.Core.Config;
 using LibertyFramework.Core.Input;
 using LibertyFramework.Core.Logging;
@@ -12,6 +13,7 @@ using LibertyFramework.Core.Memory;
 using LibertyFramework.GameApi;
 using LibertyFramework.Gunplay.Aim;
 using LibertyFramework.Gunplay.Crosshair;
+using LibertyFramework.Gunplay.Logic;
 using LibertyFramework.Gunplay.Profiles;
 using LibertyFramework.Gunplay.Recoil;
 using LibertyFramework.Gunplay.Spread;
@@ -40,6 +42,8 @@ namespace LibertyFramework.Gunplay
         private readonly SpreadCalibrator calibrator = new SpreadCalibrator();
         private readonly CrosshairRenderer crosshair = new CrosshairRenderer();
         private readonly Dictionary<int, ShotAuditStats> audits = new Dictionary<int, ShotAuditStats>();
+        private readonly DebugHitTracker debugHit = new DebugHitTracker();
+        private readonly Random feelRandom = new Random();
 
         private bool initialized;
         private bool disabled;
@@ -85,6 +89,19 @@ namespace LibertyFramework.Gunplay
         private double pixelsPerTangent;
         private bool loggedProjection;
         private bool drawFailed;
+        private bool feelDisabled;
+        private GTA.Camera feelCamera;
+        private int feelCameraHandle;
+        private float originalFov;
+        private bool fovApplied;
+        private bool fovRecovered;
+        private readonly string fovStatePath = Path.Combine(LibertyPaths.StateDirectory, "feel_fov_restore.json");
+        private bool debugHitDisabled;
+        private bool aimingSwitchDisabled;
+        private double lastFireMilliseconds = double.NegativeInfinity;
+        private double fireIntervalMilliseconds;
+        private string configuredAimProfile;
+        private bool configuredAimStartup;
 
         internal bool FreeAimEnabled;
         internal bool CrosshairEnabled = true;
@@ -99,7 +116,9 @@ namespace LibertyFramework.Gunplay
             Interval = 0;
             store = new GunplayConfigStore(LibertyPaths.GunplayConfig, RuntimeLog.Info, RuntimeLog.Error);
             store.Poll(true);
-            FreeAimEnabled = store.Active != null && store.Active.FreeAim.EnabledOnStartup;
+            FreeAimEnabled = store.Active != null && store.Active.FreeAim.Profile == "free" && store.Active.FreeAim.EnabledOnStartup;
+            configuredAimProfile = store.Active != null ? store.Active.FreeAim.Profile : null;
+            configuredAimStartup = store.Active != null && store.Active.FreeAim.EnabledOnStartup;
             Tick += OnTick;
             PerFrameDrawing += OnDraw;
             AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
@@ -135,17 +154,35 @@ namespace LibertyFramework.Gunplay
                     store.Poll(false);
                     config = store.Active;
                 }
+                if (config.FreeAim.Profile != configuredAimProfile || config.FreeAim.EnabledOnStartup != configuredAimStartup)
+                {
+                    configuredAimProfile = config.FreeAim.Profile;
+                    configuredAimStartup = config.FreeAim.EnabledOnStartup;
+                    FreeAimEnabled = config.FreeAim.Profile == "free" && config.FreeAim.EnabledOnStartup;
+                }
 
                 Player player = Player;
                 if (player == null || player.Character == null || !Natives.IsPlayerPlaying(player))
                 {
                     drawCrosshair = false;
+                    RestoreFeel();
                     return;
+                }
+                if (!fovRecovered)
+                {
+                    try { RecoverFeel(); }
+                    catch (Exception error) { feelDisabled = true; RuntimeLog.Error("feel_fov_recovery_failed error=" + error); }
+                    fovRecovered = true;
                 }
                 if (!initialized) { Initialize(config); }
                 playerIndex = Natives.PlayerIndex();
                 playerPed = playerMemory != null ? playerMemory.PedPointer(playerIndex) : 0;
                 controller.Poll();
+                if (!aimingSwitchDisabled)
+                {
+                    try { CycleWhileAiming(player.Character, config); }
+                    catch (Exception error) { aimingSwitchDisabled = true; RuntimeLog.Error("feature_disabled switch_while_aiming error=" + error); }
+                }
 
                 try { UpdateFreeAim(player, config); }
                 catch (Exception error)
@@ -166,6 +203,12 @@ namespace LibertyFramework.Gunplay
 
                 SampleState(ped);
                 int shots = DetectShots(ped, weaponId);
+                if (DebugOverlay && shots > 0)
+                {
+                    if (lastFireMilliseconds > 0) { fireIntervalMilliseconds = (now - lastFireMilliseconds) / shots; }
+                    lastFireMilliseconds = now;
+                    debugHit.NoteShot(now);
+                }
                 if (activeProfile != null && shots > 0)
                 {
                     double recoilMultiplier = RecoilMultiplier.For(activeProfile.Recoil, config.Movement, state);
@@ -206,6 +249,20 @@ namespace LibertyFramework.Gunplay
                 catch (Exception error) { DisableSpread(error); }
                 try { UpdateRecoil(config, now, deltaSeconds, aimCam, gameCamera); }
                 catch (Exception error) { DisableCamera(error); }
+                try { UpdateFeel(config, shots, deltaSeconds, aimCam, gameCamera); }
+                catch (Exception error)
+                {
+                    RuntimeLog.Error("feature_disabled feel error=" + error);
+                    feelDisabled = true;
+                    try { RestoreFeel(); }
+                    catch (Exception restoreError) { RuntimeLog.Error("restore_feel_failed error=" + restoreError); }
+                }
+                if (DebugOverlay && !debugHitDisabled)
+                {
+                    try { debugHit.Sample(ped, config.DebugHit.ScanRadiusMeters, now, config.DebugHit.WorldClassificationDelayMilliseconds); }
+                    catch (Exception error) { debugHitDisabled = true; debugHit.Reset(); RuntimeLog.Error("feature_disabled debug_hit error=" + error); }
+                }
+                else { debugHit.Reset(); }
                 try { UpdateReticle(config, ped); }
                 catch (Exception error) { DisableHud(error); }
 
@@ -297,8 +354,9 @@ namespace LibertyFramework.Gunplay
         private void UpdateFreeAim(Player player, GunplayConfig config)
         {
             if (freeAim == null) { return; }
-            if (FreeAimEnabled && !freeAim.Active) { freeAim.Enable(playerIndex); }
-            else if (!FreeAimEnabled && freeAim.Active) { freeAim.Disable(player); }
+            bool enabled = config.FreeAim.Profile == "free" && FreeAimEnabled;
+            if (enabled && !freeAim.Active) { freeAim.Enable(playerIndex); }
+            else if (!enabled && freeAim.Active) { freeAim.Disable(player); }
             freeAim.Update(player, playerIndex, config.FreeAim);
         }
 
@@ -311,6 +369,30 @@ namespace LibertyFramework.Gunplay
             recoil.Reset();
             spread.Reset();
             crosshair.Reset();
+            lastFireMilliseconds = double.NegativeInfinity;
+            fireIntervalMilliseconds = 0;
+        }
+
+        private void CycleWhileAiming(Ped ped, GunplayConfig config)
+        {
+            if (!config.SwitchWhileAiming.Enabled || LibertyFramework.DevTools.DevToolsMenu.IsOpen ||
+                !Game.isGameKeyPressed(GameKey.Aim) || ped.isInVehicle()) { return; }
+            int direction = controller.WasPressed(config.SwitchWhileAiming.NextButton == "DPadRight" ? ControllerInput.DPadRight : ControllerInput.DPadLeft) ? 1 :
+                controller.WasPressed(config.SwitchWhileAiming.PreviousButton == "DPadRight" ? ControllerInput.DPadRight : ControllerInput.DPadLeft) ? -1 : 0;
+            if (direction == 0) { return; }
+            ICarriedWeaponsSource source = ArsenalRegistry.CarriedWeapons;
+            if (source == null || source.Carried == null) { return; }
+            List<int> candidates = new List<int>();
+            foreach (CarriedWeapon weapon in source.Carried)
+            {
+                if (weapon == null || weapon.WeaponId <= 0 || candidates.Contains(weapon.WeaponId)) { continue; }
+                if (ped.Weapons.FromType((Weapon)weapon.WeaponId).isPresent) { candidates.Add(weapon.WeaponId); }
+            }
+            if (candidates.Count < 2) { return; }
+            int current = (int)ped.Weapons.CurrentType;
+            int selected = AimingCycleRules.NextWeapon(candidates, current, direction);
+            ped.Weapons.Select((Weapon)selected);
+            RuntimeLog.Info("aiming_cycle from=" + current + " to=" + selected + " count=" + candidates.Count);
         }
 
         private void SampleState(Ped ped)
@@ -416,6 +498,7 @@ namespace LibertyFramework.Gunplay
             double shown = profile != null ? displayConeDegrees : currentConeDegrees;
             foreach (BulletLog.Trace trace in traces)
             {
+                if (DebugOverlay) { debugHit.LastTraceDistanceMeters = (trace.End - trace.Start).Length; }
                 double deviation = ShotGeometry.DeviationDegrees(cameraPosition, forward, trace.Start, trace.End);
                 if (double.IsNaN(deviation)) { continue; }
                 stats.Add(deviation, shown);
@@ -527,6 +610,78 @@ namespace LibertyFramework.Gunplay
             aimCamera.AddDegrees(aimCam, step.PitchDegrees, step.HeadingDegrees);
         }
 
+        // T-017: a small transient kick follows the recoil step, so the latter retains its
+        // predictable pattern. The FOV is saved once on entry and restored on exit/error.
+        private void UpdateFeel(GunplayConfig config, int shots, double deltaSeconds, uint aimCam, int gameCamera)
+        {
+            if (feelDisabled) { return; }
+            FeelSettings settings = config.Feel;
+            bool active = settings.Enabled && activeProfile != null && aiming && !state.InVehicle &&
+                !LibertyFramework.DevTools.DevToolsMenu.IsOpen && aimCam != 0 && aimCamera != null && aimCamera.Validated;
+            if (!active) { RestoreFeel(); return; }
+            if (shots > 0)
+            {
+                double pitch = (feelRandom.NextDouble() * 2 - 1) * settings.ShakePitchDegrees * shots;
+                double heading = (feelRandom.NextDouble() * 2 - 1) * settings.ShakeHeadingDegrees * shots;
+                aimCamera.AddDegrees(aimCam, pitch, heading);
+            }
+            GTA.Camera camera = Game.CurrentCamera;
+            if (camera == null) { return; }
+            if (!fovApplied || feelCameraHandle != gameCamera)
+            {
+                RestoreFeel();
+                feelCamera = camera;
+                feelCameraHandle = gameCamera;
+                originalFov = camera.FOV;
+                fovApplied = true;
+                SaveFeelState();
+            }
+            if (originalFov <= settings.AimFovReductionDegrees) { return; }
+            double desired = originalFov - settings.AimFovReductionDegrees;
+            double fraction = Math.Min(1, Math.Max(0, deltaSeconds * settings.FovSmoothingPerSecond));
+            camera.FOV = (float)(camera.FOV + (desired - camera.FOV) * fraction);
+        }
+
+        private void RestoreFeel()
+        {
+            if (!fovApplied) { return; }
+            fovApplied = false;
+            GTA.Camera camera = feelCamera;
+            feelCamera = null;
+            feelCameraHandle = 0;
+            if (camera != null && camera.Exists()) { camera.FOV = originalFov; }
+            if (File.Exists(fovStatePath)) { File.Delete(fovStatePath); }
+        }
+
+        private void SaveFeelState()
+        {
+            using (Process process = Process.GetCurrentProcess())
+            {
+                FeelFovRestoreState state = new FeelFovRestoreState();
+                state.ProcessId = process.Id;
+                state.ProcessStartUtcTicks = process.StartTime.ToUniversalTime().Ticks;
+                state.CameraHandle = feelCameraHandle;
+                state.OriginalFov = originalFov;
+                JsonStore.Save(fovStatePath, state);
+            }
+        }
+
+        private void RecoverFeel()
+        {
+            if (!File.Exists(fovStatePath)) { return; }
+            FeelFovRestoreState state = JsonStore.Load<FeelFovRestoreState>(fovStatePath);
+            using (Process process = Process.GetCurrentProcess())
+            {
+                if (state.ProcessId == process.Id && state.ProcessStartUtcTicks == process.StartTime.ToUniversalTime().Ticks &&
+                    state.CameraHandle == Natives.GameCamHandle() && Game.CurrentCamera != null)
+                {
+                    Game.CurrentCamera.FOV = state.OriginalFov;
+                    RuntimeLog.Info("feel_fov_recovered fov=" + state.OriginalFov);
+                }
+            }
+            File.Delete(fovStatePath);
+        }
+
         private void UpdateReticle(GunplayConfig config, Ped ped)
         {
             // After a drawing failure the LF crosshair is gone, so the vanilla reticle comes back.
@@ -616,6 +771,8 @@ namespace LibertyFramework.Gunplay
             else { lines.Add("Audit no bullets measured yet for this weapon"); }
             lines.Add("Recoil chain=" + recoil.ChainShots + " climb=" + recoil.AccumulatedPitchDegrees.ToString("0.00") + " recoverable=" +
                 recoil.RecoverablePitchDegrees.ToString("0.00") + " last_kick=" + recoil.LastKickPitchDegrees.ToString("0.00"));
+            lines.Add("Hit " + (debugHitDisabled ? "unavailable" : debugHit.LastHit) + "  fire=" +
+                (fireIntervalMilliseconds > 0 ? fireIntervalMilliseconds.ToString("0") + "ms / " + (60000.0 / fireIntervalMilliseconds).ToString("0") + " RPM" : "waiting"));
             lines.Add("Camera " + (aimCamera == null ? "none" : aimCamera.Name + " " + (aimCamera.Validated ? "validated" : aimCamera.Rejected ? "REJECTED" : "validating")) +
                 "  kick=" + (config != null && KickReady(config) ? "on" : "off") + (realRecoilPresent ? "  REAL RECOIL DETECTED" : ""));
             lines.Add("Engine prefs=" + (prefs != null) + " lockon=" + (playerMemory != null) + " hud=" + (hud != null) + " weaponinfo=" +
@@ -649,6 +806,8 @@ namespace LibertyFramework.Gunplay
             disabled = true;
             disabledReason = error.GetType().Name;
             RuntimeLog.Error("gunplay_disabled error=" + error);
+            try { RestoreFeel(); }
+            catch (Exception restoreError) { RuntimeLog.Error("restore_feel_failed error=" + restoreError); }
             RestoreEngine(SafePlayer());
         }
 
@@ -656,6 +815,8 @@ namespace LibertyFramework.Gunplay
         // so a failing native (or none at process exit) can never leave the Auto-Aim pref or reticle altered.
         private void RestoreEngine(Player player)
         {
+            // At unload only memory restores are legal; FOV is restored on the preceding tick
+            // when aim ends. Process exit discards the engine camera instance.
             try { if (weaponInfo != null) { weaponInfo.RestoreAll(); } }
             catch (Exception error) { RuntimeLog.Error("restore_weaponinfo_failed error=" + error.Message); }
             try { if (hud != null) { hud.RestoreAll(); } }
