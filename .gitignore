@@ -1,0 +1,18 @@
+# Local game files, binaries, logs, and editor state
+bin/
+obj/
+.vs/
+.vscode/
+*.user
+*.suo
+*.log
+*.asi
+*.dll
+*.exe
+*.pdb
+*.wtd
+*.wdr
+*.img
+*.rpf
+*.bak
+*.tmp
