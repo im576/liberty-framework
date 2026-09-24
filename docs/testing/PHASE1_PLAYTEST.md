@@ -71,3 +71,7 @@ For each numbered section: pass / fail / notes. Attach `scripts\LibertyFramework
 ## Rollback (game closed)
 
 `.\tools\rollback-phase1.ps1 -GameDirectory 'D:\SteamLibrary\steamapps\common\Grand Theft Auto IV\GTAIV'` restores every replaced file from the newest phase1 backup and removes added files. If the script cannot run, copy back the `scripts` and `update` folders you saved in step 0. Afterwards check Settings > Controls > Auto-Aim once (LF restores it automatically, but a crash during the session could have left it Off).
+
+## 11. Agent B Feel and Presentation extension (T-011/T-013/T-014/T-016/T-017/T-021)
+
+Use the individual task cards for exact controls and observations. In one session, inspect both new gold finishes and HUD icons; cycle the carried loadout while holding aim; check holster visibility at every body slot, in a car/bike, after death/bust and after ReloadScripts; compare free and vanilla aim profiles; shoot a ped, vehicle and wall with the debug overlay on; compare gold versus vanilla shake/FOV. Report camera interruption, prop clipping and any failed restore. T-015 shoulder swap is blocked pending a validated CE camera offset control.
