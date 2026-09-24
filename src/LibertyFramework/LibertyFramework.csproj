@@ -34,6 +34,7 @@
     <Compile Include="Core\Config\ProbeConfig.cs" />
     <Compile Include="Core\Config\ProbeConfigLoader.cs" />
     <Compile Include="DevTools\DevToolsMenu.cs" />
+    <Compile Include="WeaponProbe\WeaponSlotProbe.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -18,3 +18,7 @@ For the remaining live reload test, launch GTA IV once and load gameplay, then r
 ## T-003 DevTools menu
 
 Build with the same command. The new DLL adds a separate read-only menu script. After GTA IV closes, deploy with the guarded `deploy-t002.ps1` command above; it backs up the installed DLL and preserves the current config. Follow [T-003's test steps](../docs/tasks/T-003-devtools-menu.md) during the next game session. Do not copy the DLL while GTA IV is running.
+
+## T-007 custom weapon identity probe
+
+`./tools/prepare-t007.ps1 -GameDirectory '<GTAIV folder>'` generates an ignored, local-only `staging/t007/WeaponInfo.xml` by cloning the installed vanilla pistol entry as `LF_GOLD_PISTOL`. The model and stats remain vanilla for the identity test. After closing the game, rebuild the DLL, deploy it with `deploy-t002.ps1`, and run `deploy-t007.ps1`. The installer refuses to overwrite an existing weapon override or install while the game runs. `remove-t007.ps1` removes only a hash-matching T-007 override while the game is closed. See [T-007](../docs/tasks/T-007-weapon-slots.md) for console commands and test steps.
