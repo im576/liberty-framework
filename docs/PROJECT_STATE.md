@@ -5,24 +5,26 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
-**Phase 0 — Research and environment.** T-000's baseline, T-001's runtime/reload and post-install pistol checks, and T-002's live config checks have passed owner playtests. T-003's read-only DevTools menu and T-007's custom pistol identity probe are built offline and await one guarded installation after GTA IV closes. No gold weapon behavior is implemented. The custom weapon identity is not yet verified in-game.
+**Phase 0 — Research and environment.** T-000's baseline, T-001's runtime/reload and post-install pistol checks, and T-002's live config checks have passed owner playtests. T-003 opened and navigated with the controller, but D-pad navigation also opened the phone. T-007 selected the custom pistol as ID 58; the owner confirmed aim, fire, reload, cover, vehicle, and save/load worked. The custom pistol replaced the vanilla pistol in the handgun inventory. A revised menu that suppresses gameplay controls and exposes weapon actions is built locally for installation while GTA IV is closed. Menu switching and ammo transfer remain unverified.
 
 ## Key decisions (see `docs/architecture/decisions/`)
 
 - ADR-0001: CE + FusionFix + Tomasak ScriptHookDotNet 1.7.1.8 loads an x86 .NET Framework 4.0 C# probe and reloads successfully. No downgrade.
-- ADR-0002: FusionFix v5.0.1 ExtendedLimits provides candidate custom weapon IDs starting at 58; T-007 must prove selection and coexistence in this game. Unused episodic slots are deferred.
+- ADR-0002: FusionFix v5.0.1 ExtendedLimits assigned the custom pistol ID 58. It replaced the vanilla pistol in the handgun inventory; a deliberate switch is needed. Unused episodic slots are deferred.
 - ADR-0003: T-002 implements a JSON sample with live polling and last-valid retention; live log and gameplay checks passed.
 
 ## Verified in-game (by the human tester)
 
 - 2026-09-24 (tester report and fresh logs): Steam Complete Edition exe 1.2.0.59 and FusionFix 5.0.1 reach gameplay. Tomasak ScriptHookDotNet 1.7.1.8 loads the probe; startup, heartbeats, domain unload, and restart after `ReloadScripts` were logged, and gameplay continued. Bluetooth DualSense through a Steam Input community layout; in-game auto aim on. With the runtime installed, vanilla pistol aim, fire, reload, cover and vehicle shooting, and save/load passed. See [T-000](tasks/T-000-baseline.md) and [T-001](tasks/T-001-runtime-spike.md).
+- 2026-09-24 (tester report, screenshot, and fresh logs): The first DevTools panel opened, navigated, and closed with the controller; D-pad navigation also opened the phone. `LFWeaponGive` selected custom ID 58, and the vanilla handgun presence changed from true to false. Game heartbeats continued. Candidate firing and save/load have not been confirmed.
+- 2026-09-24 (tester report): The custom ID 58 pistol passed aim, fire, reload, cover, vehicle, and save/load checks; GTA IV was then closed for the revised menu install.
 
 ## Open questions (blockers for later tasks)
 
 | # | Question | Resolved by |
 |---|---|---|
 | Q1 | Resolved: ScriptHookDotNet 1.7.1.8 loads an x86 .NET Framework 4.0 DLL on CE 1.2.0.59 with FusionFix; reload succeeds. The maximum usable C# language level is not established. | T-001 |
-| Q2 | Can FusionFix's custom weapon registration hold a distinct pistol/carbine/shotgun, and do same-category weapons coexist in inventory? | T-007 |
+| Q2 | Resolved for the first pistol: custom ID 58 selects and passes core gameplay/save/load, but removes the vanilla pistol from the same handgun inventory slot. Can a controller-driven switch preserve total ammo without control conflicts? | T-007 |
 | Q3 | How can lock-on / target snapping / reticle health ring be disabled **per weapon**? | T-008 |
 | Q4 | Which API actually moves the aim camera (pitch/yaw) for recoil kick on CE — a native, a SHDN wrapper, or memory? | T-009 |
 | Q5 | How to hide the vanilla reticle so we can draw our own crosshair? | T-008 |
@@ -30,6 +32,8 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Changelog
 
+- 2026-09-24 — Owner confirmed all candidate pistol behavior checks passed. Added total-ammo transfer to the revised menu's handgun switch; x86 build passed while GTA IV was closed. Clip state and menu switch behavior remain unverified.
+- 2026-09-24 — After live feedback, added Weapon Status/Give Test Pistol/Give Vanilla Pistol to DevTools with confirmation for give actions. Revised menu temporarily disables player controls while open to prevent D-pad phone input; local x86 build passed, live test pending. No files under the running game were changed.
 - 2026-09-24 — Found FusionFix v5.0.1's custom weapon registration at ID 58+, with ExtendedLimits already enabled. Staged a cloned pistol definition under LF_GOLD_PISTOL and built diagnostic console commands. XML parsing and game-running deployment guard passed; no game files changed. Awaiting combined T-003/T-007 playtest.
 - 2026-09-24 — Built T-003's read-only DevTools menu for x86 with zero errors/warnings. L3+R3 and D-pad input paths are prepared but unverified in-game; existing game files were not changed while GTA IV ran.
 - 2026-09-24 — Owner confirmed all remaining pistol, vehicle, and save/load baseline checks passed with the runtime installed; T-000 and T-001 are DONE.

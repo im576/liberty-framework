@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using GTA;
 using LibertyFramework.Core.Logging;
+using LibertyFramework.WeaponProbe;
 
 namespace LibertyFramework.DevTools
 {
@@ -13,18 +14,26 @@ namespace LibertyFramework.DevTools
         private const ushort DPadDown = 0x0002;
         private const ushort LeftThumb = 0x0040;
         private const ushort RightThumb = 0x0080;
+        private const ushort AButton = 0x1000;
         private const int ChordHoldMilliseconds = 700;
-        private static readonly string[] Categories = { "RUNTIME", "CONFIG", "HELP" };
+        private static readonly string[] Categories = {
+            "RUNTIME", "CONFIG", "WEAPON STATUS", "GIVE TEST PISTOL", "GIVE VANILLA PISTOL", "HELP"
+        };
         private readonly GTA.Font font;
         private bool disabled;
         private bool open;
+        private bool controlLocked;
+        private bool controllerConnected;
         private bool previousToggle;
         private bool previousUp;
         private bool previousDown;
+        private bool previousActivate;
         private bool chordTriggered;
         private bool xinputAvailable = true;
         private DateTime chordStartUtc;
         private int selectedCategory;
+        private int pendingConfirmation = -1;
+        private string lastActionMessage = "";
 
         [StructLayout(LayoutKind.Sequential)]
         private struct XInputState
@@ -49,14 +58,27 @@ namespace LibertyFramework.DevTools
             font.Color = Color.White;
             Tick += OnTick;
             PerFrameDrawing += OnDraw;
+            AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
             RuntimeLog.Info("devtools_started");
         }
 
         private void OnTick(object sender, EventArgs args)
         {
-            if (disabled) { return; }
+            if (disabled)
+            {
+                if (controlLocked)
+                {
+                    try { RestorePlayerControl(); }
+                    catch (Exception restoreError)
+                    {
+                        RuntimeLog.Error("devtools_control_restore_failed error=" + restoreError);
+                    }
+                }
+                return;
+            }
             try
             {
+                if (!open && controlLocked) { RestorePlayerControl(); }
                 ushort controllerButtons = ReadControllerButtons();
                 bool toggle = Game.isKeyPressed(Keys.F10);
                 if (toggle && !previousToggle)
@@ -89,19 +111,27 @@ namespace LibertyFramework.DevTools
                     Game.isGameKeyPressed(GameKey.NavUp);
                 bool down = Game.isKeyPressed(Keys.Down) || (controllerButtons & DPadDown) != 0 ||
                     Game.isGameKeyPressed(GameKey.NavDown);
+                bool activate = Game.isKeyPressed(Keys.Enter) || (controllerButtons & AButton) != 0 ||
+                    Game.isGameKeyPressed(GameKey.NavEnter);
                 if (open)
                 {
                     if (up && !previousUp)
                     {
                         selectedCategory = (selectedCategory + Categories.Length - 1) % Categories.Length;
+                        pendingConfirmation = -1;
+                        lastActionMessage = "";
                     }
                     if (down && !previousDown)
                     {
                         selectedCategory = (selectedCategory + 1) % Categories.Length;
+                        pendingConfirmation = -1;
+                        lastActionMessage = "";
                     }
+                    if (activate && !previousActivate) { ActivateSelection(); }
                 }
                 previousUp = up;
                 previousDown = down;
+                previousActivate = activate;
             }
             catch (Exception error)
             {
@@ -117,8 +147,13 @@ namespace LibertyFramework.DevTools
                 for (uint index = 0; index < 4; index++)
                 {
                     XInputState state;
-                    if (XInputGetState(index, out state) == 0) { return state.Buttons; }
+                    if (XInputGetState(index, out state) == 0)
+                    {
+                        controllerConnected = true;
+                        return state.Buttons;
+                    }
                 }
+                controllerConnected = false;
                 return 0;
             }
             catch (DllNotFoundException error)
@@ -143,8 +178,62 @@ namespace LibertyFramework.DevTools
 
         private void ToggleMenu()
         {
-            open = !open;
-            RuntimeLog.Info("devtools_menu_" + (open ? "opened" : "closed"));
+            if (open)
+            {
+                open = false;
+                pendingConfirmation = -1;
+                RestorePlayerControl();
+                RuntimeLog.Info("devtools_menu_closed");
+                return;
+            }
+
+            if (Player != null && Player.CanControlCharacter)
+            {
+                controlLocked = true;
+                Player.CanControlCharacter = false;
+            }
+            open = true;
+            RuntimeLog.Info("devtools_menu_opened controller_connected=" + controllerConnected +
+                " player_control_locked=" + controlLocked);
+        }
+
+        private void RestorePlayerControl()
+        {
+            if (!controlLocked) { return; }
+            if (Player == null) { return; }
+            Player.CanControlCharacter = true;
+            controlLocked = false;
+        }
+
+        private void ActivateSelection()
+        {
+            if (selectedCategory < 2 || selectedCategory == 5) { return; }
+            if ((selectedCategory == 3 || selectedCategory == 4) &&
+                pendingConfirmation != selectedCategory)
+            {
+                pendingConfirmation = selectedCategory;
+                lastActionMessage = "Press Cross/A again to confirm";
+                return;
+            }
+
+            pendingConfirmation = -1;
+            try
+            {
+                string result = selectedCategory == 2 ? WeaponSlotProbe.ReportStatus(Player) :
+                    selectedCategory == 3 ? WeaponSlotProbe.SelectCandidate(Player) :
+                    WeaponSlotProbe.SelectVanilla(Player);
+                lastActionMessage = result.Replace("T-007 weapon status ", "")
+                    .Replace("current_id", "ID")
+                    .Replace("candidate_present", "test")
+                    .Replace("vanilla_present", "vanilla")
+                    .Replace("handgun_ammo", "ammo");
+                RuntimeLog.Info("devtools_action=" + Categories[selectedCategory]);
+            }
+            catch (Exception error)
+            {
+                lastActionMessage = "Weapon action failed; see log";
+                RuntimeLog.Error("devtools_weapon_action_failed error=" + error);
+            }
         }
 
         private void OnDraw(object sender, GraphicsEventArgs args)
@@ -153,26 +242,33 @@ namespace LibertyFramework.DevTools
             try
             {
                 args.Graphics.Scaling = FontScaling.Pixel;
-                args.Graphics.DrawRectangle(new RectangleF(36, 80, 340, 224), Color.FromArgb(195, 8, 12, 18));
-                args.Graphics.DrawText("LIBERTY DEVTOOLS", new RectangleF(52, 94, 300, 28),
+                args.Graphics.DrawRectangle(new RectangleF(36, 80, 470, 365), Color.FromArgb(195, 8, 12, 18));
+                args.Graphics.DrawText("LIBERTY DEVTOOLS", new RectangleF(52, 94, 430, 28),
                     TextAlignment.Left, font);
                 for (int index = 0; index < Categories.Length; index++)
                 {
                     float y = 132 + (index * 32);
                     if (index == selectedCategory)
                     {
-                        args.Graphics.DrawRectangle(new RectangleF(48, y - 2, 312, 29),
+                        args.Graphics.DrawRectangle(new RectangleF(48, y - 2, 442, 29),
                             Color.FromArgb(120, 190, 145, 35));
                     }
-                    args.Graphics.DrawText(Categories[index], new RectangleF(58, y, 292, 25),
+                    args.Graphics.DrawText(Categories[index], new RectangleF(58, y, 418, 25),
                         TextAlignment.Left, font);
                 }
 
                 string detail = selectedCategory == 0 ? "Runtime: active" :
                     selectedCategory == 1 ? "Probe: " + RuntimeProbe.ActiveProbeLabel :
-                    "L3+R3: toggle  D-pad: select";
-                args.Graphics.DrawText(detail, new RectangleF(52, 248, 308, 30),
+                    selectedCategory == 5 ? "L3+R3 close; D-pad move; Cross/A select" :
+                    lastActionMessage.Length > 0 ? lastActionMessage :
+                    "Press Cross/A to inspect or select";
+                args.Graphics.DrawText(detail, new RectangleF(52, 330, 430, 72),
                     TextAlignment.Left, font);
+                string footer = controllerConnected ?
+                    "Controller ready; F10 and keyboard also work" :
+                    "Controller not detected; F10 and keyboard work";
+                args.Graphics.DrawText(footer,
+                    new RectangleF(52, 410, 430, 26), TextAlignment.Left, font);
             }
             catch (Exception error)
             {
@@ -184,7 +280,15 @@ namespace LibertyFramework.DevTools
         {
             open = false;
             disabled = true;
+            try { RestorePlayerControl(); }
+            catch (Exception restoreError) { RuntimeLog.Error("devtools_control_restore_failed error=" + restoreError); }
             RuntimeLog.Error("devtools_disabled error=" + error);
+        }
+
+        private void OnDomainUnload(object sender, EventArgs args)
+        {
+            try { RestorePlayerControl(); }
+            catch (Exception error) { RuntimeLog.Error("devtools_control_restore_failed error=" + error); }
         }
     }
 }
