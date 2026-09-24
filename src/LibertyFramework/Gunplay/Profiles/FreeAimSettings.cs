@@ -12,5 +12,6 @@ namespace LibertyFramework.Gunplay.Profiles
         [DataMember(Name = "disableLockOn", IsRequired = true)] internal bool DisableLockOn;
         [DataMember(Name = "forceAutoAimOff", IsRequired = true)] internal bool ForceAutoAimOff;
         [DataMember(Name = "hideTargetHealth", IsRequired = true)] internal bool HideTargetHealth;
+        [DataMember(Name = "profile", IsRequired = true)] internal string Profile;
     }
 }
