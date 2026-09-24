@@ -1,6 +1,6 @@
-# Proposed architecture (pre-implementation)
+# Architecture
 
-The project has no code yet. This design is a dependency map for agents; each module is introduced only by its task card.
+T-001 introduced the runtime probe and logger. T-002 added a harmless JSON config loader, pending in-game test. This is the dependency map for later modules; each is introduced only by its task card.
 
 ```text
 Game/ScriptHookDotNet adapters
@@ -14,11 +14,11 @@ Logger -> startup, state transitions, config errors, caught feature errors
 
 The weapon registry is the boundary protecting vanilla behavior. It must use confirmed game identifiers and fail closed: an unknown weapon gets no custom gameplay changes. Configuration stores gameplay values; source code stores algorithms and validated game calls. Feature errors should be logged and disable only the affected feature.
 
-Proposed folders when code begins: `src/Core`, `src/GameApi`, `src/Gunplay`, `src/Weapons`, `src/DevTools`; JSON in `config/`; build/deploy scripts in `tools/`. Do not create empty architecture layers before their first task.
+Current source lives in `src/LibertyFramework/`, with `Core/Config` and `Core/Logging`. Future gameplay modules are added only by their tasks. JSON samples live in `config/`; build/deploy scripts live in `tools/`.
 
 ## Logging
 
-One project logger should record startup version/dependencies, active test weapon/profile, config load/reload, menu actions, and exceptions with context. Logs belong under the game `scripts/LibertyFramework/logs/` at runtime, never in Git. T-001 determines the actual output path and verifies it with the human tester.
+The project logger records startup, heartbeats, config load/reload, and exceptions with context. It writes under the game `scripts/LibertyFramework/logs/`, never in Git, and rotates at 1 MiB with one backup. Later modules add weapon/profile and menu context as those features are implemented.
 
 ## Dependencies and gates
 
