@@ -1,3 +1,10 @@
 # Build and deployment tooling
 
-No build/deploy commands exist yet because the project contains no implementation. T-001 will add commands after it verifies the chosen .NET target and ScriptHookDotNet install on the tester's Complete Edition build. Do not infer a working build from the proposed stack in AGENTS.md.
+T-001 is a load/log/reload probe only. It has no gameplay changes. The build uses the Windows .NET Framework compiler already installed on the tester's machine. The project targets .NET Framework 4.0 and x86; in-game load and reload were verified on 2026-09-24.
+
+1. Download [Tomasak's v1.7.1.8 release](https://github.com/Tomasak/gta4_scripthookdotnet/releases/tag/release): `scripthookdotnet_v1.7.1.8.zip`. Expected SHA256: `5669E4423F93BEDFB0AE34579E922213775B46BBEE4DB6ADC953CB53E7AD9058`.
+2. From the repository root, build with `./tools/build.ps1 -ScriptHookDotNetReference <path-to-extracted-ScriptHookDotNet.asi>`. This writes `src/LibertyFramework/bin/Release/LibertyFramework.net.dll`. The runtime binary is a local compiler reference and is not committed.
+3. After closing GTA IV, run `./tools/deploy-t001.ps1 -GameDirectory <path-containing-GTAIV.exe> -RuntimeArchivePath <path-to-release-zip>`. It verifies the game version and archive hash, checks for existing files, then installs only the three required runtime files and the probe DLL. It does not copy upstream examples or alter FusionFix.
+4. Launch through Steam and follow [T-001 human test steps](../docs/tasks/T-001-runtime-spike.md).
+
+On this machine the game directory is `D:\SteamLibrary\steamapps\common\Grand Theft Auto IV\GTAIV`. No absolute machine path is baked into the scripts.
