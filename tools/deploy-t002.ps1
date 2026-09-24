@@ -16,7 +16,7 @@ if (-not (Test-Path -LiteralPath $exe)) { throw "GTAIV.exe not found in $game" }
 if ((Get-Item -LiteralPath $exe).VersionInfo.FileVersion -ne '1.2.0.59') {
     throw 'This T-002 package is only prepared for GTAIV.exe 1.2.0.59.'
 }
-if (Get-Process GTAIV -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $exe }) {
+if (Get-Process GTAIV -ErrorAction SilentlyContinue) {
     throw 'GTA IV is running. Close it before deploying T-002.'
 }
 if (-not (Test-Path -LiteralPath (Join-Path $game 'ScriptHookDotNet.asi'))) {
