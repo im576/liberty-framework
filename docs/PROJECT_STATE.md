@@ -5,7 +5,7 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
-**Phase 0 — Research and environment.** T-001's minimal runtime probe is built, deployed, and verified in gameplay, including `ReloadScripts`; its post-install vanilla pistol check is in progress. T-002's config loader and bounded logger passed live reload, malformed-input retention, and recovery checks; the owner confirmed gameplay continued. No gameplay behavior is implemented. T-000 vehicle/save checks remain open. Weapon-slot choices are not yet verified in-game.
+**Phase 0 — Research and environment.** T-000's baseline, T-001's runtime/reload and post-install pistol checks, and T-002's live config checks have passed owner playtests. T-003 DevTools and T-007 weapon identity are ready for implementation. No gameplay behavior is implemented. Weapon-slot choices are not yet verified in-game.
 
 ## Key decisions (see `docs/architecture/decisions/`)
 
@@ -15,7 +15,7 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Verified in-game (by the human tester)
 
-- 2026-09-24 (tester report and fresh logs): Steam Complete Edition exe 1.2.0.59 and FusionFix 5.0.1 reach gameplay. Tomasak ScriptHookDotNet 1.7.1.8 loads the probe; startup, heartbeats, domain unload, and restart after `ReloadScripts` were logged, and gameplay continued. Bluetooth DualSense through a Steam Input community layout; in-game auto aim on; vanilla pistol aim, fire, reload, and cover shooting worked before deployment. See [T-000](tasks/T-000-baseline.md) and [T-001](tasks/T-001-runtime-spike.md). Vehicle shooting and save/load remain unverified.
+- 2026-09-24 (tester report and fresh logs): Steam Complete Edition exe 1.2.0.59 and FusionFix 5.0.1 reach gameplay. Tomasak ScriptHookDotNet 1.7.1.8 loads the probe; startup, heartbeats, domain unload, and restart after `ReloadScripts` were logged, and gameplay continued. Bluetooth DualSense through a Steam Input community layout; in-game auto aim on. With the runtime installed, vanilla pistol aim, fire, reload, cover and vehicle shooting, and save/load passed. See [T-000](tasks/T-000-baseline.md) and [T-001](tasks/T-001-runtime-spike.md).
 
 ## Open questions (blockers for later tasks)
 
@@ -30,6 +30,7 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Changelog
 
+- 2026-09-24 — Owner confirmed all remaining pistol, vehicle, and save/load baseline checks passed with the runtime installed; T-000 and T-001 are DONE.
 - 2026-09-24 — Owner confirmed gameplay stayed responsive after the T-002 live config test; T-002 is DONE and T-003 is ready for implementation.
 - 2026-09-24 — T-002 live config test passed all three log checks in one session and restored the original config. GTA IV stayed running; awaiting tester confirmation of gameplay after the test.
 - 2026-09-24 — Audited installed T-002 logs and hash; startup/default heartbeats are confirmed. Added one-session live config test script and guarded the original T-001 DLL backup against replacement. Live config edits are still untested in-game.

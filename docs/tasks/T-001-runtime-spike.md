@@ -1,6 +1,6 @@
 # T-001 — Minimal CE C# runtime spike
 
-Status: **NEEDS-PLAYTEST**. Owner: agent plus human playtest. T-000 is partly recorded; the owner explicitly authorized this runtime spike before its remaining vehicle/save checks. Scope: compile and load one script that logs startup, a periodic heartbeat, caught errors, and a script-domain unload signal on reload. No gameplay changes.
+Status: **DONE**. Owner: agent plus human playtest. Scope: compile and load one script that logs startup, a periodic heartbeat, caught errors, and a script-domain unload signal on reload. No gameplay changes.
 
 ## Questions
 
@@ -16,7 +16,7 @@ The official Tomasak v1.7.1.8 archive SHA256 is `5669E4423F93BEDFB0AE34579E92221
 
 ## Playtest evidence — 2026-09-24
 
-The tester launched through Steam, reached gameplay, ran `ReloadScripts` in the in-game console, reported that it succeeded, and confirmed gameplay continued. The fresh `ScriptHookDotNet.log` identified GTA IV 1.2.0.59, ScriptHookDotNet 1.7.1.8, and `LibertyFramework.RuntimeProbe`; it reported the script started successfully both before and after reload. The project log shows startup at `11:01:46Z`, heartbeats every ten seconds, domain unload at `11:02:55Z`, new startup at `11:02:55Z`, and subsequent heartbeats through `11:04:05Z`. No error line appeared in either log. This confirms that the x86 .NET Framework 4.0 DLL loads, logs, and reloads on this installation with FusionFix present. The tester has not yet repeated the vanilla pistol controls after deployment; T-000's vehicle and save/load checks also remain open.
+The tester launched through Steam, reached gameplay, ran `ReloadScripts` in the in-game console, reported that it succeeded, and confirmed gameplay continued. The fresh `ScriptHookDotNet.log` identified GTA IV 1.2.0.59, ScriptHookDotNet 1.7.1.8, and `LibertyFramework.RuntimeProbe`; it reported the script started successfully both before and after reload. The project log shows startup at `11:01:46Z`, heartbeats every ten seconds, domain unload at `11:02:55Z`, new startup at `11:02:55Z`, and subsequent heartbeats through `11:04:05Z`. No error line appeared in either log. This confirms that the x86 .NET Framework 4.0 DLL loads, logs, and reloads on this installation with FusionFix present. In the later T-002 test session, the tester confirmed pistol aim, fire, reload, cover and vehicle shooting, and save/load all passed with the runtime installed.
 
 ## Human test steps
 
