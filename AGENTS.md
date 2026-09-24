@@ -23,8 +23,10 @@ Full original spec: `docs/HANDOFF.md`. Architecture: `docs/architecture/OVERVIEW
 
 ## 3. Hard rules (never break these)
 
-1. **One task at a time.** Do only what your task card says. If you notice other work, add a line
-   to the "Notes for later" section of your task card. Do not do it.
+1. **Keep task scope explicit.** Track each change and its test evidence against a task card. The
+   project owner prefers batching compatible offline work so one game launch can verify several
+   checks. Prepare dependent work only when its assumptions are documented, and do not mark any
+   task `DONE` until its own in-game evidence exists.
 2. **Vanilla must stay vanilla.** Only the gold test weapons may behave differently from the base
    game. Every gameplay change must be gated by "is the current weapon a registered test weapon?".
 3. **Tuning values live in `config/`, never in code.** Code defines algorithms. JSON defines numbers.

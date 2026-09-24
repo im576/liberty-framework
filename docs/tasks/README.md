@@ -2,7 +2,9 @@
 
 **Current assignment:** T-002 config and logging playtest is next. T-001's runtime load and reload passed; its vanilla pistol check remains open because the tester currently has no gun. No gameplay changes have been started. The project owner performs game playtests and alone marks a tested card `DONE`.
 
-Statuses: `READY` = agent can start; `NEEDS-PLAYTEST` = agent implementation awaits human test; `BLOCKED` = named dependency missing; `DONE` = human verified. Pick one task whose dependencies are done, keep changes inside its scope, and update [PROJECT_STATE.md](../PROJECT_STATE.md).
+Statuses: `READY` = agent can start; `NEEDS-PLAYTEST` = agent implementation awaits human test; `BLOCKED` = named dependency missing; `DONE` = human verified. Track each task's scope and evidence separately, and update [PROJECT_STATE.md](../PROJECT_STATE.md).
+
+Batch compatible offline work and combine human checks into one gameplay session where practical. Keep separate task statuses and record unverified assumptions rather than treating one task's success as evidence for another.
 
 | ID | Task | Depends on | Status |
 |---|---|---|---|
