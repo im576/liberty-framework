@@ -1,6 +1,6 @@
 # T-020 — Liberty Arsenal core: loadout, ownership, storage, death/arrest
 
-Status: **READY** (Codex Agent A, branch `arsenal/core`). Owner decisions 2026-09-24; see the rules below — they are requirements, not suggestions.
+Status: **NEEDS-PLAYTEST** (Codex Agent A, branch `arsenal/core`). Owner decisions 2026-09-24; see the rules below — they are requirements, not suggestions.
 
 ## Owner rules (requirements)
 
@@ -35,4 +35,19 @@ Status: **READY** (Codex Agent A, branch `arsenal/core`). Owner decisions 2026-0
 
 ## Human test steps
 
-(Agent A fills in.)
+Precondition: orchestrator merges T-020, packages `config/arsenal.json` with the DLL, and installs only while GTA IV is closed. Use a save with an accessible vehicle and a safehouse. Keep the log at `scripts/LibertyFramework/logs/LibertyFramework.log` for the report. GTA IV itself has not been run by Agent A.
+
+1. Start a free-roam save. Hold **L3+R3 for 0.7 seconds** (or press **F10**), move the D-pad to **ARSENAL**, press **A**. Select **Mark safehouse here** with **A** while at the safehouse stash spot. Expect `Marked marked_...`, a new verified coordinate in `scripts/LibertyFramework/config/arsenal.json`, and an `arsenal_safehouse_marked` log line. Press **B** back to the root, then **B** to close; D-pad phone control must return.
+2. Stand directly behind a parked car, within `trunkDistanceMeters` of its boot. Open DevTools and enter **ARSENAL**. Expect a **TRUNK** heading and an open boot. Select **Store** for a carried pistol with **A**. Back out with **B**, reopen the page, and select **Take** for that pistol. Expect the weapon and its ammo to return, and `arsenal_store` / `arsenal_take` log lines. Close DevTools; expect the boot to close and normal controls to return.
+3. With a car used at least once, use DevTools **WEAPONS** to give the test shotgun and carbine (confirm each action with **A** twice). Obtain a third long gun in normal gameplay, then watch the log. Expect the least recently selected of the three long guns to move to the last vehicle trunk (`arsenal_overflow`) while two remain carried. Stand at that car's rear and reopen ARSENAL to confirm the moved weapon is listed under **Take**. Do the same after driving the car away; overflow should still target that last car.
+4. Store one picked-up weapon, then take it. Confirm it is logged as owned on later gain. Pick up a different weapon in the same GTA inventory category; expect the formerly owned replacement to appear in the last vehicle trunk, with `arsenal_replaced_owned` in the log. Pick up an unowned weapon and check that no ownership is inferred without a money decrease or storage. Buy a weapon and confirm `arsenal_gain ... owned=True` when the gain follows the money decrease within the configured window.
+5. Enter a mission with more than two long guns available and trigger a cutscene/fade. During mission and cutscene, confirm no `arsenal_overflow`, `arsenal_store`, or `arsenal_replaced_owned` movement occurs. After mission end and fade-in, expect deferred overflow/replacement entries to appear in storage. Report the exact mission and log excerpt.
+6. With one owned and one unowned carried weapon, save, then get **wasted**. After respawn, open ARSENAL at the marked safehouse. Expect only the owned weapon in the stash; the unowned one is lost. Repeat from a save and get **busted**; expect neither carried weapon to appear in storage or on the player. Include `arsenal_loss` lines in the report.
+7. With Liberty Vehicle Services CE installed, register/own a car, store a weapon in its trunk, close GTA IV, relaunch, and revisit that car. Expect the weapon still under **Take** and a `lvs:owned_...` trunk key in logs/state. Repeat without LVS or with its owned INI temporarily unavailable (restore it afterward): store in a random car, exit it, close/relaunch, and revisit the remembered model and position. Expect the fallback trunk to be available. For a random unmarked car, destroy, sink, or delete it after storing: expect `arsenal_temporary_trunk_lost` and no retained contents.
+8. Confirm `state/arsenal_iv.json` exists for the IV episode and is separate from TLAD/TBOGT state if those episodes are available. With the game closed, back up this file, replace it with malformed JSON, and relaunch. Expect `arsenal_state_corrupt`, a retained `.bak`, a renamed `.corrupt_...` file, empty storage, and continued gameplay. Restore the backup after the check.
+
+Offline evidence: `tools/build.ps1` built 77 sources with zero errors and zero warnings; `tools/verify.ps1` returned `RESULT passed=199 failed=0` against the installed GTAIV.exe/ScriptHook.dll. In-game behavior remains unverified.
+
+## Integration note
+
+`tools/package-phase1.ps1` currently copies named config files and omits `arsenal.json`. The orchestrator must add it to packaging/install manifests before a playtest. `docs/PROJECT_STATE.md` is outside Agent A's file ownership; orchestrator should add the T-020 entry after merge.

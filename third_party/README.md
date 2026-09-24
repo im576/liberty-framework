@@ -12,3 +12,5 @@ Nothing in this repository vendors a mod binary, proprietary game asset, or copi
 T-001 uses the [Tomasak v1.7.1.8 release archive](https://github.com/Tomasak/gta4_scripthookdotnet/releases/tag/release), SHA256 `5669E4423F93BEDFB0AE34579E922213775B46BBEE4DB6ADC953CB53E7AD9058`. Only `aCompleteEditionHook.asi`, `ScriptHook.dll`, and `ScriptHookDotNet.asi` are installed into the game root. The `.asi` is also used as a local compile reference. No runtime binary is committed to this repository.
 
 Future models, textures, audio, and code require source URL, author, license/permission, modifications, and attribution in this directory before inclusion. Do not include ripped commercial-game assets.
+
+T-020 reads the INI format documented by [Liberty Vehicle Services CE](https://github.com/ekzestean/Liberty-Vehicle-Services-CE) (ekzestean, MIT) as an external, read-only integration. The Arsenal parser is newly written from the `[owned.<id>]`, `modelhash`, `episode`, `x/y/z`, and `destroyed` fields; no LVS source is copied into this repository.
