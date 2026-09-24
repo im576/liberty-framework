@@ -1,3 +1,4 @@
+using System;
 using LibertyFramework.Core.Memory;
 
 namespace LibertyFramework.GameApi
@@ -29,6 +30,28 @@ namespace LibertyFramework.GameApi
             uint ped = PedPointer(playerIndex);
             if (ped == 0) { return null; }
             return (memory.ReadUInt32(ped + (uint)addresses.PedTargetFlagsOffset) & addresses.LockOnDisabledMask) != 0;
+        }
+
+        // Vanilla "aim settle": after ~0.5 s of steady aiming the game scales player bullet offsets to zero.
+        // For test weapons LF owns the spread cone, so the timer is held at zero every frame; the game then
+        // applies at most one frame of settle (~3% at 60 fps), which the shot-audit calibration absorbs.
+        internal void ClearAimSettle(uint ped)
+        {
+            if (ped == 0 || !addresses.AimSettleResolved) { return; }
+            uint timer = ped + (uint)addresses.AimSettleTimerOffset;
+            if (!memory.IsWritable(timer, 8)) { return; }
+            memory.WriteUInt32(timer, 0);
+            memory.WriteUInt32(timer + 4, 0);
+        }
+
+        // Fraction of the configured spread the game will actually apply right now (1 = none removed).
+        internal double AimSettleFactor(uint ped)
+        {
+            if (ped == 0 || !addresses.AimSettleResolved || !memory.IsReadable(ped + (uint)addresses.AimSettleSnapshotOffset, 4)) { return 1.0; }
+            double window = memory.ReadSingle(addresses.AimSettleWindowGlobal);
+            if (window <= 0) { return 1.0; }
+            int snapshot = memory.ReadInt32(ped + (uint)addresses.AimSettleSnapshotOffset);
+            return 1.0 - Math.Min(Math.Max(snapshot, 0), window) / window;
         }
     }
 }

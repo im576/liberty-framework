@@ -55,6 +55,8 @@ namespace LibertyFramework.Gunplay
         private GameAddresses addresses;
         private LiveMemory memory;
         private WeaponInfoTable weaponInfo;
+        private AimCamera onFootCamera;
+        private AimCamera vehicleCamera;
         private AimCamera aimCamera;
         private HudReticle hud;
         private GamePrefs prefs;
@@ -80,6 +82,8 @@ namespace LibertyFramework.Gunplay
         private bool loggedOwnerMismatch;
         private bool loggedCameraCrossCheck;
         private bool useShdnDirection;
+        private double pixelsPerTangent;
+        private bool loggedProjection;
 
         internal bool FreeAimEnabled;
         internal bool CrosshairEnabled = true;
@@ -175,15 +179,21 @@ namespace LibertyFramework.Gunplay
 
                 int gameCamera = Natives.GameCamHandle();
                 uint aimCam = 0;
+                // Drive-by uses the vehicle follow camera; on foot the third-person aim camera.
+                aimCamera = state.InVehicle ? vehicleCamera : onFootCamera;
                 if (aimCamera != null)
                 {
                     try { aimCam = aimCamera.FindActive(gameCamera); }
-                    catch (Exception error) { aimCamera = null; RuntimeLog.Error("feature_disabled aim_camera error=" + error); }
+                    catch (Exception error) { DisableCamera(error); }
                 }
                 aimCameraActive = aimCam != 0;
-                aiming = aimCameraActive || Game.isGameKeyPressed(GameKey.Aim);
+                aiming = (aimCameraActive && !state.InVehicle) || Game.isGameKeyPressed(GameKey.Aim);
                 state.Aiming = aiming;
-                if (Natives.CamExists(gameCamera)) { lastFov = Natives.CamFov(gameCamera); }
+                if (Natives.CamExists(gameCamera))
+                {
+                    lastFov = Natives.CamFov(gameCamera);
+                    if (aiming) { MeasureProjection(gameCamera); }
+                }
 
                 // Each engine feature fails independently: an exception disables only that feature.
                 if (bullets != null)
@@ -194,7 +204,7 @@ namespace LibertyFramework.Gunplay
                 try { UpdateSpread(config, now, deltaSeconds); }
                 catch (Exception error) { DisableSpread(error); }
                 try { UpdateRecoil(config, now, deltaSeconds, aimCam, gameCamera); }
-                catch (Exception error) { aimCamera = null; RuntimeLog.Error("feature_disabled camera_kick error=" + error); }
+                catch (Exception error) { DisableCamera(error); }
                 try { UpdateReticle(config, ped); }
                 catch (Exception error) { DisableHud(error); }
 
@@ -238,8 +248,13 @@ namespace LibertyFramework.Gunplay
             if (addresses.BulletsResolved && addresses.LockOnResolved) { bullets = new BulletLog(memory, addresses); }
             if (addresses.AimCameraResolved)
             {
-                aimCamera = new AimCamera(memory, addresses);
-                aimCamera.ResetValidation();
+                onFootCamera = new AimCamera(memory, addresses, addresses.AimCamType, addresses.AimCamPitchOffset, addresses.AimCamHeadingOffset, "aim");
+                onFootCamera.ResetValidation();
+                if (addresses.VehicleCamPitchOffset > 0)
+                {
+                    vehicleCamera = new AimCamera(memory, addresses, addresses.VehicleCamType, addresses.VehicleCamPitchOffset, addresses.VehicleCamHeadingOffset, "vehicle");
+                    vehicleCamera.ResetValidation();
+                }
             }
             freeAim = new FreeAimMode(prefs, playerMemory, hud);
             freeAim.RecoverFromPreviousSession();
@@ -274,7 +289,7 @@ namespace LibertyFramework.Gunplay
                     " (both mods kicking would double the recoil)");
             }
             RuntimeLog.Info("gunplay_initialized prefs=" + (prefs != null) + " lockon=" + (playerMemory != null) + " hud=" + (hud != null) +
-                " aimcam=" + (aimCamera != null) + " weaponinfo=" + (weaponInfo != null && weaponInfo.Validated) + " bullets=" + (bullets != null) +
+                " aimcam=" + (onFootCamera != null) + " vehiclecam=" + (vehicleCamera != null) + " aim_settle=" + addresses.AimSettleResolved + " weaponinfo=" + (weaponInfo != null && weaponInfo.Validated) + " bullets=" + (bullets != null) +
                 " elapsed_ms=" + timer.ElapsedMilliseconds);
         }
 
@@ -317,6 +332,44 @@ namespace LibertyFramework.Gunplay
             lastClip = clip;
             // A clip drop larger than a magazine means a scripted ammo change, not firing.
             return shots > 0 && shots <= Math.Max(1, current.MaxAmmoInClip) ? Math.Min(shots, 8) : 0;
+        }
+
+        // Screen pixels per unit tangent at the screen centre, measured by projecting two points through the
+        // game viewport: one on the camera ray and one 2 degrees above it. This ties the crosshair gap to the
+        // game's real projection instead of an assumed FOV axis.
+        private void MeasureProjection(int gameCamera)
+        {
+            const double probeDegrees = 2.0;
+            const double probeDistance = 25.0;
+            try
+            {
+                Vec3 position = Natives.CamPosition(gameCamera);
+                Vec3 rotation = Natives.CamRotation(gameCamera);
+                Vec3 forward = Vec3.FromPitchHeadingDegrees(rotation.X, rotation.Z);
+                Vec3 raised = Vec3.FromPitchHeadingDegrees(rotation.X + probeDegrees, rotation.Z);
+                int viewport = Natives.GameViewportId();
+                float centerX, centerY, upX, upY;
+                if (!Natives.ViewportPositionOfCoord(viewport, position + forward * probeDistance, out centerX, out centerY) ||
+                    !Natives.ViewportPositionOfCoord(viewport, position + raised * probeDistance, out upX, out upY)) { return; }
+                double pixels = Math.Abs(upY - centerY) * Game.Resolution.Height;
+                double measured = pixels / Math.Tan(probeDegrees * Math.PI / 180.0);
+                if (measured <= 1 || double.IsNaN(measured)) { return; }
+                pixelsPerTangent = measured;
+                if (!loggedProjection)
+                {
+                    loggedProjection = true;
+                    double formulaVertical = CrosshairRenderer.ConeToPixels(probeDegrees, lastFov, true, Game.Resolution);
+                    double formulaHorizontal = CrosshairRenderer.ConeToPixels(probeDegrees, lastFov, false, Game.Resolution);
+                    RuntimeLog.Info("crosshair_projection fov=" + lastFov.ToString("0.0") + " center=" + centerX.ToString("0.000") + "," + centerY.ToString("0.000") +
+                        " probe_px=" + pixels.ToString("0.0") + " formula_vertical_px=" + formulaVertical.ToString("0.0") +
+                        " formula_horizontal_px=" + formulaHorizontal.ToString("0.0"));
+                }
+            }
+            catch (Exception error)
+            {
+                pixelsPerTangent = 0;
+                RuntimeLog.Error("crosshair_projection_failed using FOV formula error=" + error.Message);
+            }
         }
 
         private void AuditBullets(GunplayConfig config, int gameCamera, int weaponId, double now)
@@ -387,6 +440,8 @@ namespace LibertyFramework.Gunplay
                 currentConeDegrees = spread.Step(activeProfile.Spread, config.Movement, state, now, deltaSeconds);
                 if (SpreadControlEnabled && weaponInfo != null && weaponInfo.Validated)
                 {
+                    // Hold the vanilla aim-settle timer at zero so the configured cone is what the game applies.
+                    if (playerMemory != null) { playerMemory.ClearAimSettle(playerPed); }
                     writtenAccuracy = calibrator.ToAccuracy(config.SpreadCalibration, currentConeDegrees);
                     weaponInfo.WriteAccuracy(activeProfile.WeaponId, (float)writtenAccuracy);
                     writtenConeDegrees = currentConeDegrees;
@@ -404,8 +459,10 @@ namespace LibertyFramework.Gunplay
             else
             {
                 float accuracy;
+                // Vanilla weapons keep the game's own aim settle, so show the cone it will actually apply.
+                double settle = playerMemory != null ? playerMemory.AimSettleFactor(playerPed) : 1.0;
                 currentConeDegrees = weaponInfo != null && weaponInfo.TryReadAccuracy(activeWeaponId, out accuracy) ?
-                    calibrator.FromAccuracy(config.SpreadCalibration, accuracy) : 0;
+                    calibrator.FromAccuracy(config.SpreadCalibration, accuracy) * settle : 0;
                 displayConeDegrees = currentConeDegrees;
                 writtenConeDegrees = currentConeDegrees;
                 writtenAccuracy = 0;
@@ -422,6 +479,13 @@ namespace LibertyFramework.Gunplay
                 return Math.Max(0, stats.MaximumMeasuredDegrees - writtenConeDegrees);
             }
             return profile.Spread.PelletPatternDegrees;
+        }
+
+        private void DisableCamera(Exception error)
+        {
+            RuntimeLog.Error("feature_disabled camera=" + (aimCamera != null ? aimCamera.Name : "?") + " error=" + error);
+            if (aimCamera == onFootCamera) { onFootCamera = null; } else { vehicleCamera = null; }
+            aimCamera = null;
         }
 
         private void DisableSpread(Exception error)
@@ -509,7 +573,7 @@ namespace LibertyFramework.Gunplay
                 if (config == null) { return; }
                 if (drawCrosshair)
                 {
-                    crosshair.Draw(args.Graphics, config.Crosshair, displayConeDegrees, lastFov, Game.Resolution, args.Graphics.FrameTime);
+                    crosshair.Draw(args.Graphics, config.Crosshair, displayConeDegrees, lastFov, pixelsPerTangent, Game.Resolution, args.Graphics.FrameTime);
                 }
                 if (DebugOverlay) { DrawOverlay(args.Graphics); }
             }
@@ -546,7 +610,7 @@ namespace LibertyFramework.Gunplay
             else { lines.Add("Audit no bullets measured yet for this weapon"); }
             lines.Add("Recoil chain=" + recoil.ChainShots + " climb=" + recoil.AccumulatedPitchDegrees.ToString("0.00") + " recoverable=" +
                 recoil.RecoverablePitchDegrees.ToString("0.00") + " last_kick=" + recoil.LastKickPitchDegrees.ToString("0.00"));
-            lines.Add("Camera " + (aimCamera == null ? "unresolved" : aimCamera.Validated ? "validated" : aimCamera.Rejected ? "REJECTED" : "validating") +
+            lines.Add("Camera " + (aimCamera == null ? "none" : aimCamera.Name + " " + (aimCamera.Validated ? "validated" : aimCamera.Rejected ? "REJECTED" : "validating")) +
                 "  kick=" + (config != null && KickReady(config) ? "on" : "off") + (realRecoilPresent ? "  REAL RECOIL DETECTED" : ""));
             lines.Add("Engine prefs=" + (prefs != null) + " lockon=" + (playerMemory != null) + " hud=" + (hud != null) + " weaponinfo=" +
                 (weaponInfo != null && weaponInfo.Validated) + " bullets=" + (bullets != null) + (disabled ? " DISABLED " + disabledReason : ""));

@@ -25,9 +25,11 @@ namespace LibertyFramework.Gunplay.Crosshair
             displayedGapPixels = -1;
         }
 
-        internal void Draw(GTA.Graphics graphics, CrosshairSettings settings, double coneDegrees, double fovDegrees, Size resolution, float frameSeconds)
+        internal void Draw(GTA.Graphics graphics, CrosshairSettings settings, double coneDegrees, double fovDegrees, double pixelsPerTangent, Size resolution, float frameSeconds)
         {
-            double target = ConeToPixels(coneDegrees, fovDegrees, settings.FovAxis == "vertical", resolution);
+            // Prefer the game's own projection (measured each frame from GET_VIEWPORT_POSITION_OF_COORD); the FOV formula is the fallback.
+            double target = pixelsPerTangent > 0 ? Math.Tan(coneDegrees * Math.PI / 180.0) * pixelsPerTangent :
+                ConeToPixels(coneDegrees, fovDegrees, settings.FovAxis == "vertical", resolution);
             target = Math.Max(settings.MinimumGapPixels, Math.Min(settings.MaximumGapPixels, target));
             if (displayedGapPixels < 0) { displayedGapPixels = target; }
             else

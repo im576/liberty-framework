@@ -129,6 +129,24 @@ namespace LibertyFramework.GameApi
             Function.Call("SET_CHAR_HEADING", ped, heading);
         }
 
+        internal static int GameViewportId()
+        {
+            Pointer viewport = typeof(int);
+            Function.Call("GET_GAME_VIEWPORT_ID", viewport);
+            return (int)viewport;
+        }
+
+        // Signature from the CE handler: (x, y, z, viewportId, float* screenX, float* screenY) -> on screen.
+        // Screen coordinates are normalised 0..1.
+        internal static bool ViewportPositionOfCoord(int viewport, Vec3 world, out float screenX, out float screenY)
+        {
+            Pointer x = typeof(float);
+            Pointer y = typeof(float);
+            bool visible = Function.Call<bool>("GET_VIEWPORT_POSITION_OF_COORD", (float)world.X, (float)world.Y, (float)world.Z, viewport, x, y);
+            screenX = (float)x;
+            screenY = (float)y;
+            return visible;
+        }
         internal static void ClearWantedLevel(Player player)
         {
             Function.Call("CLEAR_WANTED_LEVEL", player);

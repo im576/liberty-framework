@@ -52,7 +52,13 @@ namespace LibertyFramework.GameApi
                 original.Alpha = memory.ReadUInt32(component.AlphaGlobal);
                 original.Width = memory.ReadSingle(component.SizeGlobal);
                 original.Height = memory.ReadSingle(component.SizeGlobal + 4);
-                if (original.Width <= HiddenSize && original.Height <= HiddenSize) { return; }
+                if (original.Width <= HiddenSize && original.Height <= HiddenSize)
+                {
+                    // Already hidden (e.g. an earlier script instance was killed without restoring):
+                    // fall back to the [HD] values in common/data/hud.dat so a later restore is still correct.
+                    if (!TryReadHudDat(name, ref original)) { return; }
+                    RuntimeLog.Info("hud_hide " + name + " was already hidden; restore values taken from hud.dat");
+                }
                 saved.Add(name, original);
                 RuntimeLog.Info("hud_hide " + name + " alpha=" + original.Alpha + " size=" + original.Width + "x" + original.Height);
             }
@@ -71,6 +77,29 @@ namespace LibertyFramework.GameApi
             memory.WriteSingle(component.SizeGlobal + 4, original.Height);
             saved.Remove(name);
             RuntimeLog.Info("hud_restore " + name + " alpha=" + original.Alpha + " size=" + original.Width + "x" + original.Height);
+        }
+
+        private static bool TryReadHudDat(string name, ref SavedComponent original)
+        {
+            try
+            {
+                string path = System.IO.Path.Combine(LibertyFramework.Core.Config.LibertyPaths.GameDirectory, @"common\data\hud.dat");
+                foreach (string raw in System.IO.File.ReadAllLines(path))
+                {
+                    string[] parts = raw.Split(new[] { ' ', '\t' }, System.StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length < 5 || parts[0] != name) { continue; }
+                    string[] size = parts[2].Split(',');
+                    original.Width = float.Parse(size[0], System.Globalization.CultureInfo.InvariantCulture);
+                    original.Height = float.Parse(size[1], System.Globalization.CultureInfo.InvariantCulture);
+                    original.Alpha = uint.Parse(parts[4], System.Globalization.CultureInfo.InvariantCulture);
+                    return true;
+                }
+            }
+            catch (System.Exception error)
+            {
+                RuntimeLog.Error("hud_dat_read_failed " + name + " error=" + error.Message);
+            }
+            return false;
         }
 
         internal void RestoreAll()

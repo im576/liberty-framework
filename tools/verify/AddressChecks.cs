@@ -27,6 +27,9 @@ namespace LibertyFramework.Verify
             check.Equal("aim camera type", 9, addresses.AimCamType);
             check.Equal("aim camera pitch offset", 0x218, addresses.AimCamPitchOffset);
             check.Equal("aim camera heading offset", 0x21C, addresses.AimCamHeadingOffset);
+            check.Equal("vehicle camera type", 2, addresses.VehicleCamType);
+            check.Equal("vehicle camera pitch offset", 0x190, addresses.VehicleCamPitchOffset);
+            check.Equal("vehicle camera heading offset", 0x194, addresses.VehicleCamHeadingOffset);
             check.Equal("weapon info array (vanilla, FusionFix relocates at runtime)", 0x15F8BC0u, addresses.WeaponInfoArray);
             check.Equal("weapon info count (vanilla)", 60, addresses.WeaponInfoCount);
             check.Equal("weapon info stride", 0x110, addresses.WeaponInfoStride);
@@ -42,6 +45,11 @@ namespace LibertyFramework.Verify
             check.Equal("weapon info array with FusionFix NOP", 0x15F8BC0u, patchedAddresses.WeaponInfoArray);
             check.Equal("weapon info count with FusionFix NOP (unbounded)", 0, patchedAddresses.WeaponInfoCount);
             check.True("weapon info resolved with FusionFix NOP", patchedAddresses.WeaponInfoResolved, "");
+
+            check.Equal("aim settle timer offset", 0xEA0, addresses.AimSettleTimerOffset);
+            check.Equal("aim settle snapshot offset", 0xEA4, addresses.AimSettleSnapshotOffset);
+            check.Equal("aim settle window global (500 ms)", 0x1046A78u, addresses.AimSettleWindowGlobal);
+            check.Near("aim settle window value", 500.0, memory.ReadSingle(addresses.AimSettleWindowGlobal), 1e-6);
 
             check.Equal("bullet count global", 0x15F8BB0u, addresses.BulletCountGlobal);
             check.Equal("bullet array global", 0x15F8BB8u, addresses.BulletArrayGlobal);

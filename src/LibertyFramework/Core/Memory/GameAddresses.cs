@@ -10,7 +10,7 @@ namespace LibertyFramework.Core.Memory
     // code against GTAIV.exe on disk and compares the results with the offline disassembly.
     internal sealed class GameAddresses
     {
-        // Script native hashes (Jenkins one-at-a-time of the native name), as registered by the game.
+        // CE script native hashes as registered by the game (from FusionFix's CE native list; not derivable from names).
         internal const uint HashDisablePlayerLockon = 0x711214F3;
         internal const uint HashIsAutoAimingOn = 0x366B0444;
         internal const uint HashIsHudReticuleComplex = 0x4DDB5D59;
@@ -36,6 +36,10 @@ namespace LibertyFramework.Core.Memory
         internal int AimCamType;
         internal int AimCamPitchOffset;
         internal int AimCamHeadingOffset;
+        // Vehicle follow camera (type 2) written by the same worker; used for drive-by kick when validated.
+        internal int VehicleCamType;
+        internal int VehicleCamPitchOffset;
+        internal int VehicleCamHeadingOffset;
 
         // CWeaponInfo table (patched by FusionFix ExtendedLimits at runtime; read from code).
         internal uint WeaponInfoArray;
@@ -45,6 +49,12 @@ namespace LibertyFramework.Core.Memory
         internal int AccuracyFlagsOffset;
         internal uint AccuracyAlternateFlag;
         internal int AccuracyAlternateOffset;
+
+        // Player aim-settle timer: CPed accumulates aiming time (ms) and DoAccuracy scales every player bullet
+        // offset by 1 - min(snapshot, window) / window, so a settled aim becomes perfectly accurate.
+        internal int AimSettleTimerOffset;
+        internal int AimSettleSnapshotOffset;
+        internal uint AimSettleWindowGlobal;
 
         // Per-frame bullet trace list used by IS_BULLET_IN_AREA.
         internal uint BulletCountGlobal;
@@ -61,6 +71,7 @@ namespace LibertyFramework.Core.Memory
         internal bool LockOnResolved { get { return PlayerInfoArray != 0 && PlayerPedOffset > 0 && PedTargetFlagsOffset > 0 && LockOnDisabledMask != 0; } }
         internal bool AimCameraResolved { get { return CamPoolGlobal != 0 && FindChildCamFunction != 0 && AimCamPitchOffset > 0 && AimCamHeadingOffset > 0; } }
         internal bool WeaponInfoResolved { get { return WeaponInfoArray != 0 && WeaponInfoStride > 0 && AccuracyOffset > 0; } }
+        internal bool AimSettleResolved { get { return AimSettleTimerOffset > 0 && AimSettleSnapshotOffset == AimSettleTimerOffset + 4 && AimSettleWindowGlobal != 0; } }
         internal bool BulletsResolved { get { return BulletCountGlobal != 0 && BulletArrayGlobal != 0 && BulletStride > 0; } }
         internal bool HudResolved { get { return HudComponentArray != 0 && ReticleComponents.Count == 4; } }
 
@@ -81,6 +92,7 @@ namespace LibertyFramework.Core.Memory
             result.Run("lockon", scanner, result.ResolveLockOn);
             result.Run("aim_camera", scanner, result.ResolveAimCamera);
             result.Run("weapon_info", scanner, result.ResolveWeaponInfo);
+            result.Run("aim_settle", scanner, result.ResolveAimSettle);
             result.Run("bullets", scanner, result.ResolveBullets);
             result.Run("hud_reticle", scanner, result.ResolveHud);
             return result;
@@ -187,9 +199,41 @@ namespace LibertyFramework.Core.Memory
             Require(stores.Count == 3, "aim camera store count=" + stores.Count);
             Require(stores[0] == stores[1] && stores[2] == stores[0] + 4, "aim camera store layout");
             AimCamPitchOffset = stores[0];
+
+            // The same worker then does FindChild(type 2) and writes the vehicle camera's pitch/heading.
+            int vehicleSite = -1;
+            for (int offset = 11; offset + 7 <= body.Length; offset++)
+            {
+                if (body[offset] == 0x6A && body[offset + 1] == 0x00 && body[offset + 2] == 0x6A && body[offset + 4] == 0x8B && body[offset + 5] == 0xCF && body[offset + 6] == 0xE8)
+                {
+                    vehicleSite = offset;
+                    break;
+                }
+            }
+            if (vehicleSite > 0)
+            {
+                byte[] tail = memory.Read(site + (uint)vehicleSite, 0x180);
+                List<int> vehicleStores = new List<int>();
+                for (int offset = 11; offset + 8 <= tail.Length; offset++)
+                {
+                    if (tail[offset] == 0x5E && tail[offset + 1] == 0x5F && tail[offset + 2] == 0xC3) { break; }
+                    if (tail[offset] == 0xF3 && tail[offset + 1] == 0x0F && tail[offset + 2] == 0x11 && (tail[offset + 3] == 0x86 || tail[offset + 3] == 0x8E))
+                    {
+                        vehicleStores.Add(BitConverter.ToInt32(tail, offset + 4));
+                    }
+                }
+                if (vehicleStores.Count == 3 && vehicleStores[0] == vehicleStores[1] && vehicleStores[2] == vehicleStores[0] + 4 &&
+                    memory.RelativeTarget(site + (uint)vehicleSite + 6) == FindChildCamFunction)
+                {
+                    VehicleCamType = tail[3];
+                    VehicleCamPitchOffset = vehicleStores[0];
+                    VehicleCamHeadingOffset = vehicleStores[2];
+                }
+            }
             AimCamHeadingOffset = stores[2];
             Report.Add("aim_camera ok cam_pool=0x" + CamPoolGlobal.ToString("X8") + " find_child=0x" + FindChildCamFunction.ToString("X8") +
-                " type=" + AimCamType + " pitch=0x" + AimCamPitchOffset.ToString("X") + " heading=0x" + AimCamHeadingOffset.ToString("X"));
+                " type=" + AimCamType + " pitch=0x" + AimCamPitchOffset.ToString("X") + " heading=0x" + AimCamHeadingOffset.ToString("X") +
+                " vehicle_type=" + VehicleCamType + " vehicle_pitch=0x" + VehicleCamPitchOffset.ToString("X") + " vehicle_heading=0x" + VehicleCamHeadingOffset.ToString("X"));
         }
 
         // CWeaponInfo::Get(type): "cmp eax, count; jge; imul eax, eax, stride; add eax, array; ret".
@@ -224,6 +268,25 @@ namespace LibertyFramework.Core.Memory
             Report.Add("weapon_info ok array=0x" + WeaponInfoArray.ToString("X8") + " count=" + WeaponInfoCount + " stride=0x" + WeaponInfoStride.ToString("X") +
                 " accuracy=0x" + AccuracyOffset.ToString("X") + " flags=0x" + AccuracyFlagsOffset.ToString("X") + " alt_flag=0x" + AccuracyAlternateFlag.ToString("X") +
                 " alt_accuracy=0x" + AccuracyAlternateOffset.ToString("X"));
+        }
+
+        // Reader in the accuracy sampler: "movd xmm0,[esi+snapshot]; movss xmm2,[window]; cvtdq2ps; comiss".
+        // Writer in the ped aim update: "add [edi+timer], frameMs; ... cap 10000" and "sub [edi+timer], ...".
+        private void ResolveAimSettle(CodeScanner scanner)
+        {
+            IMemory memory = scanner.Memory;
+            List<uint> readers = scanner.FindPattern("66 0F 6E 86 ?? ?? ?? ?? F3 0F 10 15 ?? ?? ?? ?? 0F 5B C0 0F 2F C2", true);
+            Require(readers.Count == 1, "aim settle reader count=" + readers.Count);
+            AimSettleSnapshotOffset = memory.ReadInt32(readers[0] + 4);
+            AimSettleWindowGlobal = memory.ReadUInt32(readers[0] + 12);
+            List<uint> adders = scanner.FindPattern("01 87 ?? ?? ?? ?? 8B 87 ?? ?? ?? ?? B9 10 27 00 00", true);
+            List<uint> subtractors = scanner.FindPattern("29 87 ?? ?? ?? ?? D9 6C 24 0E 79 31", true);
+            Require(adders.Count == 1 && subtractors.Count == 1, "aim settle writer counts=" + adders.Count + "/" + subtractors.Count);
+            AimSettleTimerOffset = memory.ReadInt32(adders[0] + 2);
+            Require(memory.ReadInt32(subtractors[0] + 2) == AimSettleTimerOffset, "aim settle writers disagree");
+            Require(AimSettleSnapshotOffset == AimSettleTimerOffset + 4, "aim settle snapshot is not timer+4");
+            Report.Add("aim_settle ok timer=0x" + AimSettleTimerOffset.ToString("X") + " snapshot=0x" + AimSettleSnapshotOffset.ToString("X") +
+                " window=0x" + AimSettleWindowGlobal.ToString("X8"));
         }
 
         // IS_BULLET_IN_AREA -> helper -> list scan: "mov esi,[count]; ...; mov eax,[array]; ...; add eax,18; ...cmp [eax+8],edx".
