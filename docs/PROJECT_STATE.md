@@ -5,13 +5,13 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
-**Phase 0 — Research and environment.** T-001's minimal runtime probe is built, deployed, and verified in gameplay, including `ReloadScripts`; its vanilla pistol check remains open because the tester currently has no gun. T-002's harmless config loader and bounded logger are installed. Its live reload, malformed-input retention, and recovery log checks passed while GTA IV ran; tester confirmation of continued gameplay is pending. No gameplay behavior is implemented. T-000 vehicle/save checks remain open. Weapon-slot choices are not yet verified in-game.
+**Phase 0 — Research and environment.** T-001's minimal runtime probe is built, deployed, and verified in gameplay, including `ReloadScripts`; its post-install vanilla pistol check is in progress. T-002's config loader and bounded logger passed live reload, malformed-input retention, and recovery checks; the owner confirmed gameplay continued. No gameplay behavior is implemented. T-000 vehicle/save checks remain open. Weapon-slot choices are not yet verified in-game.
 
 ## Key decisions (see `docs/architecture/decisions/`)
 
 - ADR-0001: CE + FusionFix + Tomasak ScriptHookDotNet 1.7.1.8 loads an x86 .NET Framework 4.0 C# probe and reloads successfully. No downgrade.
 - ADR-0002: Candidate gold weapon identities use spare/episodic slots via overrides; T-007 must prove this.
-- ADR-0003: T-002 implements a JSON sample with live polling and last-valid retention; live log checks passed, gameplay confirmation pending.
+- ADR-0003: T-002 implements a JSON sample with live polling and last-valid retention; live log and gameplay checks passed.
 
 ## Verified in-game (by the human tester)
 
@@ -30,6 +30,7 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Changelog
 
+- 2026-09-24 — Owner confirmed gameplay stayed responsive after the T-002 live config test; T-002 is DONE and T-003 is ready for implementation.
 - 2026-09-24 — T-002 live config test passed all three log checks in one session and restored the original config. GTA IV stayed running; awaiting tester confirmation of gameplay after the test.
 - 2026-09-24 — Audited installed T-002 logs and hash; startup/default heartbeats are confirmed. Added one-session live config test script and guarded the original T-001 DLL backup against replacement. Live config edits are still untested in-game.
 - 2026-09-24 — T-002 config sample, loader, bounded logger, and guarded deployment script built with zero errors/warnings. Offline harness passed valid edit, malformed-input retention, and recovery. Installed after GTA IV closed; installed DLL hash matches the build. In-game test pending.

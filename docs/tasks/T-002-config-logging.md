@@ -1,8 +1,8 @@
 # T-002 — Configuration and logging skeleton
 
-Status: **NEEDS-PLAYTEST**. The owner asked development to continue after the T-001 load/reload success, while its vanilla-pistol check remains open. Scope: load/validate/reload one harmless JSON sample profile, retain last valid data on malformed input, and write structured context to a bounded log. No gameplay tuning yet.
+Status: **DONE** (owner confirmed gameplay remained responsive after the live test). Scope: load/validate/reload one harmless JSON sample profile, retain last valid data on malformed input, and write structured context to a bounded log. No gameplay tuning yet.
 
-Live test on 2026-09-24: `tools/test-t002-live.ps1` passed valid reload and heartbeat (`16:58:04Z`), malformed JSON with the last valid label retained and a continuing heartbeat (`16:58:14Z`), and valid recovery with a matching heartbeat (`16:58:24Z`). The script restored the original `default` config; the game logged its reload and another heartbeat at `16:58:34Z`. GTA IV remained running after the sequence. Await the tester's post-test gameplay confirmation before marking this task `DONE`.
+Live test on 2026-09-24: `tools/test-t002-live.ps1` passed valid reload and heartbeat (`16:58:04Z`), malformed JSON with the last valid label retained and a continuing heartbeat (`16:58:14Z`), and valid recovery with a matching heartbeat (`16:58:24Z`). The script restored the original `default` config; the game logged its reload and another heartbeat at `16:58:34Z`. GTA IV remained running after the sequence, and the owner confirmed gameplay still worked.
 
 The sample is [`config/probe.json`](../../config/probe.json). The script polls it every ten seconds and reloads only when its bytes change. Bad input logs `config_reload_failed` and keeps the prior label. The log rotates at 1 MiB, retaining one prior file. Build with [`tools/build.ps1`](../../tools/build.ps1), then deploy only after GTA IV closes with [`tools/deploy-t002.ps1`](../../tools/deploy-t002.ps1). The installer backs up the previous probe DLL and preserves an existing config file.
 
