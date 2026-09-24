@@ -5,13 +5,13 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
-**Phase 0 — Research and environment.** T-001's minimal runtime probe is built, deployed, and verified in gameplay, including `ReloadScripts`; its task status stays `NEEDS-PLAYTEST` until the human closes it. No gameplay behavior is implemented. T-000 vehicle/save checks remain open. Weapon-slot choices are not yet verified in-game.
+**Phase 0 — Research and environment.** T-001's minimal runtime probe is built, deployed, and verified in gameplay, including `ReloadScripts`; its vanilla pistol check remains open because the tester currently has no gun. T-002's harmless config loader and bounded logger are built and tested offline; the game is running, so they have not been deployed. No gameplay behavior is implemented. T-000 vehicle/save checks remain open. Weapon-slot choices are not yet verified in-game.
 
 ## Key decisions (see `docs/architecture/decisions/`)
 
 - ADR-0001: CE + FusionFix + Tomasak ScriptHookDotNet 1.7.1.8 loads an x86 .NET Framework 4.0 C# probe and reloads successfully. No downgrade.
 - ADR-0002: Candidate gold weapon identities use spare/episodic slots via overrides; T-007 must prove this.
-- ADR-0003: Plan for JSON profiles and hot reload; T-002 will establish the schema and behavior.
+- ADR-0003: T-002 implements a JSON sample with live polling and last-valid retention; in-game test pending.
 
 ## Verified in-game (by the human tester)
 
@@ -30,6 +30,7 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Changelog
 
+- 2026-09-24 — T-002 config sample, loader, bounded logger, and guarded deployment script built with zero errors/warnings. Offline harness passed valid edit, malformed-input retention, and recovery. Not installed while GTA IV is running.
 - 2026-09-24 — T-001 probe built with zero compiler errors/warnings, deployed while GTA IV was closed, and verified in gameplay. Fresh logs confirm startup, heartbeats, domain unload, and restart after `ReloadScripts`; tester reported continued gameplay.
 - 2026-09-24 — Recorded tester's partial T-000 baseline; left T-000 open for gameplay/vehicle/runtime-install evidence.
 - 2026-09-24 — Recovered the interrupted Claude scaffold; completed the research summary, task queue, setup/test templates, architecture notes, and original brief. No gameplay implementation or in-game verification.
