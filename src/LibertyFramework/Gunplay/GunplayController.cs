@@ -84,6 +84,7 @@ namespace LibertyFramework.Gunplay
         private bool useShdnDirection;
         private double pixelsPerTangent;
         private bool loggedProjection;
+        private bool drawFailed;
 
         internal bool FreeAimEnabled;
         internal bool CrosshairEnabled = true;
@@ -103,7 +104,7 @@ namespace LibertyFramework.Gunplay
             PerFrameDrawing += OnDraw;
             AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
             // Game exit may skip DomainUnload; restoring on ProcessExit too keeps the menu Auto-Aim value intact.
-            AppDomain.CurrentDomain.ProcessExit += OnDomainUnload;
+            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
             RuntimeLog.Info("gunplay_started config=" + (store.Active != null ? "ok" : "missing") + " free_aim_on_start=" + FreeAimEnabled);
         }
 
@@ -528,7 +529,8 @@ namespace LibertyFramework.Gunplay
 
         private void UpdateReticle(GunplayConfig config, Ped ped)
         {
-            bool replace = CrosshairEnabled && config.Crosshair.ReplaceVanillaReticle && hud != null;
+            // After a drawing failure the LF crosshair is gone, so the vanilla reticle comes back.
+            bool replace = CrosshairEnabled && !drawFailed && config.Crosshair.ReplaceVanillaReticle && hud != null;
             if (replace)
             {
                 hud.Hide(HudReticle.Crosshair);
@@ -564,9 +566,11 @@ namespace LibertyFramework.Gunplay
             }
         }
 
+        // ScriptHookDotNet raises PerFrameDrawing from its Direct3D hook, outside the script tick, so a
+        // drawing error only stops drawing here; natives and engine restores stay on the tick.
         private void OnDraw(object sender, GraphicsEventArgs args)
         {
-            if (disabled) { return; }
+            if (disabled || drawFailed) { return; }
             try
             {
                 GunplayConfig config = store.Active;
@@ -579,7 +583,9 @@ namespace LibertyFramework.Gunplay
             }
             catch (Exception error)
             {
-                DisableAfterError(error);
+                drawFailed = true;
+                drawCrosshair = false;
+                RuntimeLog.Error("feature_disabled drawing (crosshair and overlay; vanilla reticle restored next tick) error=" + error);
             }
         }
 
@@ -613,7 +619,8 @@ namespace LibertyFramework.Gunplay
             lines.Add("Camera " + (aimCamera == null ? "none" : aimCamera.Name + " " + (aimCamera.Validated ? "validated" : aimCamera.Rejected ? "REJECTED" : "validating")) +
                 "  kick=" + (config != null && KickReady(config) ? "on" : "off") + (realRecoilPresent ? "  REAL RECOIL DETECTED" : ""));
             lines.Add("Engine prefs=" + (prefs != null) + " lockon=" + (playerMemory != null) + " hud=" + (hud != null) + " weaponinfo=" +
-                (weaponInfo != null && weaponInfo.Validated) + " bullets=" + (bullets != null) + (disabled ? " DISABLED " + disabledReason : ""));
+                (weaponInfo != null && weaponInfo.Validated) + " bullets=" + (bullets != null) + (drawFailed ? " DRAWING OFF" : "") +
+                (disabled ? " DISABLED " + disabledReason : ""));
             if (freeAim != null && prefs != null)
             {
                 bool? lockOn = playerMemory != null ? playerMemory.LockOnDisabled(playerIndex) : null;
@@ -642,23 +649,42 @@ namespace LibertyFramework.Gunplay
             disabled = true;
             disabledReason = error.GetType().Name;
             RuntimeLog.Error("gunplay_disabled error=" + error);
-            RestoreEngine();
+            RestoreEngine(SafePlayer());
         }
 
-        private void RestoreEngine()
+        // Memory restores run first; FreeAimMode calls the lock-on native last and only when 'player' is set,
+        // so a failing native (or none at process exit) can never leave the Auto-Aim pref or reticle altered.
+        private void RestoreEngine(Player player)
         {
             try { if (weaponInfo != null) { weaponInfo.RestoreAll(); } }
             catch (Exception error) { RuntimeLog.Error("restore_weaponinfo_failed error=" + error.Message); }
-            try { if (freeAim != null) { freeAim.Disable(Player); } }
-            catch (Exception error) { RuntimeLog.Error("restore_freeaim_failed error=" + error.Message); }
             try { if (hud != null) { hud.RestoreAll(); } }
             catch (Exception error) { RuntimeLog.Error("restore_hud_failed error=" + error.Message); }
+            try { if (freeAim != null) { freeAim.Disable(player); } }
+            catch (Exception error) { RuntimeLog.Error("restore_freeaim_failed error=" + error.Message); }
+        }
+
+        private Player SafePlayer()
+        {
+            try { return Player; }
+            catch (Exception error)
+            {
+                RuntimeLog.Error("restore_player_unavailable lock-on restore skipped error=" + error.Message);
+                return null;
+            }
         }
 
         private void OnDomainUnload(object sender, EventArgs args)
         {
             RuntimeLog.Info("gunplay_unloading restoring engine state");
-            RestoreEngine();
+            RestoreEngine(SafePlayer());
+        }
+
+        // At process exit the game is shutting down on another thread: restore memory only, call no natives.
+        private void OnProcessExit(object sender, EventArgs args)
+        {
+            RuntimeLog.Info("gunplay_process_exit restoring engine memory (no natives)");
+            RestoreEngine(null);
         }
     }
 }

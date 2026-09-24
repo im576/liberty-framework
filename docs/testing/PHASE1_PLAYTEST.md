@@ -62,7 +62,7 @@ INSPECT STATE (or GUNPLAY > Debug overlay ON while shooting). Note: Camera `vali
 
 ## 10. Save/load
 
-With the Gold Pistol in hand, save at a safehouse and reload: gold pistol still gold and still ID 58; free aim, crosshair and kick still work. Exit the game from the pause menu.
+With the Gold Pistol in hand, save at a safehouse and reload: gold pistol still gold and still ID 58; free aim, crosshair and kick still work. Exit the game from the pause menu. (Log proof: the last lines include `gunplay_unloading` or `gunplay_process_exit` and `freeaim_disabled restored_auto_aim=`.)
 
 ## Report
 

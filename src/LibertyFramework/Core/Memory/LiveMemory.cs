@@ -50,7 +50,9 @@ namespace LibertyFramework.Core.Memory
         {
             if (address < 0x10000 || length <= 0) { return false; }
             uint cursor = address;
-            uint end = address + (uint)length;
+            uint end = unchecked(address + (uint)length);
+            // A range that wraps past 4 GB would skip the loop below and wrongly report success.
+            if (end < address) { return false; }
             while (cursor < end)
             {
                 MemoryBasicInformation info;

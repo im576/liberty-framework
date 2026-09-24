@@ -16,10 +16,10 @@ Use in-process reads/writes of engine data (never code patches) located by the r
 - free aim: `PREF_AUTO_AIM` = 0 plus the `DISABLE_PLAYER_LOCKON` native;
 - evidence: read the per-frame bullet trace list to measure real deviations.
 
-Guards: VirtualQuery before every access; instruction-shape checks; per-feature failure isolation; runtime validation (aim fields vs `GET_CAM_ROT`, accuracy vs WeaponInfo.xml) before the first write; originals saved and restored on disable, error, domain unload and process exit; the auto-aim pref is also persisted to disk for crash recovery.
+Guards: VirtualQuery before every access; instruction-shape checks; per-feature failure isolation; runtime validation (aim fields vs `GET_CAM_ROT`, accuracy vs WeaponInfo.xml) before the first write; originals saved and restored on disable, error, domain unload and process exit (memory first, the lock-on native last; process exit and drawing callbacks call no natives); the auto-aim pref is also persisted to disk for crash recovery.
 
 ## Consequences
 
 - Only GTAIV.exe 1.2.0.59 is verified. Another build fails closed (resolver report in the log).
-- FusionFix patches near these sites were checked: the weapon-info bound check NOP is handled; no other FusionFix pattern overlaps a resolved site. The offline verifier simulates the NOP.
+- FusionFix patches near these sites were checked: the weapon-info bound check NOP is handled; no other FusionFix v5.0.1 byte pattern (1,160 checked, each with a 16-byte margin) overlaps any byte a resolver reads, and FusionFix's native overrides touch no anchor native (2026-09-24 review). The offline verifier simulates the NOP.
 - Rollback: disable the feature in DevTools, or remove the DLL; nothing is persisted in game files except the auto-aim pref, which is restored.

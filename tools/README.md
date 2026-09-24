@@ -32,7 +32,7 @@ All steps except install/rollback are read-only on the game folder and safe whil
 | Step | Command |
 |---|---|
 | Build DLL | `./tools/build.ps1 -ScriptHookDotNetReference <ScriptHookDotNet.asi>` (all `src/LibertyFramework/**/*.cs`, warnings are errors) |
-| Offline verification | `./tools/verify.ps1 -GameDirectory <GTAIV>` — resolver vs disassembly, native registration, config/logic tests |
+| Offline verification | `./tools/verify.ps1 -GameDirectory <GTAIV>` — resolver vs disassembly, native registration and ScriptHook.dll name→CE hash mapping, config/logic tests |
 | Gold finish | `./tools/build-finishes.ps1 -GameDirectory <GTAIV>` — reads `weapons.img`, writes `staging/phase1/update/...` and PNG previews |
 | Presets | `./tools/generate-presets.ps1` — regenerate `config/presets` from `config/gunplay.json` |
 | Package | `./tools/package-phase1.ps1 -GameDirectory <GTAIV> -ScriptHookDotNetReference <asi>` — runs all of the above, writes `staging/phase1/manifest.json` |

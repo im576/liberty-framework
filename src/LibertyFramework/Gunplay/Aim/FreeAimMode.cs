@@ -110,21 +110,26 @@ namespace LibertyFramework.Gunplay.Aim
             }
         }
 
+        // Memory state (pref, HUD, restore file) is put back before the lock-on native, so a native failure
+        // cannot leave the saved profile altered. 'player' null (process exit) skips the native: the lock-on
+        // flag lives on the player ped and does not outlive the session.
         internal void Disable(Player player)
         {
             if (!Active) { return; }
             Active = false;
             if (prefs != null && appliedAutoAim) { prefs.AutoAim = AutoAimPrior; }
             appliedAutoAim = false;
-            if (player != null && appliedLockOn) { Natives.DisablePlayerLockOn(player, LockOnPrior); }
-            appliedLockOn = false;
             if (hud != null)
             {
                 hud.Restore(HudReticle.HealthTarget);
                 hud.Restore(HudReticle.ArmourTarget);
             }
             DeleteState();
-            RuntimeLog.Info("freeaim_disabled restored_auto_aim=" + AutoAimPrior + " restored_lockon_disabled=" + LockOnPrior);
+            bool restoreLockOn = appliedLockOn && player != null;
+            appliedLockOn = false;
+            RuntimeLog.Info("freeaim_disabled restored_auto_aim=" + AutoAimPrior + " lockon_disabled_prior=" + LockOnPrior +
+                (restoreLockOn ? " restoring_lockon" : " lockon_native_skipped"));
+            if (restoreLockOn) { Natives.DisablePlayerLockOn(player, LockOnPrior); }
         }
 
         private void SaveState()

@@ -1,6 +1,6 @@
 # CE game API registry
 
-Hashes and handler addresses are checked by `tools/verify.ps1` against `GTAIV.exe` 1.2.0.59 (see `docs/game-api/native-hashes.csv`, taken from FusionFix's CE native list). "Registered" means the exe registers a handler for that hash; in-game behaviour still needs the T-010 playtest. All calls go through `src/LibertyFramework/GameApi/Natives.cs`.
+Hashes and handler addresses are checked by `tools/verify.ps1` against `GTAIV.exe` 1.2.0.59 (see `docs/game-api/native-hashes.csv`, taken from FusionFix's CE native list). "Registered" means the exe registers a handler for that hash; verify also checks that the installed `ScriptHook.dll` translates each called name (Jenkins hash of the lower-case name) to that CE hash, which is how `Function.Call("NAME")` reaches the game. In-game behaviour still needs the T-010 playtest. Natives are called only from script ticks and `DomainUnload`, never from `PerFrameDrawing` or `ProcessExit`. All calls go through `src/LibertyFramework/GameApi/Natives.cs`.
 
 | Native | Purpose | CE status | Task |
 |---|---|---|---|

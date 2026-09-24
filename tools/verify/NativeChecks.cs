@@ -44,6 +44,46 @@ namespace LibertyFramework.Verify
                 if (names.Contains(pair.Key)) { continue; }
                 check.True("resolver anchor native registered: " + pair.Key, scanner.FindNative(pair.Value) != 0, "hash=0x" + pair.Value.ToString("X8"));
             }
+
+            // Function.Call("NAME") hashes the name (Jenkins one-at-a-time, lower case) and the installed
+            // ScriptHook.dll translates that hash to the CE hash through a table of adjacent (name hash, CE hash)
+            // pairs. A name missing from that table would fail only in game, so check every one here.
+            string scriptHook = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(exePath)), "ScriptHook.dll");
+            bool present = File.Exists(scriptHook);
+            check.True("ScriptHook.dll present next to GTAIV.exe", present, scriptHook);
+            if (!present) { return; }
+            byte[] table = File.ReadAllBytes(scriptHook);
+            foreach (string name in names)
+            {
+                uint ceHash;
+                if (!known.TryGetValue(name, out ceHash)) { continue; }
+                uint nameHash = NameHash(name);
+                check.True("ScriptHook.dll maps " + name + " to its CE hash", HasPair(table, nameHash, ceHash),
+                    "name_hash=0x" + nameHash.ToString("X8") + " ce_hash=0x" + ceHash.ToString("X8"));
+            }
+        }
+
+        private static uint NameHash(string name)
+        {
+            uint hash = 0;
+            foreach (char character in name.ToLowerInvariant())
+            {
+                hash = unchecked(hash + (byte)character);
+                hash = unchecked(hash + (hash << 10));
+                hash ^= hash >> 6;
+            }
+            hash = unchecked(hash + (hash << 3));
+            hash ^= hash >> 11;
+            return unchecked(hash + (hash << 15));
+        }
+
+        private static bool HasPair(byte[] data, uint first, uint second)
+        {
+            for (int offset = 0; offset + 8 <= data.Length; offset += 4)
+            {
+                if (BitConverter.ToUInt32(data, offset) == first && BitConverter.ToUInt32(data, offset + 4) == second) { return true; }
+            }
+            return false;
         }
     }
 }

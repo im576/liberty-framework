@@ -19,7 +19,12 @@ namespace LibertyFramework.Core.Input
         internal const ushort XButton = 0x4000;
         internal const ushort YButton = 0x8000;
 
+        // XInputGetState on an empty slot is slow enough to cost frame time when called every frame,
+        // so empty slots are rescanned at most once per interval; a connected pad is read every poll.
+        private const int RescanIntervalMilliseconds = 1000;
         private bool available = true;
+        private int connectedIndex = -1;
+        private int lastScanTicks;
 
         [StructLayout(LayoutKind.Sequential)]
         private struct XInputState
@@ -54,15 +59,26 @@ namespace LibertyFramework.Core.Input
             {
                 try
                 {
-                    for (uint index = 0; index < 4; index++)
+                    XInputState state;
+                    if (connectedIndex >= 0 && XInputGetState((uint)connectedIndex, out state) == 0)
                     {
-                        XInputState state;
-                        if (XInputGetState(index, out state) != 0) { continue; }
-                        Connected = true;
-                        Buttons = state.Buttons;
-                        RightX = Normalize(state.RightX);
-                        RightY = Normalize(state.RightY);
-                        break;
+                        Read(state);
+                    }
+                    else
+                    {
+                        connectedIndex = -1;
+                        int now = Environment.TickCount;
+                        if (lastScanTicks == 0 || unchecked(now - lastScanTicks) >= RescanIntervalMilliseconds)
+                        {
+                            lastScanTicks = now;
+                            for (int index = 0; index < 4; index++)
+                            {
+                                if (XInputGetState((uint)index, out state) != 0) { continue; }
+                                connectedIndex = index;
+                                Read(state);
+                                break;
+                            }
+                        }
                     }
                 }
                 catch (Exception error)
@@ -73,6 +89,14 @@ namespace LibertyFramework.Core.Input
                 }
             }
             Pressed = (ushort)(Buttons & ~previous);
+        }
+
+        private void Read(XInputState state)
+        {
+            Connected = true;
+            Buttons = state.Buttons;
+            RightX = Normalize(state.RightX);
+            RightY = Normalize(state.RightY);
         }
 
         internal bool IsDown(ushort mask)

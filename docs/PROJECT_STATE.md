@@ -5,7 +5,7 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
-**Phase 1 — integrated gunplay build (T-010), awaiting one owner playtest.** Universal free aim, per-weapon recoil and real spread for test weapons 58/59/60, spread crosshair, gold pistol finish, and expanded DevTools are built and packaged in `staging/phase1`. Offline: 132/132 verification checks against the installed GTAIV.exe; install/rollback dry run byte-identical. No in-game evidence yet for any T-010 behaviour.
+**Phase 1 — integrated gunplay build (T-010), awaiting one owner playtest.** Universal free aim, per-weapon recoil and real spread for test weapons 58/59/60, spread crosshair, gold pistol finish, and expanded DevTools are built and packaged in `staging/phase1`. Offline: 166/166 verification checks against the installed GTAIV.exe and ScriptHook.dll; install/rollback dry run byte-identical. No in-game evidence yet for any T-010 behaviour.
 
 ## Key decisions (see `docs/architecture/decisions/`)
 
@@ -34,6 +34,7 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Changelog
 
+- 2026-09-24 — T-010 review pass: checked FusionFix patches against every resolver anchor (no conflict), added ScriptHook.dll name→CE hash checks to verify (166/166). Fixed runtime risks: no natives from drawing callbacks or at process exit, memory restores before the lock-on native, cheaper logging and controller polling, wrap-safe memory checks. Rebuilt and repackaged; game files untouched; owner playtest pending.
 - 2026-09-24 — T-010 built: free aim, recoil, real spread with shot-audit calibration, crosshair, gold pistol finish (lf_gold_pistol in update/LibertyFramework/LibertyFramework.img), DevTools pages (weapons, gunplay, live tuning, presets/config, teleport, test range, inspect). Build clean; verify 132/132; package + install/rollback dry run passed. Game files untouched; owner playtest pending.
 - 2026-09-24 — With GTA IV closed, installed the T-007 three-weapon XML override and matching DLL. Backup, hash receipt, XML parse, and installed file checks passed; next step is one in-game carbine/shotgun test.
 - 2026-09-24 — Staged T-007 carbine and shotgun XML entries using base M4 and pump shotgun models/stats, added guarded menu actions and per-pair ammo transfer, and built x86 offline. The running game files were not changed.

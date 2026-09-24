@@ -21,6 +21,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="ScriptHookDotNet">
@@ -29,12 +30,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="RuntimeProbe.cs" />
-    <Compile Include="Core\Logging\RuntimeLog.cs" />
-    <Compile Include="Core\Config\ProbeConfig.cs" />
-    <Compile Include="Core\Config\ProbeConfigLoader.cs" />
-    <Compile Include="DevTools\DevToolsMenu.cs" />
-    <Compile Include="WeaponProbe\WeaponSlotProbe.cs" />
+    <!-- Same file set as tools/build.ps1, the authoritative build. -->
+    <Compile Include="**\*.cs" Exclude="bin\**;obj\**" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

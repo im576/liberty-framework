@@ -481,7 +481,11 @@ namespace LibertyFramework.DevTools
             }
             catch (Exception error)
             {
-                DisableAfterError(error);
+                // Drawing runs from ScriptHookDotNet's Direct3D hook, outside the script tick: no natives here.
+                // OnTick sees 'disabled' and restores player control on the next tick.
+                IsOpen = false;
+                disabled = true;
+                RuntimeLog.Error("devtools_disabled error=" + error);
             }
         }
 

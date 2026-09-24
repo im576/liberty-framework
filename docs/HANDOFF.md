@@ -1359,7 +1359,3 @@ retain
 The world should unlock these capabilities naturally through GTA IV's geography and story progression.
 The current gunplay implementation is the foundation.
 Build it carefully, research aggressively, reuse good existing work where appropriate, and optimize everything around rapid human testing and iteration.
-</pasted_content id="d1fe">
-
-"
-report back here
