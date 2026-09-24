@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "locations": [
+    {
+      "id": "gun_test_range",
+      "name": "Gun Test Range (Broker)",
+      "x": 1041.0,
+      "y": -568.3,
+      "z": 20.0,
+      "heading": 0.0,
+      "snap": "pavement",
+      "note": "Street level beside Hove Beach station (coordinates from common/data/paths/TracksQueens.dat), snapped to the nearest pavement. Use DevTools > Teleport > Set Gun Test Range Here to replace it with any spot you prefer; that save is exact."
+    },
+    {
+      "id": "hove_beach_station",
+      "name": "Hove Beach Station Street",
+      "x": 1050.8,
+      "y": -560.0,
+      "z": 20.0,
+      "heading": 90.0,
+      "snap": "pavement",
+      "note": "Broker, available from the start of the story."
+    },
+    {
+      "id": "schottler",
+      "name": "Schottler Station Street",
+      "x": 1317.7,
+      "y": -76.9,
+      "z": 30.0,
+      "heading": 0.0,
+      "snap": "pavement",
+      "note": "Broker/Dukes border."
+    },
+    {
+      "id": "east_park",
+      "name": "Algonquin East Park Street",
+      "x": -64.8,
+      "y": 663.4,
+      "z": 15.0,
+      "heading": 0.0,
+      "snap": "pavement",
+      "note": "Algonquin; may trigger a wanted level if the island is still locked in your story."
+    },
+    {
+      "id": "city_hall",
+      "name": "Algonquin City Hall Street",
+      "x": -78.2,
+      "y": -493.4,
+      "z": 15.0,
+      "heading": 0.0,
+      "snap": "pavement",
+      "note": "Algonquin; may trigger a wanted level if the island is still locked in your story."
+    }
+  ]
+}

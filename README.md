@@ -6,7 +6,7 @@ Phase 1 goal: three gold test weapons (pistol, carbine, pump shotgun) that use f
 data-driven recoil, and a clean spread crosshair — tuned live from an in-game developer menu —
 while every vanilla weapon stays vanilla for A/B comparison.
 
-> **Status:** T-001 loads and reloads in gameplay. T-002's live config reload, malformed-input retention, recovery, and continued gameplay checks passed. No gunplay changes yet. See [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md).
+> **Status:** Phase 1 (T-010) is built, verified offline against the installed GTAIV.exe, and packaged; it awaits one owner playtest ([checklist](docs/testing/PHASE1_PLAYTEST.md)). See [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md).
 
 ## For AI agents
 
@@ -30,8 +30,8 @@ Start at [AGENTS.md](AGENTS.md). Then [docs/tasks/README.md](docs/tasks/README.m
 | `docs/game-api/` | Registry of natives and memory patterns we use, with CE status |
 | `docs/tasks/` | Small, ordered task cards for agents |
 | `docs/testing/` | Test matrix, playtest report template |
-| `src/` | C# runtime probe source |
+| `src/` | C# source (LibertyFramework.net.dll) |
 | `config/` | JSON tuning/config files |
-| `assets/` | Models/textures (gold finish etc.) |
+| `assets/` | Finish definitions (no game assets are committed) |
 | `tools/` | Build/deploy scripts |
 | `third_party/` | Third-party code/binaries + license tracking |

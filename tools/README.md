@@ -24,3 +24,19 @@ Build with the same command. The DLL adds a controller menu script. The first ve
 `./tools/prepare-t007.ps1 -GameDirectory '<GTAIV folder>'` generates an ignored, local-only `staging/t007/WeaponInfo.xml` by cloning the installed vanilla pistol, M4, and pump shotgun entries as `LF_GOLD_PISTOL`, `LF_GOLD_CARBINE`, and `LF_GOLD_SHOTGUN`. The models and stats remain vanilla for identity testing. The live pistol test selected custom ID 58; the vanilla pistol disappeared from the handgun inventory. The owner verified the menu switch and total-ammo transfer. A pistol-only XML is already installed on the tester's machine; do not rerun `deploy-t007.ps1` against the existing override. The installer refuses to overwrite an existing weapon override or install while the game runs. `remove-t007.ps1` removes only a hash-matching T-007 override while the game is closed. See [T-007](../docs/tasks/T-007-weapon-slots.md) for findings.
 
 For the next identity expansion, `prepare-t007.ps1` now stages three cloned entries: pistol, M4 carbine, and pump shotgun. The local menu build includes the added guarded actions. While the game is closed, first upgrade the existing hash-matching weapon override with `upgrade-t007.ps1`, then deploy the rebuilt DLL with `deploy-t002.ps1`. The upgrade keeps a backup of the pistol-only XML and updates the receipt hash. The original `common/data/WeaponInfo.xml` is untouched. See [T-007](../docs/tasks/T-007-weapon-slots.md) for the next playtest.
+
+## Phase 1 (T-010) — build, verify, package, install, rollback
+
+All steps except install/rollback are read-only on the game folder and safe while GTA IV runs.
+
+| Step | Command |
+|---|---|
+| Build DLL | `./tools/build.ps1 -ScriptHookDotNetReference <ScriptHookDotNet.asi>` (all `src/LibertyFramework/**/*.cs`, warnings are errors) |
+| Offline verification | `./tools/verify.ps1 -GameDirectory <GTAIV>` — resolver vs disassembly, native registration, config/logic tests |
+| Gold finish | `./tools/build-finishes.ps1 -GameDirectory <GTAIV>` — reads `weapons.img`, writes `staging/phase1/update/...` and PNG previews |
+| Presets | `./tools/generate-presets.ps1` — regenerate `config/presets` from `config/gunplay.json` |
+| Package | `./tools/package-phase1.ps1 -GameDirectory <GTAIV> -ScriptHookDotNetReference <asi>` — runs all of the above, writes `staging/phase1/manifest.json` |
+| Install (game closed) | `./tools/install-phase1.ps1 -GameDirectory <GTAIV>` — checks, backs up to `scripts/LibertyFramework/backups/phase1-*`, installs, hash-verifies |
+| Rollback (game closed) | `./tools/rollback-phase1.ps1 -GameDirectory <GTAIV>` — restores the newest phase1 backup |
+
+Installed files: `scripts/LibertyFramework.net.dll`, `scripts/LibertyFramework/config/{gunplay.json,presets/*.json,devtools/locations.json}`, `update/common/data/{WeaponInfo.xml,default.dat,lf_finishes.ide}`, `update/LibertyFramework/LibertyFramework.img`. `default.dat` is the installed Various Pedestrian Actions copy plus one `IDE common:/data/lf_finishes.ide` line; `WeaponInfo.xml` is the T-007 file with `LF_GOLD_PISTOL` using model `lf_gold_pistol`. The superseded `deploy-t00x`/`upgrade-t007` scripts remain for history only.

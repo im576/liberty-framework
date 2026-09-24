@@ -1,31 +1,53 @@
 # Configuration contract
 
-T-002 implements one harmless runtime sample at `scripts/LibertyFramework/config/probe.json`. The repository sample is `config/probe.json`:
+All files are JSON read with `DataContractJsonSerializer`; every field is required (a missing field rejects the file). Invalid edits are logged and the last valid config stays active. Runtime copies live in `scripts/LibertyFramework/config/`.
 
-```json
-{
-  "schemaVersion": 1,
-  "probeLabel": "default"
-}
-```
+## probe.json (T-002)
 
-`schemaVersion` is required and must equal integer `1`. `probeLabel` is required, contains 1–64 ASCII letters, digits, underscores, or hyphens, and is only written to the project log. It changes no gameplay. The script checks for edits every ten seconds; a valid edit becomes active, while malformed, missing, oversized (over 64 KiB), or invalid data is logged and the last valid value remains active. On a fresh start with no valid file, the label is `none`. The installer never overwrites an existing config. This is a probe schema, not a weapon tuning schema.
+`{"schemaVersion": 1, "probeLabel": "default"}` — label only; no gameplay effect.
 
-## Proposed weapon profile shape
+## gunplay.json (T-010)
 
-No weapon config parser or gameplay values exist yet. This remains a proposal for later tasks.
+Polled every second; a valid change is applied live. DevTools "Save live values" rewrites it (previous copy kept as `gunplay.json.bak`).
 
-```json
-{
-  "schemaVersion": 1,
-  "weaponId": "confirmed-game-id",
-  "aimProfile": "freeaim_controller",
-  "recoilProfile": "pistol_test",
-  "spreadProfile": "pistol_test",
-  "finish": "GOLD_TEST"
-}
-```
+| Section / field | Unit | Meaning |
+|---|---|---|
+| `freeAim.enabledOnStartup` | bool | start with universal free aim on |
+| `freeAim.disableLockOn` / `forceAutoAimOff` / `hideTargetHealth` | bool | lock-on native, menu Auto-Aim pref, health/armour ring |
+| `crosshair.replaceVanillaReticle` | bool | hide vanilla reticle and draw the LF crosshair |
+| `crosshair.showForVanillaWeapons` | bool | LF crosshair also on non-test guns (static, from their own accuracy) |
+| `crosshair.lineLengthPixels`, `lineThicknessPixels`, `outlinePixels` | px | segment look |
+| `crosshair.minimumGapPixels` / `maximumGapPixels` | px | display clamp of the spread gap |
+| `crosshair.colorArgb`, `outlineArgb` | 0–255 ×4 | colours |
+| `crosshair.gapSmoothingPerSecond` | 1/s | closing smoothing (opening is immediate) |
+| `crosshair.fovAxis` | `vertical`/`horizontal` | how camera FOV maps to screen pixels |
+| `spreadCalibration.tangentPerAccuracyUnit` | tan/unit | muzzle deviation per CWeaponInfo accuracy unit (0.02 × 0.65 × 0.2 from disassembly) |
+| `spreadCalibration.autoCalibrate`, `sampleWindow`, `gainAdjustRate`, `minimumGain`, `maximumGain` | — | closed-loop gain from measured bullet traces |
+| `spreadCalibration.minimumSampleSpreadDegrees`, `maximumMeasurableDeviationDegrees` | deg | ignore samples outside this band |
+| `spreadCalibration.minimumAccuracyValue` | accuracy | floor for the written value |
+| `recoilGlobal.enableCameraKick`, `allowWithRealRecoil` | bool | kick master switch; refuse to double-kick with Real Recoil |
+| `recoilGlobal.recoveryCancelStickThreshold` | 0–1 stick | right-stick deflection that hands recovery to the player |
+| `recoilGlobal.cameraValidationToleranceDegrees`, `cameraValidationSamples` | deg, count | aim-field validation before the first write |
+| `recoilGlobal.maximumDeltaSeconds` | s | frame-time clamp |
+| `movement.movingSpeedThresholdMetersPerSecond`, `fullMovementPenaltySpeedMetersPerSecond` | m/s | movement penalty ramp |
+| `weapons[]` | — | registered test weapons (IDs 58+ only); see below |
+| `tuning[]` | key, step, min, max | parameters exposed in DevTools Live Tuning |
+| `testRange.*` | m, rounds, hp | target lane distances, vehicle offset, ammo/health/armour refills |
 
-Future files may live under `config/weapons/`, `config/aiming/`, `config/recoil/`, `config/spread/`, and `config/devtools/`. Every numerical field must state its unit, allowed range, and safe default in this document when implemented. Invalid or missing files must log a useful error and must not activate custom behavior for an unidentified weapon. Live tuning should support apply, revert, save, and reload, with atomic writes or a backup so malformed edits do not destroy a known-good profile.
+`weapons[]`: `weaponId`, `vanillaWeaponId`, `weaponInfoName` (must match WeaponInfo.xml), `label`, `profileName`, `finish`, `initialAmmo`, `calibrationSource` (use this weapon's bullets to calibrate), `recoil`, `spread`.
 
-T-002 uses .NET Framework's `DataContractJsonSerializer` for the probe sample. No gameplay numbers are asserted now.
+`recoil` (degrees of aim camera, ms): `verticalKickDegrees`, `horizontalKickDegrees` (bias, + right), `horizontalRandomDegrees` (±), `firstShotMultiplier`, `sustainedFireGrowthPerShot`, `sustainedFireShotCap`, `chainResetMilliseconds`, `maxAccumulatedDegrees` (soft cap), `minimumKickFractionAtCap`, `kickDurationMilliseconds`, `recoveryDelayMilliseconds`, `recoveryDegreesPerSecond`, `recoveryFraction` (0–1 of each kick auto-recovered), and multipliers `moving`, `crouched`, `cover`, `vehicle`, `hipFire`.
+
+`spread` (cone half-angle in degrees from the muzzle): `baseDegrees`, `perShotDegrees`, `maxDegrees`, `recoveryDelayMilliseconds`, `recoveryDegreesPerSecond`, `movingAddDegrees` (at full movement), multipliers `crouched`, `cover`, `vehicle`, `hipFire`, `blindFire`, `airborne`, and `pelletPatternDegrees` (display-only allowance for multi-pellet weapons until 16 bullets are measured).
+
+## presets/*.json
+
+`{"schemaVersion":1,"name","description","weapons":[{"weaponId","profileName","recoil","spread"}]}` — replaces recoil/spread for listed weapons. Shipped: A GTA IV+, B Mafia Light, C Mafia Heavy, D Experimental (generated by `tools/generate-presets.ps1`). "Save as preset" writes `presets/user_saved.json`.
+
+## devtools/locations.json
+
+`{"schemaVersion":1,"locations":[{"id","name","x","y","z","heading","snap","note"}]}`. `snap`: `none` (exact), `pavement` (nearest pavement node), `ground` (ground below z). `gun_test_range` is used by Test Range and is overwritten by "Set Gun Test Range here".
+
+## Build-time: assets/finishes/finishes.json
+
+Finish colour ramps (`shadowRgb`, `midRgb`, `highlightRgb`, `contrast`, `lift`, `gamma`) per texture role (`diffuse`, `specular`, `icon`) and model variants (`variantModel`, `baseModel`, `sourceImg`, `finish`, `animGroup`, `drawDistance`, `audioMaterial`, `weaponInfoType`, `textureRoles`). Add a finish or a weapon variant here and rerun `tools/package-phase1.ps1`.

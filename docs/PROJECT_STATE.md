@@ -5,12 +5,13 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
-**Phase 0 — Research and environment.** T-000 through T-003 passed owner playtests. The revised controller menu prevents D-pad phone input and offers weapon actions. T-007's custom pistol ID 58 passed aim, fire, reload, cover, vehicle, and save/load checks. Menu switching between custom ID 58 and vanilla ID 7 preserved total handgun ammo. The carbine/shotgun expansion is installed after a guarded shutdown; expected IDs 59 and 60 await in-game playtest. No custom gunplay or gold art is implemented.
+**Phase 1 — integrated gunplay build (T-010), awaiting one owner playtest.** Universal free aim, per-weapon recoil and real spread for test weapons 58/59/60, spread crosshair, gold pistol finish, and expanded DevTools are built and packaged in `staging/phase1`. Offline: 132/132 verification checks against the installed GTAIV.exe; install/rollback dry run byte-identical. No in-game evidence yet for any T-010 behaviour.
 
 ## Key decisions (see `docs/architecture/decisions/`)
 
 - ADR-0001: CE + FusionFix + Tomasak ScriptHookDotNet 1.7.1.8 loads an x86 .NET Framework 4.0 C# probe and reloads successfully. No downgrade.
 - ADR-0002: FusionFix v5.0.1 ExtendedLimits assigned the custom pistol ID 58. It replaced the vanilla pistol in the handgun inventory; a deliberate switch is needed. Unused episodic slots are deferred.
+- ADR-0004: Engine data (aim camera, CWeaponInfo accuracy, menu prefs, hud.dat reticle globals, bullet list) is located by native-hash/instruction-shape resolvers, validated at runtime, never code-patched, and restored on exit. See docs/game-api/MEMORY.md.
 - ADR-0003: T-002 implements a JSON sample with live polling and last-valid retention; live log and gameplay checks passed.
 
 ## Verified in-game (by the human tester)
@@ -26,13 +27,14 @@ Keep it short: this is a dashboard, not a diary.
 |---|---|---|
 | Q1 | Resolved: ScriptHookDotNet 1.7.1.8 loads an x86 .NET Framework 4.0 DLL on CE 1.2.0.59 with FusionFix; reload succeeds. The maximum usable C# language level is not established. | T-001 |
 | Q2 | Resolved for the first pistol: custom ID 58 selects and passes core gameplay/save/load, and menu switching preserves total ammo. The same handgun slot cannot hold both variants simultaneously. Carbine/shotgun IDs 59/60 are staged but unverified. | T-007 |
-| Q3 | How can lock-on / target snapping / reticle health ring be disabled **per weapon**? | T-008 |
-| Q4 | Which API actually moves the aim camera (pitch/yaw) for recoil kick on CE — a native, a SHDN wrapper, or memory? | T-009 |
-| Q5 | How to hide the vanilla reticle so we can draw our own crosshair? | T-008 |
+| Q3 | Answered offline (universal, accepted by owner): PREF_AUTO_AIM + DISABLE_PLAYER_LOCKON + hud.dat health/armour globals. In-game confirmation pending. | T-010 |
+| Q4 | Answered offline: CCamAimWeapon pitch/heading fields (+0x218/+0x21C) found via the SET_GAME_CAM_PITCH worker; runtime-validated before use. In-game confirmation pending. | T-010 |
+| Q5 | Answered offline: shrink/zero the hud.dat reticle globals the HUD copies every frame. In-game confirmation pending. | T-010 |
 | Q6 | Does Steam Input need a specific controller config (e.g. Xbox layout, no gyro) for consistent results? | T-000 |
 
 ## Changelog
 
+- 2026-09-24 — T-010 built: free aim, recoil, real spread with shot-audit calibration, crosshair, gold pistol finish (lf_gold_pistol in update/LibertyFramework/LibertyFramework.img), DevTools pages (weapons, gunplay, live tuning, presets/config, teleport, test range, inspect). Build clean; verify 132/132; package + install/rollback dry run passed. Game files untouched; owner playtest pending.
 - 2026-09-24 — With GTA IV closed, installed the T-007 three-weapon XML override and matching DLL. Backup, hash receipt, XML parse, and installed file checks passed; next step is one in-game carbine/shotgun test.
 - 2026-09-24 — Staged T-007 carbine and shotgun XML entries using base M4 and pump shotgun models/stats, added guarded menu actions and per-pair ammo transfer, and built x86 offline. The running game files were not changed.
 - 2026-09-24 — Owner confirmed the revised controller menu and weapon switching worked completely; T-003 is DONE. Logs independently confirm raw XInput input, menu actions, control lock/open-close, and handgun ammo continuity. T-007 advances to carbine/shotgun expansion.

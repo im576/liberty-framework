@@ -1,0 +1,33 @@
+using System.Collections.Generic;
+using System.Runtime.Serialization;
+
+// Fields are populated by DataContractJsonSerializer.
+#pragma warning disable 0649
+
+namespace LibertyFramework.Gunplay.Profiles
+{
+    // Root of config/gunplay.json. See docs/architecture/CONFIG_SCHEMA.md for units and ranges.
+    [DataContract]
+    internal sealed class GunplayConfig
+    {
+        [DataMember(Name = "schemaVersion", IsRequired = true, Order = 0)] internal int SchemaVersion;
+        [DataMember(Name = "freeAim", IsRequired = true, Order = 1)] internal FreeAimSettings FreeAim;
+        [DataMember(Name = "crosshair", IsRequired = true, Order = 2)] internal CrosshairSettings Crosshair;
+        [DataMember(Name = "spreadCalibration", IsRequired = true, Order = 3)] internal SpreadCalibrationSettings SpreadCalibration;
+        [DataMember(Name = "recoilGlobal", IsRequired = true, Order = 4)] internal RecoilGlobalSettings RecoilGlobal;
+        [DataMember(Name = "movement", IsRequired = true, Order = 5)] internal MovementSettings Movement;
+        [DataMember(Name = "weapons", IsRequired = true, Order = 6)] internal List<WeaponProfile> Weapons;
+        [DataMember(Name = "tuning", IsRequired = true, Order = 7)] internal List<TuningParameter> Tuning;
+        [DataMember(Name = "testRange", IsRequired = true, Order = 8)] internal TestRangeSettings TestRange;
+
+        internal WeaponProfile FindWeapon(int weaponId)
+        {
+            if (Weapons == null) { return null; }
+            foreach (WeaponProfile weapon in Weapons)
+            {
+                if (weapon.WeaponId == weaponId) { return weapon; }
+            }
+            return null;
+        }
+    }
+}

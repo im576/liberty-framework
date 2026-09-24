@@ -1,3 +1,22 @@
-# Memory access registry
+# Memory access registry (GTAIV.exe 1.2.0.59, Steam CE)
 
-No memory access is authorized or implemented. Prefer supported ScriptHookDotNet wrappers and documented natives. A future memory technique needs a small spike, a byte-pattern scan, CE build verification, failure behavior, and an architecture decision record. Hardcoded addresses are unacceptable.
+Approved by [ADR-0004](../architecture/decisions/ADR-0004-engine-memory.md). No absolute address is stored in code. Every location is resolved at startup by `src/LibertyFramework/Core/Memory/GameAddresses.cs` from a native-registration hash or a unique instruction shape, and the surrounding bytes are checked before use. A failed resolver disables only its own feature and is logged (`engine_resolve ... FAILED`). `tools/verify.ps1` runs the same resolver against `GTAIV.exe` on disk and compares every result with an independent Capstone disassembly (addresses below are at the preferred base 0x400000; the live process is relocated and the resolver reads the relocated immediates).
+
+| Feature | Anchor | Resolved (preferred base) | Evidence from disassembly | Written by LF |
+|---|---|---|---|---|
+| Auto-aim pref | `IS_AUTO_AIMING_ON` (0x366B0444) → `cmp dword [x],0; setne al` | `PREF_AUTO_AIM` = 0x1160C68 (pref id 8) | Menu pref table names id 8 `PREF_AUTO_AIM`; the player targeting code at 0xA2B09E/0xA2B735/0xA75477 tests it | Yes: forced 0 while free aim is on, prior value saved to `state/freeaim_restore.json` and restored |
+| Reticule pref | `IS_HUD_RETICULE_COMPLEX` (0x4DDB5D59) | `PREF_RETICULE` = 0x1160C90 (id 18) | read by HUD reticle code 0x5C644D/0x5C966E | Read only |
+| Lock-on flag | `DISABLE_PLAYER_LOCKON` (0x711214F3) → helper → `CPlayerInfo[idx]`, `+0x598` ped, `+0x264` bit 23 | table 0x11A8808 (32 players) | same bit tested by targeting code at 0xA7546B before the auto-aim pref | Only through the native `DISABLE_PLAYER_LOCKON`; memory read records the prior value |
+| Aim camera | `GET_ROOT_CAM` chain → camera pool global; the `SET_GAME_CAM_PITCH/HEADING` worker's `push 0; push 9; call CCam::FindChild` | pool 0x12FB1A0, FindChild 0xA7C740, type 9, pitch `+0x218`, heading `+0x21C` (radians, world) | `CCamAimWeapon::AimFree` (0xA23BE0) adds stick input to `+0x218` and sets `+0x21C`, then builds the aim direction from both | Yes: recoil kick added to both fields only after runtime validation against `GET_CAM_ROT` |
+| Weapon accuracy | `CWeaponInfo::Get(type)` (`imul eax,0x110; add eax,array`), `CWeaponInfo::GetAccuracy` | array 0x15F8BC0 (FusionFix ExtendedLimits relocates it and NOPs the bound check; both forms accepted), accuracy `+0x34`, flags `+0x20` bit 3 → alternate `+0x38` | `CWeapon::DoAccuracy` (0xB5CCC0) offsets every bullet end point by distance × 0.02 × accuracy term × input multiplier (FusionFix `RecoilFix` hook = 0.65) | Yes, for test weapons 58–60 only, after the in-memory values match WeaponInfo.xml; originals restored on unload/error |
+| Bullet traces | `IS_BULLET_IN_AREA` → helper → list scan | count 0x15F8BB0, array ptr 0x15F8BB8, stride 0x30, start +0x00, end +0x10, owner +0x20, max 50 | `AddBullet` (0xAF5D70) called from `CWeapon::Fire` after `DoAccuracy`; list cleared once per frame (0x940363) | Read only (shot audit) |
+| Vanilla reticle | `push "HUD_WEAPON_CROSSHAIR"` etc. in hud.dat registration | component array 0x118E7F8; globals: crosshair size 0x118EE3C alpha 0x118EE44, health 0x118EE58/60, armour 0x118EE74/7C, dot 0x118EE90/98 | reticle HUD code copies these globals into the live components every frame (0x5C8EA8, 0x5C9641, 0x5C9803) | Yes: size → 0.00001 and alpha → 0 while the LF crosshair is on (health/armour while free aim is on); saved values restored |
+
+## Finish asset pipeline (offline, not memory)
+
+`tools/finishes` reads `pc/models/cdimages/weapons.img` (IMG v3; table decrypted with the AES key found in the local `GTAIV.exe` by its SHA-1), extracts `w_glock.wdr/.wtd`, recolours the DXT endpoint colours of `cj_glock`, `cj_glock_s` and `icon`, and writes `lf_gold_pistol.wdr/.wtd` into `update/LibertyFramework/LibertyFramework.img`. RSC05 layout: 12-byte header, zlib body; texture dictionary textures at `+0x18/+0x1C`; texture name `+0x14`, size `+0x1C`, format `+0x20`, levels `+0x27`, pixel pointer `+0x48`. Output is read back and re-parsed before staging.
+
+## Known limits
+
+- Aim-camera field validation needs a few seconds of aiming; until it passes, no kick is written. If it fails, the log shows `aimcam_validation_failed` with the compared values and camera kick stays off.
+- The accuracy-to-degrees factor (`spreadCalibration.tangentPerAccuracyUnit` = 0.02 × 0.65 × 0.2) comes from the disassembly; a per-ped factor (`ped+0xEA4`) and skill term could not be resolved statically. The shot audit measures real bullet traces and the auto-calibration gain absorbs any residual factor.

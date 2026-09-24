@@ -1,0 +1,600 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using GTA;
+using LibertyFramework.Core.Config;
+using LibertyFramework.Core.Input;
+using LibertyFramework.Core.Logging;
+using LibertyFramework.Core.Math3;
+using LibertyFramework.Core.Memory;
+using LibertyFramework.GameApi;
+using LibertyFramework.Gunplay.Aim;
+using LibertyFramework.Gunplay.Crosshair;
+using LibertyFramework.Gunplay.Profiles;
+using LibertyFramework.Gunplay.Recoil;
+using LibertyFramework.Gunplay.Spread;
+using LibertyFramework.Weapons;
+
+namespace LibertyFramework.Gunplay
+{
+    // Per-frame gunplay loop. Order each frame:
+    //   shots (clip delta) -> audit last frame's real bullets -> spread model -> write accuracy
+    //   -> recoil step -> aim-camera write -> reticle hide / crosshair draw.
+    // Only registered test weapons (config weapons 58+) get spread/recoil; free aim and the
+    // crosshair apply universally while their toggles are on. Every engine write is undone on unload.
+    public sealed class GunplayController : Script
+    {
+        private const int ConfigPollMilliseconds = 1000;
+        private const int StateLogMilliseconds = 5000;
+        private const int DetailedAuditBullets = 200;
+
+        internal static GunplayController Instance { get; private set; }
+
+        private readonly Stopwatch clock = Stopwatch.StartNew();
+        private readonly GunplayConfigStore store;
+        private readonly ControllerInput controller = new ControllerInput();
+        private readonly RecoilSolver recoil = new RecoilSolver(Environment.TickCount);
+        private readonly SpreadModel spread = new SpreadModel();
+        private readonly SpreadCalibrator calibrator = new SpreadCalibrator();
+        private readonly CrosshairRenderer crosshair = new CrosshairRenderer();
+        private readonly Dictionary<int, ShotAuditStats> audits = new Dictionary<int, ShotAuditStats>();
+
+        private bool initialized;
+        private bool disabled;
+        private string disabledReason = "";
+        private double lastTickMilliseconds;
+        private double lastConfigPollMilliseconds;
+        private double lastStateLogMilliseconds;
+        private int lastWeaponId = -1;
+        private int lastClip = -1;
+        private double lastShotMilliseconds = double.NegativeInfinity;
+        private bool realRecoilPresent;
+
+        private GameAddresses addresses;
+        private LiveMemory memory;
+        private WeaponInfoTable weaponInfo;
+        private AimCamera aimCamera;
+        private HudReticle hud;
+        private GamePrefs prefs;
+        private PlayerMemory playerMemory;
+        private BulletLog bullets;
+        private FreeAimMode freeAim;
+
+        // Frame snapshot used for drawing and DevTools inspection.
+        private ShooterState state;
+        private WeaponProfile activeProfile;
+        private int activeWeaponId;
+        private double currentConeDegrees;
+        private double displayConeDegrees;
+        private double writtenConeDegrees;
+        private double writtenAccuracy;
+        private bool aimCameraActive;
+        private bool aiming;
+        private double lastFov = 45;
+        private bool drawCrosshair;
+        private int playerIndex;
+        private uint playerPed;
+        private int lastAppliedShots;
+        private bool loggedOwnerMismatch;
+        private bool loggedCameraCrossCheck;
+        private bool useShdnDirection;
+
+        internal bool FreeAimEnabled;
+        internal bool CrosshairEnabled = true;
+        internal bool CameraKickEnabled = true;
+        internal bool SpreadControlEnabled = true;
+        internal bool InfiniteAmmo;
+        internal bool DebugOverlay;
+
+        public GunplayController()
+        {
+            Instance = this;
+            Interval = 0;
+            store = new GunplayConfigStore(LibertyPaths.GunplayConfig, RuntimeLog.Info, RuntimeLog.Error);
+            store.Poll(true);
+            FreeAimEnabled = store.Active != null && store.Active.FreeAim.EnabledOnStartup;
+            Tick += OnTick;
+            PerFrameDrawing += OnDraw;
+            AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
+            // Game exit may skip DomainUnload; restoring on ProcessExit too keeps the menu Auto-Aim value intact.
+            AppDomain.CurrentDomain.ProcessExit += OnDomainUnload;
+            RuntimeLog.Info("gunplay_started config=" + (store.Active != null ? "ok" : "missing") + " free_aim_on_start=" + FreeAimEnabled);
+        }
+
+        internal GunplayConfig Config { get { return store.Active; } }
+        internal GunplayConfigStore Store { get { return store; } }
+        internal SpreadCalibrator Calibrator { get { return calibrator; } }
+        internal bool Initialized { get { return initialized; } }
+        internal bool Disabled { get { return disabled; } }
+        internal GameAddresses Addresses { get { return addresses; } }
+        internal FreeAimMode FreeAim { get { return freeAim; } }
+
+        private double Now { get { return clock.Elapsed.TotalMilliseconds; } }
+
+        private void OnTick(object sender, EventArgs args)
+        {
+            if (disabled) { return; }
+            try
+            {
+                double now = Now;
+                double deltaSeconds = (now - lastTickMilliseconds) / 1000.0;
+                lastTickMilliseconds = now;
+                GunplayConfig config = store.Active;
+                if (config == null) { store.Poll(false); return; }
+                deltaSeconds = Math.Max(0, Math.Min(config.RecoilGlobal.MaximumDeltaSeconds, deltaSeconds));
+                if (now - lastConfigPollMilliseconds >= ConfigPollMilliseconds)
+                {
+                    lastConfigPollMilliseconds = now;
+                    store.Poll(false);
+                    config = store.Active;
+                }
+
+                Player player = Player;
+                if (player == null || player.Character == null || !Natives.IsPlayerPlaying(player))
+                {
+                    drawCrosshair = false;
+                    return;
+                }
+                if (!initialized) { Initialize(config); }
+                playerIndex = Natives.PlayerIndex();
+                playerPed = playerMemory != null ? playerMemory.PedPointer(playerIndex) : 0;
+                controller.Poll();
+
+                try { UpdateFreeAim(player, config); }
+                catch (Exception error)
+                {
+                    RuntimeLog.Error("feature_disabled free_aim error=" + error);
+                    try { if (freeAim != null) { freeAim.Disable(player); } }
+                    catch (Exception restoreError) { RuntimeLog.Error("restore_freeaim_failed error=" + restoreError.Message); }
+                    freeAim = null;
+                }
+                Ped ped = player.Character;
+                int weaponId = (int)ped.Weapons.CurrentType;
+                if (weaponId != lastWeaponId)
+                {
+                    OnWeaponChanged(weaponId, config);
+                }
+                activeWeaponId = weaponId;
+                activeProfile = config.FindWeapon(weaponId);
+
+                SampleState(ped);
+                int shots = DetectShots(ped, weaponId);
+                if (activeProfile != null && shots > 0)
+                {
+                    double recoilMultiplier = RecoilMultiplier.For(activeProfile.Recoil, config.Movement, state);
+                    for (int shot = 0; shot < shots; shot++)
+                    {
+                        recoil.AddShot(activeProfile.Recoil, now, recoilMultiplier);
+                        spread.AddShot(activeProfile.Spread, now);
+                    }
+                    lastShotMilliseconds = now;
+                    lastAppliedShots += shots;
+                }
+
+                int gameCamera = Natives.GameCamHandle();
+                uint aimCam = 0;
+                if (aimCamera != null)
+                {
+                    try { aimCam = aimCamera.FindActive(gameCamera); }
+                    catch (Exception error) { aimCamera = null; RuntimeLog.Error("feature_disabled aim_camera error=" + error); }
+                }
+                aimCameraActive = aimCam != 0;
+                aiming = aimCameraActive || Game.isGameKeyPressed(GameKey.Aim);
+                state.Aiming = aiming;
+                if (Natives.CamExists(gameCamera)) { lastFov = Natives.CamFov(gameCamera); }
+
+                // Each engine feature fails independently: an exception disables only that feature.
+                if (bullets != null)
+                {
+                    try { AuditBullets(config, gameCamera, weaponId, now); }
+                    catch (Exception error) { bullets = null; RuntimeLog.Error("feature_disabled shot_audit error=" + error); }
+                }
+                try { UpdateSpread(config, now, deltaSeconds); }
+                catch (Exception error) { DisableSpread(error); }
+                try { UpdateRecoil(config, now, deltaSeconds, aimCam, gameCamera); }
+                catch (Exception error) { aimCamera = null; RuntimeLog.Error("feature_disabled camera_kick error=" + error); }
+                try { UpdateReticle(config, ped); }
+                catch (Exception error) { DisableHud(error); }
+
+                if (InfiniteAmmo) { TestWeaponActions.KeepReserve(player, config.TestRange.AmmoRefillRounds); }
+                if (now - lastStateLogMilliseconds >= StateLogMilliseconds && activeProfile != null)
+                {
+                    lastStateLogMilliseconds = now;
+                    RuntimeLog.Info("gunplay_state weapon=" + weaponId + " profile=" + activeProfile.ProfileName + " state=" + state.Describe() +
+                        " cone=" + currentConeDegrees.ToString("0.00") + " accuracy=" + writtenAccuracy.ToString("0.000") + " gain=" + calibrator.Gain.ToString("0.000") +
+                        " aimcam=" + aimCameraActive + " kick_ready=" + KickReady(config) + " shots=" + lastAppliedShots);
+                }
+            }
+            catch (Exception error)
+            {
+                DisableAfterError(error);
+            }
+        }
+
+        private void Initialize(GunplayConfig config)
+        {
+            initialized = true;
+            Stopwatch timer = Stopwatch.StartNew();
+            try
+            {
+                memory = new LiveMemory();
+                CodeScanner scanner = new CodeScanner(memory);
+                addresses = GameAddresses.Resolve(scanner);
+                RuntimeLog.Info("engine_resolve module_base=0x" + memory.ModuleBase.ToString("X8") + " natives=" + scanner.NativeCount +
+                    " elapsed_ms=" + timer.ElapsedMilliseconds);
+                foreach (string line in addresses.Report) { RuntimeLog.Info("engine_resolve " + line); }
+            }
+            catch (Exception error)
+            {
+                RuntimeLog.Error("engine_resolve_failed all engine features disabled error=" + error);
+                return;
+            }
+
+            if (addresses.PrefsResolved) { prefs = new GamePrefs(memory, addresses); }
+            if (addresses.LockOnResolved) { playerMemory = new PlayerMemory(memory, addresses); }
+            if (addresses.HudResolved) { hud = new HudReticle(memory, addresses); }
+            if (addresses.BulletsResolved && addresses.LockOnResolved) { bullets = new BulletLog(memory, addresses); }
+            if (addresses.AimCameraResolved)
+            {
+                aimCamera = new AimCamera(memory, addresses);
+                aimCamera.ResetValidation();
+            }
+            freeAim = new FreeAimMode(prefs, playerMemory, hud);
+            freeAim.RecoverFromPreviousSession();
+
+            if (addresses.WeaponInfoResolved)
+            {
+                weaponInfo = new WeaponInfoTable(memory, addresses);
+                try
+                {
+                    string xmlPath = WeaponInfoXml.ActivePath(LibertyPaths.GameDirectory);
+                    Dictionary<string, float> xml = WeaponInfoXml.ReadAccuracies(xmlPath);
+                    Dictionary<int, float> expected = new Dictionary<int, float>();
+                    foreach (WeaponProfile weapon in config.Weapons)
+                    {
+                        float accuracy;
+                        if (xml.TryGetValue(weapon.WeaponInfoName, out accuracy)) { expected[weapon.WeaponId] = accuracy; }
+                    }
+                    RuntimeLog.Info("weaponinfo_xml path=" + xmlPath + " test_entries=" + expected.Count);
+                    weaponInfo.Validate(expected);
+                }
+                catch (Exception error)
+                {
+                    RuntimeLog.Error("weaponinfo_validation_error spread writes disabled error=" + error.Message);
+                }
+            }
+
+            string scripts = Path.Combine(LibertyPaths.GameDirectory, "scripts");
+            realRecoilPresent = File.Exists(Path.Combine(scripts, "WeaponRecoil.net.dll"));
+            if (realRecoilPresent)
+            {
+                RuntimeLog.Error("real_recoil_detected scripts/WeaponRecoil.net.dll camera_kick_for_test_weapons=" + config.RecoilGlobal.AllowWithRealRecoil +
+                    " (both mods kicking would double the recoil)");
+            }
+            RuntimeLog.Info("gunplay_initialized prefs=" + (prefs != null) + " lockon=" + (playerMemory != null) + " hud=" + (hud != null) +
+                " aimcam=" + (aimCamera != null) + " weaponinfo=" + (weaponInfo != null && weaponInfo.Validated) + " bullets=" + (bullets != null) +
+                " elapsed_ms=" + timer.ElapsedMilliseconds);
+        }
+
+        private void UpdateFreeAim(Player player, GunplayConfig config)
+        {
+            if (freeAim == null) { return; }
+            if (FreeAimEnabled && !freeAim.Active) { freeAim.Enable(playerIndex); }
+            else if (!FreeAimEnabled && freeAim.Active) { freeAim.Disable(player); }
+            freeAim.Update(player, playerIndex, config.FreeAim);
+        }
+
+        private void OnWeaponChanged(int weaponId, GunplayConfig config)
+        {
+            RuntimeLog.Info("weapon_changed from=" + lastWeaponId + " to=" + weaponId + " profile=" +
+                (config.FindWeapon(weaponId) != null ? config.FindWeapon(weaponId).ProfileName : "vanilla"));
+            lastWeaponId = weaponId;
+            lastClip = -1;
+            recoil.Reset();
+            spread.Reset();
+            crosshair.Reset();
+        }
+
+        private void SampleState(Ped ped)
+        {
+            state = new ShooterState();
+            state.InVehicle = Natives.IsInAnyCar(ped);
+            state.SpeedMetersPerSecond = state.InVehicle ? 0 : Natives.CharSpeed(ped);
+            state.Crouched = !state.InVehicle && Natives.IsDucking(ped);
+            state.InCover = !state.InVehicle && Natives.IsInCover(ped);
+            state.Airborne = !state.InVehicle && Natives.IsInAir(ped);
+            state.Aiming = aiming;
+        }
+
+        private int DetectShots(Ped ped, int weaponId)
+        {
+            GTA.value.Weapon current = ped.Weapons.Current;
+            if (current == null) { lastClip = -1; return 0; }
+            int clip = current.AmmoInClip;
+            int shots = lastClip >= 0 && clip < lastClip ? lastClip - clip : 0;
+            lastClip = clip;
+            // A clip drop larger than a magazine means a scripted ammo change, not firing.
+            return shots > 0 && shots <= Math.Max(1, current.MaxAmmoInClip) ? Math.Min(shots, 8) : 0;
+        }
+
+        private void AuditBullets(GunplayConfig config, int gameCamera, int weaponId, double now)
+        {
+            if (bullets == null || playerPed == 0) { return; }
+            List<BulletLog.Trace> traces = bullets.ReadNew(playerPed);
+            if (traces.Count == 0)
+            {
+                if (bullets.LastTotal > 0 && bullets.LastOwnedCount == 0 && !loggedOwnerMismatch && now - lastShotMilliseconds < 100)
+                {
+                    loggedOwnerMismatch = true;
+                    RuntimeLog.Error("shot_audit_owner_mismatch player_ped=0x" + playerPed.ToString("X8") + " list_total=" + bullets.LastTotal +
+                        " first_owner=0x" + bullets.LastForeignOwner.ToString("X8"));
+                }
+                return;
+            }
+            if (!Natives.CamExists(gameCamera)) { return; }
+            Vec3 cameraPosition = Natives.CamPosition(gameCamera);
+            Vec3 rotation = Natives.CamRotation(gameCamera);
+            Vec3 forward = Vec3.FromPitchHeadingDegrees(rotation.X, rotation.Z);
+            if (!loggedCameraCrossCheck)
+            {
+                // One-time evidence that the rotation->direction convention matches ScriptHookDotNet's camera direction.
+                loggedCameraCrossCheck = true;
+                Vector3 shdn = Game.CurrentCamera.Direction;
+                Vec3 other = new Vec3(shdn.X, shdn.Y, shdn.Z).Normalized();
+                double agreement = Math.Acos(Math.Max(-1, Math.Min(1, Vec3.Dot(forward, other)))) * 180 / Math.PI;
+                Vec3 firstShot = (traces[0].End - traces[0].Start).Normalized();
+                RuntimeLog.Info("shot_audit_camera_check rot=" + rotation + " forward=" + forward + " shdn_forward=" + other +
+                    " angle_between=" + agreement.ToString("0.00") + " first_bullet_dir=" + firstShot);
+                if (agreement > 5) { useShdnDirection = true; RuntimeLog.Error("shot_audit_convention_mismatch using ScriptHookDotNet camera direction"); }
+            }
+            if (useShdnDirection)
+            {
+                Vector3 shdn = Game.CurrentCamera.Direction;
+                forward = new Vec3(shdn.X, shdn.Y, shdn.Z);
+            }
+            ShotAuditStats stats;
+            if (!audits.TryGetValue(weaponId, out stats)) { stats = new ShotAuditStats(); audits[weaponId] = stats; }
+            WeaponProfile profile = config.FindWeapon(weaponId);
+            // Bullets fired this frame used the accuracy written (and the crosshair shown) last frame.
+            double intended = writtenConeDegrees;
+            double shown = profile != null ? displayConeDegrees : currentConeDegrees;
+            foreach (BulletLog.Trace trace in traces)
+            {
+                double deviation = ShotGeometry.DeviationDegrees(cameraPosition, forward, trace.Start, trace.End);
+                if (double.IsNaN(deviation)) { continue; }
+                stats.Add(deviation, shown);
+                bool gainChanged = false;
+                if (profile != null && profile.CalibrationSource && SpreadControlEnabled && weaponInfo != null && weaponInfo.Validated)
+                {
+                    gainChanged = calibrator.AddSample(config.SpreadCalibration, deviation, intended);
+                }
+                if (stats.TotalBullets <= DetailedAuditBullets || stats.TotalBullets % 10 == 0 || gainChanged)
+                {
+                    RuntimeLog.Info("shot_audit weapon=" + weaponId + " dev=" + deviation.ToString("0.000") + " cone=" + intended.ToString("0.000") + " shown=" + shown.ToString("0.000") +
+                        " accuracy=" + writtenAccuracy.ToString("0.0000") + " gain=" + calibrator.Gain.ToString("0.000") + " state=" + state.Describe() +
+                        " range_m=" + (trace.End - trace.Start).Length.ToString("0.0") + (gainChanged ? " gain_updated ratio=" + calibrator.LastEstimatedRatio.ToString("0.000") : ""));
+                }
+                if (stats.TotalBullets % 20 == 0) { RuntimeLog.Info("shot_audit_summary weapon=" + weaponId + " " + stats.Summary()); }
+            }
+        }
+
+        private void UpdateSpread(GunplayConfig config, double now, double deltaSeconds)
+        {
+            if (activeProfile != null)
+            {
+                currentConeDegrees = spread.Step(activeProfile.Spread, config.Movement, state, now, deltaSeconds);
+                if (SpreadControlEnabled && weaponInfo != null && weaponInfo.Validated)
+                {
+                    writtenAccuracy = calibrator.ToAccuracy(config.SpreadCalibration, currentConeDegrees);
+                    weaponInfo.WriteAccuracy(activeProfile.WeaponId, (float)writtenAccuracy);
+                    writtenConeDegrees = currentConeDegrees;
+                    displayConeDegrees = currentConeDegrees + PelletAllowance(activeProfile);
+                }
+                else
+                {
+                    // Spread control unavailable: show what the game really uses (its own accuracy).
+                    float accuracy;
+                    displayConeDegrees = weaponInfo != null && weaponInfo.TryReadAccuracy(activeProfile.WeaponId, out accuracy) ?
+                        calibrator.FromAccuracy(config.SpreadCalibration, accuracy) : currentConeDegrees;
+                    writtenConeDegrees = displayConeDegrees;
+                }
+            }
+            else
+            {
+                float accuracy;
+                currentConeDegrees = weaponInfo != null && weaponInfo.TryReadAccuracy(activeWeaponId, out accuracy) ?
+                    calibrator.FromAccuracy(config.SpreadCalibration, accuracy) : 0;
+                displayConeDegrees = currentConeDegrees;
+                writtenConeDegrees = currentConeDegrees;
+                writtenAccuracy = 0;
+            }
+        }
+
+        // Multi-pellet weapons: the pellet pattern on top of the controlled cone, measured once enough shots exist.
+        private double PelletAllowance(WeaponProfile profile)
+        {
+            if (profile.Spread.PelletPatternDegrees <= 0) { return 0; }
+            ShotAuditStats stats;
+            if (audits.TryGetValue(profile.WeaponId, out stats) && stats.WindowCount >= 16 && store.Active.SpreadCalibration.AutoCalibrate)
+            {
+                return Math.Max(0, stats.MaximumMeasuredDegrees - writtenConeDegrees);
+            }
+            return profile.Spread.PelletPatternDegrees;
+        }
+
+        private void DisableSpread(Exception error)
+        {
+            RuntimeLog.Error("feature_disabled spread_control error=" + error);
+            try { if (weaponInfo != null) { weaponInfo.RestoreAll(); } }
+            catch (Exception restoreError) { RuntimeLog.Error("restore_weaponinfo_failed error=" + restoreError.Message); }
+            weaponInfo = null;
+        }
+
+        private void DisableHud(Exception error)
+        {
+            RuntimeLog.Error("feature_disabled hud_reticle error=" + error);
+            drawCrosshair = false;
+            try { if (hud != null) { hud.RestoreAll(); } }
+            catch (Exception restoreError) { RuntimeLog.Error("restore_hud_failed error=" + restoreError.Message); }
+            hud = null;
+        }
+
+        private bool KickReady(GunplayConfig config)
+        {
+            return aimCamera != null && aimCamera.Validated && CameraKickEnabled && config.RecoilGlobal.EnableCameraKick &&
+                (!realRecoilPresent || config.RecoilGlobal.AllowWithRealRecoil);
+        }
+
+        private void UpdateRecoil(GunplayConfig config, double now, double deltaSeconds, uint aimCam, int gameCamera)
+        {
+            if (aimCamera != null && aimCam != 0 && !aimCamera.Validated && !aimCamera.Rejected &&
+                now - lastShotMilliseconds > 400 && Natives.CamExists(gameCamera))
+            {
+                aimCamera.Sample(aimCam, Natives.CamRotation(gameCamera), config.RecoilGlobal.CameraValidationToleranceDegrees,
+                    config.RecoilGlobal.CameraValidationSamples);
+            }
+            if (activeProfile == null) { return; }
+            bool counterSteering = Math.Abs(controller.RightY) >= config.RecoilGlobal.RecoveryCancelStickThreshold;
+            RecoilStep step = recoil.Step(activeProfile.Recoil, now, deltaSeconds, counterSteering);
+            if (step.IsZero || aimCam == 0 || !KickReady(config) || LibertyFramework.DevTools.DevToolsMenu.IsOpen) { return; }
+            aimCamera.AddDegrees(aimCam, step.PitchDegrees, step.HeadingDegrees);
+        }
+
+        private void UpdateReticle(GunplayConfig config, Ped ped)
+        {
+            bool replace = CrosshairEnabled && config.Crosshair.ReplaceVanillaReticle && hud != null;
+            if (replace)
+            {
+                hud.Hide(HudReticle.Crosshair);
+                hud.Hide(HudReticle.Dot);
+            }
+            else if (hud != null)
+            {
+                hud.Restore(HudReticle.Crosshair);
+                hud.Restore(HudReticle.Dot);
+            }
+            bool gun = IsCrosshairWeapon(ped);
+            bool showForWeapon = activeProfile != null || config.Crosshair.ShowForVanillaWeapons;
+            drawCrosshair = replace && gun && showForWeapon && aiming && !LibertyFramework.DevTools.DevToolsMenu.IsOpen &&
+                !Natives.IsPauseMenuActive() && !Natives.IsScreenFadedOut() && Natives.IsPlayerControlOn(Player);
+        }
+
+        private static bool IsCrosshairWeapon(Ped ped)
+        {
+            GTA.value.Weapon current = ped.Weapons.Current;
+            if (current == null) { return false; }
+            switch (current.Slot)
+            {
+                case WeaponSlot.Handgun:
+                case WeaponSlot.Shotgun:
+                case WeaponSlot.SMG:
+                case WeaponSlot.Rifle:
+                case WeaponSlot.Heavy:
+                case WeaponSlot.Thrown:
+                    return true;
+                default:
+                    // Sniper rifles use the scope overlay (HUD_WEAPON_SCOPE), which is left untouched.
+                    return false;
+            }
+        }
+
+        private void OnDraw(object sender, GraphicsEventArgs args)
+        {
+            if (disabled) { return; }
+            try
+            {
+                GunplayConfig config = store.Active;
+                if (config == null) { return; }
+                if (drawCrosshair)
+                {
+                    crosshair.Draw(args.Graphics, config.Crosshair, displayConeDegrees, lastFov, Game.Resolution, args.Graphics.FrameTime);
+                }
+                if (DebugOverlay) { DrawOverlay(args.Graphics); }
+            }
+            catch (Exception error)
+            {
+                DisableAfterError(error);
+            }
+        }
+
+        private void DrawOverlay(GTA.Graphics graphics)
+        {
+            graphics.Scaling = FontScaling.Pixel;
+            List<string> lines = StatusLines();
+            float height = 22 * lines.Count + 12;
+            graphics.DrawRectangle(new RectangleF(20, 20, 560, height), Color.FromArgb(150, 0, 0, 0));
+            for (int index = 0; index < lines.Count; index++)
+            {
+                graphics.DrawText(lines[index], new RectangleF(30, 26 + index * 22, 540, 22), TextAlignment.Left, Color.White);
+            }
+        }
+
+        internal List<string> StatusLines()
+        {
+            List<string> lines = new List<string>();
+            GunplayConfig config = store.Active;
+            lines.Add("WEAPON " + activeWeaponId + " " + TestWeaponActions.LabelFor(config, activeWeaponId) +
+                (activeProfile != null ? "  profile=" + activeProfile.ProfileName : "  (vanilla)"));
+            lines.Add("Preset " + (store.ActivePresetName ?? "-") + "  finish=" + WeaponFinishCatalog.Describe(activeProfile));
+            lines.Add("Aim " + (FreeAimEnabled ? "FREE AIM" : "vanilla") + "  aiming=" + aiming + " aimcam=" + aimCameraActive + "  " + state.Describe());
+            lines.Add("Spread cone=" + currentConeDegrees.ToString("0.00") + " shown=" + displayConeDegrees.ToString("0.00") + " deg  accuracy=" +
+                writtenAccuracy.ToString("0.000") + "  gain=" + calibrator.Gain.ToString("0.00"));
+            ShotAuditStats stats;
+            if (audits.TryGetValue(activeWeaponId, out stats)) { lines.Add("Audit " + stats.Summary()); }
+            else { lines.Add("Audit no bullets measured yet for this weapon"); }
+            lines.Add("Recoil chain=" + recoil.ChainShots + " climb=" + recoil.AccumulatedPitchDegrees.ToString("0.00") + " recoverable=" +
+                recoil.RecoverablePitchDegrees.ToString("0.00") + " last_kick=" + recoil.LastKickPitchDegrees.ToString("0.00"));
+            lines.Add("Camera " + (aimCamera == null ? "unresolved" : aimCamera.Validated ? "validated" : aimCamera.Rejected ? "REJECTED" : "validating") +
+                "  kick=" + (config != null && KickReady(config) ? "on" : "off") + (realRecoilPresent ? "  REAL RECOIL DETECTED" : ""));
+            lines.Add("Engine prefs=" + (prefs != null) + " lockon=" + (playerMemory != null) + " hud=" + (hud != null) + " weaponinfo=" +
+                (weaponInfo != null && weaponInfo.Validated) + " bullets=" + (bullets != null) + (disabled ? " DISABLED " + disabledReason : ""));
+            if (freeAim != null && prefs != null)
+            {
+                bool? lockOn = playerMemory != null ? playerMemory.LockOnDisabled(playerIndex) : null;
+                lines.Add("FreeAim active=" + freeAim.Active + " auto_aim_pref=" + prefs.AutoAim + " (was " + freeAim.AutoAimPrior + ") lockon_disabled=" +
+                    (lockOn.HasValue ? lockOn.Value.ToString() : "?") + " reticle_hidden=" + (hud != null && hud.IsHidden(HudReticle.Crosshair)));
+            }
+            if (store.LastError != null) { lines.Add("Config error: " + store.LastError); }
+            return lines;
+        }
+
+        internal void ResetCalibration()
+        {
+            calibrator.Reset();
+            foreach (ShotAuditStats stats in audits.Values) { stats.Reset(); }
+            RuntimeLog.Info("calibration_reset");
+        }
+
+        internal void OnProfilesChanged()
+        {
+            recoil.Reset();
+            spread.Reset();
+        }
+
+        private void DisableAfterError(Exception error)
+        {
+            disabled = true;
+            disabledReason = error.GetType().Name;
+            RuntimeLog.Error("gunplay_disabled error=" + error);
+            RestoreEngine();
+        }
+
+        private void RestoreEngine()
+        {
+            try { if (weaponInfo != null) { weaponInfo.RestoreAll(); } }
+            catch (Exception error) { RuntimeLog.Error("restore_weaponinfo_failed error=" + error.Message); }
+            try { if (freeAim != null) { freeAim.Disable(Player); } }
+            catch (Exception error) { RuntimeLog.Error("restore_freeaim_failed error=" + error.Message); }
+            try { if (hud != null) { hud.RestoreAll(); } }
+            catch (Exception error) { RuntimeLog.Error("restore_hud_failed error=" + error.Message); }
+        }
+
+        private void OnDomainUnload(object sender, EventArgs args)
+        {
+            RuntimeLog.Info("gunplay_unloading restoring engine state");
+            RestoreEngine();
+        }
+    }
+}
