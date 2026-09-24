@@ -8,7 +8,7 @@ Statuses: `READY` = agent can start; `NEEDS-PLAYTEST` = agent implementation awa
 |---|---|---|---|
 | T-000 | [Record game baseline](T-000-baseline.md) | none | READY (human) |
 | T-001 | [Runtime hello world](T-001-runtime-spike.md) | T-000 | NEEDS-PLAYTEST (vanilla pistol check) |
-| T-002 | [Config and logging skeleton](T-002-config-logging.md) | T-001 | NEEDS-PLAYTEST (built offline; deploy after game closes) |
+| T-002 | [Config and logging skeleton](T-002-config-logging.md) | T-001 | NEEDS-PLAYTEST (installed; in-game test pending) |
 | T-003 | [DevTools minimum menu](T-003-devtools-menu.md) | T-002 | BLOCKED |
 | T-007 | [Separate gold weapon slot spike](T-007-weapon-slots.md) | T-001 | BLOCKED (next weapon milestone) |
 | T-008 | [Per-weapon aim and HUD spike](T-008-aim-hud.md) | T-007 | BLOCKED |

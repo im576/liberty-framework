@@ -4,11 +4,11 @@ Status: **NEEDS-PLAYTEST**. The owner asked development to continue after the T-
 
 The sample is [`config/probe.json`](../../config/probe.json). The script polls it every ten seconds and reloads only when its bytes change. Bad input logs `config_reload_failed` and keeps the prior label. The log rotates at 1 MiB, retaining one prior file. Build with [`tools/build.ps1`](../../tools/build.ps1), then deploy only after GTA IV closes with [`tools/deploy-t002.ps1`](../../tools/deploy-t002.ps1). The installer backs up the previous probe DLL and preserves an existing config file.
 
-Build result on 2026-09-24: Windows .NET Framework C# compiler, x86, zero errors and zero warnings. A separate offline harness passed valid edit, malformed JSON retention, and recovery with a subsequent valid edit. The T-002 DLL has **not** been installed or tested in GTA IV because the game is running. No game files were changed during this task.
+Build result on 2026-09-24: Windows .NET Framework C# compiler, x86, zero errors and zero warnings. A separate offline harness passed valid edit, malformed JSON retention, and recovery with a subsequent valid edit. Deployment was blocked while GTA IV ran; after it closed, the installer placed the new DLL and sample config. The installed DLL SHA256 matches the build: `D848A5D09DA39E7D8A9A35246AADABCBFD47FA92BFC719C199C5B4B30A7AD4C4`. The prior T-001 DLL is backed up. In-game T-002 behavior is still unverified.
 
 ## Human test steps
 
-1. Save and close GTA IV. From the repository root, run `./tools/deploy-t002.ps1 -GameDirectory 'D:\SteamLibrary\steamapps\common\Grand Theft Auto IV\GTAIV'` after building as described in [`tools/README.md`](../../tools/README.md).
+1. The T-002 DLL and sample config are installed on this machine. For a fresh installation, save and close GTA IV, build as described in [`tools/README.md`](../../tools/README.md), then run `./tools/deploy-t002.ps1 -GameDirectory 'D:\SteamLibrary\steamapps\common\Grand Theft Auto IV\GTAIV'` from the repository root.
 2. Open `D:\SteamLibrary\steamapps\common\Grand Theft Auto IV\GTAIV\scripts\LibertyFramework\config\probe.json` in a text editor. Confirm it has `schemaVersion` 1 and a `probeLabel` such as `default`.
 3. Launch GTA IV through Steam and load gameplay. Wait 15 seconds, then inspect `scripts\LibertyFramework\logs\LibertyFramework.log`. Expect `config_loaded ... probe_label=default` and a heartbeat with `probe_label=default`. No gun is needed for this test.
 4. In the text editor, change `probeLabel` to `changed`, save, wait 15 seconds, and check the log for `config_loaded ... probe_label=changed` and `heartbeat probe_label=changed`.
