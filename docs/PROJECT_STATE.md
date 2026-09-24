@@ -6,7 +6,7 @@ Keep it short: this is a dashboard, not a diary.
 ## Current phase
 
 **Phase 0 — Research and environment.** The research and agent task scaffold is prepared. No gameplay code exists.
-Next task: `T-000` (human records and tests the baseline), then `T-001` (hello-world script). Proposed runtime and weapon-slot choices remain unverified.
+Next task: finish the remaining `T-000` baseline checks, then `T-001` (hello-world script). Proposed runtime and weapon-slot choices remain unverified.
 
 ## Key decisions (see `docs/architecture/decisions/`)
 
@@ -16,7 +16,7 @@ Next task: `T-000` (human records and tests the baseline), then `T-001` (hello-w
 
 ## Verified in-game (by the human tester)
 
-_Nothing yet._
+- 2026-09-24 (tester report): Steam Complete Edition exe 1.2.0.59; FusionFix 5.0.1 reaches the menu; Bluetooth DualSense through a Steam Input community layout; in-game auto aim on; vanilla pistol aim, fire, reload, and cover shooting work. See [T-000](tasks/T-000-baseline.md). Vehicle shooting, save/load, and ScriptHookDotNet remain unverified.
 
 ## Open questions (blockers for later tasks)
 
@@ -31,5 +31,6 @@ _Nothing yet._
 
 ## Changelog
 
+- 2026-09-24 — Recorded tester's partial T-000 baseline; left T-000 open for gameplay/vehicle/runtime-install evidence.
 - 2026-09-24 — Recovered the interrupted Claude scaffold; completed the research summary, task queue, setup/test templates, architecture notes, and original brief. No gameplay implementation or in-game verification.
 - 2026-09-24 — Initial research notes and scaffold started. Task backlog written.
