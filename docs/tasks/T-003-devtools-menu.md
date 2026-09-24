@@ -1,10 +1,10 @@
 # T-003 — Minimum controller DevTools menu
 
-Status: **NEEDS-PLAYTEST**. The first live build opened, navigated, and closed with the owner's controller, but D-pad navigation also opened the in-game phone. A revised local build awaits installation after GTA IV closes. T-003 scope remains menu access/navigation and read-only runtime/profile status; T-007 owns the weapon actions now shown in the same menu.
+Status: **DONE**. The owner reported that the revised controller menu opened, navigated, and closed correctly, the phone stayed closed during D-pad navigation, and normal controls returned afterward. T-003 covers menu access/navigation and read-only runtime/profile status; T-007 owns the weapon actions shown in the same menu.
 
 The menu uses the owner's chosen L3+R3 hold (700 ms) to open and close. It polls XInput controller indices 0–3 (using the first connected controller) and also checks ScriptHookDotNet's crouch/look-behind controls because the Steam Input community layout is unidentified. D-pad up/down or keyboard arrows select items. F10 toggles the menu as a keyboard fallback. The CONFIG view displays the active probe label. The revised build temporarily disables player controls while the menu is open and restores the previous controllable state on close, error, or script-domain unload. Its open log records whether a raw XInput controller was connected. This suppression is unverified in-game.
 
-The first installed x86 build loaded, drew the panel, and logged open/close without errors. The owner reported that the controller menu checks passed, and also observed the phone opening during D-pad navigation. The revised x86 build completes with zero errors/warnings using the exact installed ScriptHookDotNet assembly as a reference; it has not replaced the DLL in the running game.
+The first installed x86 build loaded, drew the panel, and logged open/close without errors, but its D-pad navigation opened the phone. The revised x86 build completed with zero errors/warnings using the exact installed ScriptHookDotNet assembly as a reference. The owner confirmed all revised menu checks passed. Fresh logs show `controller_connected=True`, `player_control_locked=True`, repeated open/close events, and no `devtools_disabled` or control-restoration errors.
 
 ## Human test steps
 
