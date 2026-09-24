@@ -6,7 +6,7 @@ Phase 1 goal: three gold test weapons (pistol, carbine, pump shotgun) that use f
 data-driven recoil, and a clean spread crosshair — tuned live from an in-game developer menu —
 while every vanilla weapon stays vanilla for A/B comparison.
 
-> **Status:** research and task scaffold complete; runtime and gameplay untested. No mod code yet. See [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md).
+> **Status:** the T-001 C# runtime probe builds and loads on the tester's Complete Edition installation. Startup, heartbeat logging, and `ReloadScripts` were verified in gameplay. No gunplay changes yet. See [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md).
 
 ## For AI agents
 
@@ -30,7 +30,7 @@ Start at [AGENTS.md](AGENTS.md). Then [docs/tasks/README.md](docs/tasks/README.m
 | `docs/game-api/` | Registry of natives and memory patterns we use, with CE status |
 | `docs/tasks/` | Small, ordered task cards for agents |
 | `docs/testing/` | Test matrix, playtest report template |
-| `src/` | C# source (empty until T-001) |
+| `src/` | C# runtime probe source |
 | `config/` | JSON tuning/config files |
 | `assets/` | Models/textures (gold finish etc.) |
 | `tools/` | Build/deploy scripts |

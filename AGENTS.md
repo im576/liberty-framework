@@ -53,15 +53,14 @@ Full original spec: `docs/HANDOFF.md`. Architecture: `docs/architecture/OVERVIEW
 |---|---|
 | Game | GTA IV: The Complete Edition; record the actual exe version in T-000 (1.2.0.59 is the proposed target) |
 | Base mods | FusionFix (includes Ultimate ASI Loader as `dinput8.dll` + FusionOverloader) |
-| Script runtime | ScriptHookDotNet 1.7.1.8 (Tomasak fork, CE-compatible) + Aru's C++ ScriptHook |
-| Language | Proposed C# / .NET Framework 4.8 / x86; T-001 must verify what loads |
-| C# version | Start with `LangVersion` 7.3 and verify in T-001 |
+| Script runtime | Tomasak ScriptHookDotNet 1.7.1.8 + bundled CE hook; T-001 verified in-game load and reload |
+| Language | C# / .NET Framework 4.0 / x86 verified by T-001 |
+| C# version | T-001 used the installed Windows Framework compiler; maximum supported language version is not established |
 | Output | `LibertyFramework.net.dll` copied to `<GTA IV>\scripts\` |
 | Config | JSON files in `config/`, deployed to `<GTA IV>\scripts\LibertyFramework\config\` |
 | Logs | `<GTA IV>\scripts\LibertyFramework\logs\LibertyFramework.log` |
 
-Build and deploy commands are defined by task T-001. Until T-001 is `DONE`, they do not exist. The stack above is a proposal, not an in-game verification.
-After T-001: see `tools/README.md`.
+Build and deploy commands are in `tools/README.md`. The stack above was verified for the minimal T-001 probe; gameplay APIs need their own task-specific tests.
 
 ## 5. How to finish a task (Definition of Done)
 
