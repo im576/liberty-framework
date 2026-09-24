@@ -6,7 +6,7 @@ Phase 1 goal: three gold test weapons (pistol, carbine, pump shotgun) that use f
 data-driven recoil, and a clean spread crosshair — tuned live from an in-game developer menu —
 while every vanilla weapon stays vanilla for A/B comparison.
 
-> **Status:** T-001 loads and reloads in gameplay. The installed T-002 config probe loaded its default value and kept logging heartbeats; live config edits still need one gameplay check. No gunplay changes yet. See [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md).
+> **Status:** T-001 loads and reloads in gameplay. T-002's live config reload, malformed-input retention, and recovery log checks passed; tester confirmation of continued gameplay is pending. No gunplay changes yet. See [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md).
 
 ## For AI agents
 
