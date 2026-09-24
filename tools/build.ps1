@@ -17,10 +17,12 @@ if (-not (Test-Path -LiteralPath $compiler)) {
 New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
 $sources = @(
     (Join-Path $repoRoot 'src\LibertyFramework\RuntimeProbe.cs'),
-    (Join-Path $repoRoot 'src\LibertyFramework\Core\Logging\RuntimeLog.cs')
+    (Join-Path $repoRoot 'src\LibertyFramework\Core\Logging\RuntimeLog.cs'),
+    (Join-Path $repoRoot 'src\LibertyFramework\Core\Config\ProbeConfig.cs'),
+    (Join-Path $repoRoot 'src\LibertyFramework\Core\Config\ProbeConfigLoader.cs')
 )
 
-& $compiler /nologo /target:library /platform:x86 /optimize+ /warn:4 "/out:$output" "/reference:$reference" $sources
+& $compiler /nologo /target:library /platform:x86 /optimize+ /warn:4 "/out:$output" "/reference:$reference" /reference:System.Runtime.Serialization.dll $sources
 if ($LASTEXITCODE -ne 0) {
     throw "C# compiler failed with exit code $LASTEXITCODE"
 }

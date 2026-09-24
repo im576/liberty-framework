@@ -8,3 +8,7 @@ T-001 is a load/log/reload probe only. It has no gameplay changes. The build use
 4. Launch through Steam and follow [T-001 human test steps](../docs/tasks/T-001-runtime-spike.md).
 
 On this machine the game directory is `D:\SteamLibrary\steamapps\common\Grand Theft Auto IV\GTAIV`. No absolute machine path is baked into the scripts.
+
+## T-002 config probe
+
+Run the same build command above to compile the T-002 source. After GTA IV closes, deploy with `./tools/deploy-t002.ps1 -GameDirectory 'D:\SteamLibrary\steamapps\common\Grand Theft Auto IV\GTAIV'`. This backs up the existing project DLL as `LibertyFramework.net.dll.t001.bak`, installs the new DLL, and copies `config/probe.json` into `scripts/LibertyFramework/config/probe.json` only if that file does not exist. It leaves ScriptHookDotNet and FusionFix untouched. Follow the exact [T-002 human test steps](../docs/tasks/T-002-config-logging.md). Do not copy the new DLL into a running game.
