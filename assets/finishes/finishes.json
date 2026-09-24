@@ -24,6 +24,28 @@
         "cj_glock_s": "specular",
         "icon": "icon"
       }
+    },
+    {
+      "variantModel": "lf_gold_carbine",
+      "baseModel": "w_m4",
+      "sourceImg": "pc/models/cdimages/weapons.img",
+      "finish": "GOLD_TEST",
+      "animGroup": "gun@ak47",
+      "drawDistance": 50,
+      "audioMaterial": "CM_WEAPONS_M4",
+      "weaponInfoType": "LF_GOLD_CARBINE",
+      "textureRoles": { "bm_m4a1": "diffuse", "bm_m4a1_s": "specular", "icon": "icon" }
+    },
+    {
+      "variantModel": "lf_gold_shotgun",
+      "baseModel": "w_shotgun",
+      "sourceImg": "pc/models/cdimages/weapons.img",
+      "finish": "GOLD_TEST",
+      "animGroup": "gun@shotgun",
+      "drawDistance": 50,
+      "audioMaterial": "CM_WEAPONS_SHOTGUN",
+      "weaponInfoType": "LF_GOLD_SHOTGUN",
+      "textureRoles": { "cj_shotgun_comp": "diffuse", "cj_shotgun_comp_s": "specular", "icon": "icon" }
     }
   ]
 }
