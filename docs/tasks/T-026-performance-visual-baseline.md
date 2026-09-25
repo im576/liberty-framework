@@ -2,13 +2,19 @@
 
 Status: **NEEDS-PLAYTEST**
 
+## Diagnostic run and latest launch report (2026-09-25)
+
+The owner reports a failed launch and intends to retry. The installed diagnostic DLL did complete an earlier run from roughly 01:08:45 to 01:17:57: all eight scripts started, the Direct3D device was later lost, and scripts terminated normally. Across 18 half-minute timing windows / 17,094 GunplayController ticks, its weighted average work was 16.71 ms; the camera phase alone averaged 10.11 ms (60.5%). Camera work stayed near 9–10 ms in the initially faster windows, then rose to about 12–13 ms as frame spacing worsened. Bullet audit averaged roughly 0.2 ms and HUD roughly 0.6 ms. The internal frame-spacing p50 rose from 24–25 ms early to 80–92 ms late; this remains a script tick proxy, not PresentMon frame data. CSV: `D:\GTAIV-Reborn-Tools\captures\gunplay-phase-timings-20260925-0108.csv`.
+
+WER recorded multiple earlier startup attempts with `0xc0000005` / unknown fault module, including 00:50, 00:52, and 01:05. The latest archived report has `d3d9.dll` and local `vulkan.dll` loaded but no ScriptHook or ASI module yet. A separate 00:13 crash faulted in `scripthook.dll`. The repeated early crashes and runtime slowdown are distinct observations; neither has a proven root cause. No installed game file was changed during the owner's retry. Next performance step is to split the dominant camera phase into native handle, active-camera lookup, aim state, and FOV/projection timings before optimizing it. Startup reliability needs a separate renderer-path A/B after the retry.
+
 ## Framework-off result and targeted profile (2026-09-25)
 
 The owner reports that with Liberty Framework's DLL absent, the game feels much smoother and generally playable, though random drops remain. The game loaded LVS, ran from about 00:34:13 to 00:36:50, and exited normally. WER also shows a separate attempted startup crash at 00:32:10 (`0xc0000005`, unknown module), so startup reliability remains open even with the framework absent. The smoothness report is qualitative: no PresentMon CSV was captured, and game focus/scene were not instrumented.
 
 A diagnostic build now adds five low-cost per-tick timing buckets to `GunplayController`: setup/input, camera, bullet audit, weapon updates, and HUD/debug. It logs their average and maximum alongside the existing 30-second performance line. It does not change the gameplay calculations. Build: 113 source files, zero errors/warnings; offline verifier: 339 passed, 0 failed. The diagnostic DLL SHA-256 is `32E2FAEDA9DE19DD4C9C7468C778D7089BDC7ADBB98B549791BBDA5F7456699C`. The prior installed DLL remains at `D:\GTAIV-Reborn-Tools\baseline\framework-off-test-20260925\LibertyFramework.net.dll` with SHA-256 `F45293030B0C1CCB2562FC5A08F1D2E76A955C0ECAE2CCA808B0F43A0FEE9E51`.
 
-With GTA IV closed, the diagnostic DLL was copied into `scripts\LibertyFramework.net.dll` and its installed SHA-256 rechecked. The prior backup was checked before installation. No other game file changed. In-game phase output is pending the owner.
+With GTA IV closed, the diagnostic DLL was copied into `scripts\LibertyFramework.net.dll` and its installed SHA-256 rechecked. The prior backup was checked before installation. No other game file changed. The in-game phase output is summarized above.
 
 ## Startup crash isolation (2026-09-25)
 
