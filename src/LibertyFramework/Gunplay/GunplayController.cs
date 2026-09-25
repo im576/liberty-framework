@@ -104,6 +104,8 @@ namespace LibertyFramework.Gunplay
         private bool loggedProjection;
         private double projectionFov = double.NaN;
         private int projectionHeight;
+        private Size screenResolution;
+        private double lastResolutionReadMilliseconds;
         private bool drawFailed;
         private ShoulderSwap shoulderSwap;
         private bool feelDisabled;
@@ -188,6 +190,13 @@ namespace LibertyFramework.Gunplay
                 GunplayConfig config = store.Active;
                 if (config == null) { store.Poll(false); return; }
                 deltaSeconds = Math.Max(0, Math.Min(config.RecoilGlobal.MaximumDeltaSeconds, deltaSeconds));
+                // Game.Resolution is a native call; PerFrameDrawing runs off the script thread, so the draw path only
+                // reads this cached copy (reading it per frame there stalled frames).
+                if (screenResolution.Height == 0 || now - lastResolutionReadMilliseconds >= 1000)
+                {
+                    screenResolution = Game.Resolution;
+                    lastResolutionReadMilliseconds = now;
+                }
                 if (now - lastConfigPollMilliseconds >= ConfigPollMilliseconds)
                 {
                     lastConfigPollMilliseconds = now;
@@ -304,7 +313,7 @@ namespace LibertyFramework.Gunplay
                     // Pixel scale depends on FOV and viewport, not camera position. Avoid two
                     // projection natives every frame while the aim camera is steady.
                     if (aiming && (double.IsNaN(projectionFov) || Math.Abs(lastFov - projectionFov) > 0.25 ||
-                        Game.Resolution.Height != projectionHeight))
+                        screenResolution.Height != projectionHeight))
                     {
                         mark = Stopwatch.GetTimestamp();
                         MeasureProjection(gameCamera);
@@ -571,17 +580,17 @@ namespace LibertyFramework.Gunplay
                 float centerX, centerY, upX, upY;
                 if (!Natives.ViewportPositionOfCoord(viewport, position + forward * probeDistance, out centerX, out centerY) ||
                     !Natives.ViewportPositionOfCoord(viewport, position + raised * probeDistance, out upX, out upY)) { return; }
-                double pixels = Math.Abs(upY - centerY) * Game.Resolution.Height;
+                double pixels = Math.Abs(upY - centerY) * screenResolution.Height;
                 double measured = pixels / Math.Tan(probeDegrees * Math.PI / 180.0);
                 if (measured <= 1 || double.IsNaN(measured)) { return; }
                 pixelsPerTangent = measured;
                 projectionFov = lastFov;
-                projectionHeight = Game.Resolution.Height;
+                projectionHeight = screenResolution.Height;
                 if (!loggedProjection)
                 {
                     loggedProjection = true;
-                    double formulaVertical = CrosshairRenderer.ConeToPixels(probeDegrees, lastFov, true, Game.Resolution);
-                    double formulaHorizontal = CrosshairRenderer.ConeToPixels(probeDegrees, lastFov, false, Game.Resolution);
+                    double formulaVertical = CrosshairRenderer.ConeToPixels(probeDegrees, lastFov, true, screenResolution);
+                    double formulaHorizontal = CrosshairRenderer.ConeToPixels(probeDegrees, lastFov, false, screenResolution);
                     RuntimeLog.Info("crosshair_projection fov=" + lastFov.ToString("0.0") + " center=" + centerX.ToString("0.000") + "," + centerY.ToString("0.000") +
                         " probe_px=" + pixels.ToString("0.0") + " formula_vertical_px=" + formulaVertical.ToString("0.0") +
                         " formula_horizontal_px=" + formulaHorizontal.ToString("0.0"));
@@ -904,7 +913,7 @@ namespace LibertyFramework.Gunplay
                 if (config == null) { return; }
                 if (drawCrosshair)
                 {
-                    crosshair.Draw(args.Graphics, config.Crosshair, displayConeDegrees, lastFov, pixelsPerTangent, Game.Resolution, args.Graphics.FrameTime);
+                    crosshair.Draw(args.Graphics, config.Crosshair, displayConeDegrees, lastFov, pixelsPerTangent, screenResolution, args.Graphics.FrameTime);
                 }
                 if (DebugOverlay) { DrawOverlay(args.Graphics); }
             }

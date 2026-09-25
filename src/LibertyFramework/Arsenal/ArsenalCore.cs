@@ -59,6 +59,8 @@ namespace LibertyFramework.Arsenal
         private bool storageControlLocked;
         private bool previousStorageKey;
         private int lastStorageScanTicks;
+        private Size screenSize;
+        private int lastScreenReadTicks;
         private int lastSafehouseObserveTicks;
         private int lastTemporaryPruneTicks;
         private DateTime lastSnapshotUtc = DateTime.MinValue;
@@ -107,6 +109,12 @@ namespace LibertyFramework.Arsenal
                 if (config == null) { Initialize(); }
                 if (config == null || Player == null || Player.Character == null) { return; }
                 Ped ped = Player.Character;
+                // Game.Resolution is a native; the per-frame draw handler reads only this cached copy.
+                if (screenSize.Height == 0 || unchecked(Environment.TickCount - lastScreenReadTicks) >= 1000)
+                {
+                    screenSize = Game.Resolution;
+                    lastScreenReadTicks = Environment.TickCount;
+                }
                 int money = Player.Money;
                 if (previousMoney >= 0 && money < previousMoney) { moneyDecreaseAt = Environment.TickCount; }
                 previousMoney = money;
@@ -709,14 +717,17 @@ namespace LibertyFramework.Arsenal
         private void OnStorageDraw(object sender, GraphicsEventArgs args)
         {
             if (disabled || (activeStorage == null && nearbyTrunk == null && nearbySafehouse == null) || DevToolsMenu.IsOpen) { return; }
+            long started = System.Diagnostics.Stopwatch.GetTimestamp();
             try
             {
                 GTA.Graphics graphics = args.Graphics;
                 graphics.Scaling = FontScaling.Pixel;
-                if (activeStorage != null) { wheel.Draw(graphics); return; }
+                Size screen = screenSize;
+                if (screen.Height <= 0) { return; }
+                if (activeStorage != null) { wheel.Draw(graphics, screen); return; }
                 // GTA IV's own help box: top-left, black glass, off-white text.
                 string label = nearbyTrunk != null ? "Press X / E to use the trunk." : "Press X / E to open the weapon stash.";
-                float scale = Game.Resolution.Height / 720f;
+                float scale = screen.Height / 720f;
                 RectangleF box = new RectangleF(34 * scale, 30 * scale, 330 * scale, 40 * scale);
                 graphics.DrawRectangle(box, Color.FromArgb(200, 0, 0, 0));
                 graphics.DrawText(label, new RectangleF(box.X + 12 * scale, box.Y + 10 * scale, box.Width - 24 * scale, box.Height - 14 * scale),
@@ -727,6 +738,7 @@ namespace LibertyFramework.Arsenal
                 RuntimeLog.Error("arsenal_storage_draw_failed error=" + error);
                 disabled = true;
             }
+            finally { LibertyFramework.Core.Performance.Logic.CostMeter.Add("draw.storage", started); }
         }
 
         private List<MenuItem> BuildPage()

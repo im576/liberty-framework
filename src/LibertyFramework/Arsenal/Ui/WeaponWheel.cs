@@ -156,11 +156,11 @@ namespace LibertyFramework.Arsenal.Ui
 
         private void Say(string text) { message = text ?? ""; messageUntil = Environment.TickCount + 2600; }
 
-        internal void Draw(GTA.Graphics graphics)
+        // screen comes from the owning script's tick: Game.Resolution is a native and must not be read while drawing.
+        internal void Draw(GTA.Graphics graphics, Size screen)
         {
-            if (host == null) { return; }
+            if (host == null || screen.Height <= 0) { return; }
             graphics.Scaling = FontScaling.Pixel;
-            SizeF screen = new SizeF(Game.Resolution.Width, Game.Resolution.Height);
             float fade = Math.Min(1f, (Environment.TickCount - openedAt) / 160f);
             float diameter = screen.Height * 0.66f;
             float cx = screen.Width / 2f, cy = screen.Height / 2f;
