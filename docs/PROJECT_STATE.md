@@ -5,6 +5,14 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
+**Liberty Engine (ADR-0006, 2026-09-25, Claude):**
+- **Engine:** a native C++ core (world snapshot, events) plus one C# host running every mechanic as a module, with events, coroutines and services. It is verified in game (21/21 natives) and documented in [ENGINE.md](architecture/ENGINE.md).
+- **Autopilot:** Claude launches and tests the game itself (`tools/autopilot`). The engine-events, gore-review, sling-review and perf-baseline scenarios pass.
+- **Post-load freeze:** it was FusionFix's hidden "Error building shader!" box, which the engine now acknowledges.
+- **Slings:** they render correctly (single-page models).
+- **Performance:** gunplay 6.2 -> 1.4 ms/frame; arsenal 2.9 -> 1.5 ms/tick.
+- **Branch:** work is on `main`.
+
 **Model pipeline T-2 and sling straps (2026-09-25, Claude):**
 - **Tool:** `tools/models` (LibertyModel) reads GTA IV drawables and skeletons from IMG and RPF archives and writes new ones. All 79 weapon-pack models and 45 of Niko's models parse, and all 49 single-mesh props rebuild byte-identical.
 - **First models:** body-fitted leather sling straps, cut from the union of Niko's outfits. They are packed in `LibertyModels.img` and registered through `lf_models.ide`. The holsters attach them to Spine2 whenever a long gun is slung.

@@ -60,7 +60,10 @@ Full original spec: `docs/HANDOFF.md`. Architecture: `docs/architecture/OVERVIEW
 | Base mods | FusionFix (includes Ultimate ASI Loader as `dinput8.dll` + FusionOverloader) |
 | Script runtime | Tomasak ScriptHookDotNet 1.7.1.8 + bundled CE hook; T-001 verified in-game load and reload |
 | Language | C# / .NET Framework 4.0 / x86 verified by T-001 |
-| C# version | T-001 used the installed Windows Framework compiler; maximum supported language version is not established |
+| C# version | C# 7.3 via Roslyn 4.11 (`tools/get-toolchains.ps1`), `/unsafe` for the LibertyCore ABI; verified in game 2026-09-25 |
+| Native core | `native/LibertyCore` (C++20, clang/llvm-mingw, 32-bit) loaded by the engine; see ADR-0006 and `docs/architecture/ENGINE.md` |
+| Structure | One SHDN script (`Engine.EngineHost`); every feature is a `[Module]` class. New features must be modules, not `GTA.Script` subclasses |
+| In-game testing | `tools/autopilot` launches the game and runs scenarios; add a scenario for each new mechanic |
 | Output | `LibertyFramework.net.dll` copied to `<GTA IV>\scripts\` |
 | Config | JSON files in `config/`, deployed to `<GTA IV>\scripts\LibertyFramework\config\` |
 | Logs | `<GTA IV>\scripts\LibertyFramework\logs\LibertyFramework.log` |

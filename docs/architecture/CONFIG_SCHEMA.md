@@ -73,6 +73,24 @@ Finish colour ramps (`shadowRgb`, `midRgb`, `highlightRgb`, `contrast`, `lift`, 
 
 Optional `slings[]` (W-5): `slot` (`LongGun1` or `LongGun2`, unique), `model` (a strap model from `LibertyModels.img`) and `bone` (ScriptHookDotNet bone). The strap is attached with zero offset and zero rotation because its mesh is authored in that bone's bind-pose space. Packaging now merges missing top-level fields into the installed file (`merge-defaults`), so saved nudges survive.
 
+## engine.json (ADR-0006)
+
+| Field | Meaning |
+|---|---|
+| `schemaVersion` | Always `1`. |
+| `coreEnabled` | Load LibertyCore.dll. When off, the world snapshot comes from the SHDN fallback (player only). |
+| `pedRadiusMeters` | Peds listed in the snapshot and reported in events (10–500). |
+| `coreSpotCheckFrames` | How often the core's player position is compared with SHDN (at least 30). |
+| `coreSpotCheckToleranceMeters` | Allowed drift before the core is switched off (0–5). |
+| `disabledModules` | Module ids that are not constructed. |
+| `loadModAssemblies` | Also load `[Module]` classes from `scripts\LibertyFramework\mods\*.dll`. |
+
+Defaults apply when the file is absent or invalid (logged).
+
+`arsenal.json` gains `inventoryRefreshMilliseconds` (500) and `stateRefreshMilliseconds` (200):
+- **Inventory:** re-read on engine weapon, shot, reload and death events, and at least this often.
+- **State flags:** arrest, death, mission, cutscene and fade are read at most this often.
+
 ## Build-time: models/sling.json (T-2 / W-5)
 
 Read by `tools/models` (`LibertyModel sling`) at package time.

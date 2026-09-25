@@ -51,6 +51,15 @@ All steps except install/rollback are read-only on the game folder and safe whil
 
 Installed files: `scripts/LibertyFramework.net.dll`, `scripts/LibertyFramework/config/{gunplay.json,presets/*.json,devtools/locations.json}`, `update/common/data/{WeaponInfo.xml,default.dat,lf_finishes.ide}`, `update/LibertyFramework/LibertyFramework.img`. `default.dat` is the installed Various Pedestrian Actions copy plus one `IDE common:/data/lf_finishes.ide` line; `WeaponInfo.xml` is the T-007 file with `LF_GOLD_PISTOL` using model `lf_gold_pistol`. The superseded `deploy-t00x`/`upgrade-t007` scripts remain for history only.
 
+## Toolchains, engine core and autopilot (ADR-0006)
+
+- **Toolchains:** `./tools/get-toolchains.ps1 -Directory <folder outside the repo>` downloads the pinned Roslyn compiler (C# 7.3) and llvm-mingw clang. It records their paths in the git-ignored `tools/toolchains.local.json`. `build.ps1` and `build-core.ps1` read them from there.
+- **Engine core:** `./tools/build-core.ps1` builds `native/LibertyCore/bin/LibertyCore.dll` (32-bit, C++20, warnings are errors). Packaging stages it to `scripts/LibertyFramework/bin/`.
+- **Autopilot:** `Import-Module tools/autopilot/Autopilot.psm1`, then `Test-Boot`, `Start-GameReady`, `Invoke-EngineCommand` and `Save-Screenshot`.
+  - It launches through Steam and retries the known early startup crash (MTLX.DLL), cleaning up the Rockstar helpers left behind.
+  - Screenshots use Steam's F12 capture, because GDI capture is black under Vulkan.
+- **Scenarios:** `./tools/autopilot/Run-Scenario.ps1 -GameDirectory <GTAIV> -Scenario tools/autopilot/scenarios/<name>.txt -OutputDirectory <runs folder>` runs a scenario. Scenario lines are engine commands (`lf help` lists them) plus `wait`, `shot`, `expect` and `key`. Each run writes a `report.md` with every step, screenshots and the run's log.
+
 ## Model pipeline (T-2)
 
 `tools/models` compiles to `LibertyModel.exe`, which reads and writes GTA IV drawables. `package-phase2.ps1` builds and runs it: first the round-trip self-test, then `sling config/models/sling.json`. The generated `LibertyModels.img`, `lf_models.ide` and a `default.dat` with one added IDE line are staged with the other Phase 2 files.
