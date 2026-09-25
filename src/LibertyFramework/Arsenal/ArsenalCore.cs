@@ -56,6 +56,8 @@ namespace LibertyFramework.Arsenal
         private bool storageControlLocked;
         private bool previousStorageKey, previousUp, previousDown, previousSelect, previousBack;
         private int lastStorageScanTicks;
+        private int lastSafehouseObserveTicks;
+        private int lastTemporaryPruneTicks;
 
         public ArsenalCore()
         {
@@ -86,8 +88,17 @@ namespace LibertyFramework.Arsenal
                 RefreshLvs();
                 ObserveVehicle(ped);
                 DiscoverSafehouses();
-                ObserveSafehouse(ped);
-                PruneTemporaryTrunks();
+                int nowTicks = Environment.TickCount;
+                if (lastSafehouseObserveTicks == 0 || unchecked(nowTicks - lastSafehouseObserveTicks) >= 250)
+                {
+                    lastSafehouseObserveTicks = nowTicks;
+                    ObserveSafehouse(ped);
+                }
+                if (lastTemporaryPruneTicks == 0 || unchecked(nowTicks - lastTemporaryPruneTicks) >= 1000)
+                {
+                    lastTemporaryPruneTicks = nowTicks;
+                    PruneTemporaryTrunks();
+                }
                 if (openedTrunk != null && activeStorage == null && !DevToolsMenu.IsOpen) { CloseTrunk(); }
 
                 bool arrested = Function.Call<bool>("IS_PLAYER_BEING_ARRESTED");
@@ -490,8 +501,11 @@ namespace LibertyFramework.Arsenal
                 }
                 if (openKey && !previousStorageKey && (nearbyTrunk != null || nearbySafehouse != null))
                 {
+                    if (nearbyTrunk != null && !nearbyTrunk.Exists()) { nearbyTrunk = null; }
+                    if (nearbyTrunk == null && nearbySafehouse == null) { previousStorageKey = openKey; return; }
                     activeStorage = nearbyTrunk != null ? Trunk(nearbyTrunk) :
                         ArsenalPolicy.FindOrAdd(state.SafehouseStashes, nearbySafehouse.Id);
+                    if (activeStorage == null) { nearbyTrunk = null; previousStorageKey = openKey; return; }
                     StorageOpen = true;
                     if (nearbyTrunk != null)
                     {

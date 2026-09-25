@@ -6,7 +6,7 @@ Status: **NEEDS-PLAYTEST**. Owner requested the full Phase 2 build for one combi
 
 - The three registered test weapons use a separate early-burst bloom increment, a chain reset pause, and faster short-burst recovery. All values are in `config/gunplay.json` and the generated presets. Vanilla weapons retain their own spread.
 - Square/X or E at a vehicle rear or marked safehouse opens a compact store/take panel. A transfers, B closes. Player controls are held while the panel is open and restored on close, error, or script reload. The rear is searched every 250 ms. DevTools cannot open over this panel.
-- The gunplay loop reports 30-second frame interval percentiles and its own average/maximum tick time in `performance` log lines. The holster scan now runs every 50 ms; the debug hit scan uses a configurable interval and smaller radius; crosshair projection is recalculated when FOV or screen height changes. Detailed shot audit logs stop after 40 bullets per weapon, with periodic summaries retained.
+- The gunplay loop reports 30-second frame interval percentiles and its own average/maximum tick time in `performance` log lines. The holster scan now runs every 50 ms; safehouse observation and temporary trunk pruning run every 250 and 1000 ms; the debug hit scan uses a configurable interval and smaller radius; crosshair projection is recalculated when FOV or screen height changes. Detailed shot audit logs stop after 40 bullets per weapon, with periodic summaries retained.
 
 ## Human test steps
 
