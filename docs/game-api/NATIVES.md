@@ -63,3 +63,7 @@ ScriptHookDotNet `GTA.Camera.FOV` wraps registered `GET_CAM_FOV` and `SET_CAM_FO
 T-021 raw calls are in `GameApi/HolsterNatives.cs`; T-013 raw calls are in `GameApi/DebugHitNatives.cs`. The earlier statement that all raw calls pass through `Natives.cs` predates this Agent B extension.
 
 T-021 also uses ScriptHookDotNet `Game.CurrentEpisode` (registered `GET_CURRENT_EPISODE`, 0x7D7619D2) to select `TLAD/common/data/WeaponInfo.xml` or `TBoGT/common/data/WeaponInfo.xml` for episodic IDs 21–41. SHDN `Weapon.Slot` provides their category in the inventory fallback.
+
+## T-022 combat effects
+
+Reuses `GET_CHAR_LAST_DAMAGE_BONE` (registered 0x767E5013 via `DebugHitNatives`) and `GET_MISSION_FLAG` (registered 0x2BC64736) on Script.Tick. `Ped.HasBeenDamagedBy` is the existing SHDN wrapper; `World.GetPeds` enumerates only the configured nearby range. No new native or memory address is introduced. The GTA IV PedBone map is from [Sanny Builder's IV enum](https://github.com/sannybuilder/library/blob/master/gta_iv/enums.json); the correspondence to the CE last-damage-bone return remains an in-game test item.

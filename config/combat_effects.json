@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "enabled": false,
+  "reactionsEnabled": true,
+  "injuriesEnabled": true,
+  "woundsEnabled": true,
+  "limbLossPrototypeEnabled": false,
+  "scanRadiusMeters": 35.0,
+  "sampleIntervalMilliseconds": 50,
+  "maximumTrackedPeds": 24,
+  "maximumWoundsPerPed": 4,
+  "woundLifetimeMilliseconds": 30000,
+  "reactionCooldownMilliseconds": 250,
+  "minimumInjuryDamage": 5,
+  "minimumLimbLossDamage": 30,
+  "minimumLimbLossHits": 2,
+  "allowedWeaponIds": [58, 59, 60]
+}
