@@ -128,6 +128,24 @@ namespace LibertyFramework.Core.Memory
             }
         }
 
+        // Every "call rel32" (E8) in executable sections whose destination is 'target'.
+        internal List<uint> FindCallsTo(uint target)
+        {
+            List<uint> sites = new List<uint>();
+            foreach (Section section in sections)
+            {
+                if (!section.Executable) { continue; }
+                byte[] bytes = section.Bytes;
+                for (int offset = 0; offset + 5 <= bytes.Length; offset++)
+                {
+                    if (bytes[offset] != 0xE8) { continue; }
+                    uint site = section.Start + (uint)offset;
+                    if (site + 5 + (uint)BitConverter.ToInt32(bytes, offset + 1) == target) { sites.Add(site); }
+                }
+            }
+            return sites;
+        }
+
         internal bool InExecutable(uint address)
         {
             foreach (Section section in sections)

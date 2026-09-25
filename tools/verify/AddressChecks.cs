@@ -91,6 +91,13 @@ namespace LibertyFramework.Verify
             byte[] sync = memory.Read(0x5F7D70u, 11);
             byte[] pose = memory.Read(0x5F6FB0u, 12);
             check.True("sync entry is the 11 stolen bytes the hook expects", sync[0] == 0x81 && sync[1] == 0xEC && sync[6] == 0xA1, BitConverter.ToString(sync));
+            // crSkeleton::Update (Capstone: 10 E8 callers of 0x466BE0; body encrypted on disk). In-place call sites:
+            // 0x5F6E35, 0x5F6F84, 0x60BA64, 0x60BA79, 0x698769, 0x698830, 0x879D0E, 0x87AF87 (0x876F3B / 0xC1AB3C write elsewhere).
+            check.Equal("crSkeleton::Update", 0x466BE0u, addresses.SkeletonUpdateFunction);
+            check.Equal("in-place skeleton update call sites", 8, addresses.SkeletonUpdateCallSites.Count);
+            check.True("update call sites are the eight Capstone-verified ones", addresses.SkeletonUpdateCallSites.Contains(0x5F6E35u) &&
+                addresses.SkeletonUpdateCallSites.Contains(0x60BA79u) && addresses.SkeletonUpdateCallSites.Contains(0x87AF87u) &&
+                !addresses.SkeletonUpdateCallSites.Contains(0x876F3Bu) && !addresses.SkeletonUpdateCallSites.Contains(0xC1AB3Cu), "");
             check.True("pose entry is the 12 stolen bytes the hook expects", pose[0] == 0x55 && pose[3] == 0x83 && pose[6] == 0x81 && pose[11] == 0x00, BitConverter.ToString(pose));
         }
     }

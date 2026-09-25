@@ -97,6 +97,12 @@ Finish colour ramps (`shadowRgb`, `midRgb`, `highlightRgb`, `contrast`, `lift`, 
   - `pendingDeathWindowMilliseconds` is how long after a hit the ped may die and still be severed.
   - At the stump: `severBurstEffectName` / `severMistEffectName`, then `arterialEffectName` every `arterialIntervalMilliseconds` for `arterialDurationMilliseconds`.
 - **DevTools Gore Test:** `goreTestScale` (≤8) and `goreTestIntervalMilliseconds` (ms per gallery step).
+- **Looping effects (streams, drips, mist, chunks):**
+  - `maximumLoopedEffects` (1–64) caps how many run at once; the oldest is stopped first.
+  - `burstLoopMilliseconds` (50–5000) is how long a one-off burst of a looping effect lasts.
+- **Death leak:** `deathLeakEffectName` / `deathLeakDurationMilliseconds` (≤120000) set how long a killed body keeps leaking.
+- **Severing timing:** `severDelayMilliseconds` (0–3000) waits after death before collapsing bones.
+- **Collapse size:** `collapseScale` (0.0001–0.1) is the leftover scale of collapsed bones. It is never zero.
 
 ## T-011 finish variants
 

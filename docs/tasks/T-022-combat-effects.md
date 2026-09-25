@@ -1,6 +1,26 @@
 # T-022 — Combat effects detection and safe prototype
 
-> **Update 2026-09-24 (Claude, gore overhaul): supersedes the notes below — NEEDS-PLAYTEST.**
+> **Update 2026-09-24 (Claude, gore pass 3 after playtest 2) â€” NEEDS-PLAYTEST.**
+>
+> **What the Gore Test log showed:**
+> - 9 of 15 blood effects are looping effects, which the one-shot trigger refuses.
+> - The fragInst hooks never matched a ped (`hook_calls=0`), so the collapse only held on frames the engine skipped. That caused the flickering head.
+> - Severed corpses vanished right after the thrown-limb clone was spawned.
+>
+> **Now:**
+> - Looping effects are started and stopped (`BloodEffects`), so wounds and stumps give continuous streams, drips and chunks. The game's `SET_CHAR_BLEEDING` is on for every wounded ped.
+> - The collapse runs natively after every `crSkeleton::Update` call (8 call sites) and after the ragdoll sync (ADR-0005 rev 2).
+> - Corpses are made mission-owned while severed.
+> - Collapsed bones get a 0.01 scale, and severing waits 300 ms after death.
+>
+> **Evidence to collect:**
+> - `engine_resolve skeleton_update ok ... sites=8`
+> - `skeleton_collapse_engine_installed patches=9`
+> - `dismember_evidence ... engine_hits=N` (N > 0 means the engine path works)
+> - `ptfx ... loop`
+> - no `dismember_corpse_lost`
+>
+> **Update 2026-09-24 (Claude, gore overhaul): superseded by pass 3 above** — NEEDS-PLAYTEST.**
 >
 > **Why the owner saw no gore:**
 > - The ped-skeleton resolver failed at runtime, so dismemberment never armed.

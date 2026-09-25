@@ -9,11 +9,11 @@ using LibertyFramework.GameApi;
 
 namespace LibertyFramework.CombatEffects
 {
-    // T-022 dismemberment. A severed part = a bone and all its descendants collapsed into the cut joint (zero axes,
-    // origin at the joint), so the mesh vanishes there and the surrounding skin closes over the stump.
-    // The collapse is applied (1) right after the engine rebuilds the ped's skeleton each frame, through the
-    // ADR-0005 skeleton hooks, and (2) on every script tick as a fallback. A thrown limb is a clone of the ped
-    // with everything except that limb collapsed, ragdolled away from the shooter.
+    // T-022 dismemberment. A severed part = a bone and all its descendants collapsed into the cut joint (tiny uniform
+    // scale, origin at the joint), so the mesh vanishes there and the surrounding skin closes over the stump.
+    // The collapse is applied (1) inside the engine after every skeleton pose update, by SkeletonCollapseEngine
+    // (ADR-0005), for the ped's own matrices and the frag cache entry's copy, and (2) on every script tick as a
+    // fallback. A thrown limb is a clone of the ped with everything except that limb collapsed.
     internal sealed class Dismemberment
     {
         private sealed class Collapse
@@ -23,27 +23,34 @@ namespace LibertyFramework.CombatEffects
             internal string Name;
             internal int CutIndex;
             internal int[] Indices;
-            internal uint FragInst, Skeleton, Matrices;
+            internal int BoneCount;
+            internal uint FragInst, Skeleton, Matrices, CopyMatrices;
+            internal int CopyBoneCount;
             internal long CreatedMilliseconds, LifetimeMilliseconds;
-            internal int Ticks, HookHits;
+            internal int Ticks;
             internal bool EvidenceLogged, Shown, LimbThrown;
             internal Vector3 Push;
             internal int StumpTag;
             internal int CutTag;
+            internal int HitsAtCreate;
+            internal bool Pinned;
         }
 
         private readonly PedSkeleton skeleton;
+        private readonly SkeletonCollapseEngine engine;
+        private readonly float collapseScale;
         private readonly List<Collapse> records = new List<Collapse>();
-        private volatile Collapse[] active = new Collapse[0];
-        private readonly byte[] zeroAxes = new byte[48];
+        private bool tableDirty;
         private bool variationFailureLogged;
 
-        internal Dismemberment(PedSkeleton skeleton)
+        internal Dismemberment(PedSkeleton skeleton, SkeletonCollapseEngine engine, float collapseScale)
         {
             this.skeleton = skeleton;
+            this.engine = engine;
+            this.collapseScale = collapseScale;
         }
 
-        internal bool HooksActive { get; set; }
+        internal bool EngineActive { get { return engine != null && engine.PatchCount > 0; } }
 
         internal bool IsTracked(Ped ped)
         {
@@ -57,47 +64,6 @@ namespace LibertyFramework.CombatEffects
             return false;
         }
 
-        // Called on the engine thread right after a fragInst rebuilt its skeleton. Memory only, never throws.
-        internal void OnSkeletonRebuilt(IntPtr fragInst)
-        {
-            try
-            {
-                Collapse[] snapshot = active;
-                if (snapshot.Length == 0) { return; }
-                uint frag = (uint)fragInst.ToInt32();
-                foreach (Collapse record in snapshot)
-                {
-                    if (record.FragInst != frag || record.Matrices == 0) { continue; }
-                    uint matrices = (uint)Marshal.ReadInt32(new IntPtr((int)(record.Skeleton + 0x14)));
-                    if (matrices != record.Matrices) { continue; }
-                    WriteCollapse(record);
-                    record.HookHits++;
-                }
-            }
-            catch
-            {
-                // Nothing may escape into the engine; the tick path logs and repairs state.
-            }
-        }
-
-        private void WriteCollapse(Collapse record)
-        {
-            IntPtr cut = new IntPtr((int)(record.Matrices + (uint)(record.CutIndex * 64) + 48));
-            byte[] origin = new byte[12];
-            Marshal.Copy(cut, origin, 0, 12);
-            byte[] rows = new byte[60];
-            Buffer.BlockCopy(zeroAxes, 0, rows, 0, 48);
-            Buffer.BlockCopy(origin, 0, rows, 48, 12);
-            foreach (int index in record.Indices)
-            {
-                IntPtr matrix = new IntPtr((int)(record.Matrices + (uint)(index * 64)));
-                Marshal.Copy(rows, 0, matrix, 12);                  // row 0 xyz
-                Marshal.Copy(rows, 0, IntPtr.Add(matrix, 16), 12);  // row 1 xyz
-                Marshal.Copy(rows, 0, IntPtr.Add(matrix, 32), 12);  // row 2 xyz
-                Marshal.Copy(origin, 0, IntPtr.Add(matrix, 48), 12);
-            }
-        }
-
         // False when the skeleton cannot be read safely (logged).
         internal bool Sever(Ped target, LimbCutPlan plan, Vector3 push, long now, long lifetime)
         {
@@ -109,9 +75,16 @@ namespace LibertyFramework.CombatEffects
             record.CutTag = plan.CutTag;
             record.CreatedMilliseconds = now;
             record.LifetimeMilliseconds = lifetime;
+            record.HitsAtCreate = engine != null ? engine.Hits : 0;
+            // Playtest 2: the corpse vanished right after the thrown limb was spawned (the population manager frees a
+            // ped slot by removing ambient corpses). A mission-owned corpse is kept; it is released when the record ends.
+            try { Function.Call("SET_CHAR_AS_MISSION_CHAR", target); record.Pinned = true; }
+            catch (Exception error) { RuntimeLog.Error("dismember_pin_failed error=" + error.Message); }
             records.Add(record);
-            Publish();
-            RuntimeLog.Info("dismember part=" + plan.Name + " bones=" + record.Indices.Length + " hooked=" + (HooksActive && record.FragInst != 0));
+            tableDirty = true;
+            Apply(record);
+            RuntimeLog.Info("dismember part=" + plan.Name + " bones=" + record.Indices.Length + " skeleton_bones=" + record.BoneCount +
+                " engine=" + EngineActive + " copy=" + (record.CopyMatrices != 0));
             return true;
         }
 
@@ -121,63 +94,115 @@ namespace LibertyFramework.CombatEffects
             if (pointer == 0) { RuntimeLog.Error("dismember_skip no_ped_pointer part=" + name); return null; }
             int cut = skeleton.IndexOf(pointer, ped.Model.Hash, cutTag);
             if (cut <= 0) { RuntimeLog.Error("dismember_skip cut_bone_unresolved part=" + name + " tag=0x" + cutTag.ToString("X")); return null; }
-            uint frag = skeleton.FragInst(pointer);
-            uint skel = frag != 0 ? skeleton.Skeleton(frag) : 0;
-            uint matrices = skel != 0 ? skeleton.MatricesOf(skel) : 0;
-            uint expected = skeleton.MatrixBase(pointer);
-            if (matrices == 0 || matrices != expected) { frag = 0; skel = 0; matrices = expected; }
-            if (matrices == 0) { RuntimeLog.Error("dismember_skip no_matrices part=" + name); return null; }
-            int count = skeleton.BoneCount(pointer);
-            List<int> indices = skel != 0 && count > 0 ? skeleton.Subtree(skel, cut, count) : new List<int>();
+            Collapse record = new Collapse();
+            record.Ped = ped; record.Clone = clone; record.Name = name; record.CutIndex = cut;
+            if (!Refresh(record, pointer)) { RuntimeLog.Error("dismember_skip no_matrices part=" + name); return null; }
+            if (record.BoneCount <= cut) { RuntimeLog.Error("dismember_skip bone_count=" + record.BoneCount + " part=" + name); return null; }
+            List<int> indices = record.Skeleton != 0 ? skeleton.Subtree(record.Skeleton, cut, record.BoneCount) : new List<int>();
             if (indices.Count == 0) { indices.Add(cut); }
             if (keep != null)
             {
                 // Clone: collapse everything except the kept limb.
                 List<int> rest = new List<int>();
-                for (int index = 1; index < count; index++) { if (Array.IndexOf(keep, index) < 0) { rest.Add(index); } }
+                for (int index = 1; index < record.BoneCount; index++) { if (Array.IndexOf(keep, index) < 0) { rest.Add(index); } }
                 indices = rest;
             }
-            Collapse record = new Collapse();
-            record.Ped = ped; record.Clone = clone; record.Name = name; record.CutIndex = cut;
-            record.Indices = indices.ToArray(); record.FragInst = frag; record.Skeleton = skel; record.Matrices = matrices;
+            if (indices.Count > SkeletonCollapseEngine.MaximumIndices) { RuntimeLog.Error("dismember_skip too_many_bones=" + indices.Count); return null; }
+            record.Indices = indices.ToArray();
             return record;
         }
 
-        // Raised with true while any collapse needs the post-rebuild hook, false when none do.
-        internal Action<bool> ActiveChanged;
-
-        private void Publish()
+        // Re-reads the engine pointers (ragdoll on/off can swap them). True when a matrix array is known.
+        private bool Refresh(Collapse record, uint pointer)
         {
-            active = records.ToArray();
-            if (ActiveChanged != null) { ActiveChanged(records.Count > 0); }
+            uint frag = skeleton.FragInst(pointer);
+            uint skel = frag != 0 ? skeleton.Skeleton(frag) : 0;
+            uint matrices = skel != 0 ? skeleton.MatricesOf(skel) : 0;
+            uint expected = skeleton.MatrixBase(pointer);
+            if (matrices == 0 || matrices != expected) { skel = 0; matrices = expected; }
+            if (matrices == 0) { return false; }
+            int count = skel != 0 ? skeleton.BoneCountOf(skel) : (record.BoneCount > 0 ? record.BoneCount : skeleton.BoneCount(pointer));
+            uint copySkeleton = frag != 0 ? skeleton.CacheCopySkeleton(frag) : 0;
+            uint copy = copySkeleton != 0 ? skeleton.MatricesOf(copySkeleton) : 0;
+            int copyCount = copy != 0 ? skeleton.BoneCountOf(copySkeleton) : 0;
+            if (copy == matrices || copyCount != count) { copy = 0; copyCount = 0; }
+            if (frag != record.FragInst || skel != record.Skeleton || matrices != record.Matrices || copy != record.CopyMatrices ||
+                (record.BoneCount != 0 && count != record.BoneCount))
+            {
+                tableDirty = true;
+            }
+            record.FragInst = frag; record.Skeleton = skel; record.Matrices = matrices;
+            record.CopyMatrices = copy; record.CopyBoneCount = copyCount;
+            if (count > 0) { record.BoneCount = count; }
+            return true;
         }
 
-        // Per-tick: refresh engine pointers (ragdoll on/off changes the fragInst), apply the fallback collapse,
-        // throw limbs, expire records, and log hook evidence.
+        // Script-tick fallback: the same write the native routine does.
+        private void Apply(Collapse record)
+        {
+            WriteCollapse(record.Matrices, record);
+            if (record.CopyMatrices != 0) { WriteCollapse(record.CopyMatrices, record); }
+        }
+
+        private void WriteCollapse(uint matrices, Collapse record)
+        {
+            IntPtr cut = new IntPtr((int)(matrices + (uint)(record.CutIndex * 64) + 48));
+            float[] origin = new float[3];
+            Marshal.Copy(cut, origin, 0, 3);
+            float[] rows = { collapseScale, 0, 0, 0, 0, collapseScale, 0, 0, 0, 0, collapseScale };
+            foreach (int index in record.Indices)
+            {
+                IntPtr m = new IntPtr((int)(matrices + (uint)(index * 64)));
+                Marshal.Copy(rows, 0, m, 3);
+                Marshal.Copy(rows, 4, IntPtr.Add(m, 16), 3);
+                Marshal.Copy(rows, 8, IntPtr.Add(m, 32), 3);
+                Marshal.Copy(origin, 0, IntPtr.Add(m, 48), 3);
+            }
+        }
+
+        private void PublishTable()
+        {
+            tableDirty = false;
+            if (engine == null) { return; }
+            List<SkeletonCollapseEngine.Entry> entries = new List<SkeletonCollapseEngine.Entry>();
+            foreach (Collapse record in records)
+            {
+                if (record.Skeleton == 0) { continue; } // bone count unknown to the engine: tick fallback only
+                entries.Add(Entry(record.Matrices, record.BoneCount, record));
+                if (record.CopyMatrices != 0) { entries.Add(Entry(record.CopyMatrices, record.CopyBoneCount, record)); }
+            }
+            engine.Publish(entries);
+        }
+
+        private static SkeletonCollapseEngine.Entry Entry(uint matrices, int boneCount, Collapse record)
+        {
+            SkeletonCollapseEngine.Entry entry = new SkeletonCollapseEngine.Entry();
+            entry.Matrices = matrices; entry.BoneCount = boneCount; entry.CutIndex = record.CutIndex; entry.Indices = record.Indices;
+            return entry;
+        }
+
+        // Per-tick: refresh engine pointers, apply the fallback collapse, throw limbs, expire records, log evidence.
         internal void Update(CombatEffectsConfig config, long now, Action<object> onThrowReady)
         {
-            bool changed = false;
             for (int i = records.Count - 1; i >= 0; i--)
             {
                 Collapse record = records[i];
-                if (record.Ped == null || !record.Ped.Exists() || now - record.CreatedMilliseconds > record.LifetimeMilliseconds)
+                bool exists = record.Ped != null && record.Ped.Exists();
+                if (!exists || now - record.CreatedMilliseconds > record.LifetimeMilliseconds)
                 {
-                    if (record.Clone && record.Ped != null && record.Ped.Exists()) { record.Ped.Delete(); }
+                    if (!exists && !record.Clone && now - record.CreatedMilliseconds < 5000)
+                    {
+                        RuntimeLog.Error("dismember_corpse_lost part=" + record.Name + " age_ms=" + (now - record.CreatedMilliseconds) + " ticks=" + record.Ticks);
+                    }
+                    if (record.Clone && exists) { record.Ped.Delete(); }
+                    else if (record.Pinned && exists) { record.Ped.NoLongerNeeded(); }
                     records.RemoveAt(i);
-                    changed = true;
+                    tableDirty = true;
                     continue;
                 }
                 uint pointer = skeleton.PedFromHandle(record.Ped.GetHashCode());
-                if (pointer == 0) { continue; }
-                uint frag = skeleton.FragInst(pointer);
-                uint skel = frag != 0 ? skeleton.Skeleton(frag) : 0;
-                uint matrices = skel != 0 ? skeleton.MatricesOf(skel) : skeleton.MatrixBase(pointer);
-                if (frag != record.FragInst || skel != record.Skeleton || matrices != record.Matrices)
-                {
-                    record.FragInst = skel != 0 ? frag : 0; record.Skeleton = skel; record.Matrices = matrices;
-                    changed = true;
-                }
-                if (record.Matrices != 0) { WriteCollapse(record); }
+                if (pointer == 0 || !Refresh(record, pointer)) { continue; }
+                Apply(record);
                 record.Ticks++;
                 if (record.Clone && !record.Shown && record.Ticks >= 2)
                 {
@@ -191,40 +216,46 @@ namespace LibertyFramework.CombatEffects
                     record.LimbThrown = true;
                     onThrowReady(record);
                 }
-                if (!record.EvidenceLogged && record.Ticks >= 20)
+                if (!record.EvidenceLogged && record.Ticks >= 30)
                 {
                     record.EvidenceLogged = true;
-                    RuntimeLog.Info("dismember_evidence part=" + record.Name + " clone=" + record.Clone + " hook_calls=" + record.HookHits +
-                        " ticks=" + record.Ticks + " ragdoll_frag=" + (record.FragInst != 0));
+                    RuntimeLog.Info("dismember_evidence part=" + record.Name + " clone=" + record.Clone + " ticks=" + record.Ticks +
+                        " engine_hits=" + (engine != null ? engine.Hits - record.HitsAtCreate : 0) + " engine_calls=" + (engine != null ? engine.Calls : 0) +
+                        " skeleton=" + (record.Skeleton != 0) + " copy=" + (record.CopyMatrices != 0));
                 }
             }
-            if (changed) { Publish(); }
+            if (tableDirty) { PublishTable(); }
         }
 
         // Spawn the thrown limb for a severed corpse: same model and clothes, every bone but the limb collapsed.
+        // Everything read from the corpse is read first, so a corpse the game removes mid-way cannot throw.
         internal void ThrowLimb(CombatEffectsConfig config, object severedRecord, long now)
         {
             Collapse source = (Collapse)severedRecord;
-            if (CountClones() >= config.MaximumSeveredPeds) { return; }
-            Ped clone = World.CreatePed(source.Ped.Model, source.Ped.Position + new Vector3(0, 0, 0.35f));
-            if (clone == null || !clone.Exists()) { RuntimeLog.Error("dismember_limb_spawn_failed"); return; }
-            clone.Visible = false;
-            // Same clothes as the victim. SHDN threw InvalidCastException from these getters in playtest 1; the limb
-            // then keeps default clothes rather than failing (and the corpse keeps its stump).
+            if (CountClones() >= config.MaximumSeveredPeds || source.Ped == null || !source.Ped.Exists()) { return; }
+            Model model = source.Ped.Model;
+            Vector3 position = source.Ped.Position;
+            float heading = source.Ped.Heading;
+            int[] drawables = new int[11], textures = new int[11];
+            bool clothes = true;
             try
             {
                 for (int component = 0; component < 11; component++)
                 {
-                    int drawable = Function.Call<int>("GET_CHAR_DRAWABLE_VARIATION", source.Ped, component);
-                    int texture = Function.Call<int>("GET_CHAR_TEXTURE_VARIATION", source.Ped, component);
-                    Function.Call("SET_CHAR_COMPONENT_VARIATION", clone, component, drawable, texture);
+                    drawables[component] = Function.Call<int>("GET_CHAR_DRAWABLE_VARIATION", source.Ped, component);
+                    textures[component] = Function.Call<int>("GET_CHAR_TEXTURE_VARIATION", source.Ped, component);
                 }
             }
             catch (Exception error)
             {
+                clothes = false;
                 if (!variationFailureLogged) { variationFailureLogged = true; RuntimeLog.Error("dismember_limb_clothes_skipped error=" + error.Message); }
             }
-            clone.Heading = source.Ped.Heading;
+            Ped clone = World.CreatePed(model, position + new Vector3(0, 0, 0.35f));
+            if (clone == null || !clone.Exists()) { RuntimeLog.Error("dismember_limb_spawn_failed"); return; }
+            clone.Visible = false;
+            if (clothes) { for (int component = 0; component < 11; component++) Function.Call("SET_CHAR_COMPONENT_VARIATION", clone, component, drawables[component], textures[component]); }
+            clone.Heading = heading;
             clone.Die();
             clone.NoLongerNeeded();
             Collapse record = Build(clone, source.CutTag, source.Name + "_limb", true, source.Indices);
@@ -233,8 +264,10 @@ namespace LibertyFramework.CombatEffects
             record.Push = source.Push;
             record.CreatedMilliseconds = now;
             record.LifetimeMilliseconds = config.SeveredLimbLifetimeMilliseconds;
+            record.HitsAtCreate = engine != null ? engine.Hits : 0;
             records.Add(record);
-            Publish();
+            tableDirty = true;
+            Apply(record);
             RuntimeLog.Info("dismember_limb_thrown part=" + source.Name + " collapsed=" + record.Indices.Length);
         }
 
@@ -245,9 +278,6 @@ namespace LibertyFramework.CombatEffects
             return count;
         }
 
-        internal int StumpTagOf(object severedRecord) { return ((Collapse)severedRecord).StumpTag; }
-        internal Ped PedOf(object severedRecord) { return ((Collapse)severedRecord).Ped; }
-
         internal int SeveredCount
         {
             get { int count = 0; foreach (Collapse record in records) { if (!record.Clone) { count++; } } return count; }
@@ -255,16 +285,17 @@ namespace LibertyFramework.CombatEffects
 
         internal void Clear()
         {
-            active = new Collapse[0];
+            if (engine != null) { engine.Publish(new List<SkeletonCollapseEngine.Entry>()); }
             foreach (Collapse record in records)
             {
-                try { if (record.Clone && record.Ped != null && record.Ped.Exists()) { record.Ped.Delete(); } }
+                try
+                {
+                    if (record.Ped == null || !record.Ped.Exists()) { continue; }
+                    if (record.Clone) { record.Ped.Delete(); } else if (record.Pinned) { record.Ped.NoLongerNeeded(); }
+                }
                 catch (Exception error) { RuntimeLog.Error("dismember_clear_failed error=" + error.Message); }
             }
             records.Clear();
         }
-
-        // Unload/exit: memory only. Stops the hook callback from touching any record.
-        internal void Detach() { active = new Collapse[0]; }
     }
 }

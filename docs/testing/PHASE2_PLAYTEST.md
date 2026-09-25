@@ -62,3 +62,10 @@ Status: **READY FOR OWNER TEST** after the integrated package is installed. Use 
 2. **Kill nearest NPC and cut left arm**, then **cut right leg**, then **cut head**, each on a fresh NPC. Walk around the body.
 3. Then shoot NPCs normally with any gun.
 4. Send the lines `gore_test`, `ptfx`, `dismember`, `combat_sever`, `dismember_evidence`, and any `ERROR`.
+
+### 7c. Gore pass 3
+
+1. **Gore Test > Play every blood effect.** Every effect should now show something. Streams and chunks run for about 2 s each.
+2. **Gore Test > cut left arm, cut right leg, cut head,** each on a fresh NPC. The body must stay, the part must stay gone (no flicker), and the stump pours blood. Walk around the body for 10 s.
+3. **Normal combat.** Shoot NPCs with a pistol, a shotgun and a sniper. Expect streams from wounds, dripping bodies and chunks.
+4. **Log lines to send:** `skeleton_update`, `skeleton_collapse_engine`, `dismember`, `dismember_evidence`, `dismember_corpse_lost`, `ptfx`, `gore_test`, `ERROR`.

@@ -103,6 +103,14 @@ namespace LibertyFramework.Core.Memory
         internal const int FragPoseStolenBytes = 12;
         internal bool SkeletonHooksResolved { get { return FragSkeletonSyncFunction != 0 && FragPoseFunction != 0; } }
 
+        // crSkeleton::Update(parentMatrix, globalMatrices) (0x466BE0 on 1.2.0.59; its body is encrypted on disk): the
+        // single routine that turns local bone transforms into the global matrices that get skinned. The call sites
+        // that update a skeleton in place ("push [r+14h]; push [r+8]; call", ecx = the skeleton) are hooked so the
+        // dismemberment collapse lands after every pose update (ADR-0005).
+        internal uint SkeletonUpdateFunction;
+        internal readonly List<uint> SkeletonUpdateCallSites = new List<uint>();
+        internal bool SkeletonUpdateResolved { get { return SkeletonUpdateFunction != 0 && SkeletonUpdateCallSites.Count >= 4; } }
+
         internal sealed class HudComponentGlobals
         {
             internal string Name;
@@ -433,6 +441,30 @@ namespace LibertyFramework.Core.Memory
             {
                 Report.Add("skeleton_hooks unavailable sync_count=" + sync.Count + " pose_count=" + pose.Count);
             }
+
+            // Anchor (0x60BA5E): the fragInst updates its skeleton, then the cache entry's copy skeleton ([esi+168h]):
+            // "push [ecx+14h]; push [ecx+8]; call U; mov ecx,[esi+168h]; test ecx,ecx; jz; push [ecx+14h]; push [ecx+8]; call U".
+            List<uint> anchor = scanner.FindPattern("FF 71 14 FF 71 08 E8 ?? ?? ?? ?? 8B 8E 68 01 00 00 85 C9 74 0B FF 71 14 FF 71 08 E8", true);
+            if (anchor.Count != 1) { Report.Add("skeleton_update unavailable anchor_count=" + anchor.Count); return; }
+            uint call = anchor[0] + 6;
+            uint update = call + 5 + (uint)memory.ReadInt32(call + 1);
+            if (!scanner.InExecutable(update)) { Report.Add("skeleton_update unavailable target=0x" + update.ToString("X8")); return; }
+            foreach (uint site in scanner.FindCallsTo(update))
+            {
+                // In-place updates only: both "push dword [reg+14h]" and "push dword [reg+8]" within the 8 bytes before the call.
+                byte[] before = memory.Read(site - 8, 8);
+                bool globals = false, parent = false;
+                for (int index = 0; index + 2 < before.Length; index++)
+                {
+                    if (before[index] != 0xFF || (before[index + 1] & 0xF8) != 0x70) { continue; }
+                    if (before[index + 2] == 0x14) { globals = true; }
+                    if (before[index + 2] == 0x08) { parent = true; }
+                }
+                if (globals && parent) { SkeletonUpdateCallSites.Add(site); }
+            }
+            if (SkeletonUpdateCallSites.Count >= 4) { SkeletonUpdateFunction = update; }
+            Report.Add("skeleton_update " + (SkeletonUpdateResolved ? "ok" : "unavailable") + " function=0x" + update.ToString("X8") +
+                " sites=" + SkeletonUpdateCallSites.Count);
         }
 
         // hud.dat registration: push alpha; push colour; push 0; push &size; push &pos; push type; push name; call register.

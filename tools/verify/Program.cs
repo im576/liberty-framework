@@ -32,6 +32,8 @@ namespace LibertyFramework.Verify
                 VehicleChecks.Run(args[0], check);
                 Console.WriteLine("== Dismemberment plans (T-022)");
                 CombatChecks.Run(args[0], args[1], check);
+                Console.WriteLine("== Dismemberment collapse engine machine code (ADR-0005)");
+                CollapseEngineChecks.Run(check);
             }
             catch (Exception error)
             {

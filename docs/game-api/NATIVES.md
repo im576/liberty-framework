@@ -80,3 +80,11 @@ Follow-up calls through `CombatEffectsNatives` on Script.Tick: `IS_PED_A_MISSION
 The thrown limb uses SHDN `World.CreatePed`, `Ped.Visible`, `Ped.Die`, `Ped.NoLongerNeeded`, `Ped.Delete`; `START_PTFX_ON_PED_BONE`/`STOP_PTFX`/`APPLY_FORCE_TO_PED` as already registered for T-022.
 
 **Gore overhaul finding (2026-09-24):** the last argument of TRIGGER_PTFX_ON_PED_BONE / START_PTFX_ON_PED_BONE is a **float** scale (the CE handler reads it with movss at 0xBD678D). Passing int 0 made every effect invisible. Arguments: name, ped, offset x/y/z, rotation x/y/z (degrees), bone, float scale. Blood effect names are checked offline against the installed gta_core.wpfl.
+
+**Gore pass 3 (2026-09-24):**
+
+- **Looping blood effects.** `TRIGGER_PTFX_ON_PED_BONE` refuses looping effects: the engine rejects rules whose duration is negative (0xAA0D6E). The playtest 2 log showed these refused: blood_gun_mist, blood_gun_chunks, blood_shotgun_chunks, blood_sniper_chunks, blood_artery, blood_artery_directional, blood_artery_mist, blood_bang_chunks and blood_drips.
+- **Starting and stopping loops.** `START_PTFX_ON_PED_BONE` (0x2209116C, same arguments) accepts every effect and returns a script ptfx id; `STOP_PTFX` (0x0EAA4429) ends it. `CombatEffects/BloodEffects.cs` learns which effects loop from the first refusal.
+- **Persistent corpses.** `SET_CHAR_AS_MISSION_CHAR` (0x60EC0540) keeps a severed corpse from being cleaned up when the limb clone is spawned. It is released with `MARK_CHAR_AS_NO_LONGER_NEEDED` (SHDN `Ped.NoLongerNeeded`).
+- **Stock bleeding.** `SET_CHAR_BLEEDING` (0x38330B4A) turns on the game's own bleeding for hit peds.
+- **Hash source.** The hashes come from FusionFix natives.ixx and are verified as registered and mapped by ScriptHook.dll.

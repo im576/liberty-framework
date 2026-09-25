@@ -87,6 +87,24 @@ namespace LibertyFramework.GameApi
 
         internal uint MatricesOf(uint skeleton) { return skeleton == 0 ? 0 : memory.TryReadPointer(skeleton + 0x14); }
 
+        // crSkeletonData bone count: word at [skeleton+4]+14h (the size the engine memcpys as count << 6).
+        internal int BoneCountOf(uint skeleton)
+        {
+            uint data = skeleton == 0 ? 0 : memory.TryReadPointer(skeleton + 4);
+            if (data == 0 || !memory.IsReadable(data + 0x14, 2)) { return 0; }
+            int count = BitConverter.ToUInt16(memory.Read(data + 0x14, 2), 0);
+            return count > 0 && count <= MaximumBones ? count : 0;
+        }
+
+        // The frag cache entry's copy skeleton ([fragInst+64h] -> [+168h]), which the engine fills from the live
+        // skeleton after each update (0x5F6E42 / 0x60BA69 on 1.2.0.59). Dismemberment collapses both.
+        internal uint CacheCopySkeleton(uint fragInst)
+        {
+            uint entry = fragInst == 0 ? 0 : memory.TryReadPointer(fragInst + 0x64);
+            uint copy = entry == 0 ? 0 : memory.TryReadPointer(entry + 0x168);
+            return copy != 0 && memory.IsReadable(copy, 0x18) ? copy : 0;
+        }
+
         // rage pool: objects +0, flags +4, size +8, item size +12; handle = index << 8 | generation.
         internal uint PedFromHandle(int handle)
         {

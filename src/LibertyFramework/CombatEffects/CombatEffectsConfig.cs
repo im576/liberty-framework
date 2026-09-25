@@ -75,6 +75,15 @@ namespace LibertyFramework.CombatEffects
         [DataMember(Name="maximumHitScale", IsRequired=false)] internal float MaximumHitScale;
         [DataMember(Name="goreTestScale", IsRequired=false)] internal float GoreTestScale;
         [DataMember(Name="goreTestIntervalMilliseconds", IsRequired=false)] internal int GoreTestIntervalMilliseconds;
+        // Looping stock effects (streams, drips, mist, chunks) run as started effects: bounded count, burst length for
+        // one-off uses. The killing hit leaves the body leaking. Severing waits for the death ragdoll to start, and
+        // collapsed bones keep a tiny uniform scale (never zero).
+        [DataMember(Name="maximumLoopedEffects", IsRequired=false)] internal int MaximumLoopedEffects;
+        [DataMember(Name="burstLoopMilliseconds", IsRequired=false)] internal int BurstLoopMilliseconds;
+        [DataMember(Name="deathLeakEffectName", IsRequired=false)] internal string DeathLeakEffectName;
+        [DataMember(Name="deathLeakDurationMilliseconds", IsRequired=false)] internal int DeathLeakDurationMilliseconds;
+        [DataMember(Name="severDelayMilliseconds", IsRequired=false)] internal int SeverDelayMilliseconds;
+        [DataMember(Name="collapseScale", IsRequired=false)] internal float CollapseScale;
 
         internal bool GoreConfigured { get { return EffectScale > 0 && MaximumEmitters > 0 && !string.IsNullOrEmpty(BleedEffectName); } }
 
@@ -97,10 +106,14 @@ namespace LibertyFramework.CombatEffects
                 SeveredCorpseLifetimeMilliseconds < 1000 || SeveredCorpseLifetimeMilliseconds > 600000 ||
                 (SeveredLimbEnabled && (SeveredLimbForce < 0 || SeveredLimbForce > 30 || SeveredLimbLifetimeMilliseconds < 1000 || SeveredLimbLifetimeMilliseconds > 600000))))
                 throw new InvalidDataException("combat effects dismemberment bounds invalid");
+            if ((DismembermentEnabled || DecapitationEnabled) && (CollapseScale < 0.0001f || CollapseScale > 0.1f))
+                throw new InvalidDataException("combat effects collapseScale must be 0.0001-0.1");
             if (GoreConfigured && (EffectScale > 5 || MaximumEmitters > 128 || BleedIntervalMilliseconds < 100 || BleedDurationMilliseconds < 0 ||
                 ArterialIntervalMilliseconds < 100 || ArterialDurationMilliseconds < 0 || PendingDeathWindowMilliseconds < 0 ||
                 PendingDeathWindowMilliseconds > 5000 || ExitDamage < 0 || ChunkDamage < 0 || DecapitationMinimumDamage < 0 || MinimumEffectDamage < 0 || WoundSpurtDurationMilliseconds < 0 ||
-                MaximumHitScale < 0 || MaximumHitScale > 8 || GoreTestScale < 0 || GoreTestScale > 8 || GoreTestIntervalMilliseconds < 0))
+                MaximumHitScale < 0 || MaximumHitScale > 8 || GoreTestScale < 0 || GoreTestScale > 8 || GoreTestIntervalMilliseconds < 0 ||
+                MaximumLoopedEffects < 1 || MaximumLoopedEffects > 64 || BurstLoopMilliseconds < 50 || BurstLoopMilliseconds > 5000 ||
+                DeathLeakDurationMilliseconds < 0 || DeathLeakDurationMilliseconds > 120000 || SeverDelayMilliseconds < 0 || SeverDelayMilliseconds > 3000))
                 throw new InvalidDataException("combat effects gore bounds invalid");
             if (AllFirearms) { return; }
             foreach (int id in AllowedWeaponIds)

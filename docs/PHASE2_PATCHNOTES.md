@@ -1,5 +1,12 @@
 # Phase 2 integrated patch notes
 
+## Gore pass 3 (Claude), 2026-09-24
+
+- **Bodies leak:** wounds now pour continuous blood streams and drips (the game's looping blood effects, which the old one-shot calls could not play). Every wounded NPC also has the game's own bleeding switched on. Killed bodies keep leaking for 20 s. Strong hits spurt, and chunks fly on heavy hits and every cut.
+- **Cut limbs and heads stay gone:** the cut is now applied inside the engine right after every skeleton pose update, so heads no longer flicker in and out.
+- **Corpses no longer disappear when cut:** spawning the flying limb made the game clean up the corpse. Cut corpses are now kept.
+- DevTools > Gore Test shows engine status and active blood loops.
+
 ## Gore fix after playtest (Claude), 2026-09-24
 
 - **What the log showed:**

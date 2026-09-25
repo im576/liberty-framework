@@ -26,11 +26,12 @@ namespace LibertyFramework.CombatEffects
             internal LimbCutPlan Plan;
             internal Vector3 Push;
             internal long Deadline;
+            internal long DeathSeenAt; // 0 until the ped is first seen dead
             internal float Scale;
         }
 
         private readonly Dictionary<Ped, PedInjuryState> tracked = new Dictionary<Ped, PedInjuryState>();
-        private readonly List<BloodEmitter> emitters = new List<BloodEmitter>();
+        private readonly BloodEffects blood = new BloodEffects();
         private readonly List<PendingCut> pending = new List<PendingCut>();
         private readonly Stopwatch clock = Stopwatch.StartNew();
         private CombatEffectsConfig config;
@@ -40,9 +41,7 @@ namespace LibertyFramework.CombatEffects
         private bool disabled;
         private Dismemberment dismember;
         private bool engineChecked;
-        private SkeletonHook syncHook, poseHook;
-        private readonly Dictionary<string, int> ptfxLogged = new Dictionary<string, int>();
-        private bool ptfxFailureLogged;
+        private SkeletonCollapseEngine collapseEngine;
         private volatile int goreTestRequest; // 1 gallery, 2 left arm, 3 right leg, 4 head (set from the DevTools thread)
         private volatile string goreTestStatus;
         private long goreTestShownUntil;
@@ -105,7 +104,7 @@ namespace LibertyFramework.CombatEffects
                     catch (Exception error) { DisableDismemberment(error); }
                 }
                 ResolvePending(now);
-                PulseEmitters(now);
+                blood.Update(now);
                 RunGoreTest(shooter, now);
                 if (now - lastSampleMilliseconds < config.SampleIntervalMilliseconds) return;
                 lastSampleMilliseconds = now;
@@ -175,8 +174,8 @@ namespace LibertyFramework.CombatEffects
             // Downed peds bleed out 1-3 health at a time: drip only (no spray, reaction or log line per tick).
             if (damage < config.MinimumEffectDamage)
             {
-                Fire(config.BleedEffectName, target, bone, config.EffectScale);
-                if (dead) DeathBurst(target, state, config.EffectScale);
+                if (state.Bleeds == 0) Play(config.BleedEffectName, target, bone, config.EffectScale, now, config.BleedIntervalMilliseconds * 4, 0);
+                if (dead) DeathBurst(target, state, config.EffectScale, now);
                 return;
             }
             float scale = Clamp(config.EffectScale * damage / 40.0f, config.EffectScale * 0.8f,
@@ -185,22 +184,29 @@ namespace LibertyFramework.CombatEffects
 
             // Impact: weapon-specific entry spray plus mist on every hit, exit spray on strong hits, chunks on very strong ones.
             string entry = slot == WeaponSlot.Shotgun ? config.ShotgunEntryEffectName : slot == WeaponSlot.Sniper ? config.SniperEntryEffectName : config.ImpactEffectName;
-            Fire(entry, target, bone, scale);
-            Fire(config.MistEffectName, target, bone, scale);
-            if (damage >= config.ExitDamage) Fire(config.ExitEffectName, target, bone, scale);
+            Play(entry, target, bone, scale, now, 0, 0);
+            Play(config.MistEffectName, target, bone, scale, now, 0, 0);
+            if (damage >= config.ExitDamage) Play(config.ExitEffectName, target, bone, scale, now, 0, 0);
             if (damage >= config.ChunkDamage || slot == WeaponSlot.Shotgun || slot == WeaponSlot.Sniper)
             {
                 string chunks = slot == WeaponSlot.Shotgun ? config.ShotgunChunksEffectName : slot == WeaponSlot.Sniper ? config.SniperChunksEffectName : config.HeavyChunksEffectName;
-                Fire(chunks, target, bone, scale);
+                Play(chunks, target, bone, scale, now, 0, 0);
+            }
+            if (config.WoundsEnabled && !state.EngineBleeding)
+            {
+                state.EngineBleeding = true;
+                try { CombatEffectsNatives.SetBleeding(target, true); }
+                catch (Exception error) { RuntimeLog.Error("set_char_bleeding_failed error=" + error.Message); }
             }
             if (config.WoundsEnabled && state.Bleeds < config.MaximumWoundsPerPed)
             {
                 state.Bleeds++;
-                AddEmitter(target, bone, config.BleedEffectName, config.EffectScale, config.BleedIntervalMilliseconds, config.BleedDurationMilliseconds, now);
+                // The wound leaks: a continuous drip stream for the bleed duration, plus a pumping spurt on strong hits.
+                Play(config.BleedEffectName, target, bone, config.EffectScale, now, config.BleedDurationMilliseconds, config.BleedIntervalMilliseconds);
                 if (damage >= config.ExitDamage)
-                    AddEmitter(target, bone, config.WoundSpurtEffectName, scale, config.ArterialIntervalMilliseconds, config.WoundSpurtDurationMilliseconds, now);
+                    Play(config.WoundSpurtEffectName, target, bone, scale, now, config.WoundSpurtDurationMilliseconds, config.ArterialIntervalMilliseconds);
             }
-            if (dead) DeathBurst(target, state, scale);
+            if (dead) DeathBurst(target, state, scale, now);
 
             if (config.InjuriesEnabled && damage >= config.MinimumInjuryDamage)
             {
@@ -225,7 +231,7 @@ namespace LibertyFramework.CombatEffects
             {
                 if (config.DecapitationEnabled && damage >= config.DecapitationMinimumDamage && !state.HeadRemoved)
                     Queue(target, LimbCutPlan.Head(), push, now, scale);
-                else Fire(config.MouthBloodEffectName, target, 0x4B5, scale);
+                else Play(config.MouthBloodEffectName, target, 0x4B5, scale, now, 0, 0);
             }
             else if (config.DismembermentEnabled && damage >= config.MinimumLimbLossDamage)
             {
@@ -248,8 +254,14 @@ namespace LibertyFramework.CombatEffects
             for (int i = pending.Count - 1; i >= 0; i--)
             {
                 PendingCut cut = pending[i];
-                if (cut.Ped == null || !cut.Ped.Exists() || now > cut.Deadline) { pending.RemoveAt(i); continue; }
-                if (!cut.Ped.isDead && cut.Ped.Health > 0) continue;
+                if (cut.Ped == null || !cut.Ped.Exists() || (cut.DeathSeenAt == 0 && now > cut.Deadline)) { pending.RemoveAt(i); continue; }
+                if (cut.DeathSeenAt == 0)
+                {
+                    if (!cut.Ped.isDead && cut.Ped.Health > 0) continue;
+                    cut.DeathSeenAt = now;
+                }
+                // Let the death ragdoll start from the intact pose before any bone is collapsed.
+                if (now - cut.DeathSeenAt < config.SeverDelayMilliseconds) continue;
                 pending.RemoveAt(i);
                 Sever(cut, now);
             }
@@ -260,71 +272,39 @@ namespace LibertyFramework.CombatEffects
             bool head = cut.Plan.Name == "head";
             PedInjuryState state;
             tracked.TryGetValue(cut.Ped, out state);
-            bool collapsed = dismember != null && dismember.SeveredCount < config.MaximumSeveredPeds &&
-                dismember.Sever(cut.Ped, cut.Plan, cut.Push, now, config.SeveredCorpseLifetimeMilliseconds);
+            bool collapsed = false;
+            try
+            {
+                collapsed = dismember != null && dismember.SeveredCount < config.MaximumSeveredPeds &&
+                    dismember.Sever(cut.Ped, cut.Plan, cut.Push, now, config.SeveredCorpseLifetimeMilliseconds);
+            }
+            catch (Exception error) { RuntimeLog.Error("dismember_sever_failed part=" + cut.Plan.Name + " error=" + error.Message); }
             if (head && !collapsed) { CombatEffectsNatives.RemoveHead(cut.Ped); } // stock fallback
             if (head && state != null) state.HeadRemoved = true;
+            try { CombatEffectsNatives.SetBleeding(cut.Ped, true); } catch (Exception error) { RuntimeLog.Error("set_char_bleeding_failed error=" + error.Message); }
             float burst = Math.Max(cut.Scale, config.EffectScale) * 1.4f;
-            Fire(config.SeverBurstEffectName, cut.Ped, cut.Plan.StumpTag, burst);
-            Fire(config.SeverMistEffectName, cut.Ped, cut.Plan.StumpTag, burst);
-            Fire(config.HeavyChunksEffectName, cut.Ped, cut.Plan.StumpTag, burst);
-            AddEmitter(cut.Ped, cut.Plan.StumpTag, config.ArterialEffectName, config.EffectScale * 1.2f, config.ArterialIntervalMilliseconds,
-                config.ArterialDurationMilliseconds, now);
-            AddEmitter(cut.Ped, cut.Plan.StumpTag, config.BleedEffectName, config.EffectScale * 1.3f, config.BleedIntervalMilliseconds,
-                config.SeveredCorpseLifetimeMilliseconds, now);
+            Play(config.SeverBurstEffectName, cut.Ped, cut.Plan.StumpTag, burst, now, 0, 0);
+            Play(config.SeverMistEffectName, cut.Ped, cut.Plan.StumpTag, burst, now, 0, 0);
+            Play(config.HeavyChunksEffectName, cut.Ped, cut.Plan.StumpTag, burst, now, 0, 0);
+            // The stump pumps (arterial stream), then keeps leaking.
+            Play(config.ArterialEffectName, cut.Ped, cut.Plan.StumpTag, config.EffectScale * 1.2f, now, config.ArterialDurationMilliseconds, config.ArterialIntervalMilliseconds);
+            Play(config.BleedEffectName, cut.Ped, cut.Plan.StumpTag, config.EffectScale * 1.3f, now, config.BleedDurationMilliseconds, config.BleedIntervalMilliseconds);
             RuntimeLog.Info("combat_sever part=" + cut.Plan.Name + " collapsed=" + collapsed);
         }
 
-        private void AddEmitter(Ped ped, int bone, string effect, float scale, int interval, int duration, long now)
+        private bool Play(string effect, Ped ped, int bone, float scale, long now, int durationMilliseconds, int intervalMilliseconds)
         {
-            if (string.IsNullOrEmpty(effect) || duration <= 0 || interval <= 0) return;
-            if (emitters.Count >= config.MaximumEmitters) emitters.RemoveAt(0);
-            BloodEmitter emitter = new BloodEmitter();
-            emitter.Ped = ped; emitter.Bone = bone; emitter.Effect = effect; emitter.Scale = scale;
-            emitter.IntervalMilliseconds = interval; emitter.NextMilliseconds = now; emitter.UntilMilliseconds = now + duration;
-            emitters.Add(emitter);
+            return blood.Play(config, effect, ped, bone, scale, now, durationMilliseconds, intervalMilliseconds);
         }
 
-        private void PulseEmitters(long now)
-        {
-            for (int i = emitters.Count - 1; i >= 0; i--)
-            {
-                BloodEmitter emitter = emitters[i];
-                if (emitter.Ped == null || !emitter.Ped.Exists() || now > emitter.UntilMilliseconds) { emitters.RemoveAt(i); continue; }
-                if (now < emitter.NextMilliseconds) continue;
-                emitter.NextMilliseconds = now + emitter.IntervalMilliseconds;
-                Fire(emitter.Effect, emitter.Ped, emitter.Bone, emitter.Scale);
-            }
-        }
-
-        // Every particle goes through here: the engine's accept/reject result is logged for the first calls of each
-        // effect so a playtest log shows whether the game spawned it (a false = the effect name was not found/allowed).
-        private bool Fire(string effect, Ped ped, int bone, float scale)
-        {
-            if (string.IsNullOrEmpty(effect) || ped == null || !ped.Exists()) return false;
-            bool ok;
-            try { ok = CombatEffectsNatives.Burst(effect, ped, bone, scale); }
-            catch (Exception error)
-            {
-                if (!ptfxFailureLogged) { ptfxFailureLogged = true; RuntimeLog.Error("ptfx_call_failed effect=" + effect + " error=" + error.Message); }
-                return false;
-            }
-            int logged;
-            ptfxLogged.TryGetValue(effect, out logged);
-            if (logged < 3)
-            {
-                ptfxLogged[effect] = logged + 1;
-                RuntimeLog.Info("ptfx effect=" + effect + " bone=0x" + bone.ToString("X") + " scale=" + scale.ToString("0.0") + " spawned=" + ok);
-            }
-            return ok;
-        }
-
-        private void DeathBurst(Ped target, PedInjuryState state, float scale)
+        // The killing hit: a death burst, blood from the mouth, and the body keeps leaking where it lies.
+        private void DeathBurst(Ped target, PedInjuryState state, float scale, long now)
         {
             if (state.DeathBurst) return;
             state.DeathBurst = true;
-            Fire(config.DeathEffectName, target, 0x36A0, scale * 1.2f);
-            Fire(config.MouthBloodEffectName, target, 0x4B5, scale);
+            Play(config.DeathEffectName, target, 0x36A0, scale * 1.2f, now, 0, 0);
+            Play(config.MouthBloodEffectName, target, 0x4B5, scale, now, 0, 0);
+            Play(config.DeathLeakEffectName, target, 0x36A0, config.EffectScale, now, config.DeathLeakDurationMilliseconds, config.BleedIntervalMilliseconds);
         }
 
         private void ThrowLimbSafely(object record, long now)
@@ -350,7 +330,7 @@ namespace LibertyFramework.CombatEffects
                     foreach (string name in new[] { config.ImpactEffectName, config.MistEffectName, config.ExitEffectName, config.HeavyChunksEffectName,
                         config.ShotgunEntryEffectName, config.ShotgunChunksEffectName, config.SniperEntryEffectName, config.SniperChunksEffectName,
                         config.WoundSpurtEffectName, config.ArterialEffectName, config.SeverBurstEffectName, config.SeverMistEffectName,
-                        config.DeathEffectName, config.MouthBloodEffectName, config.BleedEffectName })
+                        config.DeathEffectName, config.MouthBloodEffectName, config.BleedEffectName, config.DeathLeakEffectName })
                         if (!string.IsNullOrEmpty(name) && !galleryEffects.Contains(name)) galleryEffects.Add(name);
                     galleryIndex = 0;
                     galleryNext = now;
@@ -378,7 +358,7 @@ namespace LibertyFramework.CombatEffects
                 return;
             }
             string effect = galleryEffects[galleryIndex++];
-            bool ok = Fire(effect, galleryPed, 0x36A0, config.GoreTestScale);
+            bool ok = Play(effect, galleryPed, 0x36A0, config.GoreTestScale, now, config.GoreTestIntervalMilliseconds, 0);
             goreTestStatus = "Gore test " + galleryIndex + "/" + galleryEffects.Count + ": " + effect + (ok ? "" : "  (engine refused)");
             goreTestShownUntil = now + config.GoreTestIntervalMilliseconds + 500;
             galleryNext = now + config.GoreTestIntervalMilliseconds;
@@ -406,7 +386,7 @@ namespace LibertyFramework.CombatEffects
                 MenuItem.Confirmed("Kill nearest NPC and cut left arm", () => { goreTestRequest = 2; return "Close the menu and watch the nearest NPC"; }),
                 MenuItem.Confirmed("Kill nearest NPC and cut right leg", () => { goreTestRequest = 3; return "Close the menu and watch the nearest NPC"; }),
                 MenuItem.Confirmed("Kill nearest NPC and cut head", () => { goreTestRequest = 4; return "Close the menu and watch the nearest NPC"; }),
-                MenuItem.Info(() => "Dismemberment: " + (dismember == null ? "OFF (see log)" : "ready, hooks=" + dismember.HooksActive + ", severed=" + dismember.SeveredCount)),
+                MenuItem.Info(() => "Dismemberment: " + (dismember == null ? "OFF (see log)" : "ready, engine=" + dismember.EngineActive + ", severed=" + dismember.SeveredCount) + ", blood loops=" + blood.ActiveLoops),
             };
         }
 
@@ -454,28 +434,37 @@ namespace LibertyFramework.CombatEffects
                 RuntimeLog.Error("dismemberment_validation_failed player_ped=0x" + pointer.ToString("X8"));
                 return;
             }
-            dismember = new Dismemberment(skeleton);
-            if (addresses.SkeletonHooksResolved)
+            collapseEngine = null;
+            if (addresses.SkeletonUpdateResolved)
             {
                 try
                 {
-                    SkeletonHook.AfterCallback callback = dismember.OnSkeletonRebuilt;
-                    syncHook = new SkeletonHook("frag_skeleton_sync", addresses.FragSkeletonSyncFunction,
-                        new byte?[] { 0x81, 0xEC, 0x64, 0x01, 0x00, 0x00, 0xA1, null, null, null, null }, callback);
-                    poseHook = new SkeletonHook("frag_pose", addresses.FragPoseFunction,
-                        new byte?[] { 0x55, 0x8B, 0xEC, 0x83, 0xE4, 0xF0, 0x81, 0xEC, 0x14, 0x01, 0x00, 0x00 }, callback);
-                    syncHook.Install();
-                    poseHook.Install();
-                    dismember.HooksActive = true;
-                    dismember.ActiveChanged = on => { syncHook.SetActive(on); poseHook.SetActive(on); };
+                    collapseEngine = new SkeletonCollapseEngine(config.CollapseScale);
+                    int site = 0;
+                    foreach (uint call in addresses.SkeletonUpdateCallSites)
+                        collapseEngine.HookCallSite("skeleton_update_" + (site++), call, addresses.SkeletonUpdateFunction);
+                    // The ragdoll sync writes physics-driven bones directly (not through crSkeleton::Update). It calls
+                    // fragInst vfunc +E0h itself on entry (0x5F7DBD), so the hook may call it too.
+                    if (addresses.SkeletonHooksResolved)
+                    {
+                        collapseEngine.HookFragFunction("frag_skeleton_sync", addresses.FragSkeletonSyncFunction,
+                            new byte?[] { 0x81, 0xEC, 0x64, 0x01, 0x00, 0x00, 0xA1, null, null, null, null });
+                    }
+                    collapseEngine.Install();
                 }
                 catch (Exception error)
                 {
-                    RuntimeLog.Error("skeleton_hooks_failed tick fallback only error=" + error.Message);
+                    RuntimeLog.Error("skeleton_collapse_engine_failed tick fallback only error=" + error.Message);
                     RemoveHooks();
+                    collapseEngine = null;
                 }
             }
-            RuntimeLog.Info("dismemberment_ready player_ped=0x" + pointer.ToString("X8") + " hooks=" + dismember.HooksActive);
+            else
+            {
+                RuntimeLog.Error("skeleton_collapse_engine_unavailable (see engine_resolve skeleton_update) tick fallback only");
+            }
+            dismember = new Dismemberment(skeleton, collapseEngine, config.CollapseScale);
+            RuntimeLog.Info("dismemberment_ready player_ped=0x" + pointer.ToString("X8") + " engine=" + dismember.EngineActive);
         }
 
         private void DisableDismemberment(Exception error)
@@ -486,19 +475,18 @@ namespace LibertyFramework.CombatEffects
             dismember = null;
         }
 
+        // Memory only (safe at unload): restores every patched byte; the engine table is emptied first.
         private void RemoveHooks()
         {
-            if (dismember != null) dismember.Detach();
-            try { if (syncHook != null) syncHook.Remove(); } catch (Exception error) { RuntimeLog.Error("skeleton_hook_remove_failed error=" + error.Message); }
-            try { if (poseHook != null) poseHook.Remove(); } catch (Exception error) { RuntimeLog.Error("skeleton_hook_remove_failed error=" + error.Message); }
-            if (dismember != null) dismember.HooksActive = false;
+            try { if (collapseEngine != null) collapseEngine.Remove(); }
+            catch (Exception error) { RuntimeLog.Error("skeleton_collapse_remove_failed error=" + error.Message); }
         }
 
         private void ClearAll()
         {
             tracked.Clear();
-            emitters.Clear();
             pending.Clear();
+            try { blood.StopAll(); } catch (Exception error) { RuntimeLog.Error("blood_stop_failed error=" + error.Message); }
             if (dismember != null) { try { dismember.Clear(); } catch (Exception error) { RuntimeLog.Error("dismemberment_cleanup_failed error=" + error.Message); } }
         }
 

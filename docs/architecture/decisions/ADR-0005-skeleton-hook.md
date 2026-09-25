@@ -1,30 +1,53 @@
-# ADR-0005: After-call hook on the fragInst skeleton rebuild (dismemberment)
+# ADR-0005: Engine hooks for the dismemberment collapse
 
-Status: **accepted by the owner for the gore pass; awaiting in-game confirmation (T-022)** (2026-09-24).
+Status: **accepted by the owner for the gore pass; revision 2 after playtest 2, awaiting in-game confirmation (T-022)** (2026-09-24).
 
 ## Context
 
-Dismemberment collapses a limb's bone matrices into the cut joint so the skinned mesh disappears there (T-022). Writing the matrices from a script tick is not enough if the engine rebuilds a ragdoll's skeleton from its physics fragments every frame: the collapse is overwritten before the frame is drawn. ADR-0004 allowed data writes only, never code patches. The owner asked for visible gore in this pass, which needs an exception.
+Dismemberment collapses a limb's bone matrices into the cut joint so the skinned mesh disappears there (T-022). ADR-0004 allows data writes only, never code patches. The owner asked for visible gore, which needs an exception.
 
-## Decision
+Playtest 2 results:
 
-Hook the two engine functions that rebuild a fragInst's skeleton, and re-apply active collapses right after they return:
+- **Script-tick writes flicker.** Writes from a script tick only survive frames on which the engine skips the ped's pose update. The owner saw a head "spawning and despawning".
+- **The revision-1 hooks never matched a ped** (`hook_calls=0`). They were managed after-call hooks on two fragInst methods, matched by fragInst.
 
-- `0x5F7D70` fragInst skeleton sync (thiscall, no arguments, called from `0x61183C`);
-- `0x5F6FB0` fragInst pose (virtual, four vtables).
+## Decision (revision 2)
 
-Both are resolved by long unique patterns (MEMORY.md, `skeleton_hooks`) and verified offline. `GameApi/SkeletonHook.cs` moves the first 11/12 entry bytes to a trampoline and jumps to a stub that calls the original. When the stub's enable flag is set, it then calls a managed stdcall callback with `this`. The callback (`Dismemberment.OnSkeletonRebuilt`) matches the fragInst against an immutable snapshot of active collapses and writes the matrices through `Marshal`. It never throws and calls no natives.
+**crSkeleton::Update.** `crSkeleton::Update(parentMatrix, globalMatrices)` (0x466BE0 on 1.2.0.59) is the single routine that turns local bone transforms into the global matrices that get skinned. Its body is encrypted on disk, but its call sites are not.
 
-Guards:
+- The 8 call sites that update a skeleton in place (`push [r+14h]; push [r+8]; call`, ecx = skeleton) are redirected to stubs.
+- Only the call's rel32 changes, written with a single 4-byte store.
+- The resolver finds the function from a unique anchor (0x60BA5E), then enumerates the call sites.
 
-- The hook installs only over the exact expected bytes. A different build, or another mod's hook, makes it fail closed.
-- It installs from a script tick, while the game thread is parked.
-- The enable flag is set only while at least one collapse is active, so the engine pays one compare otherwise.
-- On script unload and at process exit, the flag is cleared and the original bytes are restored (memory only). The stub and trampoline stay allocated, because a thread could still be returning through them.
-- The per-tick collapse remains as a fallback when the hooks can't be installed.
+**The stub:**
+
+- It calls the original update, then, while the enable flag is set, calls a native x86 routine with the skeleton.
+- The routine looks up the skeleton's global-matrix pointer and bone count in a double-buffered table that the script publishes.
+- It writes the collapse for the listed bones: axes = 0.01 × identity, origin = cut joint.
+- No managed code runs on engine threads.
+- Entries cover the ped's own matrices and the frag cache entry's copy skeleton (`[fragInst+64h]+168h`), which the engine refreshes from the live one.
+
+**Ragdoll sync hook.** The fragInst ragdoll sync (0x5F7D70) writes physics-driven bones directly. It keeps an after-call hook (11 validated stolen bytes) that runs the same routine on the skeleton from fragInst vfunc +E0h. The sync method itself calls that getter on entry.
+
+**Collapse scale.** Collapsed bones get a tiny uniform scale instead of zero axes. Zero axes were a suspect in corpses vanishing; the log later tied that to the limb clone's spawn instead (see Consequences).
+
+**Fallback and removal.** The script-tick write remains as a fallback. On unload and exit, the flag is cleared and every patched byte is restored (memory only). The code block stays allocated.
+
+## Verification
+
+`tools/verify/CollapseEngineChecks.cs` executes the real generated machine code in the x86 verifier. It uses a fake skeleton, a fake update call site and a fake fragInst method, and checks:
+
+- argument, `this` and return-value pass-through;
+- table gating;
+- bone-count matching;
+- the collapsed values;
+- byte-exact restore.
+
+The address checks pin 0x466BE0 and the 8 call sites.
 
 ## Consequences
 
-- Only GTAIV.exe 1.2.0.59 is supported; other builds fall back to per-tick collapse (`dismemberment_ready hooks=False`).
-- If the callback runs on a thread that SHDN's CLR can't enter, the game could stall. The owner can set `dismembermentEnabled=false` in `combat_effects.json`: the hooks are then never installed.
+- Only GTAIV.exe 1.2.0.59 is supported. If the anchor or a call site differs, the engine is not installed (`skeleton_collapse_engine_unavailable`) and the tick fallback is used.
+- `dismembermentEnabled=false` in `combat_effects.json` means no patch is ever written.
+- Corpses that get a thrown limb are made mission-owned (`SET_CHAR_AS_MISSION_CHAR`) until their record ends. The corpse vanished right after the clone spawned in playtest 2.
 - Rollback: disable the feature in config, or remove the DLL. No game file is changed.
