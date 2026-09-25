@@ -1,0 +1,42 @@
+
+    // Liberty Framework T-023 addition (not part of the original LVS CE by ekzestean, MIT):
+    // names vehicle extras by the body part they actually are, from the catalog generated out of the
+    // player's own vehicles.img (scripts\LibertyFramework\config\vehicle_extras.json). Falls back to
+    // the original "Extra N" text when a model or extra is not in the catalog.
+    internal static class LfBodyLabels
+    {
+        private static Dictionary<int, Dictionary<int, string>> map;
+
+        internal static string Extra(Vehicle vehicle, int extra)
+        {
+            string label = null;
+            try
+            {
+                Load();
+                Dictionary<int, string> extras;
+                if (vehicle != null && vehicle.Exists() && map.TryGetValue(vehicle.Model.Hash, out extras)) { extras.TryGetValue(extra, out label); }
+            }
+            catch { label = null; }
+            return label != null ? label + " (extra " + extra.ToString() + ")" : "Extra " + extra.ToString();
+        }
+
+        private static void Load()
+        {
+            if (map != null) return;
+            map = new Dictionary<int, Dictionary<int, string>>();
+            string path = Path.Combine("scripts", Path.Combine("LibertyFramework", Path.Combine("config", "vehicle_extras.json")));
+            if (!File.Exists(path)) return;
+            string text = File.ReadAllText(path);
+            foreach (System.Text.RegularExpressions.Match vehicle in System.Text.RegularExpressions.Regex.Matches(text,
+                "\"modelHash\":\\s*(-?\\d+),\\s*\"extras\":\\s*\\[(.*?)\\]", System.Text.RegularExpressions.RegexOptions.Singleline))
+            {
+                Dictionary<int, string> extras = new Dictionary<int, string>();
+                foreach (System.Text.RegularExpressions.Match part in System.Text.RegularExpressions.Regex.Matches(vehicle.Groups[2].Value,
+                    "\"extra\":\\s*(\\d+).*?\"label\":\\s*\"([^\"]*)\""))
+                {
+                    extras[int.Parse(part.Groups[1].Value, CultureInfo.InvariantCulture)] = part.Groups[2].Value;
+                }
+                map[int.Parse(vehicle.Groups[1].Value, CultureInfo.InvariantCulture)] = extras;
+            }
+        }
+    }

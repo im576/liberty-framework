@@ -28,6 +28,8 @@ namespace LibertyFramework.Verify
                 Phase2SystemsChecks.Run(args[1], check);
                 Console.WriteLine("== Feel and presentation (T-011, T-013..T-017, T-021)");
                 FeelChecks.Run(args[1], check);
+                Console.WriteLine("== Vehicle body parts (T-023)");
+                VehicleChecks.Run(args[0], check);
             }
             catch (Exception error)
             {

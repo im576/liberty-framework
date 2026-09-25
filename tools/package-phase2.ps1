@@ -1,6 +1,8 @@
 param(
     [Parameter(Mandatory = $true)][string] $GameDirectory,
-    [Parameter(Mandatory = $true)][string] $ScriptHookDotNetReference
+    [Parameter(Mandatory = $true)][string] $ScriptHookDotNetReference,
+    # Extracted Liberty Vehicle Services CE release (MIT, ekzestean): source for the T-023 label patch.
+    [string] $LvsDirectory
 )
 
 # Package only Phase 2 scripts/config. Phase 1's already-installed gold models and
@@ -56,6 +58,32 @@ Stage-File (Join-Path $repoRoot 'config\holsters.json') 'scripts\LibertyFramewor
 Get-ChildItem -LiteralPath (Join-Path $repoRoot 'config\presets') -Filter '*.json' | Sort-Object Name | ForEach-Object {
     Stage-File $_.FullName "scripts\LibertyFramework\config\presets\$($_.Name)" 'replace'
 }
+
+
+# T-023: body-part catalog of vehicle extras, generated from the player's own vehicles.img (read-only),
+# plus LVS CE with its six workshop "Extra N" labels routed through that catalog.
+$work = Join-Path $stage '_work'
+New-Item -ItemType Directory -Force -Path $work | Out-Null
+$compiler = Join-Path $env:WINDIR 'Microsoft.NET\Framework\v4.0.30319\csc.exe'
+$scanner = Join-Path $work 'VehicleExtras.exe'
+$scannerSources = @((Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tools\finishes') -Filter '*.cs' | Where-Object Name -ne 'Program.cs').FullName) +
+    @((Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tools\vehicles') -Filter '*.cs').FullName)
+& $compiler /nologo /target:exe /platform:x86 /warn:4 /warnaserror+ "/out:$scanner" /reference:System.Runtime.Serialization.dll /reference:System.Drawing.dll /reference:System.Core.dll $scannerSources
+if ($LASTEXITCODE -ne 0) { throw 'Vehicle extras scanner build failed.' }
+& $scanner $game (Join-Path $work 'vehicle_extras.json')
+if ($LASTEXITCODE -ne 0) { throw 'Vehicle extras scan failed.' }
+Stage-File (Join-Path $work 'vehicle_extras.json') 'scripts\LibertyFramework\config\vehicle_extras.json' 'replace'
+if ($LvsDirectory) {
+    $lvsSource = Join-Path (Resolve-Path -LiteralPath $LvsDirectory).Path 'scripts\LibertyVehicleServicesCE.CS'
+    $lvsPatched = Join-Path $work 'LibertyVehicleServicesCE.CS'
+    Copy-Item -LiteralPath $lvsSource -Destination $lvsPatched -Force
+    & (Join-Path $repoRoot 'tools\vehicles\patch-lvs-labels.ps1') -LvsScript $lvsPatched
+    # SHDN compiles .cs scripts at load; prove the patched script compiles against the same runtime first.
+    & $compiler /nologo /target:library /platform:x86 "/out:$(Join-Path $work 'lvs_check.dll')" "/reference:$ScriptHookDotNetReference" /reference:System.Windows.Forms.dll /reference:System.Drawing.dll $lvsPatched | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw 'Patched LibertyVehicleServicesCE.CS does not compile.' }
+    Stage-File $lvsPatched 'scripts\LibertyVehicleServicesCE.CS' 'replace'
+}
+Remove-Item -LiteralPath $work -Recurse -Force
 
 $manifest = [ordered]@{
     package = 'liberty-framework-phase2'
