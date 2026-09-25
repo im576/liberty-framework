@@ -17,7 +17,8 @@ namespace LibertyFramework.CombatEffects
     // Gore, blood and dismemberment (T-022). Every shot the player lands on a nearby ped (any firearm when
     // allFirearms) produces a weapon-specific entry/exit spray, chunks on heavy hits, a bleeding wound that
     // drips for a while, and region reactions. A killing hit to a limb severs it at the joint (with an arterial
-    // spurt and a thrown limb); a killing head hit decapitates. All effects are stock gta_core particles.
+    // spurt and a thrown limb); a killing head hit decapitates. The optional external blood mode leaves ordinary
+    // hit/wound visuals to a separate renderer while preserving the cut and its stock stump particle effects.
     public sealed class CombatEffectsController : Script
     {
         private sealed class PendingCut
@@ -79,8 +80,10 @@ namespace LibertyFramework.CombatEffects
                 config = candidate;
                 configHash = hash;
                 tracked.Clear();
+                blood.StopAll();
                 RuntimeLog.Info("combat_effects_config_loaded enabled=" + config.Enabled + " all_firearms=" + config.AllFirearms +
-                    " dismemberment=" + config.DismembermentEnabled + " decapitation=" + config.DecapitationEnabled + " scale=" + config.EffectScale);
+                    " dismemberment=" + config.DismembermentEnabled + " decapitation=" + config.DecapitationEnabled + " scale=" + config.EffectScale +
+                    " blood_visual_mode=" + (config.StockBloodVisuals ? "stock" : "external"));
             }
             catch (Exception error) { RuntimeLog.Error("combat_effects_config_rejected error=" + error); }
         }
@@ -174,7 +177,8 @@ namespace LibertyFramework.CombatEffects
             // Downed peds bleed out 1-3 health at a time: drip only (no spray, reaction or log line per tick).
             if (damage < config.MinimumEffectDamage)
             {
-                if (state.Bleeds == 0) Play(config.BleedEffectName, target, bone, config.EffectScale, now, config.BleedIntervalMilliseconds * 4, 0);
+                if (config.StockBloodVisuals && state.Bleeds == 0)
+                    Play(config.BleedEffectName, target, bone, config.EffectScale, now, config.BleedIntervalMilliseconds * 4, 0);
                 if (dead) DeathBurst(target, state, config.EffectScale, now);
                 return;
             }
@@ -184,27 +188,29 @@ namespace LibertyFramework.CombatEffects
 
             // Impact: weapon-specific entry spray plus mist on every hit, exit spray on strong hits, chunks on very strong ones.
             string entry = slot == WeaponSlot.Shotgun ? config.ShotgunEntryEffectName : slot == WeaponSlot.Sniper ? config.SniperEntryEffectName : config.ImpactEffectName;
-            Play(entry, target, bone, scale, now, 0, 0);
-            Play(config.MistEffectName, target, bone, scale, now, 0, 0);
-            if (damage >= config.ExitDamage) Play(config.ExitEffectName, target, bone, scale, now, 0, 0);
-            if (damage >= config.ChunkDamage || slot == WeaponSlot.Shotgun || slot == WeaponSlot.Sniper)
+            if (config.StockBloodVisuals)
             {
-                string chunks = slot == WeaponSlot.Shotgun ? config.ShotgunChunksEffectName : slot == WeaponSlot.Sniper ? config.SniperChunksEffectName : config.HeavyChunksEffectName;
-                Play(chunks, target, bone, scale, now, 0, 0);
-            }
-            if (config.WoundsEnabled && !state.EngineBleeding)
-            {
-                state.EngineBleeding = true;
-                try { CombatEffectsNatives.SetBleeding(target, true); }
-                catch (Exception error) { RuntimeLog.Error("set_char_bleeding_failed error=" + error.Message); }
-            }
-            if (config.WoundsEnabled && state.Bleeds < config.MaximumWoundsPerPed)
-            {
-                state.Bleeds++;
-                // The wound leaks: a continuous drip stream for the bleed duration, plus a pumping spurt on strong hits.
-                Play(config.BleedEffectName, target, bone, config.EffectScale, now, config.BleedDurationMilliseconds, config.BleedIntervalMilliseconds);
-                if (damage >= config.ExitDamage)
-                    Play(config.WoundSpurtEffectName, target, bone, scale, now, config.WoundSpurtDurationMilliseconds, config.ArterialIntervalMilliseconds);
+                Play(entry, target, bone, scale, now, 0, 0);
+                Play(config.MistEffectName, target, bone, scale, now, 0, 0);
+                if (damage >= config.ExitDamage) Play(config.ExitEffectName, target, bone, scale, now, 0, 0);
+                if (damage >= config.ChunkDamage || slot == WeaponSlot.Shotgun || slot == WeaponSlot.Sniper)
+                {
+                    string chunks = slot == WeaponSlot.Shotgun ? config.ShotgunChunksEffectName : slot == WeaponSlot.Sniper ? config.SniperChunksEffectName : config.HeavyChunksEffectName;
+                    Play(chunks, target, bone, scale, now, 0, 0);
+                }
+                if (config.WoundsEnabled && !state.EngineBleeding)
+                {
+                    state.EngineBleeding = true;
+                    try { CombatEffectsNatives.SetBleeding(target, true); }
+                    catch (Exception error) { RuntimeLog.Error("set_char_bleeding_failed error=" + error.Message); }
+                }
+                if (config.WoundsEnabled && state.Bleeds < config.MaximumWoundsPerPed)
+                {
+                    state.Bleeds++;
+                    Play(config.BleedEffectName, target, bone, config.EffectScale, now, config.BleedDurationMilliseconds, config.BleedIntervalMilliseconds);
+                    if (damage >= config.ExitDamage)
+                        Play(config.WoundSpurtEffectName, target, bone, scale, now, config.WoundSpurtDurationMilliseconds, config.ArterialIntervalMilliseconds);
+                }
             }
             if (dead) DeathBurst(target, state, scale, now);
 
@@ -231,7 +237,7 @@ namespace LibertyFramework.CombatEffects
             {
                 if (config.DecapitationEnabled && damage >= config.DecapitationMinimumDamage && !state.HeadRemoved)
                     Queue(target, LimbCutPlan.Head(), push, now, scale);
-                else Play(config.MouthBloodEffectName, target, 0x4B5, scale, now, 0, 0);
+                else if (config.StockBloodVisuals) Play(config.MouthBloodEffectName, target, 0x4B5, scale, now, 0, 0);
             }
             else if (config.DismembermentEnabled && damage >= config.MinimumLimbLossDamage)
             {
@@ -281,14 +287,21 @@ namespace LibertyFramework.CombatEffects
             catch (Exception error) { RuntimeLog.Error("dismember_sever_failed part=" + cut.Plan.Name + " error=" + error.Message); }
             if (head && !collapsed) { CombatEffectsNatives.RemoveHead(cut.Ped); } // stock fallback
             if (head && state != null) state.HeadRemoved = true;
-            try { CombatEffectsNatives.SetBleeding(cut.Ped, true); } catch (Exception error) { RuntimeLog.Error("set_char_bleeding_failed error=" + error.Message); }
+            if (!head && !collapsed) { RuntimeLog.Error("combat_sever_skipped part=" + cut.Plan.Name + " collapse_failed"); return; }
+            if (config.StockBloodVisuals)
+            {
+                try { CombatEffectsNatives.SetBleeding(cut.Ped, true); } catch (Exception error) { RuntimeLog.Error("set_char_bleeding_failed error=" + error.Message); }
+            }
             float burst = Math.Max(cut.Scale, config.EffectScale) * 1.4f;
             Play(config.SeverBurstEffectName, cut.Ped, cut.Plan.StumpTag, burst, now, 0, 0);
-            Play(config.SeverMistEffectName, cut.Ped, cut.Plan.StumpTag, burst, now, 0, 0);
-            Play(config.HeavyChunksEffectName, cut.Ped, cut.Plan.StumpTag, burst, now, 0, 0);
-            // The stump pumps (arterial stream), then keeps leaking.
+            if (config.StockBloodVisuals)
+            {
+                Play(config.SeverMistEffectName, cut.Ped, cut.Plan.StumpTag, burst, now, 0, 0);
+                Play(config.HeavyChunksEffectName, cut.Ped, cut.Plan.StumpTag, burst, now, 0, 0);
+            }
             Play(config.ArterialEffectName, cut.Ped, cut.Plan.StumpTag, config.EffectScale * 1.2f, now, config.ArterialDurationMilliseconds, config.ArterialIntervalMilliseconds);
-            Play(config.BleedEffectName, cut.Ped, cut.Plan.StumpTag, config.EffectScale * 1.3f, now, config.BleedDurationMilliseconds, config.BleedIntervalMilliseconds);
+            if (config.StockBloodVisuals)
+                Play(config.BleedEffectName, cut.Ped, cut.Plan.StumpTag, config.EffectScale * 1.3f, now, config.BleedDurationMilliseconds, config.BleedIntervalMilliseconds);
             RuntimeLog.Info("combat_sever part=" + cut.Plan.Name + " collapsed=" + collapsed);
         }
 
@@ -302,6 +315,7 @@ namespace LibertyFramework.CombatEffects
         {
             if (state.DeathBurst) return;
             state.DeathBurst = true;
+            if (!config.StockBloodVisuals) return;
             Play(config.DeathEffectName, target, 0x36A0, scale * 1.2f, now, 0, 0);
             Play(config.MouthBloodEffectName, target, 0x4B5, scale, now, 0, 0);
             Play(config.DeathLeakEffectName, target, 0x36A0, config.EffectScale, now, config.DeathLeakDurationMilliseconds, config.BleedIntervalMilliseconds);

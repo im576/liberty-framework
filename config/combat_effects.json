@@ -1,6 +1,7 @@
 {
     "schemaVersion":  1,
     "enabled":  true,
+    "bloodVisualMode": "stock",
     "reactionsEnabled":  true,
     "injuriesEnabled":  true,
     "woundsEnabled":  true,

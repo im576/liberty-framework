@@ -1,5 +1,7 @@
 # T-022 — Combat effects detection and safe prototype
 
+> **Update 2026-09-24 (Codex, companion visual pass) — NEEDS-PLAYTEST.** Owner confirms pass 3 throws limbs and keeps them removed on lethal limb shots; visual quality remains poor. The local Violent Liberty 1.2.2 archive has wound/surface visuals but no source. The `bloodVisualMode` switch now lets its ASI own ordinary blood while our cut engine owns limb removal and focused stump effects. See [research/ViolentLiberty.md](../research/ViolentLiberty.md). The companion is installed with Vulkan selected; startup and combined visuals await an in-game test, especially because an earlier DXVK-only startup attempt crashed. The cut still lacks cap geometry/material. Build: 112 sources, zero errors/warnings. Offline verifier: 336/336. Copied install/rollback test restored every file hash. Real install verified all 7 files; backup `scripts/LibertyFramework/backups/violent-liberty-20260924-224005`.
+
 > **Update 2026-09-24 (Claude, gore pass 3 after playtest 2) â€” NEEDS-PLAYTEST.**
 >
 > **What the Gore Test log showed:**

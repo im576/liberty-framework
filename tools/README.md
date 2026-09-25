@@ -1,5 +1,9 @@
 # Build and deployment tooling
 
+## Optional Violent Liberty visual companion (T-022)
+
+With GTA IV closed, build the DLL, then run `./tools/install-violent-liberty.ps1 -GameDirectory '<GTAIV folder>' -ArchivePath '<owner-downloaded Violent Liberty zip>'`. The installer accepts only the inspected archive hash, checks GTA IV 1.2.0.59, backs up each touched file, installs the user's ASI/INI/WTD into the game, updates the DLL, sets `bloodVisualMode=external`, and selects Vulkan in both graphics config files. It prints a backup path. To restore exact prior files while the game is closed: `./tools/rollback-violent-liberty.ps1 -GameDirectory '<GTAIV folder>' -BackupDirectory '<printed backup path>'`. Neither third-party binary nor its texture archive enters Git. Follow [the companion playtest](../docs/testing/PHASE2_PLAYTEST.md#7d-violent-liberty-companion-visual-test).
+
 T-001 is a load/log/reload probe only. It has no gameplay changes. The build uses the Windows .NET Framework compiler already installed on the tester's machine. The project targets .NET Framework 4.0 and x86; in-game load and reload were verified on 2026-09-24.
 
 1. Download [Tomasak's v1.7.1.8 release](https://github.com/Tomasak/gta4_scripthookdotnet/releases/tag/release): `scripthookdotnet_v1.7.1.8.zip`. Expected SHA256: `5669E4423F93BEDFB0AE34579E922213775B46BBEE4DB6ADC953CB53E7AD9058`.

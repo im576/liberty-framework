@@ -73,6 +73,8 @@ Finish colour ramps (`shadowRgb`, `midRgb`, `highlightRgb`, `contrast`, `lift`, 
 
 ## combat_effects.json (T-022)
 
+`bloodVisualMode` is `stock` (default if absent) or `external`. In `external`, Liberty Framework keeps hit reactions and dismemberment, but suppresses its generic entry/exit particles, wound/death bleeding, and `SET_CHAR_BLEEDING`; severed joints still get a burst and arterial stream. Use `external` only when another renderer supplies ordinary wound visuals. The Violent Liberty companion and rollback steps are in [ViolentLiberty.md](../research/ViolentLiberty.md).
+
 `schemaVersion:1`; `enabled` is the master toggle, on in the integrated Phase 2 playtest build. `reactionsEnabled`, `injuriesEnabled`, `woundsEnabled`, `limbLossPrototypeEnabled`, and `headLossPrototypeEnabled` independently gate force, injury counts, bone-attached stock blood PTFX, limb candidate logging, and corpse-only head removal. `impactEffectName` / `woundEffectName` are installed game PTFX names. `reactionForceHead/Torso/Arm/Leg` and `reactionVerticalFraction` tune the force vector. `scanRadiusMeters` (m), `sampleIntervalMilliseconds` (ms), `maximumTrackedPeds`, `maximumWoundsPerPed`, and `woundLifetimeMilliseconds` (ms) bound sampling and PTFX handles. `reactionCooldownMilliseconds` (ms), `minimumInjuryDamage` (health), `minimumLimbLossDamage` (health), and `minimumLimbLossHits` (count) gate events. `allowedWeaponIds` lists registered test weapon IDs only. The attached effect follows the bone; exact bullet impact coordinates remain unavailable.
 
 **Gore overhaul fields (optional).** All `*EffectName` values are stock `gta_core.wpfl` names, checked offline.

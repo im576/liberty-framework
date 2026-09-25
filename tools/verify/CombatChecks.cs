@@ -34,6 +34,15 @@ namespace LibertyFramework.Verify
             config.Validate();
             check.True("gore config validates (all firearms, dismemberment, decapitation, emitters)", config.GoreConfigured && config.AllFirearms &&
                 config.DismembermentEnabled && config.DecapitationEnabled && config.EffectScale > 0, "");
+            check.True("stock blood visuals are the portable default", config.StockBloodVisuals, config.BloodVisualMode);
+            config.BloodVisualMode = "external";
+            config.Validate();
+            check.True("external blood mode keeps the gore config valid", !config.StockBloodVisuals && config.DismembermentEnabled, "");
+            config.BloodVisualMode = "unknown";
+            bool badModeRejected = false;
+            try { config.Validate(); } catch (InvalidDataException) { badModeRejected = true; }
+            check.True("unknown blood visual mode is rejected", badModeRejected, "");
+            config.BloodVisualMode = "stock";
 
             string game = Path.GetDirectoryName(Path.GetFullPath(exePath));
             string core = Path.Combine(game, @"update\pc\data\effects\gta_core.wpfl");

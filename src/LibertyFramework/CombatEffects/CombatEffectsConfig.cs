@@ -84,11 +84,16 @@ namespace LibertyFramework.CombatEffects
         [DataMember(Name="deathLeakDurationMilliseconds", IsRequired=false)] internal int DeathLeakDurationMilliseconds;
         [DataMember(Name="severDelayMilliseconds", IsRequired=false)] internal int SeverDelayMilliseconds;
         [DataMember(Name="collapseScale", IsRequired=false)] internal float CollapseScale;
+        // An external visual mod can draw impact wounds and surface blood while this script owns cuts and reactions.
+        [DataMember(Name="bloodVisualMode", IsRequired=false)] internal string BloodVisualMode;
 
         internal bool GoreConfigured { get { return EffectScale > 0 && MaximumEmitters > 0 && !string.IsNullOrEmpty(BleedEffectName); } }
+        internal bool StockBloodVisuals { get { return string.IsNullOrEmpty(BloodVisualMode) || BloodVisualMode == "stock"; } }
 
         internal void Validate()
         {
+            if (!string.IsNullOrEmpty(BloodVisualMode) && BloodVisualMode != "stock" && BloodVisualMode != "external")
+                throw new InvalidDataException("combat_effects.json bloodVisualMode must be stock or external");
             if (SchemaVersion != 1 || ScanRadiusMeters <= 0 || ScanRadiusMeters > 100 ||
                 SampleIntervalMilliseconds < 25 || SampleIntervalMilliseconds > 1000 ||
                 MaximumTrackedPeds < 1 || MaximumTrackedPeds > 64 || MaximumWoundsPerPed < 1 || MaximumWoundsPerPed > 16 ||

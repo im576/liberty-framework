@@ -69,3 +69,10 @@ Status: **READY FOR OWNER TEST** after the integrated package is installed. Use 
 2. **Gore Test > cut left arm, cut right leg, cut head,** each on a fresh NPC. The body must stay, the part must stay gone (no flicker), and the stump pours blood. Walk around the body for 10 s.
 3. **Normal combat.** Shoot NPCs with a pistol, a shotgun and a sniper. Expect streams from wounds, dripping bodies and chunks.
 4. **Log lines to send:** `skeleton_update`, `skeleton_collapse_engine`, `dismember`, `dismember_evidence`, `dismember_corpse_lost`, `ptfx`, `gore_test`, `ERROR`.
+
+### 7d. Violent Liberty companion visual test
+
+1. Launch with the companion installed and Vulkan selected. Reach free roam. If the game fails before the menu, close it and run `tools/rollback-violent-liberty.ps1` using the backup path printed by the installer; report the startup symptom and any new DXVK/ASI logs.
+2. Shoot an ambient NPC once in the torso, then with a fresh NPC finish an arm or leg with a firearm. Confirm a wound appears at the shot, blood flows over clothing and stains nearby surfaces, then a limb flies off and stays gone. Look closely at the stump: note whether it is pinched skin, a hole, or covered by blood. Walk around the corpse for 10 seconds.
+3. Press **F6** to toggle Violent Liberty's visuals. Repeat a comparable torso and limb shot. The dynamic wound/surface stains should disappear, while the limb cut and its focused stump stream remain. Press **F6** again to restore visuals. F5 toggles streams/spray; F7 toggles inside-vehicle blood.
+4. Send a short video or close screenshot of the stump and any overlap between the two mods. Include `combat_effects_config_loaded ... blood_visual_mode=external`, `combat_sever`, `dismember_evidence`, any `ERROR`, and a rough FPS comparison with F6 on/off. A prior DXVK-only attempt crashed, so record whether this build starts normally.

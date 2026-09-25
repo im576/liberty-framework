@@ -5,6 +5,8 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
+**Gore visual companion installed (2026-09-24, Codex):** Owner confirms pass 3 limb throwing and persistent removal in game, but says the cut/blood presentation is poor. A local Violent Liberty 1.2.2 archive provides dynamic wounds and surface blood; source is not included. Added a reversible external-blood mode so that mod can own wound rendering while Liberty Framework owns cuts and stump effects. Build 112 sources, verify 336/336, install/rollback fixture byte-identical; 7 installed files hash-checked, backup `violent-liberty-20260924-224005`. Vulkan startup/combined visuals await owner playtest. See [research](research/ViolentLiberty.md) and [T-022](tasks/T-022-combat-effects.md).
+
 **Gore overhaul (2026-09-24, Claude):** visible blood on every firearm hit, 25 s bleeding, limb and head severing with burst/arterial spray and thrown limbs, fixed the ped-skeleton resolver, and added the ADR-0005 post-rebuild hook. Verify 312/312. Owner playtest pending ([section 7](testing/PHASE2_PLAYTEST.md)).
 
 **Phase 2 open-items build installed (2026-09-24, Claude):** shoulder swap (T-015), arm/leg dismemberment with thrown limbs (T-022), LVS body-part labels (T-023). Verify 296/296; install/rollback dry run passed; owner playtest pending.

@@ -1,0 +1,27 @@
+# Violent Liberty companion: what it provides and where Liberty Framework fits
+
+## Evidence reviewed (2026-09-24)
+
+- Owner playtest of Liberty Framework gore pass 3: finishing an NPC with a limb shot throws the limb, and the removal persists. The owner says the result does not yet look good.
+- The [author's feature list](https://www.reddit.com/r/GTAIV/comments/1wi7cak/violent_liberty_dynamic_blood_overhaul_launch/) describes impact-position bullet wounds, weapon-dependent wound size, blood flowing over clothing, pressure streams, and stains/drips on ground, walls, glass and cars. The author says its experimental decapitation is disabled and described it as visually poor. The author said source code was planned; no public source was found during this pass.
+- The owner's local archive `Violent Liberty 1.1 1420 1.1 2026-09-20T14-15Z UWAC0IQ5.zip` has SHA-256 `459A66BBDE3BBF48C80092CA57C34455BA5FDA770B628835CB6D160C3AB7A2A6`. Despite the filename, its README identifies release **1.2.2**. It contains `ViolentLiberty.asi`, `ViolentLiberty.ini`, and `fxprojtex.wtd`, plus README; no source or license. The README requires GTA IV CE 1.2.0.59, FusionFix's Vulkan setting, and DXVK 2.6.2 or 3.1. It says this release is visuals-only and does not need ScriptHookDotNet.
+- Static inspection of the owner's ASI (printable strings and exported C++ names, not source code) shows hook labels for ped update, blood impact, ped material bind, native blood projector and native decal update/reset. It references `DrawIndexedPrimitive`, `D3DXCreateTextureFromFileInMemoryEx`, an embedded wound atlas, a wound surface renderer, skinned geometry, pressure meshes, fluid ribbons, wall flow, drops and pools. This supports a **likely** architecture: intercept impact/decal information, attach wound geometry to animated peds, and draw its own texture/stream meshes during world rendering. Exact hook addresses, control flow, and safety properties cannot be established from names alone. Some embedded log strings say `1.1.1` or `1.0`, so the README version is not independently confirmed by the binary strings.
+- The previous working-state handoff says a DXVK-only startup test crashed on 2026-09-23, and Violent Liberty was parked. That was not a combined test of the current installed build and this archive. The current FusionFix and d3d9 configs both select API `0` (DirectX 9).
+- The [FusionFix README](https://github.com/ThirteenAG/GTAIV.EFLC.FusionFix/blob/master/readme.md) confirms its Graphics API option selects DirectX 9 or Vulkan and needs a restart.
+
+## Current rendering path
+
+1. `CombatEffectsController.SampleDamage` polls nearby peds for health loss attributed to the player, then reads the last damaged bone. It has a bone region, weapon slot, damage and whether death was observed. It does **not** have exact bullet contact coordinates or a body-surface UV.
+2. `BloodEffects` calls GTA IV's bone-attached stock PTFX. One-shot effects are triggered; persistent ones are started and stopped. `SET_CHAR_BLEEDING` turns on the game's own generic leak. These effects cannot place a wound texture at the precise bullet hole or paint a streak on a wall.
+3. A lethal limb/head hit queues `LimbCutPlan`, waits for death and a short ragdoll delay, then `Dismemberment` collapses the limb's bone subtree. `SkeletonCollapseEngine` reapplies that collapse after skeleton pose updates. An invisible full-ped clone with all other bones collapsed becomes the thrown limb. Mission ownership retains the corpse. The owner now confirms this part works visually as removal/persistence.
+4. The cut has **no stump cap geometry or material**. Bone collapse closes the existing skin into the joint, so blood particles alone cannot make the cross-section convincing. Creating a bitmap texture will not solve this until a surface to map it onto is attached and follows the cut joint.
+
+## Companion boundary
+
+`bloodVisualMode: "external"` tells Liberty Framework to leave impact, wound, death and generic bleeding visuals to an external renderer such as Violent Liberty. It still classifies hits, applies reactions, queues cuts, maintains missing limbs, throws limbs, and plays a focused burst and arterial stream at a cut stump. The game install keeps the external ASI and WTD outside this repository. `bloodVisualMode: "stock"` restores Liberty Framework's original blood path.
+
+This is a coexistence boundary, not a source integration. There is no published code or license in the inspected archive to study or copy. Runtime compatibility, pressure at severed stumps, frame rate, and the old Vulkan crash require the owner's in-game test. F5/F6/F7 are Violent Liberty's visual toggles and do not affect Liberty Framework's dismemberment.
+
+## Next visual work after the companion test
+
+If the combined game loads, compare a limb kill with and without Violent Liberty (`F6`) at the same place and lighting. Check whether its impact wound stays aligned while the corpse ragdolls, whether the cut masks a wound on the detached limb, and whether its streams overlap our stump stream. If the missing-limb silhouette still looks like pinched skin, build original stump cap meshes/materials for shoulder, elbow, hip, knee and neck, with a validated GTA IV asset attachment path. Generate original blood textures only for those verified UV layouts. Keep the cap feature separately switchable so failed attachment cannot undo the working skeleton cut.
