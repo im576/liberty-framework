@@ -8,6 +8,8 @@ Checked the registered CE native list and ScriptHookDotNet camera wrapper. `SET_
 
 Phase 2 research (2026-09-24): the current [Liberty Tweaks source](https://github.com/catsmackaroo/LibertyTweaks/blob/main/LibertyTweaks/Features/Combat/ShoulderSwap.cs) swaps the shoulder by attaching an invisible, collision-enabled object near the ped while aiming. That is a camera-obstruction technique rather than a validated camera offset, and it has no documented safe restore behavior for this project's CE camera. The repository has no reuse license. We will not copy that code or add an unseen collision object to the integrated build. `SET_CAM_ATTACH_OFFSET` exists in the CE native list, but its behavior on the active gameplay aim camera and its original value remain unverified. The task stays blocked while the camera control is investigated.
 
+Follow-up research: [Liberty Shoulder 0.2.0](https://www.nexusmods.com/gta4/mods/1229) advertises a `CAMERA` swap mode and ships an ASI and INI. Its public file page does not establish compatibility with this installed CE 1.2.0.59 build or disclose a reusable camera implementation. It is a lead for a separate compatibility test, not evidence for a safe offset in this DLL. No third-party binary was installed.
+
 ## Human test steps after unblock
 
 1. Hold L2/LT on foot, press the configured shoulder button and verify the view changes right/left without moving aim or player position.
