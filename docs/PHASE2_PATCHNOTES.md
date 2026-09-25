@@ -1,6 +1,6 @@
 # Phase 2 integrated patch notes
 
-Build installed 2026-09-24 for the owner's combined playtest. All new gameplay behavior is **NEEDS-PLAYTEST**; no agent ran GTA IV. The integrated DLL SHA-256 is `EF44141752B6B5F9EB5FE967588137A7055BD866F15B11CFF993E4E1A35C6390`; 10 installed manifest files match. The backup is `scripts/LibertyFramework/backups/phase2-20260924-183757`.
+Build installed 2026-09-24 for the owner's combined playtest. All new gameplay behavior is **NEEDS-PLAYTEST**; no agent ran GTA IV. The integrated DLL SHA-256 is `A0FB2B15B8814AC7A6CB7473AD7728B2B09F685CAA6001F04CD889C47FEC4F09`; 10 installed manifest files match. The latest backup is `scripts/LibertyFramework/backups/phase2-20260924-184410`.
 
 ## Gunplay
 
@@ -11,7 +11,7 @@ Build installed 2026-09-24 for the owner's combined playtest. All new gameplay b
 
 - Added a nearby **Square/X or E** prompt and compact store/take panel at the rear of vehicles and at safehouse stashes. A selects, B closes; DevTools cannot cover the panel. Trunk doors and player control restore on close or error. The safehouse panel also exposes the pistol gunsmith.
 - Each weapon record now has an instance ID, catalog ID, finish, attachment IDs, and progression value. Those values persist through carrying, trunks, safehouses, owned vehicles, and recovery after death. Legacy states are normalized on load; a same-type take is refused before changing either physical record.
-- Added a catalog for the vanilla service pistol/combat pistol pair and existing custom gold weapons. At a safehouse, $500 buys the existing gold pistol finish once; factory/gold switching preserves instance ID and total ammo. This is the one playable gunsmith finish example. Attachment IDs and progression beyond this unlock have no game effect yet. Missing catalog or price leaves legacy Arsenal storage active.
+- Added a catalog for the vanilla service pistol/combat pistol pair and existing custom gold weapons. At a safehouse, $500 buys the existing gold pistol finish once; factory/gold switching preserves instance ID and total ammo. A second gunsmith purchase fits a $350 Match grip to the gold pistol and multiplies its per-shot bloom by 0.75. Both choices appear in nearby safehouse storage. The grip persists with the physical instance through storage and reload. Other attachment slots and progression beyond these two examples have no game effect yet. Missing catalog or finish price leaves legacy Arsenal storage active.
 - Existing Phase 1 gold weapon models, visible back holsters, trunk contents, and LVS ownership files are retained. No new weapon mesh or texture is shipped in this patch.
 
 ## Combat effects
@@ -30,4 +30,4 @@ Build installed 2026-09-24 for the owner's combined playtest. All new gameplay b
 - T-015 shoulder swap: current reference uses camera obstruction by an invisible object; a safe CE offset/restore path has not been validated.
 - T-023 real vehicle body variants: generic LVS Extras already previews/purchases/saves existing vehicle geometry; no specific model/slot has yet been visually verified as a body kit. No misleading relabel is installed.
 - T-022 arm/leg dismemberment: validated detection and a head-only native spike exist; an original/permissioned limb mesh and safe hide/replace path still need research and an in-game visual spike.
-- Wider attachment effects/camos/progression and replacement of every weapon need asset and game behavior passes after the first catalog/gunsmith example.
+- Wider attachment models/effects/camos/progression and replacement of every weapon need asset and game behavior passes after the first catalog/gunsmith examples.
