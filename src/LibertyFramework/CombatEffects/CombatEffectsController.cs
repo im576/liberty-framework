@@ -44,7 +44,7 @@ namespace LibertyFramework.CombatEffects
                 candidate.Validate();
                 config = candidate;
                 configHash = hash;
-                tracked.Clear();
+                Clear();
                 RuntimeLog.Info("combat_effects_config_loaded enabled=" + config.Enabled);
             }
             catch (Exception error) { RuntimeLog.Error("combat_effects_config_rejected error=" + error); }
@@ -56,7 +56,7 @@ namespace LibertyFramework.CombatEffects
             try
             {
                 LoadConfig();
-                if (config == null || !config.Enabled) { tracked.Clear(); return; }
+                if (config == null || !config.Enabled) { Clear(); return; }
                 long now = clock.ElapsedMilliseconds;
                 if (now - lastSampleMilliseconds < config.SampleIntervalMilliseconds) return;
                 lastSampleMilliseconds = now;
@@ -64,18 +64,19 @@ namespace LibertyFramework.CombatEffects
                 Ped shooter = player == null ? null : player.Character;
                 if (shooter == null || !shooter.Exists() || shooter.isDead ||
                     !Natives.IsPlayerPlaying(player) || Natives.IsScreenFadedOut() ||
-                    Function.Call<bool>("GET_MISSION_FLAG")) { tracked.Clear(); return; }
+                    Function.Call<bool>("GET_MISSION_FLAG")) { Clear(); return; }
                 int weaponId = (int)shooter.Weapons.CurrentType;
                 bool eligibleWeapon = false;
                 foreach (int id in config.AllowedWeaponIds) if (weaponId == id) { eligibleWeapon = true; break; }
-                if (!eligibleWeapon) { tracked.Clear(); return; }
+                if (!eligibleWeapon) { Clear(); return; }
 
                 HashSet<Ped> seen = new HashSet<Ped>();
                 int count = 0;
                 foreach (Ped target in World.GetPeds(shooter.Position, config.ScanRadiusMeters))
                 {
                     if (count >= config.MaximumTrackedPeds) break;
-                    if (target == null || target == shooter || !target.Exists() || target.isDead || target.isInVehicle()) continue;
+                    if (target == null || target == shooter || !target.Exists() || target.isInVehicle() ||
+                        CombatEffectsNatives.IsMissionPed(target)) continue;
                     ++count;
                     seen.Add(target);
                     PedInjuryState state;
@@ -89,15 +90,15 @@ namespace LibertyFramework.CombatEffects
                     int damage = state.LastHealth - target.Health;
                     state.LastHealth = target.Health;
                     if (damage > 0 && target.HasBeenDamagedBy(shooter)) OnDamage(target, state, damage, now);
-                    if (config.WoundsEnabled)
-                        state.Wounds.RemoveAll(wound => now - wound.CreatedMilliseconds > config.WoundLifetimeMilliseconds);
+                    ExpireWounds(state, now);
                 }
-                foreach (Ped ped in new List<Ped>(tracked.Keys)) if (!seen.Contains(ped)) tracked.Remove(ped);
+                foreach (Ped ped in new List<Ped>(tracked.Keys))
+                    if (!seen.Contains(ped)) { StopWounds(tracked[ped]); tracked.Remove(ped); }
             }
             catch (Exception error)
             {
                 RuntimeLog.Error("feature_disabled combat_effects error=" + error);
-                tracked.Clear();
+                try { Clear(); } catch (Exception cleanupError) { RuntimeLog.Error("combat_effects_cleanup_failed error=" + cleanupError); }
                 disabled = true;
             }
         }
@@ -114,16 +115,38 @@ namespace LibertyFramework.CombatEffects
             }
             if (config.ReactionsEnabled && now - state.LastReactionMilliseconds >= config.ReactionCooldownMilliseconds)
             {
-                // The engine's normal impact response remains the physical reaction
-                // until per-region animation/force APIs are validated in-game.
                 state.LastReactionMilliseconds = now;
+                float force = ReactionForce(region);
+                if (!target.isDead && force > 0)
+                {
+                    Ped shooter = Player.Character;
+                    Vector3 delta = target.Position - shooter.Position;
+                    float length = (float)Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
+                    if (length > 0.01f) CombatEffectsNatives.React(target,
+                        delta.X / length * force, delta.Y / length * force,
+                        region == HitRegion.LeftLeg || region == HitRegion.RightLeg ? 0.0f : force * config.ReactionVerticalFraction);
+                }
                 RuntimeLog.Info("combat_reaction region=" + region + " bone=" + bone + " damage=" + damage);
             }
-            if (config.WoundsEnabled)
+            if (config.WoundsEnabled && region != HitRegion.Unknown)
             {
-                if (state.Wounds.Count >= config.MaximumWoundsPerPed) state.Wounds.RemoveAt(0);
+                CombatEffectsNatives.Impact(config.ImpactEffectName, target, bone);
+                if (state.Wounds.Count >= config.MaximumWoundsPerPed)
+                {
+                    CombatEffectsNatives.StopWound(state.Wounds[0].EffectHandle);
+                    state.Wounds.RemoveAt(0);
+                }
                 state.Wounds.Add(new WoundRecord { Region = region, ApproximatePosition = target.Position,
-                    CreatedMilliseconds = now, Damage = damage });
+                    CreatedMilliseconds = now, Damage = damage,
+                    EffectHandle = CombatEffectsNatives.StartWound(config.WoundEffectName, target, bone) });
+            }
+            if (config.HeadLossPrototypeEnabled && region == HitRegion.Head &&
+                damage >= config.MinimumLimbLossDamage && !state.HeadRemoved &&
+                target.isDead)
+            {
+                state.HeadRemoved = true;
+                CombatEffectsNatives.RemoveHead(target);
+                RuntimeLog.Info("combat_head_loss damage=" + damage);
             }
             if (config.LimbLossPrototypeEnabled && damage >= config.MinimumLimbLossDamage &&
                 (region == HitRegion.LeftArm || region == HitRegion.RightArm ||
@@ -136,6 +159,43 @@ namespace LibertyFramework.CombatEffects
             }
         }
 
-        private void OnDomainUnload(object sender, EventArgs args) { tracked.Clear(); }
+        private float ReactionForce(HitRegion region)
+        {
+            switch (region)
+            {
+                case HitRegion.Head: return config.ReactionForceHead;
+                case HitRegion.Torso: return config.ReactionForceTorso;
+                case HitRegion.LeftArm: case HitRegion.RightArm: return config.ReactionForceArm;
+                case HitRegion.LeftLeg: case HitRegion.RightLeg: return config.ReactionForceLeg;
+                default: return 0;
+            }
+        }
+
+        private void ExpireWounds(PedInjuryState state, long now)
+        {
+            for (int index = state.Wounds.Count - 1; index >= 0; --index)
+                if (!config.WoundsEnabled || now - state.Wounds[index].CreatedMilliseconds > config.WoundLifetimeMilliseconds)
+                {
+                    CombatEffectsNatives.StopWound(state.Wounds[index].EffectHandle);
+                    state.Wounds.RemoveAt(index);
+                }
+        }
+
+        private static void StopWounds(PedInjuryState state)
+        {
+            foreach (WoundRecord wound in state.Wounds) CombatEffectsNatives.StopWound(wound.EffectHandle);
+            state.Wounds.Clear();
+        }
+
+        private void Clear()
+        {
+            foreach (PedInjuryState state in tracked.Values) StopWounds(state);
+            tracked.Clear();
+        }
+
+        private void OnDomainUnload(object sender, EventArgs args)
+        {
+            try { Clear(); } catch (Exception error) { RuntimeLog.Error("combat_effects_unload_cleanup_failed error=" + error); }
+        }
     }
 }

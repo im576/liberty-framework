@@ -8,5 +8,6 @@ namespace LibertyFramework.CombatEffects
         internal Vector3 ApproximatePosition;
         internal long CreatedMilliseconds;
         internal int Damage;
+        internal int EffectHandle;
     }
 }
