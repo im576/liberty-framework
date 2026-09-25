@@ -23,6 +23,7 @@ namespace LibertyFramework.Arsenal.Logic
         // 0 disables discovery. Discovered safehouses join the configured list for the current episode.
         [DataMember(Name = "safehouseBlipSprite", IsRequired = false)] internal int SafehouseBlipSprite;
         [DataMember(Name = "discoveredSafehouseRadiusMeters", IsRequired = false)] internal float DiscoveredSafehouseRadiusMeters;
+        [DataMember(Name = "gunsmithGoldFinishPrice", IsRequired = false)] internal int GunsmithGoldFinishPrice;
     }
 
 }
