@@ -5,6 +5,13 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
+**Script cost pass (2026-09-25, Claude):**
+
+- The startup crashes are Rockstar `MTLX.DLL` crashes, present since 09-20 on DirectX 9 too, so not Vulkan or Violent Liberty.
+- Gunplay camera natives are cached. Combat damage scans run at full rate only after shots, with one native per ped.
+- Per-script `performance_scripts` and `native_cost` logging was added.
+- Verify 339/339. See [T-026](tasks/T-026-performance-visual-baseline.md).
+
 **Camera hotspot measured (2026-09-25, Codex):** Despite a reported failed launch, one diagnostic run started all scripts and logged nine minutes of timings. GunplayController averaged 16.71 ms/tick across 17,094 ticks, with camera handling 10.11 ms (60.5%); initial 24–25 ms tick spacing later degraded to 80–92 ms. Repeated early `0xc0000005` crashes occur before ASI load and remain separate from the script hot path. Captures are saved; next steps are camera subphase timing and a renderer startup A/B. Game files unchanged during retry. [T-026](tasks/T-026-performance-visual-baseline.md).
 
 **Framework-off result and targeted timing build (2026-09-25, Codex):** Owner reports gameplay is generally smooth and playable without Liberty Framework, with random drops remaining. This identifies a material framework cost, though an external frame trace is still missing. A coarse five-phase GunplayController timing build compiles (113 sources, zero errors/warnings), passes 339/339 offline checks, and is installed with SHA-256 confirmation while GTA IV is closed; the prior DLL is preserved outside the game. Next: short in-game phase timing run, then optimize the measured hotspot. [T-026](tasks/T-026-performance-visual-baseline.md).

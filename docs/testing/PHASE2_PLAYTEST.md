@@ -83,3 +83,11 @@ Status: **READY FOR OWNER TEST** after the integrated package is installed. Use 
 2. Finish a fresh NPC with an arm shot, then a leg shot on another. Expect an immediate blood burst, a roughly 10-second fading stump leak, and a visible thrown limb. Watch for one blood hit when the limb reaches the ground. Repeat several times; note any cut that does not throw, any limb that vanishes before landing, and whether a thrown limb is replaced when many corpses accumulate.
 3. Press **F6** to compare the same shots with Violent Liberty's decals disabled. Our small pulses and stump leak should still show; the large dynamic stains and streaks should not. Press F6 again. If the blood is excessive or performance drops, record which weapon/scene and the `performance` lines.
 4. Send `ptfx ... leak`, `dismember_limb_visible`, `dismember_limb_landed`, `dismember_limb_gave_up`, `dismember_limb_replaced_oldest`, `combat_sever`, and any `ERROR` lines, plus a short video of one standing bleed and one stump. The game, renderer, and visual overlap cannot be verified offline.
+
+### 8. Performance pass (T-026)
+
+1. **Launch.** Open the Rockstar Games Launcher and wait until it has signed in, then launch GTA IV from Steam. If it still crashes before the menu, note the time; next, try with the Steam overlay disabled for GTA IV.
+2. **Walk.** Load the usual save and walk the usual street for 90 s without shooting.
+3. **Fight.** Have a 60 s firefight (pistol and shotgun, a few kills).
+4. **Report.** Say whether it feels smoother than before, and where it drops. Send the log lines `native_cost`, every `performance` line, and every `performance_scripts` line.
+5. **Optional frame capture.** In an Administrator PowerShell, run `./tools/capture-performance.ps1 -Label perf-pass -Seconds 120` during steps 2-3.

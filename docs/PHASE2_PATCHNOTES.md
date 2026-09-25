@@ -1,5 +1,14 @@
 # Phase 2 integrated patch notes
 
+## Performance pass (Claude), 2026-09-25
+
+- **Less framework load (Vulkan and Violent Liberty stay):**
+  - The aim script asks the engine for the camera far less often: it caches the handle and checks FOV only while aiming.
+  - The gore script scans nearby NPCs at full speed only for 3 s after you fire; otherwise it scans every 0.4 s.
+  - Each NPC now costs one engine call per scan instead of four or five.
+- **Measurements:** every 30 s the log now shows what each Liberty Framework script costs (`performance_scripts`), plus a one-time `native_cost` line.
+- **Startup crash finding:** the launch crashes happen inside Rockstar's launcher component (`MTLX.DLL`) before any mod loads. They happened on DirectX 9 and before mods too. Try opening the Rockstar Games Launcher first; if it still happens, turn off the Steam overlay for GTA IV.
+
 ## Gore pass 3 (Claude), 2026-09-24
 
 - **Bodies leak:** wounds now pour continuous blood streams and drips (the game's looping blood effects, which the old one-shot calls could not play). Every wounded NPC also has the game's own bleeding switched on. Killed bodies keep leaking for 20 s. Strong hits spurt, and chunks fly on heavy hits and every cut.

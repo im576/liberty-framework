@@ -2,6 +2,28 @@
 
 Status: **NEEDS-PLAYTEST**
 
+## Script cost pass (2026-09-25, Claude)
+
+**Findings from the logs and WER archive:**
+
+- **Startup crashes are not Vulkan or Violent Liberty.** Every `0xc0000005` / `StackHash_2beb` startup crash since 2026-09-20 has the same signature, in `ntdll+0x7379C`. That includes 09-20 (before any mods) and 09-23/09-24 (DirectX 9). In each report the module list ends right after Rockstar's `MTLX.DLL` loads, with `gameoverlayrenderer.dll` loaded before it. No FusionFix ASI, ScriptHook or Liberty Framework module is loaded yet. Suggested owner-side mitigations:
+  - start the Rockstar Games Launcher and let it sign in before pressing Play;
+  - A/B with the Steam overlay disabled for GTA IV.
+- **The single `scripthook.dll` `0xc0000417` crash** while loading LVS (09-25 00:13) is separate.
+- **The RX 570 driver reports no graphics pipeline library** (`DXVK: Graphics pipeline libraries not supported`), so DXVK compiles pipelines on first use. That explains hitches that remain with the framework off. Vulkan stays, because Violent Liberty requires it.
+- **The framework-off run was smooth** with Vulkan, DXVK and Violent Liberty still installed, so the framework's own cost is the main fixable part.
+
+**Changes:**
+
+- **`CostMeter` (Core/Performance/Logic).** Every script tick (gunplay, combat, holsters, arsenal, devtools) and each gunplay camera step records its wall-clock cost and thread. The 30 s `performance` log line is followed by a `performance_scripts` line with average/maximum/count per section. A one-time `native_cost` line measures one script native call.
+- **Gunplay camera phase.**
+  - The game camera handle is refreshed from `GET_GAME_CAM` every `performance.gameCameraRefreshMilliseconds` (500 ms). In between, its camera-pool slot/generation is validated from memory, replacing `DOES_CAM_EXIST`.
+  - FOV is read every tick only while aiming; otherwise every `fovRefreshMilliseconds` (250 ms).
+  - The aim-camera lookup is skipped when the game camera is invalid.
+- **Combat damage sampling.**
+  - Full rate (50 ms) only within `activeSampleWindowMilliseconds` (3000 ms) of the player's last detected shot. Otherwise the scan runs every `idleSampleIntervalMilliseconds` (400 ms) to keep health baselines.
+  - Per ped: one health read. Vehicle, attribution and death checks happen only when health dropped or a recent hit awaits its death. The per-ped `isDead` call every scan is gone.
+
 ## Diagnostic run and latest launch report (2026-09-25)
 
 The owner reports a failed launch and intends to retry. The installed diagnostic DLL did complete an earlier run from roughly 01:08:45 to 01:17:57: all eight scripts started, the Direct3D device was later lost, and scripts terminated normally. Across 18 half-minute timing windows / 17,094 GunplayController ticks, its weighted average work was 16.71 ms; the camera phase alone averaged 10.11 ms (60.5%). Camera work stayed near 9–10 ms in the initially faster windows, then rose to about 12–13 ms as frame spacing worsened. Bullet audit averaged roughly 0.2 ms and HUD roughly 0.6 ms. The internal frame-spacing p50 rose from 24–25 ms early to 80–92 ms late; this remains a script tick proxy, not PresentMon frame data. CSV: `D:\GTAIV-Reborn-Tools\captures\gunplay-phase-timings-20260925-0108.csv`.

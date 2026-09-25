@@ -121,3 +121,14 @@ Each entry defines `id` (stable catalog ID), `family`, `label`, `role` (`replace
 `state/arsenal_<episode>.json` remains schema version 1. Optional `carriedRecords[]` persists full `WeaponRecord` objects. Each record now has optional `instanceId` (UUID without separators), `catalogId`, `attachments[]`, and `progression` in addition to its prior ID, category, ammo, owned, finish, and acquisition time. Missing IDs are generated on load. `ownedCarried[]` remains for old saves. Arsenal snapshots carried ammo and metadata at most every five seconds when changed and immediately during storage/loss transfers. `JsonStore.Save` keeps a `.bak` of the previous state.
 
 `config/arsenal.json` optionally sets `gunsmithGoldFinishPrice` in dollars (`500` in the template). At a safehouse Arsenal page or nearby safehouse panel, this charges once to unlock the existing gold pistol model for that physical service pistol; returning to the factory model and re-equipping gold are free. A missing or zero price disables new finish purchases while retaining legacy Arsenal operation and previously unlocked finishes. The Match grip price/effect live in `weapon-catalog.json`. The integrated installer merges the top-level Arsenal default into an existing `arsenal.json` without replacing marked safehouses.
+
+## Performance fields (T-026)
+
+- **`gunplay.json` `performance`** (optional):
+  - `gameCameraRefreshMilliseconds` (0-5000) sets how often `GET_GAME_CAM`/`DOES_CAM_EXIST` are re-read. In between, the handle is validated from the camera pool.
+  - `fovRefreshMilliseconds` (0-5000) sets how often FOV is read while not aiming.
+  - When the section is absent, every tick re-reads (the old behaviour).
+- **`combat_effects.json`:**
+  - `idleSampleIntervalMilliseconds` (0-2000) is the damage-scan interval when the player has not fired recently.
+  - `activeSampleWindowMilliseconds` (0-30000) is how long after a detected shot the scan runs at `sampleIntervalMilliseconds`.
+  - An idle interval of 0, or one not above `sampleIntervalMilliseconds`, keeps full-rate scanning.
