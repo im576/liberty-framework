@@ -1,6 +1,6 @@
 # T-022 — Combat effects detection and safe prototype
 
-Status: **NEEDS-PLAYTEST**. Offline build and native registration verification pass. Physical reaction force, bone-attached stock blood PTFX, and a corpse-only head removal spike are implemented but unverified in game. Actual arm/leg mesh removal is **not implemented**; limb-loss candidate logs are diagnostic. The effect uses the player's installed GTA IV resources, with no copied third-party asset.
+Status: **NEEDS-PLAYTEST**. Offline build and native registration verification pass. Physical reaction force, bone-attached stock blood PTFX, and a corpse-only head removal spike are implemented but unverified in game. The owner requested that corpse head removal be enabled in the next installed playtest build. Actual arm/leg mesh removal is **not implemented**; limb-loss candidate logs are diagnostic. The effect uses the player's installed GTA IV resources, with no copied third-party asset.
 
 ## Implemented
 
@@ -15,7 +15,7 @@ Status: **NEEDS-PLAYTEST**. Offline build and native registration verification p
 2. If the effects cause a problem, set `enabled` to `false` in the installed `scripts/LibertyFramework/config/combat_effects.json`; the script should stop its tracked PTFX within two seconds. Re-enable for the checks below.
 3. In free roam, use gold pistol 58 to shoot an ambient non-mission NPC once in the torso, head, each arm and each leg (separate fresh targets if needed). Confirm distinct push directions/strengths and bone-local blood effects. Confirm `combat_reaction region=... bone=... damage=...` in the log; record any `Unknown` bone value or missing effect. Repeat with 59 and 60. Test Range spawned peds may be mission peds and are deliberately excluded.
 4. Fire two qualifying hits to one limb with `limbLossPrototypeEnabled=true`. Look for exactly one `combat_limb_loss_candidate` line for that limb. Confirm there is no arm/leg model change; this is a detection safety test only.
-5. Set `headLossPrototypeEnabled=true` and score an attributed lethal head hit on an ambient NPC with enough damage. Confirm one `combat_head_loss` line and whether the corpse head changes. Turn the toggle off after this test. If the game hangs or the model looks wrong, disable `enabled` and attach the log.
+5. With the installed default `headLossPrototypeEnabled=true`, score an attributed lethal head hit on an ambient NPC with enough damage. Confirm one `combat_head_loss` line and whether the corpse head changes. If the game hangs or the model looks wrong, set `headLossPrototypeEnabled=false` in the installed config and attach the log.
 6. Switch to a vanilla weapon, enter a mission, and then disable `enabled`. Confirm no further `combat_reaction` entries from those contexts. Trigger ScriptHookDotNet `ReloadScripts`; check fresh config-load entry, wound PTFX stops, and gameplay continues. Attach log and visual observations.
 
 ## Engine questions before visual implementation

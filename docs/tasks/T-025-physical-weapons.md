@@ -2,6 +2,8 @@
 
 Status: **NEEDS-PLAYTEST**
 
+Follow-up (2026-09-24): the safehouse gunsmith now offers all catalog-defined tuning attachments on registered gold weapons 58–60. The carbine Stability stock costs $600 and gives a 0.82 per-shot bloom multiplier; the shotgun Steady fore-end costs $450 and gives 0.85. Both persist with the physical weapon, like the pistol grip. They do not change the visible model. In-game purchase and feel checks remain open.
+
 ## Scope
 
 Arsenal records now carry a stable `instanceId`, catalog ID, finish, attachment IDs, and progression counter through carried state, trunks, safehouses, and wasted recovery. The older `ownedCarried` ID list remains readable. Legacy storage records gain instance IDs on load. Catalog entries register a non-gold vanilla service-sidearm replacement pair (pistol 7, combat pistol 9) and the existing custom carbine 59 as an add-on example. No new model or mechanical attachment effect is asserted. The catalog is a data contract for later gunsmith visuals and effects.
@@ -25,6 +27,7 @@ Precondition: install `LibertyFramework.net.dll` and `config/weapon-catalog.json
 5. With a purchased owned weapon carried, get **wasted**. Return to the last safehouse stash; its record should retain the same instance ID. Repeat from a save and get **busted**; expect carried weapons to be gone. Restore the backup state after destructive test scenarios.
 6. Carry vanilla pistol ID 7 at a safehouse. Open **ARSENAL**, select **Buy gold finish ($500)** and confirm with **A** twice. Expect money to fall by exactly $500, the visible pistol to become gold ID 58, ammo unchanged, and the same `instanceId` in state with `progression: 1`. Choose **Equip factory finish** with **A**; expect the original model ID 7 and no charge. Choose **Equip gold finish** again; expect gold ID 58 and no charge. Store/take that pistol and reload to confirm the unlock and identity persist. If the player's existing `arsenal.json` lacks `gunsmithGoldFinishPrice`, the purchase row should be absent while storage still works.
 7. At that safehouse, carry gold pistol 58 and choose **Buy Match grip ($350)** from the compact storage panel. Press **A** twice. Expect $350 charged once, `match-grip` in the carried record's attachments, and `attachment_bloom=0.75` in the gunplay state log after firing. Four quick shots should bloom less than before fitting. Store/take and reload; attachment and effect should persist with the same `instanceId`.
+8. Carry gold carbine 59 at the safehouse and buy **Stability stock ($600)** with **A** twice. Check a single $600 charge, `stability-stock` on the same `instanceId`, and `attachment_bloom=0.82` when firing. Repeat with gold shotgun 60 and **Steady fore-end ($450)**; expect `steady-fore-end` and `attachment_bloom=0.85`. Store/take and restart to confirm both persist. Neither model should visually change.
 
 ## Integration
 

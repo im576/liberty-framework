@@ -4,10 +4,12 @@
     { "id": "service-pistol", "weaponId": 7, "family": "service-sidearm", "label": "Pistol", "role": "replacement", "model": "w_glock", "finishes": ["factory"], "attachments": [] },
     { "id": "combat-pistol", "weaponId": 9, "family": "service-sidearm", "label": "Combat Pistol", "role": "replacement", "model": "w_eagle", "finishes": ["factory"], "attachments": [] },
     { "id": "gold-test-pistol", "weaponId": 58, "family": "service-sidearm", "label": "Gold Test Pistol", "role": "test", "model": "lf_gold_pistol", "finishes": ["gold-test"], "attachments": ["match-grip"] },
-    { "id": "gold-test-carbine", "weaponId": 59, "family": "carbine", "label": "Gold Test Carbine", "role": "add-on", "model": "lf_gold_carbine", "finishes": ["gold-test"], "attachments": [] },
-    { "id": "gold-test-shotgun", "weaponId": 60, "family": "shotgun", "label": "Gold Test Shotgun", "role": "test", "model": "lf_gold_shotgun", "finishes": ["gold-test"], "attachments": [] }
+    { "id": "gold-test-carbine", "weaponId": 59, "family": "carbine", "label": "Gold Test Carbine", "role": "add-on", "model": "lf_gold_carbine", "finishes": ["gold-test"], "attachments": ["stability-stock"] },
+    { "id": "gold-test-shotgun", "weaponId": 60, "family": "shotgun", "label": "Gold Test Shotgun", "role": "test", "model": "lf_gold_shotgun", "finishes": ["gold-test"], "attachments": ["steady-fore-end"] }
   ],
   "attachmentOptions": [
-    { "id": "match-grip", "label": "Match grip", "price": 350, "perShotBloomMultiplier": 0.75 }
+    { "id": "match-grip", "label": "Match grip", "price": 350, "perShotBloomMultiplier": 0.75 },
+    { "id": "stability-stock", "label": "Stability stock", "price": 600, "perShotBloomMultiplier": 0.82 },
+    { "id": "steady-fore-end", "label": "Steady fore-end", "price": 450, "perShotBloomMultiplier": 0.85 }
   ]
 }

@@ -80,6 +80,8 @@ Finish colour ramps (`shadowRgb`, `midRgb`, `highlightRgb`, `contrast`, `lift`, 
 `lf_gold_carbine` uses `w_m4` diffuse `bm_m4a1`, specular `bm_m4a1_s`, and `icon`; `lf_gold_shotgun` uses `w_shotgun` diffuse `cj_shotgun_comp`, specular `cj_shotgun_comp_s`, and `icon`. Their normal maps are retained.
 ## Phase 2 weapon catalog and physical records (T-025)
 
+The next Phase 2 playtest enables `combat_effects.json` `headLossPrototypeEnabled` for lethal head hits on ambient NPCs by gold weapons. Visible arm and leg removal remains a diagnostic candidate only. The gunsmith offers three persistent, tuning-only attachments: Match grip ($350, bloom increment multiplier 0.75) for gold pistol 58, Stability stock ($600, 0.82) for gold carbine 59, and Steady fore-end ($450, 0.85) for gold shotgun 60. No new attachment mesh is included.
+
 `config/weapon-catalog.json` has `schemaVersion: 1` and unique `entries[]` keyed by `weaponId`.
 Each entry defines `id` (stable catalog ID), `family`, `label`, `role` (`replacement`, `add-on`, or `test`), the registered model name, allowed `finishes[]`, and `attachments[]`. The current catalog points only to already registered GTA IV or Phase 1 models. `attachmentOptions[]` defines the `id`, label, price in dollars, and `perShotBloomMultiplier` (0–1) for each offered attachment. The gold pistol's `match-grip` costs $350 and multiplies each bloom increment by 0.75; its first-shot base cone and vanilla weapons are unchanged. Other attachment IDs remain metadata until a matching option and effect are implemented. The factory/gold finish choice switches the existing pistol models, while no new asset is created.
 

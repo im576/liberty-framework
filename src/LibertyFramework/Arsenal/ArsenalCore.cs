@@ -785,30 +785,35 @@ namespace LibertyFramework.Arsenal
         {
             if (weaponCatalog == null) { return; }
             WeaponRecord pistol = Find(carried, 7) ?? Find(carried, 58);
-            if (pistol == null) { return; }
-            WeaponRecord choice = pistol;
-            items.Add(MenuItem.Info(() => "GUNSMITH: service pistol finish"));
-            if (choice.WeaponId == 7 && (choice.Progression > 0 || config.GunsmithGoldFinishPrice > 0))
+            if (pistol != null)
             {
-                string label = choice.Progression > 0 ? "Equip gold finish" :
-                    "Buy gold finish ($" + config.GunsmithGoldFinishPrice + ")";
-                items.Add(choice.Progression > 0 ? MenuItem.Action(label, () => RunAction(() => ChangePistolFinish(choice, true))) :
-                    MenuItem.Confirmed(label, () => RunAction(() => ChangePistolFinish(choice, true))));
-            }
-            else if (choice.WeaponId == 58)
-            {
-                items.Add(MenuItem.Action("Equip factory finish", () => RunAction(() => ChangePistolFinish(choice, false))));
-            }
-            if (choice.WeaponId == 58)
-            {
-                AttachmentOption grip = weaponCatalog.FindAttachment("match-grip");
-                WeaponCatalogEntry pistolEntry = weaponCatalog.Find(choice.WeaponId);
-                if (grip != null && pistolEntry != null && pistolEntry.Attachments.Contains(grip.Id))
+                WeaponRecord choice = pistol;
+                items.Add(MenuItem.Info(() => "GUNSMITH: service pistol finish"));
+                if (choice.WeaponId == 7 && (choice.Progression > 0 || config.GunsmithGoldFinishPrice > 0))
                 {
-                    if (choice.Attachments != null && choice.Attachments.Contains(grip.Id))
-                        { items.Add(MenuItem.Info(() => grip.Label + " fitted")); }
+                    string label = choice.Progression > 0 ? "Equip gold finish" :
+                        "Buy gold finish ($" + config.GunsmithGoldFinishPrice + ")";
+                    items.Add(choice.Progression > 0 ? MenuItem.Action(label, () => RunAction(() => ChangePistolFinish(choice, true))) :
+                        MenuItem.Confirmed(label, () => RunAction(() => ChangePistolFinish(choice, true))));
+                }
+                else if (choice.WeaponId == 58)
+                    { items.Add(MenuItem.Action("Equip factory finish", () => RunAction(() => ChangePistolFinish(choice, false)))); }
+            }
+            foreach (WeaponRecord carriedRecord in carried)
+            {
+                if (carriedRecord.WeaponId < 58 || carriedRecord.WeaponId > 60) { continue; }
+                WeaponCatalogEntry entry = weaponCatalog.Find(carriedRecord.WeaponId);
+                if (entry == null) { continue; }
+                foreach (string attachmentId in entry.Attachments)
+                {
+                    AttachmentOption option = weaponCatalog.FindAttachment(attachmentId);
+                    if (option == null) { continue; }
+                    WeaponRecord choice = carriedRecord;
+                    AttachmentOption choiceOption = option;
+                    if (choice.Attachments != null && choice.Attachments.Contains(option.Id))
+                        { items.Add(MenuItem.Info(() => entry.Label + ": " + choiceOption.Label + " fitted")); }
                     else
-                        { items.Add(MenuItem.Confirmed("Buy " + grip.Label + " ($" + grip.Price + ")", () => RunAction(() => BuyAttachment(choice, grip)))); }
+                        { items.Add(MenuItem.Confirmed("Buy " + entry.Label + " " + option.Label + " ($" + option.Price + ")", () => RunAction(() => BuyAttachment(choice, choiceOption)))); }
                 }
             }
         }
@@ -816,8 +821,10 @@ namespace LibertyFramework.Arsenal
         private string BuyAttachment(WeaponRecord record, AttachmentOption option)
         {
             if (Player == null || Player.Character == null || !StorageAllowed() || Find(carried, record.WeaponId) != record ||
-                record.WeaponId != 58 || weaponCatalog == null ||
-                weaponCatalog.Find(58) == null || !weaponCatalog.Find(58).Attachments.Contains(option.Id))
+                record.WeaponId < 58 || record.WeaponId > 60 || weaponCatalog == null ||
+                weaponCatalog.Find(record.WeaponId) == null ||
+                !weaponCatalog.Find(record.WeaponId).Attachments.Contains(option.Id) ||
+                weaponCatalog.FindAttachment(option.Id) != option)
                 { return "Attachment unavailable"; }
             WeaponIdentity.Ensure(record);
             if (record.Attachments.Contains(option.Id)) { return "Already fitted"; }

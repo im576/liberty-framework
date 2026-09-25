@@ -5,7 +5,7 @@
   "injuriesEnabled": true,
   "woundsEnabled": true,
   "limbLossPrototypeEnabled": false,
-  "headLossPrototypeEnabled": false,
+  "headLossPrototypeEnabled": true,
   "impactEffectName": "blood_stun_punch",
   "woundEffectName": "blood_stun_punch",
   "reactionForceHead": 1.0,

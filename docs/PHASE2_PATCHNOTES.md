@@ -1,5 +1,11 @@
 # Phase 2 integrated patch notes
 
+## Follow-up build, 2026-09-24
+
+- Extended the safehouse gunsmith from the pistol grip to catalog-defined tuning upgrades on all three registered gold weapons: carbine Stability stock ($600, per-shot bloom 0.82) and shotgun Steady fore-end ($450, 0.85). The same purchase validation, persistent physical record, and store/take behavior apply. No new visible model is included.
+- Enabled the existing corpse-only head-removal native by default at the owner's request. It remains restricted to qualifying lethal head hits on nearby ambient NPCs with registered gold weapons. Arm/leg mesh removal is still unavailable.
+- Build: 104 C# sources; offline verification: 270/270. Installed DLL SHA-256: `F055E2B7F45594C6F93A4866DE34CA9F10588619EE44D5732F40399A8CFE632C`. Installed 2026-09-24 with backup `scripts/LibertyFramework/backups/phase2-20260924-194809`. All follow-up gameplay requires an owner playtest.
+
 Build installed 2026-09-24 for the owner's combined playtest. All new gameplay behavior is **NEEDS-PLAYTEST**; no agent ran GTA IV. The integrated DLL SHA-256 is `A0FB2B15B8814AC7A6CB7473AD7728B2B09F685CAA6001F04CD889C47FEC4F09`; 10 installed manifest files match. The latest backup is `scripts/LibertyFramework/backups/phase2-20260924-184410`.
 
 ## Gunplay
