@@ -5,6 +5,8 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
+**First live performance sample and A/B staged (2026-09-25, Codex):** A no-LVS retry loaded, then frame-spacing proxy deteriorated from 22 ms to 50–94 ms p50; GunplayController consumed 14–36 ms average per tick. CPU averaged 27% of four cores, GPU 3D snapshots 21–65%, GPU memory ~1.2 GB; foreground state was not verified. An earlier no-LVS startup still crashed before ASI load, so LVS was restored. With GTA IV closed, only Liberty Framework's DLL was hash-checked and moved outside the game for the next performance comparison; FusionFix, DXVK, Violent Liberty, and LVS remain. [T-026](tasks/T-026-performance-visual-baseline.md).
+
 **Startup crash isolation (2026-09-25, Codex):** Owner's loading-screen freeze ended in Windows Error 1000, `scripthook.dll` / `0xc0000417`. The hook log stopped as it began loading Liberty Vehicle Services; installed configs match the saved baseline. With GTA IV closed, only the LVS `.CS` file was hash-checked and moved to an external quarantine for one controlled startup test. Causality and game launch result await the owner. [T-026](tasks/T-026-performance-visual-baseline.md).
 
 **Performance baseline setup (2026-09-25, Codex):** Owner reports 15–20 FPS and world shadow/light/building flicker. Portable PresentMon, Ghidra + JDK, and FusionFix/DXVK reference sources are staged outside the game. Installed GTAIV.exe was imported into a read-only Ghidra project; an elevated capture script and configuration snapshot are prepared. Frame traces and in-game comparison remain pending. [T-026](tasks/T-026-performance-visual-baseline.md).

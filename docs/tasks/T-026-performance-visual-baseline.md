@@ -6,7 +6,15 @@ Status: **NEEDS-PLAYTEST**
 
 The owner's next attempt froze on the loading screen, then crashed at 00:13:37. Windows Application Error 1000 records `GTAIV.exe` 1.2.0.59 faulting in `scripthook.dll` 0.5.1.0 at offset `0x00020861`, exception `0xc0000417`. ScriptHookDotNet logged Direct3D device creation at 00:13:23, then found the Liberty Framework assembly and began loading `LibertyVehicleServicesCE.CS` at 00:13:27; no Liberty Framework or LVS startup entry appeared for this attempt. DXVK initialized the RX 570 without an explicit error in its log. Every copied baseline config hash still matches. This narrows the failure to startup script/hook interaction, but the faulting module alone does not prove which mod caused it.
 
-With GTA IV closed, `scripts\LibertyVehicleServicesCE.CS` was moved byte-for-byte to `D:\GTAIV-Reborn-Tools\baseline\startup-crash-20260925\LibertyVehicleServicesCE.CS` (SHA-256 `CE8C5797C8C41430DBCA82D26768C64BD27131A59E98DE6C1AE30A1A342F5C90`). No other installed file was changed. The next launch is an isolation test with vehicle services temporarily unavailable. If it still crashes, inspect the fresh WER and hook logs before moving another file. To restore after the test, close GTA IV and move the file back to `scripts\LibertyVehicleServicesCE.CS`; verify the hash above.
+With GTA IV closed, `scripts\LibertyVehicleServicesCE.CS` was moved byte-for-byte to `D:\GTAIV-Reborn-Tools\baseline\startup-crash-20260925\LibertyVehicleServicesCE.CS` (SHA-256 `CE8C5797C8C41430DBCA82D26768C64BD27131A59E98DE6C1AE30A1A342F5C90`). An attempted launch at 00:21:08 still crashed before ASI modules loaded: WER reports `StackHash_2beb`, `0xc0000005`, with `d3d9.dll`/`vulkan.dll` present. A retry at 00:21:25 loaded successfully without LVS, so its removal did not eliminate startup crashes. After the successful run closed at 00:27:29, the LVS script was restored and its hash rechecked. The two fault signatures should be investigated separately; neither identifies a root cause yet.
+
+## First live performance run (2026-09-25)
+
+The successful no-LVS run loaded all seven Liberty Framework scripts. Its internal tick-spacing proxy (not an external frame trace) went from 22 ms p50 / 30 ms p95 in the first 30-second window to 50–94 ms p50 and 103–188 ms p95 in later windows. Tick counts fell from 1240 to 273–520 per 30 seconds. The GunplayController's own measured tick work averaged 14–36 ms across windows, a substantial contributor, but below total frame spacing. Its p99 histogram caps at 200 ms, so worse spikes cannot be quantified from this log. Timing table: `D:\GTAIV-Reborn-Tools\captures\lf-timings-20260925-0022.csv`.
+
+A 45-second process sample averaged 27.1% CPU across four logical cores (maximum 38.7%), with private memory rising from 1621 to 1699 MB. Three GPU 3D readings ranged from 21% to 65%; dedicated GPU memory held near 1203 MB. Those snapshots do not prove a single bottleneck or confirm the game stayed foreground throughout. Process sample: `D:\GTAIV-Reborn-Tools\captures\process-baseline-20260925-002433.csv`. The game exited cleanly after the run; no new crash was recorded at exit.
+
+For the next A/B, with the game closed, `scripts\LibertyFramework.net.dll` was moved to `D:\GTAIV-Reborn-Tools\baseline\framework-off-test-20260925\LibertyFramework.net.dll` (SHA-256 `F45293030B0C1CCB2562FC5A08F1D2E76A955C0ECAE2CCA808B0F43A0FEE9E51`). FusionFix, DXVK, Violent Liberty, and LVS remain installed. This temporarily removes Liberty Framework gunplay, gore, DevTools, Arsenal, and holsters. Restore the DLL after the comparison with GTA IV closed and verify the same hash.
 
 ## Scope
 
@@ -29,10 +37,10 @@ The owner reports 15–20 FPS with continual dips and flicker in shadows, lights
 
 ## Human test steps
 
-1. Launch GTA IV through Steam and load the same save/location. The temporary isolation removes Liberty Vehicle Services only. Report whether the loading screen completes and whether gameplay starts; vehicle services will be unavailable in this run.
-2. If the game loads, leave it running and open **PowerShell as Administrator**. From `C:\Users\IM576\GTAIV-Reborn`, run `./tools/capture-performance.ps1 -Label baseline-street -Seconds 120` while standing or walking in the same street for two minutes. A nonempty CSV should appear under `D:\GTAIV-Reborn-Tools\captures`.
-3. Repeat with `-Label baseline-drive` while driving a repeatable city route, then `-Label baseline-combat` during the gunfight/limb test. If the slowdown accumulates, capture `-Label late-session` after it begins.
-4. Report which capture corresponds to the worst choppiness; provide a short clip or screenshot of the world flicker if possible. Do not mark this task DONE until in-game captures and a visual observation exist.
+1. Launch GTA IV through Steam and load the same save/location. This run has Liberty Framework temporarily disabled; its menu, gunplay, dismemberment, Arsenal, and holsters will be absent. Violent Liberty and Liberty Vehicle Services should remain. Note whether loading completes.
+2. Stay in the game window and try the same street or route for 2–3 minutes. Report whether the choppiness and building/shadow/light flicker remain, including approximate FPS if an overlay is available. This A/B alone is qualitative until an external frame trace exists.
+3. For exact frame timing, open **PowerShell as Administrator** after the game loads. From `C:\Users\IM576\GTAIV-Reborn`, run `./tools/capture-performance.ps1 -Label framework-off-street -Seconds 120`, then return focus to the game for the capture. A nonempty CSV should appear under `D:\GTAIV-Reborn-Tools\captures`.
+4. Report the run result. Restore the framework DLL only with GTA IV closed. Do not mark this task DONE until comparable in-game captures and a visual observation exist.
 
 ## Next analysis
 
