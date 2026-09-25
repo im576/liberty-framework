@@ -34,6 +34,8 @@ namespace LibertyFramework.Verify
                 CombatChecks.Run(args[0], args[1], check);
                 Console.WriteLine("== Dismemberment collapse engine machine code (ADR-0005)");
                 CollapseEngineChecks.Run(check);
+                Console.WriteLine("== Atmosphere: weather director and density governor (M-2, E-5)");
+                AtmosphereChecks.Run(args[1], check);
             }
             catch (Exception error)
             {

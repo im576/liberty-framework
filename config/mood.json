@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "description": "Liberty Mood: grey, wet city; very dark, cold nights; readable daytime shadows. Multipliers apply to FusionFix's timecyc.dat rows; adds are absolute.",
+  "weatherClasses": {
+    "bright": ["EXTRASUNNY", "SUNNY", "SUNNY_WINDY"],
+    "grey": ["CLOUDY", "FOGGY"],
+    "wet": ["RAIN", "DRIZZLE", "LIGHTNING"]
+  },
+  "timeClasses": {
+    "night": ["Midnight", "5AM", "10PM"],
+    "twilight": ["6AM", "8PM", "9PM"],
+    "day": ["7AM", "9AM", "Midday", "6PM", "7PM"]
+  },
+  "rules": [
+    { "weather": "*",      "time": "day",      "ambientScale": 1.12, "desaturationAdd": 0.06, "colourCorrect": [0.97, 0.99, 1.00] },
+    { "weather": "bright", "time": "day",      "sunScale": 0.85, "bloomScale": 0.9 },
+    { "weather": "grey",   "time": "day",      "sunScale": 0.6, "directScale": 0.8, "desaturationAdd": 0.12, "colourCorrect": [0.94, 0.97, 1.02], "fogStartScale": 0.75, "volumetricFogScale": 1.6, "bloomScale": 0.85 },
+    { "weather": "wet",    "time": "day",      "sunScale": 0.45, "directScale": 0.72, "desaturationAdd": 0.16, "colourCorrect": [0.92, 0.96, 1.03], "fogStartScale": 0.7, "volumetricFogScale": 1.8, "bloomScale": 0.8, "contrastAdd": 0.03 },
+    { "weather": "*",      "time": "twilight", "ambientScale": 0.8, "desaturationAdd": 0.12, "colourCorrect": [0.9, 0.95, 1.04], "skyScale": 0.85 },
+    { "weather": "*",      "time": "night",    "ambientScale": 0.55, "skyScale": 0.6, "directScale": 0.8, "desaturationAdd": 0.22, "colourCorrect": [0.82, 0.92, 1.06], "contrastAdd": 0.05, "volumetricFogScale": 1.5 },
+    { "weather": "wet",    "time": "night",    "ambientScale": 0.9, "volumetricFogScale": 1.3 },
+    { "weather": "grey",   "time": "night",    "volumetricFogScale": 1.4 }
+  ],
+  "limits": { "desaturationMax": 0.85, "contrastMax": 1.35 }
+}

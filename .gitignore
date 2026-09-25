@@ -17,3 +17,5 @@ obj/
 *.bak
 *.tmp
 staging/
+
+tools/mood/bin/

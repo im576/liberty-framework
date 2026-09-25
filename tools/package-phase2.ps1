@@ -50,7 +50,7 @@ function Stage-File([string] $source, [string] $relativePath, [string] $policy) 
 
 $entries = @()
 Stage-File (Join-Path $repoRoot 'src\LibertyFramework\bin\Release\LibertyFramework.net.dll') 'scripts\LibertyFramework.net.dll' 'replace'
-foreach ($name in @('gunplay.json', 'combat_effects.json', 'weapon-catalog.json')) {
+foreach ($name in @('gunplay.json', 'combat_effects.json', 'weapon-catalog.json', 'atmosphere.json')) {
     Stage-File (Join-Path $repoRoot "config\$name") "scripts\LibertyFramework\config\$name" 'replace'
 }
 Stage-File (Join-Path $repoRoot 'config\arsenal.json') 'scripts\LibertyFramework\config\arsenal.json' 'merge-defaults'
