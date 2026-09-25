@@ -20,7 +20,8 @@ namespace LibertyFramework.DevTools
     // Liberty DevTools. Open/close: hold L3+R3 (0.7 s) or F10. D-pad/arrows move, left/right adjust,
     // A/Enter select, B/Backspace back. Player controls are locked while open so the D-pad never
     // reaches the phone; they are restored on close, error and script unload.
-    public sealed class DevToolsMenu : Script
+    [LibertyFramework.Engine.Module("devtools", Order = 90)]
+    public sealed class DevToolsMenu : LibertyFramework.Engine.Module
     {
         private const int ChordHoldMilliseconds = 700;
         private const int RepeatDelayMilliseconds = 400;

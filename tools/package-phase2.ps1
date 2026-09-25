@@ -17,6 +17,8 @@ New-Item -ItemType Directory -Force -Path $stage | Out-Null
 
 & (Join-Path $PSScriptRoot 'build.ps1') -ScriptHookDotNetReference $ScriptHookDotNetReference
 if ($LASTEXITCODE -ne 0) { throw 'Phase 2 build failed.' }
+& (Join-Path $PSScriptRoot 'build-core.ps1')
+if ($LASTEXITCODE -ne 0) { throw 'LibertyCore build failed.' }
 & (Join-Path $PSScriptRoot 'verify.ps1') -GameDirectory $game | Select-String -Pattern '^(FAIL|RESULT)'
 if ($LASTEXITCODE -ne 0) { throw 'Phase 2 offline verification failed.' }
 
@@ -50,7 +52,8 @@ function Stage-File([string] $source, [string] $relativePath, [string] $policy) 
 
 $entries = @()
 Stage-File (Join-Path $repoRoot 'src\LibertyFramework\bin\Release\LibertyFramework.net.dll') 'scripts\LibertyFramework.net.dll' 'replace'
-foreach ($name in @('gunplay.json', 'combat_effects.json', 'weapon-catalog.json', 'atmosphere.json')) {
+Stage-File (Join-Path $repoRoot 'native\LibertyCore\bin\LibertyCore.dll') 'scripts\LibertyFramework\bin\LibertyCore.dll' 'replace'
+foreach ($name in @('gunplay.json', 'combat_effects.json', 'weapon-catalog.json', 'atmosphere.json', 'engine.json')) {
     Stage-File (Join-Path $repoRoot "config\$name") "scripts\LibertyFramework\config\$name" 'replace'
 }
 Stage-File (Join-Path $repoRoot 'config\arsenal.json') 'scripts\LibertyFramework\config\arsenal.json' 'merge-defaults'

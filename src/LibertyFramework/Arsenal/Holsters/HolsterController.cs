@@ -13,7 +13,8 @@ using LibertyFramework.GameApi;
 
 namespace LibertyFramework.Arsenal.Holsters
 {
-    public sealed class HolsterController : Script
+    [LibertyFramework.Engine.Module("holsters", Order = 40)]
+    public sealed class HolsterController : LibertyFramework.Engine.Module
     {
         private readonly Dictionary<BodySlot, GTA.Object> props = new Dictionary<BodySlot, GTA.Object>();
         private readonly Dictionary<BodySlot, int> shownIds = new Dictionary<BodySlot, int>();

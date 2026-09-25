@@ -19,3 +19,6 @@ obj/
 staging/
 
 tools/mood/bin/
+
+tools/toolchains.local.json
+native/**/bin/

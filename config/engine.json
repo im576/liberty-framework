@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "coreEnabled": true,
+  "pedRadiusMeters": 120,
+  "coreSpotCheckFrames": 300,
+  "coreSpotCheckToleranceMeters": 0.05,
+  "disabledModules": [],
+  "loadModAssemblies": false
+}

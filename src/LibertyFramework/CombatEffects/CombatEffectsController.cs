@@ -19,7 +19,8 @@ namespace LibertyFramework.CombatEffects
     // drips for a while, and region reactions. A killing hit to a limb severs it at the joint (with an arterial
     // spurt and a thrown limb); a killing head hit decapitates. The optional external blood mode leaves ordinary
     // hit/wound visuals to a separate renderer while preserving the cut and its stock stump particle effects.
-    public sealed class CombatEffectsController : Script
+    [LibertyFramework.Engine.Module("combat", Order = 20)]
+    public sealed class CombatEffectsController : LibertyFramework.Engine.Module
     {
         private sealed class PendingCut
         {

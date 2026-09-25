@@ -27,7 +27,8 @@ namespace LibertyFramework.Gunplay
     //   -> recoil step -> aim-camera write -> reticle hide / crosshair draw.
     // Only registered test weapons (config weapons 58+) get spread/recoil; free aim and the
     // crosshair apply universally while their toggles are on. Every engine write is undone on unload.
-    public sealed class GunplayController : Script
+    [LibertyFramework.Engine.Module("gunplay", Order = 10)]
+    public sealed class GunplayController : LibertyFramework.Engine.Module
     {
         private const int ConfigPollMilliseconds = 1000;
         private const int StateLogMilliseconds = 5000;

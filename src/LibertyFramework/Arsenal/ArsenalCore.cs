@@ -17,7 +17,8 @@ using LibertyFramework.Weapons.Logic;
 namespace LibertyFramework.Arsenal
 {
     // All game API access stays on Script ticks, including DevTools actions.
-    public sealed class ArsenalCore : Script, ICarriedWeaponsSource
+    [LibertyFramework.Engine.Module("arsenal", Order = 30)]
+    public sealed class ArsenalCore : LibertyFramework.Engine.Module, ICarriedWeaponsSource
     {
         internal static bool StorageOpen { get; private set; }
         private ArsenalConfig config;

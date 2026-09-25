@@ -20,6 +20,7 @@ namespace LibertyFramework.Verify
                 AddressChecks.Run(args[0], check);
                 Console.WriteLine("== Native names used by the DLL");
                 NativeChecks.Run(args[0], args[1], check);
+                EngineChecks.Run(args[0], args[1], check);
                 Console.WriteLine("== Gunplay logic and configuration");
                 LogicChecks.Run(args[1], check);
                 Console.WriteLine("== Arsenal core (T-020)");

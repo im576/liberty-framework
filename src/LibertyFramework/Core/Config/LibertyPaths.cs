@@ -31,5 +31,9 @@ namespace LibertyFramework.Core.Config
         internal static string ArsenalState(string episode) { return Path.Combine(StateDirectory, "arsenal_" + episode + ".json"); }
         // Holsters (T-021): per-slot/per-category prop offsets.
         internal static string HolstersConfig { get { return Path.Combine(ConfigDirectory, "holsters.json"); } }
+        // Engine (ADR-0006): engine settings, optional mod assemblies, and the entity journal for reload cleanup.
+        internal static string EngineConfig { get { return Path.Combine(ConfigDirectory, "engine.json"); } }
+        internal static string ModsDirectory { get { return Path.Combine(Root, "mods"); } }
+        internal static string EntityJournal { get { return Path.Combine(StateDirectory, "engine_entities.json"); } }
     }
 }

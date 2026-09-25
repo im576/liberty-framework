@@ -1,0 +1,98 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using LibertyFramework.Core.Config;
+using LibertyFramework.Core.Logging;
+
+namespace LibertyFramework.Engine.Services
+{
+    // Named commands any module can register. Reached from the ScriptHookDotNet console ("lf <command> ...") and from
+    // the file channel scripts\LibertyFramework\autopilot\inbox\*.cmd (one command per line), which the autopilot uses:
+    // replies go to autopilot\outbox\<name>.out and every command is logged. Commands run on the engine thread.
+    public sealed class CommandRegistry
+    {
+        private sealed class Entry
+        {
+            internal Module Owner;
+            internal string Usage;
+            internal Func<string[], string> Handler;
+        }
+
+        private readonly Dictionary<string, Entry> commands = new Dictionary<string, Entry>(StringComparer.OrdinalIgnoreCase);
+        private int lastPollMs;
+        private const int PollIntervalMs = 250;
+
+        public static string Inbox { get { return Path.Combine(LibertyPaths.Root, Path.Combine("autopilot", "inbox")); } }
+        public static string Outbox { get { return Path.Combine(LibertyPaths.Root, Path.Combine("autopilot", "outbox")); } }
+
+        // owner null = engine command. Handler gets the words after the command name and returns the reply.
+        public void Register(Module owner, string name, string usage, Func<string[], string> handler)
+        {
+            Entry entry = new Entry();
+            entry.Owner = owner; entry.Usage = usage; entry.Handler = handler;
+            commands[name] = entry;
+        }
+
+        internal void RemoveOwner(Module owner)
+        {
+            foreach (string name in commands.Where(pair => pair.Value.Owner == owner).Select(pair => pair.Key).ToList()) { commands.Remove(name); }
+        }
+
+        public IEnumerable<string> Names { get { return commands.Keys.OrderBy(k => k); } }
+
+        public string Execute(string line, string source)
+        {
+            string[] words = (line ?? "").Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+            if (words.Length == 0) { return "empty command"; }
+            if (words[0].Equals("help", StringComparison.OrdinalIgnoreCase))
+            {
+                return string.Join("; ", commands.OrderBy(p => p.Key).Select(p => p.Key + ": " + p.Value.Usage).ToArray());
+            }
+            Entry entry;
+            string reply;
+            if (!commands.TryGetValue(words[0], out entry)) { reply = "unknown command " + words[0]; }
+            else if (entry.Owner != null && !entry.Owner.Running) { reply = "module " + entry.Owner.Id + " is not running"; }
+            else
+            {
+                try { reply = entry.Handler(words.Skip(1).ToArray()) ?? "ok"; }
+                catch (Exception error)
+                {
+                    reply = "error " + error.Message;
+                    if (entry.Owner != null) { LibertyEngine.Current.Fail(entry.Owner, error); }
+                }
+            }
+            RuntimeLog.Info("command source=" + source + " line=\"" + line + "\" reply=\"" + reply + "\"");
+            return reply;
+        }
+
+        internal void PumpFileChannel()
+        {
+            int now = Environment.TickCount;
+            if (unchecked(now - lastPollMs) < PollIntervalMs) { return; }
+            lastPollMs = now;
+            if (!Directory.Exists(Inbox)) { return; }
+            string[] files;
+            try { files = Directory.GetFiles(Inbox, "*.cmd"); }
+            catch (Exception error) { RuntimeLog.Error("command_inbox_failed error=" + error.Message); return; }
+            if (files.Length == 0) { return; }
+            Array.Sort(files, StringComparer.Ordinal);
+            string file = files[0];
+            try
+            {
+                string[] lines = File.ReadAllLines(file);
+                File.Delete(file);
+                StringBuilder replies = new StringBuilder();
+                foreach (string line in lines)
+                {
+                    if (line.Trim().Length == 0 || line.TrimStart().StartsWith("#")) { continue; }
+                    replies.AppendLine(line + " => " + Execute(line, "file:" + Path.GetFileName(file)));
+                }
+                Directory.CreateDirectory(Outbox);
+                File.WriteAllText(Path.Combine(Outbox, Path.GetFileNameWithoutExtension(file) + ".out"), replies.ToString());
+            }
+            catch (Exception error) { RuntimeLog.Error("command_file_failed file=" + Path.GetFileName(file) + " error=" + error.Message); }
+        }
+    }
+}
