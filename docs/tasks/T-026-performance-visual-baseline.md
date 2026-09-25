@@ -2,6 +2,23 @@
 
 Status: **NEEDS-PLAYTEST**
 
+## Memory-check pass (2026-09-25, Claude, after owner run 09:01-09:05)
+
+**Evidence from the owner's run:**
+
+- **Scripts run on separate threads.** gunplay is thread 11, combat 9, arsenal 7, holsters 8, devtools 10.
+- **Native calls are not the bottleneck.** One script native call costs 150-166 us (`native_cost`), and `cam.aim_key`, a native, averaged 0.01 ms.
+- **Memory checks are.** `cam.handle` and `cam.find_active` still cost about 5 ms each while doing only memory reads. The cause is `LiveMemory`'s `VirtualQuery` checks, which take the process address-space lock and wait while DXVK and the streamer allocate.
+- **The gore script scales with the fight.** `tick.combat` rose from 0.35 ms to 18-62 ms per tick as severed corpses accumulated, and frame p50 went from 28-30 ms to 84-92 ms. Early frames were already better than the previous run's 60-92 ms.
+
+**Changes:**
+
+- **`LiveMemory` fast paths.** Reads inside GTAIV.exe's non-executable sections skip `VirtualQuery`. So do ranges registered with `Trust()` after one full check: the camera and ped rage pools (header, object array, flag array), which are allocated once. Heap objects (skeletons, fragInsts) are still checked on every access.
+- **Dismemberment upkeep.** With the engine collapse installed, upkeep runs every `dismemberRefreshMilliseconds` (150 ms) once all records are older than 1 s.
+- **Finer combat timings.** New `combat.dismember`, `combat.pending`, `combat.blood` and `combat.sample` sections in `performance_scripts`.
+
+**Open:** one `dismember_skip cut_bone_unresolved part=right_leg_knee tag=0x1A8` (the knee matrix did not match uniquely on that model).
+
 ## Script cost pass (2026-09-25, Claude)
 
 **Findings from the logs and WER archive:**

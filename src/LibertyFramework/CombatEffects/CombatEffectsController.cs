@@ -115,12 +115,18 @@ namespace LibertyFramework.CombatEffects
                     {
                         Func<object, bool> throwLimb = config.SeveredLimbEnabled ?
                             new Func<object, bool>(record => ThrowLimbSafely(record, now)) : null;
+                        long dismemberStart = System.Diagnostics.Stopwatch.GetTimestamp();
                         dismember.Update(config, now, throwLimb, (limb, bone) => OnLimbLanded(limb, bone, now));
+                        LibertyFramework.Core.Performance.Logic.CostMeter.Add("combat.dismember", dismemberStart);
                     }
                     catch (Exception error) { DisableDismemberment(error); }
                 }
+                long sectionStart = System.Diagnostics.Stopwatch.GetTimestamp();
                 ResolvePending(now);
+                LibertyFramework.Core.Performance.Logic.CostMeter.Add("combat.pending", sectionStart);
+                sectionStart = System.Diagnostics.Stopwatch.GetTimestamp();
                 blood.Update(now);
+                LibertyFramework.Core.Performance.Logic.CostMeter.Add("combat.blood", sectionStart);
                 RunGoreTest(shooter, now);
                 // T-026: full-rate damage sampling only while the player is shooting; a slow scan keeps health baselines.
                 if (now - lastSampleMilliseconds < CurrentSampleInterval()) return;
@@ -128,7 +134,9 @@ namespace LibertyFramework.CombatEffects
                 if (shooter.isDead || !Natives.IsPlayerPlaying(player) || Natives.IsScreenFadedOut()) { tracked.Clear(); return; }
                 GTA.value.Weapon weapon = shooter.Weapons.Current;
                 if (!EligibleWeapon(weapon)) return;
+                long sampleStart = System.Diagnostics.Stopwatch.GetTimestamp();
                 SampleDamage(shooter, weapon, now);
+                LibertyFramework.Core.Performance.Logic.CostMeter.Add("combat.sample", sampleStart);
             }
             catch (Exception error)
             {

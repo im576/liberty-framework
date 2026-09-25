@@ -45,6 +45,7 @@ namespace LibertyFramework.CombatEffects
         private readonly List<Collapse> records = new List<Collapse>();
         private bool tableDirty;
         private bool variationFailureLogged;
+        private long lastUpdateMilliseconds = long.MinValue / 2;
 
         internal Dismemberment(PedSkeleton skeleton, SkeletonCollapseEngine engine, float collapseScale)
         {
@@ -187,6 +188,15 @@ namespace LibertyFramework.CombatEffects
         // Per-tick: refresh engine pointers, apply the fallback collapse, throw limbs, expire records, log evidence.
         internal void Update(CombatEffectsConfig config, long now, Func<object, bool> onThrowReady, Action<Ped, int> onLanding)
         {
+            // T-026: with the engine collapse installed, the per-tick fallback write is redundant; once every record is
+            // past its first second (clone shown, limb thrown), upkeep runs every dismemberRefreshMilliseconds.
+            if (EngineActive && config.DismemberRefreshMilliseconds > 0 && now - lastUpdateMilliseconds < config.DismemberRefreshMilliseconds)
+            {
+                bool young = false;
+                foreach (Collapse record in records) { if (now - record.CreatedMilliseconds < 1000) { young = true; break; } }
+                if (!young) { return; }
+            }
+            lastUpdateMilliseconds = now;
             List<Collapse> readyToThrow = new List<Collapse>();
             for (int i = records.Count - 1; i >= 0; i--)
             {

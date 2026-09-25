@@ -1,5 +1,11 @@
 # Phase 2 integrated patch notes
 
+## Performance pass 2 (Claude), 2026-09-25
+
+- **Your last log:** engine calls were fine (0.15 ms each). The slow part was our own memory-safety checks, which wait on a Windows lock while the game and DXVK allocate memory. Those checks now skip memory that never moves (the game's data and its NPC and camera tables).
+- **The gore script no longer slows down as bodies pile up:** once cuts settle, their upkeep runs every 0.15 s instead of every frame.
+- **Timings:** the log now also breaks the gore script's cost into parts.
+
 ## Performance pass (Claude), 2026-09-25
 
 - **Less framework load (Vulkan and Violent Liberty stay):**

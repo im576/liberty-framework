@@ -105,6 +105,16 @@ namespace LibertyFramework.GameApi
             return copy != 0 && memory.IsReadable(copy, 0x18) ? copy : 0;
         }
 
+        // T-026: the rage pool (header, object array, flag array) is allocated once and never freed; after one full
+        // check its ranges skip VirtualQuery (see LiveMemory.Trust).
+        private uint trustedPool;
+
+        private void TrustPool(uint pool, uint objects, uint flags, int size, int itemSize)
+        {
+            if (pool == trustedPool || size <= 0 || itemSize <= 0 || size > 0x10000 || itemSize > 0x10000) { return; }
+            if (memory.Trust(pool, 16, false) && memory.Trust(objects, size * itemSize, true) && memory.Trust(flags, size, false)) { trustedPool = pool; }
+        }
+
         // rage pool: objects +0, flags +4, size +8, item size +12; handle = index << 8 | generation.
         internal uint PedFromHandle(int handle)
         {
@@ -115,6 +125,7 @@ namespace LibertyFramework.GameApi
             uint flags = memory.ReadUInt32(pool + 4);
             int size = memory.ReadInt32(pool + 8);
             int itemSize = memory.ReadInt32(pool + 12);
+            TrustPool(pool, objects, flags, size, itemSize);
             int index = handle >> 8;
             if (index < 0 || index >= size || itemSize <= 0 || !memory.IsReadable(flags + (uint)index, 1)) { return 0; }
             byte flag = memory.ReadByte(flags + (uint)index);
