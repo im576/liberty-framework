@@ -106,7 +106,7 @@ namespace LibertyFramework.CombatEffects
                 long now = clock.ElapsedMilliseconds;
                 Player player = Player;
                 Ped shooter = player == null ? null : player.Character;
-                if (shooter == null || !shooter.Exists()) return;
+                if (shooter == null || !Natives.PedExists(shooter)) return;
                 if (!engineChecked) { EnsureEngine(shooter); }
                 if (dismember != null)
                 {
@@ -131,7 +131,7 @@ namespace LibertyFramework.CombatEffects
                 // T-026: full-rate damage sampling only while the player is shooting; a slow scan keeps health baselines.
                 if (now - lastSampleMilliseconds < CurrentSampleInterval()) return;
                 lastSampleMilliseconds = now;
-                if (shooter.isDead || !Natives.IsPlayerPlaying(player) || Natives.IsScreenFadedOut()) { tracked.Clear(); return; }
+                if (Natives.PedDead(shooter) || !Natives.IsPlayerPlaying(player) || Natives.IsScreenFadedOut()) { tracked.Clear(); return; }
                 GTA.value.Weapon weapon = shooter.Weapons.Current;
                 if (!EligibleWeapon(weapon)) return;
                 long sampleStart = System.Diagnostics.Stopwatch.GetTimestamp();
@@ -180,14 +180,14 @@ namespace LibertyFramework.CombatEffects
             foreach (Ped target in World.GetPeds(shooter.Position, config.ScanRadiusMeters))
             {
                 if (count >= config.MaximumTrackedPeds) break;
-                if (target == null || target == shooter || !target.Exists()) continue;
+                if (target == null || target == shooter || !Natives.PedExists(target)) continue;
                 if (dismember != null && dismember.IsTracked(target) && !tracked.ContainsKey(target)) continue; // our own limb clones
                 if (!config.IncludeMissionPeds && CombatEffectsNatives.IsMissionPed(target)) continue;
                 ++count;
                 seen.Add(target);
                 // T-026: one health read per ped per scan; vehicle, attribution and death checks (each a native call)
                 // only when health dropped or a recent hit is waiting for its death.
-                int health = target.Health;
+                int health = Natives.PedHealth(target);
                 PedInjuryState state;
                 if (!tracked.TryGetValue(target, out state))
                 {
@@ -198,9 +198,9 @@ namespace LibertyFramework.CombatEffects
                 }
                 int damage = state.LastHealth - health;
                 state.LastHealth = health;
-                if (damage > 0 && !target.isInVehicle() && target.HasBeenDamagedBy(shooter)) OnDamage(shooter, weapon, target, state, damage, now);
+                if (damage > 0 && !Natives.IsInAnyCar(target) && Natives.DamagedBy(target, shooter)) OnDamage(shooter, weapon, target, state, damage, now);
                 else if (!state.DeathBurst && state.LastAttributedHitMilliseconds > 0 &&
-                    now - state.LastAttributedHitMilliseconds <= config.PendingDeathWindowMilliseconds && (health <= 0 || target.isDead))
+                    now - state.LastAttributedHitMilliseconds <= config.PendingDeathWindowMilliseconds && (health <= 0 || Natives.PedDead(target)))
                     DeathBurst(target, state, state.LastBone, config.EffectScale, now);
             }
             foreach (Ped ped in new List<Ped>(tracked.Keys)) if (!seen.Contains(ped)) tracked.Remove(ped);
@@ -327,10 +327,10 @@ namespace LibertyFramework.CombatEffects
             for (int i = pending.Count - 1; i >= 0; i--)
             {
                 PendingCut cut = pending[i];
-                if (cut.Ped == null || !cut.Ped.Exists() || (cut.DeathSeenAt == 0 && now > cut.Deadline)) { pending.RemoveAt(i); continue; }
+                if (cut.Ped == null || !Natives.PedExists(cut.Ped) || (cut.DeathSeenAt == 0 && now > cut.Deadline)) { pending.RemoveAt(i); continue; }
                 if (cut.DeathSeenAt == 0)
                 {
-                    if (!cut.Ped.isDead && cut.Ped.Health > 0) continue;
+                    if (!Natives.PedDead(cut.Ped) && Natives.PedHealth(cut.Ped) > 0) continue;
                     cut.DeathSeenAt = now;
                 }
                 // Let the death ragdoll start from the intact pose before any bone is collapsed.
@@ -353,6 +353,23 @@ namespace LibertyFramework.CombatEffects
                     dismember.Sever(cut.Ped, cut.Plan, cut.Push, now, config.SeveredCorpseLifetimeMilliseconds);
             }
             catch (Exception error) { RuntimeLog.Error("dismember_sever_failed part=" + cut.Plan.Name + " error=" + error.Message); }
+            if (!collapsed && !head && dismember != null)
+            {
+                LimbCutPlan upper = LimbCutPlan.Upper(cut.Plan);
+                if (upper != null)
+                {
+                    try
+                    {
+                        if (dismember.Sever(cut.Ped, upper, cut.Push, now, config.SeveredCorpseLifetimeMilliseconds))
+                        {
+                            RuntimeLog.Info("combat_sever_fallback from=" + cut.Plan.Name + " to=" + upper.Name);
+                            cut.Plan = upper;
+                            collapsed = true;
+                        }
+                    }
+                    catch (Exception error) { RuntimeLog.Error("dismember_sever_failed part=" + upper.Name + " error=" + error.Message); }
+                }
+            }
             if (head && !collapsed) { CombatEffectsNatives.RemoveHead(cut.Ped); } // stock fallback
             if (head && state != null) state.HeadRemoved = true;
             if (!head && !collapsed) { RuntimeLog.Error("combat_sever_skipped part=" + cut.Plan.Name + " collapse_failed"); return; }

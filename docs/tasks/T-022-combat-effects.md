@@ -1,4 +1,18 @@
-# T-022 — Combat effects detection and safe prototype
+# T-022
+> **Update 2026-09-25 (Claude, limb rework after playtest) â€” NEEDS-PLAYTEST.**
+>
+> **Owner-reported bugs:** a leg "falls up" and floats; an arm shows as the whole NPC, then vanishes. Research ([research/Dismemberment.md](../research/Dismemberment.md)) confirms our approach matches the leading GTA V mod: bone collapse through a hook, plus a cloned ped for the severed part. The missing piece is stump caps.
+>
+> **Fixes:**
+> - The clone spawns 0.7 m beside the corpse at ground height.
+> - It stays invisible until the engine confirms the collapse on its current skeleton for 3 ticks.
+> - Skeleton moves are detected every tick with `CPed::BoneMatrix`. A moved clone is hidden and reconfirmed.
+> - After 1.5 s, a limb whose joint is more than 0.45 m above ground is removed.
+> - An unresolved knee or elbow cut falls back to the hip or shoulder.
+>
+> **Config:** `severedLimbSpawnOffsetMeters`, `limbConfirmTicks`, `limbSettleMilliseconds`, `limbFloatingHeightMeters`. `dismemberRefreshMilliseconds` is now 0, because per-tick detection is cheap.
+>
+> **Log lines:** `dismember_limb_visible ... confirm_ticks=`, `dismember_limb_rehidden`/`reshown`, `dismember_limb_floating_removed`, `combat_sever_fallback`. — Combat effects detection and safe prototype
 
 > **Update 2026-09-24 (Codex, bleed and limb presentation pass) — NEEDS-PLAYTEST.** Owner confirmed Violent Liberty enlarged stains and added streaks, but ordinary bodies did not visibly leak and thrown limbs were inconsistent. The fresh log showed `START_PTFX_ON_PED_BONE` returned zero for all tested looping blood effects, while one-shot blood played. New bounded one-shot leaks follow hit/stump bones and fade/slow over time; fatal wounds last longer. The companion INI now selects high head/neck pressure, long fatal duration and 75–100% shotgun body-bleed chance. A thrown-limb clone remains mission-owned until timed cleanup, failed spawns retry up to the configured limit, capacity replaces the oldest clone, and one blood effect plays near landing. Duplicate same-part cuts are suppressed. Build: 112 sources, zero errors/warnings; offline verifier 339/339. Updated install/rollback fixture restored bytes exactly; real install verified all 7 files. Backup `scripts/LibertyFramework/backups/violent-liberty-20260924-231558`. Exact owner checks: [section 7e](../testing/PHASE2_PLAYTEST.md#7e-bleed-and-limb-presentation-pass). No in-game result for this pass yet; cut cap geometry and exact impact-position visuals remain open.
 

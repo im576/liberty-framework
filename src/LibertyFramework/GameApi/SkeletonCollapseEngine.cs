@@ -240,6 +240,20 @@ namespace LibertyFramework.GameApi
             RuntimeLog.Info("skeleton_collapse_engine_installed patches=" + PatchCount);
         }
 
+        // Engine collapse hits recorded for a matrix array in the live table (0 when absent). Grows every frame the
+        // engine re-applied our collapse after a pose update - proof the entry is live on the ped's current skeleton.
+        internal int HitsFor(uint matrices)
+        {
+            int table = Marshal.ReadInt32(block, TableOffset);
+            int count = Marshal.ReadInt32(new IntPtr(table));
+            for (int i = 0; i < count && i < MaximumEntries; i++)
+            {
+                int at = table + EntriesOffset + i * EntrySize;
+                if ((uint)Marshal.ReadInt32(new IntPtr(at)) == matrices) { return Marshal.ReadInt32(new IntPtr(at + 0x10)); }
+            }
+            return 0;
+        }
+
         // Replaces the table the native routine reads (double-buffered: the engine may still be reading the old one).
         internal void Publish(IList<Entry> entries)
         {

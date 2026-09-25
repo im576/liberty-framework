@@ -33,6 +33,7 @@ $sources = @(
     (Join-Path $repoRoot 'tools\vehicles\VehicleExtrasScanner.cs')
     (Join-Path $src 'CombatEffects\CombatEffectsConfig.cs')
     (Join-Path $src 'GameApi\SkeletonCollapseEngine.cs')
+    (Join-Path $src 'GameApi\DirectNatives.cs')
     # Any folder named Logic holds ScriptHookDotNet-free code that the verifier can test (T-020/T-021 onward).
     (Get-ChildItem -LiteralPath $src -Recurse -Directory -Filter 'Logic' | ForEach-Object { (Get-ChildItem -LiteralPath $_.FullName -Filter '*.cs').FullName })
 )

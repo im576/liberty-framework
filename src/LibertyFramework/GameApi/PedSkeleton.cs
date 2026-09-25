@@ -134,6 +134,24 @@ namespace LibertyFramework.GameApi
             return memory.IsReadable(ped, 0x400) ? ped : 0;
         }
 
+        // T-026: cheap change detector - the engine's own CPed::BoneMatrix(ped, 0) (no VirtualQuery). A different value
+        // than a record's matrices means the ped's skeleton moved (ragdoll start/end) and needs a full Refresh.
+        internal uint MatrixPointerFast(uint ped)
+        {
+            return ped == 0 ? 0 : (uint)pointer(new IntPtr((int)ped), 0).ToInt32();
+        }
+
+        // World position of a bone (by tag) through the engine's CPed::CopyBoneMatrix, as GET_PED_BONE_POSITION does
+        // (its worker 0xBA75B0 uses the copied matrix's translation as the world position).
+        internal float[] WorldPosition(uint ped, int boneTag)
+        {
+            if (ped == 0) { return null; }
+            copy(new IntPtr((int)ped), scratch, boneTag);
+            float[] matrix = new float[16];
+            Marshal.Copy(scratch, matrix, 0, 16);
+            return new float[] { matrix[12], matrix[13], matrix[14] };
+        }
+
         // Address of objectMatrices[0] or 0 (no skeleton / not an array).
         internal uint MatrixBase(uint ped)
         {

@@ -34,6 +34,9 @@ namespace LibertyFramework.CombatEffects
             internal int CutTag;
             internal int HitsAtCreate;
             internal bool Pinned;
+            internal int ConfirmTicks;
+            internal bool Hidden, Settled;
+            internal long ShownMilliseconds;
             internal int ThrowAttempts;
             internal long NextThrowMilliseconds;
             internal bool LandingShown;
@@ -45,7 +48,6 @@ namespace LibertyFramework.CombatEffects
         private readonly List<Collapse> records = new List<Collapse>();
         private bool tableDirty;
         private bool variationFailureLogged;
-        private long lastUpdateMilliseconds = long.MinValue / 2;
 
         internal Dismemberment(PedSkeleton skeleton, SkeletonCollapseEngine engine, float collapseScale)
         {
@@ -193,23 +195,20 @@ namespace LibertyFramework.CombatEffects
             return entry;
         }
 
-        // Per-tick: refresh engine pointers, apply the fallback collapse, throw limbs, expire records, log evidence.
+        // Per-tick upkeep (T-022 rework after playtest: floating legs, limbs flashing the whole NPC).
+        // - Skeleton moves are detected every tick with the engine's own CPed::BoneMatrix (no VirtualQuery); only a
+        //   changed pointer triggers the full Refresh and a table republish.
+        // - A thrown-limb clone stays invisible until the engine collapse is confirmed live on its current skeleton for
+        //   limbConfirmTicks ticks; if its skeleton moves later (ragdoll start/end) it is hidden again until reconfirmed.
+        // - A limb still resting above the ground (propped on its own invisible body) after limbSettleMilliseconds is
+        //   removed instead of floating.
         internal void Update(CombatEffectsConfig config, long now, Func<object, bool> onThrowReady, Action<Ped, int> onLanding)
         {
-            // T-026: with the engine collapse installed, the per-tick fallback write is redundant; once every record is
-            // past its first second (clone shown, limb thrown), upkeep runs every dismemberRefreshMilliseconds.
-            if (EngineActive && config.DismemberRefreshMilliseconds > 0 && now - lastUpdateMilliseconds < config.DismemberRefreshMilliseconds)
-            {
-                bool young = false;
-                foreach (Collapse record in records) { if (now - record.CreatedMilliseconds < 1000) { young = true; break; } }
-                if (!young) { return; }
-            }
-            lastUpdateMilliseconds = now;
             List<Collapse> readyToThrow = new List<Collapse>();
             for (int i = records.Count - 1; i >= 0; i--)
             {
                 Collapse record = records[i];
-                bool exists = record.Ped != null && record.Ped.Exists();
+                bool exists = record.Ped != null && Natives.PedExists(record.Ped);
                 if (!exists || now - record.CreatedMilliseconds > record.LifetimeMilliseconds)
                 {
                     if (!exists && !record.Clone && now - record.CreatedMilliseconds < 5000)
@@ -223,37 +222,21 @@ namespace LibertyFramework.CombatEffects
                     continue;
                 }
                 uint pointer = skeleton.PedFromHandle(record.Ped.GetHashCode());
-                if (pointer == 0 || !Refresh(record, pointer)) { continue; }
+                if (pointer == 0) { continue; }
+                uint current = skeleton.MatrixPointerFast(pointer);
+                if (current != record.Matrices || record.Ticks == 0)
+                {
+                    if (!Refresh(record, pointer)) { continue; }
+                    tableDirty = true;
+                    if (record.Clone)
+                    {
+                        record.ConfirmTicks = 0;
+                        if (record.Shown) { record.Ped.Visible = false; record.Hidden = true; RuntimeLog.Info("dismember_limb_rehidden part=" + record.Name); }
+                    }
+                }
                 Apply(record);
                 record.Ticks++;
-                if (record.Clone && !record.Shown && record.Ticks >= 2)
-                {
-                    record.Ped.Visible = true;
-                    record.Shown = true;
-                    try
-                    {
-                        Function.Call("APPLY_FORCE_TO_PED", record.Ped, 3, record.Push.X * config.SeveredLimbForce, record.Push.Y * config.SeveredLimbForce,
-                            config.SeveredLimbForce * config.SeveredLimbVerticalForceFraction, 0.0f, 0.0f, 0.0f, 0, 1, 1, 1);
-                    }
-                    catch (Exception error) { RuntimeLog.Error("dismember_limb_force_failed error=" + error.Message); }
-                    RuntimeLog.Info("dismember_limb_visible part=" + record.Name);
-                }
-                if (record.Clone && record.Shown && !record.LandingShown && onLanding != null &&
-                    now - record.CreatedMilliseconds >= config.LimbLandingMinimumMilliseconds)
-                {
-                    try
-                    {
-                        Vector3 position = record.Ped.Position;
-                        float height = position.Z - Natives.GroundZ(position.X, position.Y, position.Z);
-                        if (Math.Abs(height) <= config.LimbLandingMaximumHeightMeters)
-                        {
-                            record.LandingShown = true;
-                            onLanding(record.Ped, record.StumpTag);
-                            RuntimeLog.Info("dismember_limb_landed part=" + record.Name + " height=" + height.ToString("0.00"));
-                        }
-                    }
-                    catch (Exception error) { record.LandingShown = true; RuntimeLog.Error("dismember_landing_failed error=" + error.Message); }
-                }
+                if (record.Clone) { UpdateClone(config, record, pointer, now, onLanding); if (!records.Contains(record)) { continue; } }
                 if (!record.Clone && !record.LimbThrown && record.Ticks >= 2 && record.Name != "head" &&
                     onThrowReady != null && now >= record.NextThrowMilliseconds) readyToThrow.Add(record);
                 if (!record.EvidenceLogged && record.Ticks >= 30)
@@ -264,6 +247,7 @@ namespace LibertyFramework.CombatEffects
                         " skeleton=" + (record.Skeleton != 0) + " copy=" + (record.CopyMatrices != 0));
                 }
             }
+            if (tableDirty) { PublishTable(); }
             // Spawn only after iteration: replacing the oldest thrown limb can remove a record from this list.
             foreach (Collapse record in readyToThrow)
             {
@@ -277,7 +261,59 @@ namespace LibertyFramework.CombatEffects
                 }
                 else { record.NextThrowMilliseconds = now + config.LimbThrowRetryMilliseconds; }
             }
-            if (tableDirty) { PublishTable(); }
+        }
+
+        private void UpdateClone(CombatEffectsConfig config, Collapse record, uint pointer, long now, Action<Ped, int> onLanding)
+        {
+            // Confirmation: the engine applied our entry on this skeleton since the last publish (or, without the
+            // engine, our own per-tick write has run), for limbConfirmTicks consecutive ticks.
+            bool live = engine == null || !EngineActive || record.Skeleton == 0 || engine.HitsFor(record.Matrices) > 0;
+            record.ConfirmTicks = live ? record.ConfirmTicks + 1 : 0;
+            if (record.ConfirmTicks < Math.Max(1, config.LimbConfirmTicks)) { return; }
+            if (!record.Shown)
+            {
+                record.Shown = true;
+                record.ShownMilliseconds = now;
+                record.Ped.Visible = true;
+                try
+                {
+                    Function.Call("APPLY_FORCE_TO_PED", record.Ped, 3, record.Push.X * config.SeveredLimbForce, record.Push.Y * config.SeveredLimbForce,
+                        config.SeveredLimbForce * config.SeveredLimbVerticalForceFraction, 0.0f, 0.0f, 0.0f, 0, 1, 1, 1);
+                }
+                catch (Exception error) { RuntimeLog.Error("dismember_limb_force_failed error=" + error.Message); }
+                RuntimeLog.Info("dismember_limb_visible part=" + record.Name + " confirm_ticks=" + record.ConfirmTicks);
+                return;
+            }
+            if (record.Hidden)
+            {
+                record.Hidden = false;
+                record.Ped.Visible = true;
+                RuntimeLog.Info("dismember_limb_reshown part=" + record.Name);
+            }
+            if (record.Settled || now - record.ShownMilliseconds < config.LimbSettleMilliseconds) { return; }
+            record.Settled = true;
+            try
+            {
+                float[] joint = skeleton.WorldPosition(pointer, record.CutTag);
+                if (joint == null) { return; }
+                float height = joint[2] - Natives.GroundZ(joint[0], joint[1], joint[2] + 0.5f);
+                if (height > config.LimbFloatingHeightMeters)
+                {
+                    RuntimeLog.Info("dismember_limb_floating_removed part=" + record.Name + " height=" + height.ToString("0.00"));
+                    if (onLanding != null) { onLanding(record.Ped, record.CutTag); }
+                    record.Ped.Delete();
+                    records.Remove(record);
+                    tableDirty = true;
+                    return;
+                }
+                if (!record.LandingShown && onLanding != null)
+                {
+                    record.LandingShown = true;
+                    onLanding(record.Ped, record.CutTag);
+                }
+                RuntimeLog.Info("dismember_limb_landed part=" + record.Name + " height=" + height.ToString("0.00"));
+            }
+            catch (Exception error) { RuntimeLog.Error("dismember_limb_settle_failed error=" + error.Message); }
         }
 
         // Spawn the thrown limb for a severed corpse: same model and clothes, every bone but the limb collapsed.
@@ -308,7 +344,12 @@ namespace LibertyFramework.CombatEffects
             Ped clone = null;
             try
             {
-                clone = World.CreatePed(model, position + new Vector3(0, 0, config.SeveredLimbSpawnHeightMeters));
+                // Beside the corpse (along the shot), on the ground: an invisible clone body lying on the corpse is what
+                // held limbs up in the air in playtest.
+                Vector3 spawn = position + new Vector3(source.Push.X * config.SeveredLimbSpawnOffsetMeters, source.Push.Y * config.SeveredLimbSpawnOffsetMeters, 0);
+                float ground = Natives.GroundZ(spawn.X, spawn.Y, spawn.Z + 1.0f);
+                spawn.Z = (ground > spawn.Z - 3.0f && ground < spawn.Z + 3.0f ? ground : spawn.Z) + config.SeveredLimbSpawnHeightMeters;
+                clone = World.CreatePed(model, spawn);
                 if (clone == null || !clone.Exists()) { RuntimeLog.Error("dismember_limb_spawn_failed"); return false; }
                 clone.Visible = false;
                 if (clothes) { for (int component = 0; component < 11; component++) Function.Call("SET_CHAR_COMPONENT_VARIATION", clone, component, drawables[component], textures[component]); }

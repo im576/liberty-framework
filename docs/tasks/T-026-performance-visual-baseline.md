@@ -2,6 +2,24 @@
 
 Status: **NEEDS-PLAYTEST**
 
+## Step 2: direct natives (2026-09-25, Claude)
+
+**Evidence from the owner's run:**
+
+- `engine_thread_probe` showed `frame_advanced_during_tick=0` over 5,000+ ticks, with exactly one tick per frame: the game thread is parked while SHDN scripts tick.
+- The direct `GET_CHAR_HEALTH` handler took 0.16-0.23 us, against 32-58 us through SHDN. The values differ by a constant 100: SHDN's `Ped.Health` is the native value minus 100.
+- DXVK GPLAsync is active (`v2.6.2-1-gplasync`). Violent Liberty moved to its safe fallback path; blood still works.
+
+**Changes:**
+
+- **`DirectNatives`** (GameApi): 18 read-only natives are called through their CE handlers.
+  - Each handler and its callees (3 levels) were scanned for the current-script-thread global 0x1BB54DC, its getters 0x86D060/0x94B860, and `fs:` access; all are clean.
+  - The verifier pins each handler address.
+  - At startup (`Natives.VerifyDirect`), each one is compared with SHDN on the player and used only if it matches (`direct_natives verified=N/18`).
+  - Ped reads first confirm the handle with the engine's own `DOES_CHAR_EXIST` lookup, because some workers don't null-check.
+- **Routing:** `Natives` uses them transparently. Hot call sites in gunplay (weapon, clip, vehicle), holsters (vehicle, dead, weapon), combat sampling (exists, health, vehicle, attribution, dead) and dismemberment (exists) now go through `Natives`.
+- **Single script: deferred.** Merging the 5 SHDN scripts into one was judged low value: per-tick cost is dominated by native transport (now removed), not by thread count.
+
 ## Step 1 probe and async DXVK (2026-09-25, Claude)
 
 **Owner run with the memory fast paths:**

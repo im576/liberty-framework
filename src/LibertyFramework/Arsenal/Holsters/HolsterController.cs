@@ -87,9 +87,9 @@ namespace LibertyFramework.Arsenal.Holsters
                 Player player = Player;
                 Ped ped = player == null ? null : player.Character;
                 if (ped == null) { Clear(); return; }
-                bool inVehicle = ped.isInVehicle();
+                bool inVehicle = Natives.IsInAnyCar(ped);
                 bool onBike = inVehicle && ped.CurrentVehicle != null && ped.CurrentVehicle.Model.isBike;
-                bool visible = HolsterRules.Visible(false, !ped.isDead,
+                bool visible = HolsterRules.Visible(false, !Natives.PedDead(ped),
                     // DevTools locks player control while open; keep props visible so Holsters nudges show live.
                     Natives.IsPlayerPlaying(player) && (Natives.IsPlayerControlOn(player) || DevToolsMenu.IsOpen || ArsenalCore.StorageOpen),
                     Natives.IsScreenFadedOut(), inVehicle, onBike, config.ShowOnBikes);
@@ -97,7 +97,7 @@ namespace LibertyFramework.Arsenal.Holsters
                 ICarriedWeaponsSource source = ArsenalRegistry.CarriedWeapons;
                 if (removing && source != null && source.Revision <= removingRevision) { Clear(); return; }
                 removing = false;
-                int held = (int)ped.Weapons.CurrentType;
+                int held = Natives.CurrentWeapon(ped);
                 IList<CarriedWeapon> carried = source != null ? source.Carried : ReadInventory(ped, held);
                 if (carried == null) { Clear(); return; }
                 HashSet<BodySlot> wanted = new HashSet<BodySlot>();

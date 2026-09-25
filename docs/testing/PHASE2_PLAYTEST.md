@@ -101,3 +101,13 @@ Status: **READY FOR OWNER TEST** after the integrated package is installed. Use 
    - the `DXVK mesh path:` line from `plugins\ViolentLiberty.log`;
    - the first line of `GTAIV_d3d9.log` (it should say `v2.6.2-1-gplasync`).
 4. **If something breaks** (black screen, crash at start, missing blood), close the game and tell me; the rollback restores the previous DXVK exactly.
+
+### 10. Limb rework and direct reads
+
+1. **Normal fights.** Kill NPCs with arm and leg shots, including a few shotgun kills. Watch each limb: it should appear beside the body and lie on the ground, with no floating and no full-NPC flash. The body keeps its stump.
+2. **Gore Test.** Use DevTools > Gore Test > cut left arm / right leg on fresh NPCs.
+3. **Feel:** say whether it feels smoother than the last session.
+4. **Send these log lines:**
+   - `direct_natives verified=` (and any `direct_native_rejected`)
+   - `dismember_limb_visible`, `dismember_limb_rehidden`, `dismember_limb_floating_removed`, `dismember_limb_landed`, `combat_sever_fallback`
+   - `performance_scripts`

@@ -27,6 +27,8 @@ namespace LibertyFramework.Verify
             check.True("left upper-arm hit cuts at the shoulder, clavicle stays", shoulder != null && shoulder.CutTag == 0x4C1 &&
                 shoulder.StumpTag == 0x4C0 && Array.IndexOf(shoulder.RemovedTags, 0x4C0) < 0, shoulder == null ? "null" : shoulder.Name);
             check.True("head and torso hits never cut a limb", LimbCutPlan.ForHitBone(0x4B5) == null && LimbCutPlan.ForHitBone(0x1A1) == null, "");
+            check.True("unresolved knee/elbow cuts fall back to hip/shoulder", LimbCutPlan.Upper(LimbCutPlan.ForHitBone(0x1A8)).Name == "right_leg_hip" &&
+                LimbCutPlan.Upper(LimbCutPlan.ForHitBone(0x4C2)).Name == "left_arm_shoulder" && LimbCutPlan.Upper(LimbCutPlan.ForHitBone(0x1A7)) == null, "");
             LimbCutPlan head = LimbCutPlan.Head();
             check.True("decapitation cuts at the neck, spine stays", head.CutTag == 0x4B4 && head.StumpTag == 0x36A1 && LimbCutPlan.IsHeadBone(0x4B5), "");
 

@@ -87,6 +87,7 @@ namespace LibertyFramework.Gunplay
         // T-026 camera caching (gunplay.json "performance").
         private int cachedGameCamera;
         private bool nativeCostLogged;
+        private bool directVerified;
         private EngineThreadProbe threadProbe;
         private bool gameCameraValid;
         private double lastGameCameraReadMilliseconds = double.NegativeInfinity;
@@ -215,6 +216,12 @@ namespace LibertyFramework.Gunplay
                 }
                 if (!initialized) { Initialize(config); }
                 if (!nativeCostLogged) { nativeCostLogged = true; LogNativeCost(player); }
+                if (!directVerified)
+                {
+                    directVerified = true;
+                    try { Natives.VerifyDirect(player, player.Character, Natives.GameCamHandle()); RuntimeLog.Info(DirectNatives.Summary()); }
+                    catch (Exception error) { RuntimeLog.Error("direct_natives_verify_failed error=" + error.Message); }
+                }
                 playerIndex = Natives.PlayerIndex();
                 playerPed = playerMemory != null ? playerMemory.PedPointer(playerIndex) : 0;
                 controller.Poll();
@@ -233,7 +240,7 @@ namespace LibertyFramework.Gunplay
                     freeAim = null;
                 }
                 Ped ped = player.Character;
-                int weaponId = (int)ped.Weapons.CurrentType;
+                int weaponId = Natives.CurrentWeapon(ped);
                 if (weaponId != lastWeaponId)
                 {
                     OnWeaponChanged(weaponId, config);
@@ -399,6 +406,9 @@ namespace LibertyFramework.Gunplay
                 memory = new LiveMemory();
                 CodeScanner scanner = new CodeScanner(memory);
                 addresses = GameAddresses.Resolve(scanner);
+                // T-026 step 2: map the direct-native handlers now; they are verified on the first playing tick.
+                try { DirectNatives.Initialize(scanner); }
+                catch (Exception error) { RuntimeLog.Error("direct_natives_unavailable error=" + error.Message); }
             if (addresses.FrameCounterGlobal != 0)
             {
                 try { threadProbe = new EngineThreadProbe(addresses.FrameCounterGlobal, addresses.GetCharHealthHandler); }
@@ -495,7 +505,7 @@ namespace LibertyFramework.Gunplay
         private void CycleWhileAiming(Ped ped, GunplayConfig config)
         {
             if (!config.SwitchWhileAiming.Enabled || LibertyFramework.DevTools.DevToolsMenu.IsOpen ||
-                !Game.isGameKeyPressed(GameKey.Aim) || ped.isInVehicle()) { return; }
+                !Game.isGameKeyPressed(GameKey.Aim) || Natives.IsInAnyCar(ped)) { return; }
             int direction = controller.WasPressed(config.SwitchWhileAiming.NextButton == "DPadRight" ? ControllerInput.DPadRight : ControllerInput.DPadLeft) ? 1 :
                 controller.WasPressed(config.SwitchWhileAiming.PreviousButton == "DPadRight" ? ControllerInput.DPadRight : ControllerInput.DPadLeft) ? -1 : 0;
             if (direction == 0) { return; }
@@ -527,14 +537,21 @@ namespace LibertyFramework.Gunplay
 
         private int DetectShots(Ped ped, int weaponId)
         {
-            GTA.value.Weapon current = ped.Weapons.Current;
-            if (current == null) { lastClip = -1; return 0; }
-            int clip = current.AmmoInClip;
+            // T-026: direct clip reads (ammo/max of the current weapon) when verified; SHDN's Weapon object otherwise.
+            int clip = weaponId > 0 ? Natives.AmmoInClip(ped, weaponId) : -1;
+            int maximum = clip >= 0 ? Natives.MaxAmmoInClip(ped, weaponId) : -1;
+            if (clip < 0 || maximum < 0)
+            {
+                GTA.value.Weapon current = ped.Weapons.Current;
+                if (current == null) { lastClip = -1; return 0; }
+                clip = current.AmmoInClip;
+                maximum = current.MaxAmmoInClip;
+            }
             int shots = lastClip >= 0 && clip < lastClip ? lastClip - clip : 0;
             lastClip = clip;
             if (shots > 0) { LastShotTickCount = Environment.TickCount | 1; }
             // A clip drop larger than a magazine means a scripted ammo change, not firing.
-            return shots > 0 && shots <= Math.Max(1, current.MaxAmmoInClip) ? Math.Min(shots, 8) : 0;
+            return shots > 0 && shots <= Math.Max(1, maximum) ? Math.Min(shots, 8) : 0;
         }
 
         // Screen pixels per unit tangent at the screen centre, measured by projecting two points through the

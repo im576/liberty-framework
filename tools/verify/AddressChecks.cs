@@ -96,6 +96,20 @@ namespace LibertyFramework.Verify
             // T-026 (Capstone: GET_FRAME_COUNT 0xB8B060 -> 0xB8B120 "mov eax,[1173604h]; ret"; GET_CHAR_HEALTH 0xB9EE50).
             check.Equal("engine frame counter global", 0x1173604u, addresses.FrameCounterGlobal);
             check.Equal("GET_CHAR_HEALTH handler", 0xB9EE50u, addresses.GetCharHealthHandler);
+            // T-026 step 2: every direct native is registered; handlers match the Capstone thread-safety scan (all clean).
+            System.Collections.Generic.Dictionary<string, uint> scanned = new System.Collections.Generic.Dictionary<string, uint> {
+                { "IS_PLAYER_PLAYING", 0xBB2530 }, { "GET_PLAYER_ID", 0xBB1F30 }, { "IS_CHAR_DUCKING", 0xB9F750 }, { "IS_PED_IN_COVER", 0xBA0150 },
+                { "IS_CHAR_IN_ANY_CAR", 0xB9F970 }, { "IS_CHAR_IN_AIR", 0xB9F840 }, { "GET_CHAR_SPEED", 0xB9F030 }, { "IS_PAUSE_MENU_ACTIVE", 0xB8CD30 },
+                { "IS_SCREEN_FADED_OUT", 0xB86F10 }, { "IS_PLAYER_CONTROL_ON", 0xBB23F0 }, { "GET_CAM_FOV", 0xB86B30 }, { "GET_CHAR_HEALTH", 0xB9EE50 },
+                { "IS_CHAR_DEAD", 0xB9F730 }, { "DOES_CHAR_EXIST", 0xB9E9A0 }, { "GET_CURRENT_CHAR_WEAPON", 0xBD0E40 }, { "GET_AMMO_IN_CLIP", 0xBD0DF0 },
+                { "GET_MAX_AMMO_IN_CLIP", 0xBD0F30 }, { "HAS_CHAR_BEEN_DAMAGED_BY_CHAR", 0xB9F680 } };
+            foreach (System.Collections.Generic.KeyValuePair<string, uint> native in LibertyFramework.GameApi.DirectNatives.Hashes)
+            {
+                uint handler = scanner.FindNative(native.Value);
+                uint expected;
+                check.True("direct native handler matches the thread-safety scan: " + native.Key, scanned.TryGetValue(native.Key, out expected) && handler == expected,
+                    "handler=0x" + handler.ToString("X8"));
+            }
             check.Equal("crSkeleton::Update", 0x466BE0u, addresses.SkeletonUpdateFunction);
             check.Equal("in-place skeleton update call sites", 8, addresses.SkeletonUpdateCallSites.Count);
             check.True("update call sites are the eight Capstone-verified ones", addresses.SkeletonUpdateCallSites.Contains(0x5F6E35u) &&

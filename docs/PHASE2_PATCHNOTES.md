@@ -1,5 +1,13 @@
 # Phase 2 integrated patch notes
 
+## Limb rework and direct engine reads (Claude), 2026-09-25
+
+- **Research:** the best GTA V dismemberment mod uses the same two tricks we do: hide the bones, and spawn a copy of the victim for the flying part. Its extra is 3D stump caps, which we don't have yet. So the approach stays and the bugs were fixed. Details: `docs/research/Dismemberment.md`.
+- **No more floating legs:** the limb now appears beside the body, not on top of it, sitting on the ground. If one still ends up propped in the air, it's removed after 1.5 s.
+- **No more whole-NPC flashes:** the limb is hidden until the engine confirms it's shrunk. If its skeleton moves later, it's hidden again for a moment instead of showing the whole NPC.
+- **Missed cuts:** a knee or elbow that can't be cut on some models now cuts at the hip or shoulder.
+- **Faster:** 18 common engine reads (health, dead, weapon, ammo, in-vehicle and others) now skip the script bridge, about 200 times faster each. Each is checked against the normal path at startup and only used if it matches.
+
 ## Async shaders and engine probe (Claude), 2026-09-25
 
 - **Fewer hitches from new shaders:** your graphics driver can't prepare shaders ahead of time, so stock DXVK compiled them mid-game (hitches). The DXVK GPLAsync build you downloaded compiles them in the background and ships a shader cache for FusionFix 5.0.1, so first-time hitches should mostly disappear. Violent Liberty and Vulkan stay. It can be undone with `tools/rollback-dxvk-gplasync.ps1`.

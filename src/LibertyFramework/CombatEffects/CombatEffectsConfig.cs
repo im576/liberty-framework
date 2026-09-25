@@ -92,6 +92,12 @@ namespace LibertyFramework.CombatEffects
         [DataMember(Name="dismemberRefreshMilliseconds", IsRequired=false)] internal int DismemberRefreshMilliseconds;
         // Cuts allowed per body (pending + done; 0 = unlimited). 1 = one limb or the head per kill.
         [DataMember(Name="maximumCutsPerPed", IsRequired=false)] internal int MaximumCutsPerPed;
+        // Limb clone presentation: spawn offset beside the corpse (m), engine-confirmed ticks before it is shown,
+        // settle time before the floating check (ms), and the height above ground (m) that counts as floating.
+        [DataMember(Name="severedLimbSpawnOffsetMeters", IsRequired=false)] internal float SeveredLimbSpawnOffsetMeters;
+        [DataMember(Name="limbConfirmTicks", IsRequired=false)] internal int LimbConfirmTicks;
+        [DataMember(Name="limbSettleMilliseconds", IsRequired=false)] internal int LimbSettleMilliseconds;
+        [DataMember(Name="limbFloatingHeightMeters", IsRequired=false)] internal float LimbFloatingHeightMeters;
         // An external visual mod can draw impact wounds and surface blood while this script owns cuts and reactions.
         [DataMember(Name="bloodVisualMode", IsRequired=false)] internal string BloodVisualMode;
         // Pulse only confirmed one-shot particles when the installed CE build refuses looping blood PTFX.
@@ -176,7 +182,9 @@ namespace LibertyFramework.CombatEffects
                 DeathLeakDurationMilliseconds < 0 || DeathLeakDurationMilliseconds > 120000 || SeverDelayMilliseconds < 0 || SeverDelayMilliseconds > 3000 ||
                 IdleSampleIntervalMilliseconds < 0 || IdleSampleIntervalMilliseconds > 2000 || ActiveSampleWindowMilliseconds < 0 || ActiveSampleWindowMilliseconds > 30000 ||
                 DismemberRefreshMilliseconds < 0 || DismemberRefreshMilliseconds > 1000 ||
-                MaximumCutsPerPed < 0 || MaximumCutsPerPed > 8))
+                MaximumCutsPerPed < 0 || MaximumCutsPerPed > 8 ||
+                SeveredLimbSpawnOffsetMeters < 0 || SeveredLimbSpawnOffsetMeters > 3 || LimbConfirmTicks < 0 || LimbConfirmTicks > 30 ||
+                LimbSettleMilliseconds < 0 || LimbSettleMilliseconds > 10000 || LimbFloatingHeightMeters < 0.05f || LimbFloatingHeightMeters > 5))
                 throw new InvalidDataException("combat effects gore bounds invalid");
             if (AllFirearms) { return; }
             foreach (int id in AllowedWeaponIds)

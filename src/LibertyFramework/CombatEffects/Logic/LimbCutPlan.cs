@@ -44,6 +44,21 @@ namespace LibertyFramework.CombatEffects.Logic
         }
 
         // Decapitation: removes neck and head (and, at runtime, every facial child bone) at the base of the neck.
+        // The next cut up the same limb (elbow -> shoulder, knee -> hip), or null. Used when the lower cut bone cannot
+        // be resolved uniquely on a model (playtest: right knee 0x1A8 on some peds).
+        internal static LimbCutPlan Upper(LimbCutPlan plan)
+        {
+            if (plan == null) { return null; }
+            switch (plan.Name)
+            {
+                case "left_arm_elbow": return ForHitBone(0x4C1);
+                case "right_arm_elbow": return ForHitBone(0x4C8);
+                case "left_leg_knee": return ForHitBone(0x1A2);
+                case "right_leg_knee": return ForHitBone(0x1A7);
+                default: return null;
+            }
+        }
+
         internal static LimbCutPlan Head()
         {
             return Make("head", 0x4B4, 0x36A1, new[] { 0x4B4, 0x37A0, 0x4B5 });

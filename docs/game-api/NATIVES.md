@@ -90,3 +90,9 @@ The thrown limb uses SHDN `World.CreatePed`, `Ped.Visible`, `Ped.Die`, `Ped.NoLo
 The companion visual pass also keeps the thrown-limb clone mission-owned until its timed `Ped.Delete`, instead of calling `Ped.NoLongerNeeded` before the clone becomes visible. Its optional landing effect uses the already-registered `GET_GROUND_Z_FOR_3D_COORD` and `TRIGGER_PTFX_ON_PED_BONE`; no new native hash or address is introduced.
 - **Stock bleeding.** `SET_CHAR_BLEEDING` (0x38330B4A) turns on the game's own bleeding for hit peds.
 - **Hash source.** The hashes come from FusionFix natives.ixx and are verified as registered and mapped by ScriptHook.dll.
+
+**Direct natives (T-026 step 2):** `GameApi/DirectNatives.cs` calls 18 read-only natives through their CE handlers on the script thread: IS_PLAYER_PLAYING, GET_PLAYER_ID, IS_CHAR_DUCKING, IS_PED_IN_COVER, IS_CHAR_IN_ANY_CAR, IS_CHAR_IN_AIR, GET_CHAR_SPEED, IS_PAUSE_MENU_ACTIVE, IS_SCREEN_FADED_OUT, IS_PLAYER_CONTROL_ON, GET_CAM_FOV, GET_CHAR_HEALTH, IS_CHAR_DEAD, DOES_CHAR_EXIST, GET_CURRENT_CHAR_WEAPON, GET_AMMO_IN_CLIP, GET_MAX_AMMO_IN_CLIP and HAS_CHAR_BEEN_DAMAGED_BY_CHAR.
+
+- **ABI:** `handler(ctx)` cdecl; `ctx+0` points to the result, `+4` is the argument count, `+8` points to the argument array.
+- **Safety:** each handler was scanned for script-thread state; the offline verifier pins each handler address; each is runtime-verified against SHDN.
+- **Excluded:** GET_GAME_CAM and GET_PLAYER_CHAR, whose callees are encrypted on disk.
