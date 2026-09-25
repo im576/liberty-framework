@@ -43,7 +43,7 @@ namespace LibertyFramework.CombatEffects
         private Dismemberment dismember;
         private bool engineChecked;
         private SkeletonCollapseEngine collapseEngine;
-        private volatile int goreTestRequest; // 1 gallery, 2 left arm, 3 right leg, 4 head (set from the DevTools thread)
+        private volatile int goreTestRequest; // 1 gallery, 2-4 cuts, 5 leak (set from the DevTools thread)
         private volatile string goreTestStatus;
         private long goreTestShownUntil;
         private Ped galleryPed;
@@ -103,7 +103,12 @@ namespace LibertyFramework.CombatEffects
                 if (dismember != null)
                 {
                     // A failed limb throw must never take the stump (and the corpse's missing limb) down with it.
-                    try { dismember.Update(config, now, record => { if (config.SeveredLimbEnabled) ThrowLimbSafely(record, now); }); }
+                    try
+                    {
+                        Func<object, bool> throwLimb = config.SeveredLimbEnabled ?
+                            new Func<object, bool>(record => ThrowLimbSafely(record, now)) : null;
+                        dismember.Update(config, now, throwLimb, (limb, bone) => OnLimbLanded(limb, bone, now));
+                    }
                     catch (Exception error) { DisableDismemberment(error); }
                 }
                 ResolvePending(now);
@@ -164,6 +169,9 @@ namespace LibertyFramework.CombatEffects
                 int damage = state.LastHealth - target.Health;
                 state.LastHealth = target.Health;
                 if (damage > 0 && target.HasBeenDamagedBy(shooter)) OnDamage(shooter, weapon, target, state, damage, now);
+                else if ((target.isDead || target.Health <= 0) && !state.DeathBurst && state.LastAttributedHitMilliseconds > 0 &&
+                    now - state.LastAttributedHitMilliseconds <= config.PendingDeathWindowMilliseconds)
+                    DeathBurst(target, state, state.LastBone, config.EffectScale, now);
             }
             foreach (Ped ped in new List<Ped>(tracked.Keys)) if (!seen.Contains(ped)) tracked.Remove(ped);
         }
@@ -173,13 +181,15 @@ namespace LibertyFramework.CombatEffects
             int bone = DebugHitNatives.LastDamageBone(target);
             HitRegion region = HitClassifier.Classify(bone);
             if (region == HitRegion.Unknown) { bone = 0x36A0; region = HitRegion.Torso; } // unknown bone: bleed from the chest
+            state.LastBone = bone;
+            state.LastAttributedHitMilliseconds = now;
             bool dead = target.isDead || target.Health <= 0;
             // Downed peds bleed out 1-3 health at a time: drip only (no spray, reaction or log line per tick).
             if (damage < config.MinimumEffectDamage)
             {
                 if (config.StockBloodVisuals && state.Bleeds == 0)
                     Play(config.BleedEffectName, target, bone, config.EffectScale, now, config.BleedIntervalMilliseconds * 4, 0);
-                if (dead) DeathBurst(target, state, config.EffectScale, now);
+                if (dead) DeathBurst(target, state, bone, config.EffectScale, now);
                 return;
             }
             float scale = Clamp(config.EffectScale * damage / 40.0f, config.EffectScale * 0.8f,
@@ -212,7 +222,23 @@ namespace LibertyFramework.CombatEffects
                         Play(config.WoundSpurtEffectName, target, bone, scale, now, config.WoundSpurtDurationMilliseconds, config.ArterialIntervalMilliseconds);
                 }
             }
-            if (dead) DeathBurst(target, state, scale, now);
+            else if (config.WoundsEnabled)
+            {
+                if (!state.EngineBleeding)
+                {
+                    state.EngineBleeding = true;
+                    try { CombatEffectsNatives.SetBleeding(target, true); }
+                    catch (Exception error) { RuntimeLog.Error("set_char_bleeding_failed error=" + error.Message); }
+                }
+                if (damage >= config.ExternalBleedMinimumDamage && state.Bleeds < config.MaximumWoundsPerPed)
+                {
+                    float bleedScale = scale * config.ExternalBleedScaleMultiplier;
+                    int duration = dead ? config.ExternalFatalBleedDurationMilliseconds : config.ExternalBleedDurationMilliseconds;
+                    if (blood.Leak(config, config.ExternalBleedEffectName, target, bone, bleedScale, now, duration,
+                        config.ExternalBleedStartIntervalMilliseconds, config.ExternalBleedEndIntervalMilliseconds, false)) state.Bleeds++;
+                }
+            }
+            if (dead) DeathBurst(target, state, bone, scale, now);
 
             if (config.InjuriesEnabled && damage >= config.MinimumInjuryDamage)
             {
@@ -248,6 +274,7 @@ namespace LibertyFramework.CombatEffects
 
         private void Queue(Ped target, LimbCutPlan plan, Vector3 push, long now, float scale)
         {
+            if (dismember != null && dismember.IsTracked(target, plan.Name)) return;
             foreach (PendingCut cut in pending) if (cut.Ped == target && cut.Plan.Name == plan.Name) return;
             PendingCut item = new PendingCut();
             item.Ped = target; item.Plan = plan; item.Push = push; item.Scale = scale;
@@ -275,13 +302,14 @@ namespace LibertyFramework.CombatEffects
 
         private void Sever(PendingCut cut, long now)
         {
+            if (dismember != null && dismember.IsTracked(cut.Ped, cut.Plan.Name)) return;
             bool head = cut.Plan.Name == "head";
             PedInjuryState state;
             tracked.TryGetValue(cut.Ped, out state);
             bool collapsed = false;
             try
             {
-                collapsed = dismember != null && dismember.SeveredCount < config.MaximumSeveredPeds &&
+                collapsed = dismember != null && (dismember.IsTracked(cut.Ped) || dismember.SeveredCount < config.MaximumSeveredPeds) &&
                     dismember.Sever(cut.Ped, cut.Plan, cut.Push, now, config.SeveredCorpseLifetimeMilliseconds);
             }
             catch (Exception error) { RuntimeLog.Error("dismember_sever_failed part=" + cut.Plan.Name + " error=" + error.Message); }
@@ -292,16 +320,24 @@ namespace LibertyFramework.CombatEffects
             {
                 try { CombatEffectsNatives.SetBleeding(cut.Ped, true); } catch (Exception error) { RuntimeLog.Error("set_char_bleeding_failed error=" + error.Message); }
             }
-            float burst = Math.Max(cut.Scale, config.EffectScale) * 1.4f;
-            Play(config.SeverBurstEffectName, cut.Ped, cut.Plan.StumpTag, burst, now, 0, 0);
             if (config.StockBloodVisuals)
             {
+                float burst = Math.Max(cut.Scale, config.EffectScale) * 1.4f;
+                Play(config.SeverBurstEffectName, cut.Ped, cut.Plan.StumpTag, burst, now, 0, 0);
                 Play(config.SeverMistEffectName, cut.Ped, cut.Plan.StumpTag, burst, now, 0, 0);
                 Play(config.HeavyChunksEffectName, cut.Ped, cut.Plan.StumpTag, burst, now, 0, 0);
-            }
-            Play(config.ArterialEffectName, cut.Ped, cut.Plan.StumpTag, config.EffectScale * 1.2f, now, config.ArterialDurationMilliseconds, config.ArterialIntervalMilliseconds);
-            if (config.StockBloodVisuals)
+                Play(config.ArterialEffectName, cut.Ped, cut.Plan.StumpTag, config.EffectScale * 1.2f, now, config.ArterialDurationMilliseconds, config.ArterialIntervalMilliseconds);
                 Play(config.BleedEffectName, cut.Ped, cut.Plan.StumpTag, config.EffectScale * 1.3f, now, config.BleedDurationMilliseconds, config.BleedIntervalMilliseconds);
+            }
+            else
+            {
+                blood.RemoveForPed(cut.Ped); // a bone hidden by the cut must not keep emitting its earlier wound
+                try { CombatEffectsNatives.SetBleeding(cut.Ped, true); } catch (Exception error) { RuntimeLog.Error("set_char_bleeding_failed error=" + error.Message); }
+                Play(config.ExternalStumpBurstEffectName, cut.Ped, cut.Plan.StumpTag, config.ExternalStumpBleedScale, now, 0, 0);
+                blood.Leak(config, config.ExternalBleedEffectName, cut.Ped, cut.Plan.StumpTag,
+                    config.ExternalStumpBleedScale, now, config.ExternalStumpBleedDurationMilliseconds,
+                    config.ExternalStumpBleedStartIntervalMilliseconds, config.ExternalStumpBleedEndIntervalMilliseconds, true);
+            }
             RuntimeLog.Info("combat_sever part=" + cut.Plan.Name + " collapsed=" + collapsed);
         }
 
@@ -311,20 +347,33 @@ namespace LibertyFramework.CombatEffects
         }
 
         // The killing hit: a death burst, blood from the mouth, and the body keeps leaking where it lies.
-        private void DeathBurst(Ped target, PedInjuryState state, float scale, long now)
+        private void DeathBurst(Ped target, PedInjuryState state, int bone, float scale, long now)
         {
             if (state.DeathBurst) return;
             state.DeathBurst = true;
-            if (!config.StockBloodVisuals) return;
+            if (!config.StockBloodVisuals)
+            {
+                if (config.WoundsEnabled)
+                    blood.Leak(config, config.ExternalBleedEffectName, target, bone, scale * config.ExternalBleedScaleMultiplier,
+                        now, config.ExternalFatalBleedDurationMilliseconds, config.ExternalBleedStartIntervalMilliseconds,
+                        config.ExternalBleedEndIntervalMilliseconds, false);
+                return;
+            }
             Play(config.DeathEffectName, target, 0x36A0, scale * 1.2f, now, 0, 0);
             Play(config.MouthBloodEffectName, target, 0x4B5, scale, now, 0, 0);
             Play(config.DeathLeakEffectName, target, 0x36A0, config.EffectScale, now, config.DeathLeakDurationMilliseconds, config.BleedIntervalMilliseconds);
         }
 
-        private void ThrowLimbSafely(object record, long now)
+        private bool ThrowLimbSafely(object record, long now)
         {
-            try { dismember.ThrowLimb(config, record, now); }
-            catch (Exception error) { RuntimeLog.Error("dismember_limb_failed error=" + error.Message); }
+            try { return dismember.ThrowLimb(config, record, now); }
+            catch (Exception error) { RuntimeLog.Error("dismember_limb_failed error=" + error.Message); return false; }
+        }
+
+        private void OnLimbLanded(Ped limb, int bone, long now)
+        {
+            if (config.StockBloodVisuals || string.IsNullOrEmpty(config.ExternalLimbLandingEffectName)) return;
+            Play(config.ExternalLimbLandingEffectName, limb, bone, config.ExternalLimbLandingScale, now, 0, 0);
         }
 
         // DevTools > Gore Test: deterministic checks that need no aiming. Requests are set on the menu's thread and
@@ -349,6 +398,15 @@ namespace LibertyFramework.CombatEffects
                     galleryIndex = 0;
                     galleryNext = now;
                     RuntimeLog.Info("gore_test gallery effects=" + galleryEffects.Count);
+                }
+                else if (request == 5)
+                {
+                    bool leakStarted = blood.Leak(config, config.ExternalBleedEffectName, target, 0x36A0,
+                        config.EffectScale * config.ExternalBleedScaleMultiplier, now, config.ExternalBleedDurationMilliseconds,
+                        config.ExternalBleedStartIntervalMilliseconds, config.ExternalBleedEndIntervalMilliseconds, false);
+                    goreTestStatus = leakStarted ? "Gore test: wound leak started" : "Gore test: wound leak refused";
+                    goreTestShownUntil = now + 4000;
+                    RuntimeLog.Info("gore_test leak spawned=" + leakStarted);
                 }
                 else
                 {
@@ -397,10 +455,11 @@ namespace LibertyFramework.CombatEffects
         {
             return new List<MenuItem> {
                 MenuItem.Action("Play every blood effect on nearest NPC", () => { goreTestRequest = 1; return "Close the menu and watch the nearest NPC"; }),
+                MenuItem.Action("Start wound leak on nearest NPC", () => { goreTestRequest = 5; return "Close the menu and watch the nearest NPC"; }),
                 MenuItem.Confirmed("Kill nearest NPC and cut left arm", () => { goreTestRequest = 2; return "Close the menu and watch the nearest NPC"; }),
                 MenuItem.Confirmed("Kill nearest NPC and cut right leg", () => { goreTestRequest = 3; return "Close the menu and watch the nearest NPC"; }),
                 MenuItem.Confirmed("Kill nearest NPC and cut head", () => { goreTestRequest = 4; return "Close the menu and watch the nearest NPC"; }),
-                MenuItem.Info(() => "Dismemberment: " + (dismember == null ? "OFF (see log)" : "ready, engine=" + dismember.EngineActive + ", severed=" + dismember.SeveredCount) + ", blood loops=" + blood.ActiveLoops),
+                MenuItem.Info(() => "Dismemberment: " + (dismember == null ? "OFF (see log)" : "ready, engine=" + dismember.EngineActive + ", severed=" + dismember.SeveredCount) + ", blood loops=" + blood.ActiveLoops + ", pulses=" + blood.ActivePulses),
             };
         }
 

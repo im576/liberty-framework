@@ -37,7 +37,8 @@ namespace LibertyFramework.Verify
             check.True("stock blood visuals are the portable default", config.StockBloodVisuals, config.BloodVisualMode);
             config.BloodVisualMode = "external";
             config.Validate();
-            check.True("external blood mode keeps the gore config valid", !config.StockBloodVisuals && config.DismembermentEnabled, "");
+            check.True("external blood mode has bounded leak and throw settings", !config.StockBloodVisuals && config.DismembermentEnabled &&
+                config.ExternalMaximumBleedEmitters <= config.MaximumEmitters && config.LimbThrowMaximumAttempts > 1, "");
             config.BloodVisualMode = "unknown";
             bool badModeRejected = false;
             try { config.Validate(); } catch (InvalidDataException) { badModeRejected = true; }
@@ -50,7 +51,8 @@ namespace LibertyFramework.Verify
             string text = Encoding.ASCII.GetString(RscResource.Parse(File.ReadAllBytes(core)).Body);
             foreach (string name in new[] { config.ImpactEffectName, config.ExitEffectName, config.ShotgunEntryEffectName, config.ShotgunChunksEffectName,
                 config.SniperEntryEffectName, config.SniperChunksEffectName, config.HeavyChunksEffectName, config.BleedEffectName, config.ArterialEffectName,
-                config.SeverBurstEffectName, config.SeverMistEffectName, config.MouthBloodEffectName, config.MistEffectName, config.DeathEffectName, config.WoundSpurtEffectName, config.DeathLeakEffectName })
+                config.SeverBurstEffectName, config.SeverMistEffectName, config.MouthBloodEffectName, config.MistEffectName, config.DeathEffectName, config.WoundSpurtEffectName, config.DeathLeakEffectName,
+                config.ExternalBleedEffectName, config.ExternalStumpBurstEffectName, config.ExternalLimbLandingEffectName })
             {
                 check.True("particle effect exists in gta_core.wpfl: " + name, !string.IsNullOrEmpty(name) && text.Contains(name + "\0"), core);
             }

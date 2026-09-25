@@ -7,10 +7,9 @@ namespace LibertyFramework.CombatEffects
 {
     // Every blood particle goes through here. GTA IV has two kinds of stock blood effect:
     // - one-shot (blood_gun_entry/exit, blood_death, blood_ped_mouth ...): TRIGGER_PTFX_ON_PED_BONE plays them once;
-    // - looping (blood_artery*, blood_drips, blood_gun_mist, *_chunks ...): TRIGGER refuses them (playtest 2 log,
-    //   and the engine check at 0xAA0D6E), so they are STARTed on the bone and STOPped after a duration.
-    // Which kind an effect is gets learned from the first refusal. The spray from streams and chunks lands on the
-    // ground and walls as the game's own blood decals.
+    // - looping (blood_artery*, blood_drips, blood_gun_mist, *_chunks ...): TRIGGER refuses them. The CE playtest
+    //   also showed START returning zero for every tested blood loop. External mode therefore uses bounded pulses
+    //   of confirmed one-shot blood, with a slowing/fading envelope, for visible leaks.
     internal sealed class BloodEffects
     {
         private sealed class Loop
@@ -26,6 +25,7 @@ namespace LibertyFramework.CombatEffects
         private bool callFailureLogged;
 
         internal int ActiveLoops { get { return loops.Count; } }
+        internal int ActivePulses { get { return pulses.Count; } }
 
         // Plays 'effect' on the bone. A looping effect runs for durationMilliseconds; a one-shot effect plays once, or
         // repeats every intervalMilliseconds for durationMilliseconds when both are set. Returns whether it spawned.
@@ -48,7 +48,14 @@ namespace LibertyFramework.CombatEffects
             int handle = 0;
             Call(() => { handle = CombatEffectsNatives.Start(effect, ped, bone, scale); return handle != 0; }, effect);
             Log(effect, bone, scale, handle != 0 ? "loop " + duration + "ms" : "loop_failed");
-            if (handle == 0) { return false; }
+            if (handle == 0)
+            {
+                if (durationMilliseconds > 0 && intervalMilliseconds > 0 && config.ExternalMaximumBleedEmitters > 0 &&
+                    config.ExternalBleedEndScaleFraction > 0 && !string.IsNullOrEmpty(config.ExternalBleedEffectName))
+                    return Leak(config, config.ExternalBleedEffectName, ped, bone, scale, now, durationMilliseconds,
+                        intervalMilliseconds, Math.Max(intervalMilliseconds, config.ExternalBleedEndIntervalMilliseconds), false);
+                return false;
+            }
             Loop loop = new Loop();
             loop.Handle = handle;
             loop.StopAt = now + duration;
@@ -56,12 +63,46 @@ namespace LibertyFramework.CombatEffects
             return true;
         }
 
+        // A visible leak built only from one-shot effects that this CE install has actually played. The first pulse
+        // happens now; subsequent pulses follow the bone, become smaller, and slow down. No failed loop handles.
+        internal bool Leak(CombatEffectsConfig config, string effect, Ped ped, int bone, float scale, long now,
+            int durationMilliseconds, int startIntervalMilliseconds, int endIntervalMilliseconds, bool stump)
+        {
+            if (string.IsNullOrEmpty(effect) || ped == null || !ped.Exists() || scale <= 0 || durationMilliseconds <= 0) { return false; }
+            bool ok = Call(() => CombatEffectsNatives.Burst(effect, ped, bone, scale), effect);
+            if (!ok) { Log(effect, bone, scale, "leak_refused"); return false; }
+            for (int i = pulses.Count - 1; i >= 0; i--)
+                if (pulses[i].Ped == ped && pulses[i].Bone == bone) { pulses.RemoveAt(i); }
+            int limit = Math.Min(config.MaximumEmitters, config.ExternalMaximumBleedEmitters);
+            if (pulses.Count >= limit) { pulses.RemoveAt(0); }
+            BloodEmitter pulse = new BloodEmitter();
+            pulse.Ped = ped; pulse.Bone = bone; pulse.Effect = effect; pulse.Scale = scale;
+            pulse.EndScaleFraction = config.ExternalBleedEndScaleFraction;
+            pulse.StartedMilliseconds = now;
+            pulse.IntervalMilliseconds = startIntervalMilliseconds;
+            pulse.EndIntervalMilliseconds = endIntervalMilliseconds;
+            pulse.NextMilliseconds = now + startIntervalMilliseconds;
+            pulse.UntilMilliseconds = now + durationMilliseconds;
+            pulse.Stump = stump;
+            pulses.Add(pulse);
+            Log(effect, bone, scale, "leak " + durationMilliseconds + "ms");
+            return true;
+        }
+
+        internal void RemoveForPed(Ped ped)
+        {
+            for (int i = pulses.Count - 1; i >= 0; i--)
+                if (pulses[i].Ped == ped && !pulses[i].Stump) { pulses.RemoveAt(i); }
+        }
+
         private void AddPulse(CombatEffectsConfig config, string effect, Ped ped, int bone, float scale, long now, int duration, int interval)
         {
             if (pulses.Count >= config.MaximumEmitters) { pulses.RemoveAt(0); }
             BloodEmitter pulse = new BloodEmitter();
             pulse.Ped = ped; pulse.Bone = bone; pulse.Effect = effect; pulse.Scale = scale;
-            pulse.IntervalMilliseconds = interval; pulse.NextMilliseconds = now + interval; pulse.UntilMilliseconds = now + duration;
+            pulse.EndScaleFraction = 1.0f; pulse.StartedMilliseconds = now;
+            pulse.IntervalMilliseconds = interval; pulse.EndIntervalMilliseconds = interval;
+            pulse.NextMilliseconds = now + interval; pulse.UntilMilliseconds = now + duration;
             pulses.Add(pulse);
         }
 
@@ -73,8 +114,13 @@ namespace LibertyFramework.CombatEffects
                 BloodEmitter pulse = pulses[i];
                 if (pulse.Ped == null || !pulse.Ped.Exists() || now > pulse.UntilMilliseconds) { pulses.RemoveAt(i); continue; }
                 if (now < pulse.NextMilliseconds) { continue; }
-                pulse.NextMilliseconds = now + pulse.IntervalMilliseconds;
-                Call(() => CombatEffectsNatives.Burst(pulse.Effect, pulse.Ped, pulse.Bone, pulse.Scale), pulse.Effect);
+                float progress = (float)(now - pulse.StartedMilliseconds) / (float)(pulse.UntilMilliseconds - pulse.StartedMilliseconds);
+                if (progress < 0) progress = 0;
+                if (progress > 1) progress = 1;
+                float scale = pulse.Scale * (1.0f - (1.0f - pulse.EndScaleFraction) * progress);
+                long interval = pulse.IntervalMilliseconds + (long)((pulse.EndIntervalMilliseconds - pulse.IntervalMilliseconds) * progress);
+                pulse.NextMilliseconds = now + interval;
+                Call(() => CombatEffectsNatives.Burst(pulse.Effect, pulse.Ped, pulse.Bone, scale), pulse.Effect);
             }
         }
 

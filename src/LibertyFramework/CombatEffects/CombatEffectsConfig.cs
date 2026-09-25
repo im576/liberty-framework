@@ -86,6 +86,29 @@ namespace LibertyFramework.CombatEffects
         [DataMember(Name="collapseScale", IsRequired=false)] internal float CollapseScale;
         // An external visual mod can draw impact wounds and surface blood while this script owns cuts and reactions.
         [DataMember(Name="bloodVisualMode", IsRequired=false)] internal string BloodVisualMode;
+        // Pulse only confirmed one-shot particles when the installed CE build refuses looping blood PTFX.
+        [DataMember(Name="externalBleedEffectName", IsRequired=false)] internal string ExternalBleedEffectName;
+        [DataMember(Name="externalBleedMinimumDamage", IsRequired=false)] internal int ExternalBleedMinimumDamage;
+        [DataMember(Name="externalBleedDurationMilliseconds", IsRequired=false)] internal int ExternalBleedDurationMilliseconds;
+        [DataMember(Name="externalFatalBleedDurationMilliseconds", IsRequired=false)] internal int ExternalFatalBleedDurationMilliseconds;
+        [DataMember(Name="externalBleedStartIntervalMilliseconds", IsRequired=false)] internal int ExternalBleedStartIntervalMilliseconds;
+        [DataMember(Name="externalBleedEndIntervalMilliseconds", IsRequired=false)] internal int ExternalBleedEndIntervalMilliseconds;
+        [DataMember(Name="externalBleedScaleMultiplier", IsRequired=false)] internal float ExternalBleedScaleMultiplier;
+        [DataMember(Name="externalBleedEndScaleFraction", IsRequired=false)] internal float ExternalBleedEndScaleFraction;
+        [DataMember(Name="externalMaximumBleedEmitters", IsRequired=false)] internal int ExternalMaximumBleedEmitters;
+        [DataMember(Name="externalStumpBurstEffectName", IsRequired=false)] internal string ExternalStumpBurstEffectName;
+        [DataMember(Name="externalStumpBleedScale", IsRequired=false)] internal float ExternalStumpBleedScale;
+        [DataMember(Name="externalStumpBleedDurationMilliseconds", IsRequired=false)] internal int ExternalStumpBleedDurationMilliseconds;
+        [DataMember(Name="externalStumpBleedStartIntervalMilliseconds", IsRequired=false)] internal int ExternalStumpBleedStartIntervalMilliseconds;
+        [DataMember(Name="externalStumpBleedEndIntervalMilliseconds", IsRequired=false)] internal int ExternalStumpBleedEndIntervalMilliseconds;
+        [DataMember(Name="externalLimbLandingEffectName", IsRequired=false)] internal string ExternalLimbLandingEffectName;
+        [DataMember(Name="externalLimbLandingScale", IsRequired=false)] internal float ExternalLimbLandingScale;
+        [DataMember(Name="limbLandingMinimumMilliseconds", IsRequired=false)] internal int LimbLandingMinimumMilliseconds;
+        [DataMember(Name="limbLandingMaximumHeightMeters", IsRequired=false)] internal float LimbLandingMaximumHeightMeters;
+        [DataMember(Name="limbThrowMaximumAttempts", IsRequired=false)] internal int LimbThrowMaximumAttempts;
+        [DataMember(Name="limbThrowRetryMilliseconds", IsRequired=false)] internal int LimbThrowRetryMilliseconds;
+        [DataMember(Name="severedLimbSpawnHeightMeters", IsRequired=false)] internal float SeveredLimbSpawnHeightMeters;
+        [DataMember(Name="severedLimbVerticalForceFraction", IsRequired=false)] internal float SeveredLimbVerticalForceFraction;
 
         internal bool GoreConfigured { get { return EffectScale > 0 && MaximumEmitters > 0 && !string.IsNullOrEmpty(BleedEffectName); } }
         internal bool StockBloodVisuals { get { return string.IsNullOrEmpty(BloodVisualMode) || BloodVisualMode == "stock"; } }
@@ -94,6 +117,27 @@ namespace LibertyFramework.CombatEffects
         {
             if (!string.IsNullOrEmpty(BloodVisualMode) && BloodVisualMode != "stock" && BloodVisualMode != "external")
                 throw new InvalidDataException("combat_effects.json bloodVisualMode must be stock or external");
+            if (BloodVisualMode == "external" && (string.IsNullOrEmpty(ExternalBleedEffectName) || string.IsNullOrEmpty(ExternalStumpBurstEffectName) ||
+                string.IsNullOrEmpty(ExternalLimbLandingEffectName) || ExternalBleedMinimumDamage < 1 || ExternalBleedMinimumDamage > 200 ||
+                ExternalBleedDurationMilliseconds < 500 || ExternalBleedDurationMilliseconds > 30000 ||
+                ExternalFatalBleedDurationMilliseconds < ExternalBleedDurationMilliseconds || ExternalFatalBleedDurationMilliseconds > 60000 ||
+                ExternalBleedStartIntervalMilliseconds < 100 || ExternalBleedStartIntervalMilliseconds > 3000 ||
+                ExternalBleedEndIntervalMilliseconds < ExternalBleedStartIntervalMilliseconds || ExternalBleedEndIntervalMilliseconds > 5000 ||
+                ExternalBleedScaleMultiplier <= 0 || ExternalBleedScaleMultiplier > 2 ||
+                ExternalBleedEndScaleFraction <= 0 || ExternalBleedEndScaleFraction > 1 ||
+                ExternalMaximumBleedEmitters < 1 || ExternalMaximumBleedEmitters > 32 ||
+                ExternalStumpBleedScale <= 0 || ExternalStumpBleedScale > 5 ||
+                ExternalStumpBleedDurationMilliseconds < 500 || ExternalStumpBleedDurationMilliseconds > 60000 ||
+                ExternalStumpBleedStartIntervalMilliseconds < 100 || ExternalStumpBleedStartIntervalMilliseconds > 3000 ||
+                ExternalStumpBleedEndIntervalMilliseconds < ExternalStumpBleedStartIntervalMilliseconds || ExternalStumpBleedEndIntervalMilliseconds > 5000 ||
+                ExternalLimbLandingScale <= 0 || ExternalLimbLandingScale > 5 ||
+                LimbLandingMinimumMilliseconds < 0 || LimbLandingMinimumMilliseconds > 5000 ||
+                LimbLandingMaximumHeightMeters <= 0 || LimbLandingMaximumHeightMeters > 3 ||
+                LimbThrowMaximumAttempts < 1 || LimbThrowMaximumAttempts > 10 ||
+                LimbThrowRetryMilliseconds < 0 || LimbThrowRetryMilliseconds > 3000 ||
+                SeveredLimbSpawnHeightMeters < 0 || SeveredLimbSpawnHeightMeters > 2 ||
+                SeveredLimbVerticalForceFraction < 0 || SeveredLimbVerticalForceFraction > 2))
+                throw new InvalidDataException("combat effects external blood/limb bounds invalid");
             if (SchemaVersion != 1 || ScanRadiusMeters <= 0 || ScanRadiusMeters > 100 ||
                 SampleIntervalMilliseconds < 25 || SampleIntervalMilliseconds > 1000 ||
                 MaximumTrackedPeds < 1 || MaximumTrackedPeds > 64 || MaximumWoundsPerPed < 1 || MaximumWoundsPerPed > 16 ||
@@ -109,6 +153,9 @@ namespace LibertyFramework.CombatEffects
                 throw new InvalidDataException("combat effects visual/reaction bounds invalid");
             if (DismembermentEnabled && (MaximumSeveredPeds < 1 || MaximumSeveredPeds > 16 || string.IsNullOrEmpty(StumpEffectName) ||
                 SeveredCorpseLifetimeMilliseconds < 1000 || SeveredCorpseLifetimeMilliseconds > 600000 ||
+                LimbThrowMaximumAttempts < 1 || LimbThrowMaximumAttempts > 10 || LimbThrowRetryMilliseconds < 0 || LimbThrowRetryMilliseconds > 3000 ||
+                SeveredLimbSpawnHeightMeters < 0 || SeveredLimbSpawnHeightMeters > 2 ||
+                SeveredLimbVerticalForceFraction < 0 || SeveredLimbVerticalForceFraction > 2 ||
                 (SeveredLimbEnabled && (SeveredLimbForce < 0 || SeveredLimbForce > 30 || SeveredLimbLifetimeMilliseconds < 1000 || SeveredLimbLifetimeMilliseconds > 600000))))
                 throw new InvalidDataException("combat effects dismemberment bounds invalid");
             if ((DismembermentEnabled || DecapitationEnabled) && (CollapseScale < 0.0001f || CollapseScale > 0.1f))

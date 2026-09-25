@@ -37,9 +37,46 @@ try {
 }
 finally { $zip.Dispose() }
 
+# This is our local tuning overlay; the third-party INI itself stays outside the repository.
+$tuning = Get-Content -LiteralPath (Join-Path (Split-Path -Parent $PSScriptRoot) 'config\violent_liberty_tuning.json') -Raw | ConvertFrom-Json
+if ($tuning.headPressure -notin @('low','medium','high') -or $tuning.neckPressure -notin @('low','medium','high') -or
+    $tuning.bleedDuration -notin @('short','long','random') -or
+    $tuning.shotgunChanceMinimumPercent -lt 0 -or $tuning.shotgunChanceMaximumPercent -gt 100 -or
+    $tuning.shotgunChanceMinimumPercent -gt $tuning.shotgunChanceMaximumPercent -or
+    $tuning.shotgunGravitySpeedPercent -lt 50 -or $tuning.shotgunGravitySpeedPercent -gt 400) {
+    throw 'Invalid Violent Liberty tuning values.'
+}
+$iniPath = Join-Path (Join-Path $backupRoot 'incoming') 'plugins\ViolentLiberty.ini'
+$ini = [IO.File]::ReadAllText($iniPath)
+$iniValues = @{
+    HeadLowPressure = [int]($tuning.headPressure -eq 'low')
+    HeadMediumPressure = [int]($tuning.headPressure -eq 'medium')
+    HeadHighPressure = [int]($tuning.headPressure -eq 'high')
+    NeckLowPressure = [int]($tuning.neckPressure -eq 'low')
+    NeckMediumPressure = [int]($tuning.neckPressure -eq 'medium')
+    NeckHighPressure = [int]($tuning.neckPressure -eq 'high')
+    BleedDurationShort = [int]($tuning.bleedDuration -eq 'short')
+    BleedDurationLong = [int]($tuning.bleedDuration -eq 'long')
+    BleedDurationRandom = [int]($tuning.bleedDuration -eq 'random')
+    ChanceMinimumPercent = [int]$tuning.shotgunChanceMinimumPercent
+    ChanceMaximumPercent = [int]$tuning.shotgunChanceMaximumPercent
+    GravitySpeedPercent = [int]$tuning.shotgunGravitySpeedPercent
+}
+foreach ($entry in $iniValues.GetEnumerator()) {
+    $pattern = '(?m)^' + [regex]::Escape($entry.Key) + '=[0-9]+(?=\r?$)'
+    if ([regex]::Matches($ini, $pattern).Count -ne 1) { throw "Cannot tune Violent Liberty setting $($entry.Key)" }
+    $ini = [regex]::Replace($ini, $pattern, ($entry.Key + '=' + $entry.Value))
+}
+[IO.File]::WriteAllText($iniPath, $ini, (New-Object Text.UTF8Encoding($false)))
+
 $configPath = 'scripts\LibertyFramework\config\combat_effects.json'
 $config = Get-Content -LiteralPath (Join-Path $game $configPath) -Raw | ConvertFrom-Json
 if ($config.schemaVersion -ne 1) { throw 'Unexpected combat effects config schema.' }
+$defaults = Get-Content -LiteralPath (Join-Path (Split-Path -Parent $PSScriptRoot) 'config\combat_effects.json') -Raw | ConvertFrom-Json
+foreach ($property in $defaults.PSObject.Properties) {
+    if ($null -eq $config.PSObject.Properties[$property.Name])
+        { $config | Add-Member -NotePropertyName $property.Name -NotePropertyValue $property.Value }
+}
 if ($null -eq $config.PSObject.Properties['bloodVisualMode']) { $config | Add-Member -NotePropertyName bloodVisualMode -NotePropertyValue 'external' }
 else { $config.bloodVisualMode = 'external' }
 $incomingConfig = Join-Path (Join-Path $backupRoot 'incoming') $configPath

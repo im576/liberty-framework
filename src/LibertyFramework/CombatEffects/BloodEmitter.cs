@@ -10,8 +10,12 @@ namespace LibertyFramework.CombatEffects
         internal int Bone;
         internal string Effect;
         internal float Scale;
+        internal float EndScaleFraction;
+        internal long StartedMilliseconds;
         internal long NextMilliseconds;
         internal long IntervalMilliseconds;
+        internal long EndIntervalMilliseconds;
         internal long UntilMilliseconds;
+        internal bool Stump;
     }
 }
