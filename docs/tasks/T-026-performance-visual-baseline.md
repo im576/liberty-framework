@@ -8,6 +8,8 @@ The owner reports that with Liberty Framework's DLL absent, the game feels much 
 
 A diagnostic build now adds five low-cost per-tick timing buckets to `GunplayController`: setup/input, camera, bullet audit, weapon updates, and HUD/debug. It logs their average and maximum alongside the existing 30-second performance line. It does not change the gameplay calculations. Build: 113 source files, zero errors/warnings; offline verifier: 339 passed, 0 failed. The diagnostic DLL SHA-256 is `32E2FAEDA9DE19DD4C9C7468C778D7089BDC7ADBB98B549791BBDA5F7456699C`. The prior installed DLL remains at `D:\GTAIV-Reborn-Tools\baseline\framework-off-test-20260925\LibertyFramework.net.dll` with SHA-256 `F45293030B0C1CCB2562FC5A08F1D2E76A955C0ECAE2CCA808B0F43A0FEE9E51`.
 
+With GTA IV closed, the diagnostic DLL was copied into `scripts\LibertyFramework.net.dll` and its installed SHA-256 rechecked. The prior backup was checked before installation. No other game file changed. In-game phase output is pending the owner.
+
 ## Startup crash isolation (2026-09-25)
 
 The owner's next attempt froze on the loading screen, then crashed at 00:13:37. Windows Application Error 1000 records `GTAIV.exe` 1.2.0.59 faulting in `scripthook.dll` 0.5.1.0 at offset `0x00020861`, exception `0xc0000417`. ScriptHookDotNet logged Direct3D device creation at 00:13:23, then found the Liberty Framework assembly and began loading `LibertyVehicleServicesCE.CS` at 00:13:27; no Liberty Framework or LVS startup entry appeared for this attempt. DXVK initialized the RX 570 without an explicit error in its log. Every copied baseline config hash still matches. This narrows the failure to startup script/hook interaction, but the faulting module alone does not prove which mod caused it.
