@@ -22,6 +22,7 @@ namespace LibertyFramework.Arsenal.Holsters
         private readonly HashSet<string> slingProblemsLogged = new HashSet<string>();
         private readonly HashSet<string> calibrated = new HashSet<string>();
         private readonly List<KeyValuePair<string, GTA.Object>> pendingCalibration = new List<KeyValuePair<string, GTA.Object>>();
+        private int calibrationDueTicks;
         private PedSkeleton skeleton;
         private bool skeletonUnavailable;
         private readonly Dictionary<string, string> modelNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -234,6 +235,7 @@ namespace LibertyFramework.Arsenal.Holsters
                 prop.AttachToPed(ped, (Bone)Enum.Parse(typeof(Bone), sling.Bone), new Vector3(0, 0, 0), new Vector3(0, 0, 0));
                 slingProps[slot] = prop;
                 SaveJournal();
+                RuntimeLog.Info("holster_sling_attached slot=" + slot + " model=" + sling.Model + " bone=" + sling.Bone);
                 QueueCalibration("sling:" + sling.Model + "|" + sling.Bone + "|(0,0,0)|(0,0,0)", prop);
             }
             catch (Exception error) { prop.Delete(); RuntimeLog.Error("holster_sling_attach_failed error=" + error); throw; }
@@ -243,12 +245,18 @@ namespace LibertyFramework.Arsenal.Holsters
         // down AttachToPed's offset/rotation convention (units and order) from real data (docs/research/ModelFormat.md).
         private void QueueCalibration(string key, GTA.Object prop)
         {
-            if (!calibrated.Contains(key)) { pendingCalibration.Add(new KeyValuePair<string, GTA.Object>(key, prop)); }
+            if (calibrated.Contains(key)) { return; }
+            // The engine applies an attachment on a later frame; measuring on the attach tick reads the spawn pose.
+            pendingCalibration.Add(new KeyValuePair<string, GTA.Object>(key, prop));
+            calibrationDueTicks = Environment.TickCount + CalibrationDelayMilliseconds;
         }
+
+        // Long enough for the attachment to be applied and the ped to be drawn at least once.
+        private const int CalibrationDelayMilliseconds = 1500;
 
         private void Calibrate(Ped ped)
         {
-            if (pendingCalibration.Count == 0 || skeletonUnavailable) { return; }
+            if (pendingCalibration.Count == 0 || skeletonUnavailable || unchecked(Environment.TickCount - calibrationDueTicks) < 0) { return; }
             if (skeleton == null)
             {
                 LibertyFramework.Gunplay.GunplayController gunplay = LibertyFramework.Gunplay.GunplayController.Instance;
