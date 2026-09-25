@@ -1,5 +1,9 @@
 # Build and deployment tooling
 
+## Performance capture (T-026)
+
+With GTA IV running and a save loaded, open **PowerShell as Administrator** and run `./tools/capture-performance.ps1 -Label baseline-street -Seconds 120` from the repository root. The script uses the portable PresentMon CLI staged at `D:\GTAIV-Reborn-Tools\downloads\PresentMon-2.6.0-x64.exe` and writes a timestamped CSV under `D:\GTAIV-Reborn-Tools\captures`. Use `-PresentMonPath` and `-OutputDirectory` to override those locations. See [T-026](../docs/tasks/T-026-performance-visual-baseline.md) for the complete test sequence.
+
 ## Optional Violent Liberty visual companion (T-022)
 
 With GTA IV closed, build the DLL, then run `./tools/install-violent-liberty.ps1 -GameDirectory '<GTAIV folder>' -ArchivePath '<owner-downloaded Violent Liberty zip>'`. The installer accepts only the inspected archive hash, checks GTA IV 1.2.0.59, backs up each touched file, installs the user's ASI/INI/WTD into the game, updates the DLL, sets `bloodVisualMode=external`, and selects Vulkan in both graphics config files. It prints a backup path. To restore exact prior files while the game is closed: `./tools/rollback-violent-liberty.ps1 -GameDirectory '<GTAIV folder>' -BackupDirectory '<printed backup path>'`. Neither third-party binary nor its texture archive enters Git. Follow [the companion playtest](../docs/testing/PHASE2_PLAYTEST.md#7d-violent-liberty-companion-visual-test).
