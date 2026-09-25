@@ -75,6 +75,15 @@ namespace LibertyFramework.Core.Memory
         internal bool BulletsResolved { get { return BulletCountGlobal != 0 && BulletArrayGlobal != 0 && BulletStride > 0; } }
         internal bool HudResolved { get { return HudComponentArray != 0 && ReticleComponents.Count == 4; } }
 
+        // Aim-camera settings table (T-015): records of AimCamSettingsStride bytes chosen per camera state by
+        // CCamAimWeapon's update; the float at AimCamLateralOffset is multiplied by the camera right vector
+        // to place the camera beside the shoulder (0.475 m on foot, 0.2 m in cover on 1.2.0.59).
+        internal uint AimCamSettingsTable;
+        internal int AimCamSettingsStride;
+        internal int AimCamSettingsCount;
+        internal int AimCamLateralOffset;
+        internal bool AimCamSettingsResolved { get { return AimCamSettingsTable != 0 && AimCamSettingsStride == 40 && AimCamSettingsCount > 0 && AimCamLateralOffset > 0; } }
+
         internal sealed class HudComponentGlobals
         {
             internal string Name;
@@ -95,6 +104,7 @@ namespace LibertyFramework.Core.Memory
             result.Run("aim_settle", scanner, result.ResolveAimSettle);
             result.Run("bullets", scanner, result.ResolveBullets);
             result.Run("hud_reticle", scanner, result.ResolveHud);
+            result.Run("aim_camera_settings", scanner, result.ResolveAimCameraSettings);
             return result;
         }
 
@@ -313,6 +323,38 @@ namespace LibertyFramework.Core.Memory
             BulletMaximum = memory.ReadByte(adders[0] + 7);
             Report.Add("bullets ok count=0x" + BulletCountGlobal.ToString("X8") + " array=0x" + BulletArrayGlobal.ToString("X8") +
                 " stride=0x" + BulletStride.ToString("X") + " owner=0x" + BulletOwnerOffset.ToString("X") + " max=" + BulletMaximum);
+        }
+
+        // CCamAimWeapon update picks a settings record: "add ecx,eax; lea eax,[ecx+ecx*4]; lea eax,[eax*8+table]" (stride 40),
+        // later "mov eax,[esp+10h]; movss xmm1,[edi+blend]; mulss xmm1,[eax+lateral]" scales the camera right vector.
+        // The pitch clamp helper "movss xmm1,[ecx+pitch]; movss xmm0,[eax+min]" proves the same table drives the aim camera.
+        private void ResolveAimCameraSettings(CodeScanner scanner)
+        {
+            IMemory memory = scanner.Memory;
+            List<uint> selects = scanner.FindPattern("03 C8 8D 04 89 8D 04 C5 ?? ?? ?? ?? EB", true);
+            Require(selects.Count >= 1, "aim settings select count=" + selects.Count);
+            uint table = memory.ReadUInt32(selects[0] + 8);
+            foreach (uint site in selects) { Require(memory.ReadUInt32(site + 8) == table, "aim settings selects disagree"); }
+            List<uint> lateral = scanner.FindPattern("8B 44 24 10 F3 0F 10 8F ?? ?? ?? ?? F3 0F 59 48 ??", true);
+            Require(lateral.Count == 1, "aim lateral use count=" + lateral.Count);
+            List<uint> clamp = scanner.FindPattern("8B 44 24 04 F3 0F 10 89 ?? ?? ?? ?? F3 0F 10 40 ?? 0F 2F C8", true);
+            Require(clamp.Count == 1 && AimCamPitchOffset > 0 && memory.ReadInt32(clamp[0] + 8) == AimCamPitchOffset,
+                "aim settings pitch clamp does not use the resolved aim-camera pitch field");
+            int count = 0;
+            for (int index = 0; index < 32; index++)
+            {
+                byte[] record = memory.Read(table + (uint)(index * 40), 40);
+                bool empty = true;
+                foreach (byte value in record) { if (value != 0) { empty = false; break; } }
+                if (empty) { break; }
+                count++;
+            }
+            Require(count > 0, "aim settings table empty");
+            AimCamSettingsTable = table;
+            AimCamSettingsStride = 40;
+            AimCamSettingsCount = count;
+            AimCamLateralOffset = memory.ReadByte(lateral[0] + 16);
+            Report.Add("aim_camera_settings ok table=0x" + table.ToString("X8") + " records=" + count + " lateral=+0x" + AimCamLateralOffset.ToString("X"));
         }
 
         // hud.dat registration: push alpha; push colour; push 0; push &size; push &pos; push type; push name; call register.

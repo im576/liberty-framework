@@ -96,6 +96,7 @@ namespace LibertyFramework.Gunplay
         private double projectionFov = double.NaN;
         private int projectionHeight;
         private bool drawFailed;
+        private ShoulderSwap shoulderSwap;
         private bool feelDisabled;
         private GTA.Camera feelCamera;
         private int feelCameraHandle;
@@ -264,6 +265,20 @@ namespace LibertyFramework.Gunplay
                 catch (Exception error) { DisableSpread(error); }
                 try { UpdateRecoil(config, now, deltaSeconds, aimCam, gameCamera); }
                 catch (Exception error) { DisableCamera(error); }
+                if (shoulderSwap != null)
+                {
+                    try
+                    {
+                        shoulderSwap.Update(config.ShoulderSwap, controller, aiming,
+                            LibertyFramework.DevTools.DevToolsMenu.IsOpen || Natives.IsPauseMenuActive(), deltaSeconds);
+                    }
+                    catch (Exception error)
+                    {
+                        RuntimeLog.Error("feature_disabled shoulder_swap error=" + error);
+                        try { shoulderSwap.Restore(); } catch (Exception restoreError) { RuntimeLog.Error("restore_shoulder_failed error=" + restoreError.Message); }
+                        shoulderSwap = null;
+                    }
+                }
                 try { UpdateFeel(config, shots, deltaSeconds, aimCam, gameCamera); }
                 catch (Exception error)
                 {
@@ -343,6 +358,11 @@ namespace LibertyFramework.Gunplay
             }
             freeAim = new FreeAimMode(prefs, playerMemory, hud);
             freeAim.RecoverFromPreviousSession();
+            if (addresses.AimCamSettingsResolved)
+            {
+                try { shoulderSwap = new ShoulderSwap(new AimCameraSettings(memory, addresses)); }
+                catch (Exception error) { RuntimeLog.Error("feature_disabled shoulder_swap validation error=" + error.Message); }
+            }
 
             if (addresses.WeaponInfoResolved)
             {
@@ -850,6 +870,8 @@ namespace LibertyFramework.Gunplay
             catch (Exception error) { RuntimeLog.Error("restore_weaponinfo_failed error=" + error.Message); }
             try { if (hud != null) { hud.RestoreAll(); } }
             catch (Exception error) { RuntimeLog.Error("restore_hud_failed error=" + error.Message); }
+            try { if (shoulderSwap != null) { shoulderSwap.Restore(); } }
+            catch (Exception error) { RuntimeLog.Error("restore_shoulder_failed error=" + error.Message); }
             try { if (freeAim != null) { freeAim.Disable(player); } }
             catch (Exception error) { RuntimeLog.Error("restore_freeaim_failed error=" + error.Message); }
         }

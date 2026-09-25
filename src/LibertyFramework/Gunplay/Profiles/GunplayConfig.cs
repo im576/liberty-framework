@@ -22,6 +22,8 @@ namespace LibertyFramework.Gunplay.Profiles
         [DataMember(Name = "feel", IsRequired = true, Order = 9)] internal FeelSettings Feel;
         [DataMember(Name = "debugHit", IsRequired = true, Order = 10)] internal DebugHitSettings DebugHit;
         [DataMember(Name = "switchWhileAiming", IsRequired = true, Order = 11)] internal AimingSwitchSettings SwitchWhileAiming;
+        // Optional so older gunplay.json files (and saved presets) still load; null = shoulder swap off.
+        [DataMember(Name = "shoulderSwap", IsRequired = false, Order = 12)] internal ShoulderSwapSettings ShoulderSwap;
 
         internal WeaponProfile FindWeapon(int weaponId)
         {

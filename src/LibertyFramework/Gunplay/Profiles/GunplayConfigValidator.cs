@@ -50,6 +50,13 @@ namespace LibertyFramework.Gunplay.Profiles
                 (cycling.NextButton != "DPadLeft" && cycling.NextButton != "DPadRight") ||
                 cycling.PreviousButton == cycling.NextButton)
             { errors.Add("switchWhileAiming needs distinct DPadLeft/DPadRight buttons"); }
+            if (config.ShoulderSwap != null)
+            {
+                ShoulderSwapSettings swap = config.ShoulderSwap;
+                if (!ShoulderSwapSettings_IsButton(swap.ControllerButton)) { errors.Add("shoulderSwap.controllerButton must be LeftShoulder, RightShoulder, LeftThumb, RightThumb, XButton or YButton"); }
+                if (string.IsNullOrEmpty(swap.KeyboardKey)) { errors.Add("shoulderSwap.keyboardKey is required"); }
+                if (!(swap.TransitionMilliseconds >= 0 && swap.TransitionMilliseconds <= 2000)) { errors.Add("shoulderSwap.transitionMilliseconds must be 0-2000"); }
+            }
             NonNegative(errors, "feel.shakePitchDegrees", config.Feel.ShakePitchDegrees);
             NonNegative(errors, "feel.shakeHeadingDegrees", config.Feel.ShakeHeadingDegrees);
             NonNegative(errors, "feel.aimFovReductionDegrees", config.Feel.AimFovReductionDegrees);
@@ -124,6 +131,11 @@ namespace LibertyFramework.Gunplay.Profiles
             Positive(errors, owner + " spread.blindFireMultiplier", spread.BlindFireMultiplier);
             Positive(errors, owner + " spread.airborneMultiplier", spread.AirborneMultiplier);
             NonNegative(errors, owner + " spread.pelletPatternDegrees", spread.PelletPatternDegrees);
+        }
+
+        private static bool ShoulderSwapSettings_IsButton(string name)
+        {
+            return name == "LeftShoulder" || name == "RightShoulder" || name == "LeftThumb" || name == "RightThumb" || name == "XButton" || name == "YButton";
         }
 
         private static void Positive(List<string> errors, string name, double value)

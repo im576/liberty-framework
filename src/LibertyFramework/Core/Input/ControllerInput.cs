@@ -12,6 +12,8 @@ namespace LibertyFramework.Core.Input
         internal const ushort DPadDown = 0x0002;
         internal const ushort DPadLeft = 0x0004;
         internal const ushort DPadRight = 0x0008;
+        internal const ushort LeftShoulder = 0x0100;
+        internal const ushort RightShoulder = 0x0200;
         internal const ushort LeftThumb = 0x0040;
         internal const ushort RightThumb = 0x0080;
         internal const ushort AButton = 0x1000;

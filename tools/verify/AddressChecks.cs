@@ -69,6 +69,13 @@ namespace LibertyFramework.Verify
                 check.Equal("dot index global", 0x118EE84u, addresses.ReticleComponents[3].IndexGlobal);
                 check.Equal("dot size global", 0x118EE90u, addresses.ReticleComponents[3].SizeGlobal);
             }
+
+            // T-015: aim-camera settings table (independently read from the Capstone disassembly of 0xA26F9D/0xA2774B/0xA25230).
+            check.Equal("aim camera settings table", 0x103C118u, addresses.AimCamSettingsTable);
+            check.Equal("aim camera settings records", 15, addresses.AimCamSettingsCount);
+            check.Equal("aim camera lateral offset field", 0x10, addresses.AimCamLateralOffset);
+            check.Near("on-foot aim lateral offset is the right shoulder (0.475 m)", 0.475, memory.ReadSingle(0x103C118u + 0x10), 1e-6);
+            check.Near("cover aim lateral offset (0.2 m)", 0.2, memory.ReadSingle(0x103C118u + 3 * 40 + 0x10), 1e-6);
         }
     }
 }
