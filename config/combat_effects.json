@@ -45,7 +45,7 @@
     "severedLimbEnabled":  true,
     "severedLimbForce":  2,
     "severedLimbLifetimeMilliseconds":  30000,
-    "maximumSeveredPeds":  4,
+    "maximumSeveredPeds":  10,
     "severedLimbLifetimeCorpseMilliseconds":  120000,
     "impactEffectName":  "blood_gun_entry",
     "woundEffectName":  "blood_drips",

@@ -73,6 +73,19 @@ if ($LASTEXITCODE -ne 0) { throw 'Vehicle extras scanner build failed.' }
 & $scanner $game (Join-Path $work 'vehicle_extras.json')
 if ($LASTEXITCODE -ne 0) { throw 'Vehicle extras scan failed.' }
 Stage-File (Join-Path $work 'vehicle_extras.json') 'scripts\LibertyFramework\config\vehicle_extras.json' 'replace'
+
+# S-2: weapon wheel icons = each installed weapon model's own HUD icon texture, extracted from the player's files.
+$iconTool = Join-Path $work 'WeaponIcons.exe'
+$iconSources = @((Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tools\finishes') -Filter '*.cs' | Where-Object Name -ne 'Program.cs').FullName) +
+    @((Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tools\ui') -Filter '*.cs').FullName)
+& $compiler /nologo /target:exe /platform:x86 /warn:4 /warnaserror+ "/out:$iconTool" /reference:System.Runtime.Serialization.dll /reference:System.Drawing.dll /reference:System.Core.dll $iconSources
+if ($LASTEXITCODE -ne 0) { throw 'Weapon icon extractor build failed.' }
+$iconDir = Join-Path $work 'icons'
+& $iconTool $game $iconDir
+if ($LASTEXITCODE -ne 0) { throw 'Weapon icon extraction failed.' }
+Get-ChildItem -LiteralPath $iconDir -Filter '*.png' | Sort-Object Name | ForEach-Object {
+    Stage-File $_.FullName "scripts\LibertyFramework\ui\icons\$($_.Name)" 'replace'
+}
 if ($LvsDirectory) {
     $lvsSource = Join-Path (Resolve-Path -LiteralPath $LvsDirectory).Path 'scripts\LibertyVehicleServicesCE.CS'
     $lvsPatched = Join-Path $work 'LibertyVehicleServicesCE.CS'

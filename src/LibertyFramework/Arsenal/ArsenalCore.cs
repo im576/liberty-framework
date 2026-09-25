@@ -48,16 +48,16 @@ namespace LibertyFramework.Arsenal
         private bool overflowDeferredLogged;
         private readonly ControllerInput storageInput = new ControllerInput();
         private readonly GTA.Font storageFont = new GTA.Font(17.0F, FontScaling.Pixel);
-        private readonly GTA.Font storageTitleFont = new GTA.Font(20.0F, FontScaling.Pixel, true, false);
         private StorageBin activeStorage;
         private Vehicle nearbyTrunk;
         private SafehouseRule nearbySafehouse;
-        private List<MenuItem> storageItems = new List<MenuItem>();
-        private int storageSelection;
-        private MenuItem storagePendingConfirmation;
-        private string storageMessage = "";
+        // S-2/S-3: every container opens the weapon wheel; trunks are used with Niko's own trunk animations.
+        private readonly LibertyFramework.Arsenal.Ui.WeaponWheel wheel = new LibertyFramework.Arsenal.Ui.WeaponWheel();
+        private readonly LibertyFramework.Arsenal.Ui.TrunkChoreography trunkAnimation = new LibertyFramework.Arsenal.Ui.TrunkChoreography();
+        private WheelHost wheelHost;
+        private bool storageClosing;
         private bool storageControlLocked;
-        private bool previousStorageKey, previousUp, previousDown, previousSelect, previousBack;
+        private bool previousStorageKey;
         private int lastStorageScanTicks;
         private int lastSafehouseObserveTicks;
         private int lastTemporaryPruneTicks;
@@ -66,8 +66,8 @@ namespace LibertyFramework.Arsenal
         public ArsenalCore()
         {
             Interval = 30;
-            storageFont.Color = Color.White;
-            storageTitleFont.Color = Color.FromArgb(255, 235, 200, 90);
+            storageFont.Color = Color.FromArgb(240, 236, 238, 240);
+            wheelHost = new WheelHost(this);
             Tick += OnTick;
             PerFrameDrawing += OnStorageDraw;
             AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
@@ -567,35 +567,27 @@ namespace LibertyFramework.Arsenal
         {
             storageInput.Poll();
             bool openKey = Game.isKeyPressed(Keys.E) || storageInput.IsDown(ControllerInput.XButton);
-            bool up = Game.isKeyPressed(Keys.Up) || storageInput.IsDown(ControllerInput.DPadUp);
-            bool down = Game.isKeyPressed(Keys.Down) || storageInput.IsDown(ControllerInput.DPadDown);
-            bool select = Game.isKeyPressed(Keys.Enter) || storageInput.IsDown(ControllerInput.AButton);
-            bool back = Game.isKeyPressed(Keys.Back) || storageInput.IsDown(ControllerInput.BButton);
 
             if (activeStorage != null)
             {
                 if (gated || DevToolsMenu.IsOpen) { CloseStorage(); }
-                else
+                else if (openedTrunk != null)
                 {
-                    if (up && !previousUp) { storageSelection = (storageSelection + storageItems.Count - 1) % storageItems.Count; storagePendingConfirmation = null; }
-                    if (down && !previousDown) { storageSelection = (storageSelection + 1) % storageItems.Count; storagePendingConfirmation = null; }
-                    if (select && !previousSelect && storageItems[storageSelection].Activate != null)
+                    // Trunk: the wheel only exists while Niko stands at the open lid; closing plays the lid animation first.
+                    bool running = trunkAnimation.Update();
+                    if (!running) { CloseStorage(); }
+                    else if (!storageClosing)
                     {
-                        MenuItem item = storageItems[storageSelection];
-                        if (item.RequiresConfirmation && storagePendingConfirmation != item)
+                        if (!wheel.IsOpen && trunkAnimation.WheelReady) { wheel.Open(wheelHost); }
+                        if (wheel.IsOpen && wheel.Update(storageInput) == LibertyFramework.Arsenal.Ui.WeaponWheel.Result.Close)
                         {
-                            storagePendingConfirmation = item;
-                            storageMessage = "Press A again to confirm purchase";
-                        }
-                        else
-                        {
-                            storagePendingConfirmation = null;
-                            storageMessage = RunAction(item.Activate);
-                            RebuildStorageItems();
+                            wheel.Close();
+                            trunkAnimation.Close();
+                            storageClosing = true;
                         }
                     }
-                    if (back && !previousBack) { CloseStorage(); }
                 }
+                else if (wheel.Update(storageInput) == LibertyFramework.Arsenal.Ui.WeaponWheel.Result.Close) { CloseStorage(); }
             }
             else if (!gated && !DevToolsMenu.IsOpen && Player.CanControlCharacter &&
                 !Function.Call<bool>("IS_CHAR_IN_ANY_CAR", ped))
@@ -614,16 +606,14 @@ namespace LibertyFramework.Arsenal
                         ArsenalPolicy.FindOrAdd(state.SafehouseStashes, nearbySafehouse.Id);
                     if (activeStorage == null) { nearbyTrunk = null; previousStorageKey = openKey; return; }
                     StorageOpen = true;
+                    storageClosing = false;
                     if (nearbyTrunk != null)
                     {
                         CloseTrunk();
-                        nearbyTrunk.Door(VehicleDoor.Trunk).Open();
                         openedTrunk = nearbyTrunk;
+                        trunkAnimation.Begin(ped, nearbyTrunk);
                     }
-                    storageSelection = 0;
-                    storagePendingConfirmation = null;
-                    storageMessage = "";
-                    RebuildStorageItems();
+                    else { wheel.Open(wheelHost); }
                     Player.CanControlCharacter = false;
                     storageControlLocked = true;
                     RuntimeLog.Info("arsenal_storage_open id=" + activeStorage.Id);
@@ -632,10 +622,6 @@ namespace LibertyFramework.Arsenal
             else { nearbyTrunk = null; nearbySafehouse = null; }
 
             previousStorageKey = openKey;
-            previousUp = up;
-            previousDown = down;
-            previousSelect = select;
-            previousBack = back;
         }
 
         private void FindNearbyStorage(Ped ped)
@@ -656,25 +642,51 @@ namespace LibertyFramework.Arsenal
             }
         }
 
-        private void RebuildStorageItems()
+        // Adapter the weapon wheel sees; every action runs on this script's tick through RunAction.
+        private sealed class WheelHost : LibertyFramework.Arsenal.Ui.WeaponWheel.IHost
         {
-            storageItems.Clear();
-            StorageBin bin = activeStorage;
-            if (bin == null) { return; }
-            if (openedTrunk == null) { AppendGunsmithItems(storageItems); }
-            foreach (WeaponRecord record in carried)
+            private readonly ArsenalCore core;
+            internal WheelHost(ArsenalCore owner) { core = owner; }
+
+            public string Title { get { return core.openedTrunk != null ? "TRUNK" : "SAFEHOUSE"; } }
+            public IList<WeaponRecord> Carried { get { return core.carried; } }
+            public IList<WeaponRecord> Stored
+                { get { return core.activeStorage != null ? (IList<WeaponRecord>)core.activeStorage.Weapons : new List<WeaponRecord>(); } }
+            public bool GunsmithAvailable { get { return core.openedTrunk == null; } }
+            public string Name(int weaponId) { return core.WeaponName(weaponId); }
+
+            public string Store(WeaponRecord record)
             {
-                WeaponRecord choice = record;
-                storageItems.Add(MenuItem.Action("Store " + Describe(choice), () => Store(choice, bin)));
+                StorageBin bin = core.activeStorage;
+                if (bin == null) { return "Storage closed"; }
+                string result = core.RunAction(() => core.Store(record, bin));
+                if (result.StartsWith("Stored", StringComparison.Ordinal)) { core.trunkAnimation.Handle(); }
+                return result;
             }
-            foreach (WeaponRecord record in new List<WeaponRecord>(bin.Weapons))
+
+            public string Take(WeaponRecord record)
             {
-                WeaponRecord choice = record;
-                storageItems.Add(MenuItem.Action("Take " + Describe(choice), () => Take(choice, bin)));
+                StorageBin bin = core.activeStorage;
+                if (bin == null) { return "Storage closed"; }
+                string result = core.RunAction(() => core.Take(record, bin));
+                if (result.StartsWith("Taken", StringComparison.Ordinal)) { core.trunkAnimation.Handle(); }
+                return result;
             }
-            if (storageItems.Count == 0) { storageItems.Add(MenuItem.Info(() => "No weapons to transfer")); }
-            storageSelection = Math.Min(storageSelection, storageItems.Count - 1);
-            storagePendingConfirmation = null;
+
+            public List<MenuItem> GunsmithItems()
+            {
+                List<MenuItem> items = new List<MenuItem>();
+                core.AppendGunsmithItems(items);
+                return items;
+            }
+        }
+
+        private string WeaponName(int weaponId)
+        {
+            WeaponCatalogEntry entry = weaponCatalog == null ? null : weaponCatalog.Find(weaponId);
+            if (entry != null && !string.IsNullOrEmpty(entry.Label)) { return entry.Label; }
+            LibertyFramework.Gunplay.GunplayController gunplay = LibertyFramework.Gunplay.GunplayController.Instance;
+            return LibertyFramework.Weapons.TestWeaponActions.LabelFor(gunplay != null ? gunplay.Config : null, weaponId);
         }
 
         private void CloseStorage()
@@ -683,9 +695,9 @@ namespace LibertyFramework.Arsenal
             string id = activeStorage != null ? activeStorage.Id : "unknown";
             activeStorage = null;
             StorageOpen = false;
-            storageItems.Clear();
-            storagePendingConfirmation = null;
-            try { CloseTrunk(); }
+            storageClosing = false;
+            wheel.Close();
+            try { trunkAnimation.Abort(); CloseTrunk(); }
             finally
             {
                 if (storageControlLocked && Player != null) { Player.CanControlCharacter = true; }
@@ -701,29 +713,14 @@ namespace LibertyFramework.Arsenal
             {
                 GTA.Graphics graphics = args.Graphics;
                 graphics.Scaling = FontScaling.Pixel;
-                if (activeStorage == null)
-                {
-                    string label = nearbyTrunk != null ? "Square / X or E  Open trunk" : "Square / X or E  Open safehouse storage";
-                    graphics.DrawRectangle(new RectangleF(36, 580, 420, 38), Color.FromArgb(190, 8, 12, 18));
-                    graphics.DrawText(label, new RectangleF(48, 587, 400, 27), TextAlignment.Left, storageFont);
-                    return;
-                }
-                int rows = Math.Min(10, storageItems.Count);
-                float height = 95 + rows * 28 + 50;
-                graphics.DrawRectangle(new RectangleF(36, 80, 590, height), Color.FromArgb(205, 8, 12, 18));
-                string title = openedTrunk != null ? "TRUNK" : "SAFEHOUSE STORAGE";
-                graphics.DrawText(title, new RectangleF(52, 92, 550, 29), TextAlignment.Left, storageTitleFont);
-                int scroll = Math.Max(0, storageSelection - rows + 1);
-                for (int row = 0; row < rows; row++)
-                {
-                    int index = scroll + row;
-                    if (index >= storageItems.Count) { break; }
-                    float y = 130 + row * 28;
-                    if (index == storageSelection) { graphics.DrawRectangle(new RectangleF(46, y - 2, 570, 27), Color.FromArgb(120, 190, 145, 35)); }
-                    graphics.DrawText(storageItems[index].Label(), new RectangleF(58, y, 540, 26), TextAlignment.Left, storageFont);
-                }
-                graphics.DrawText(storageMessage.Length > 0 ? storageMessage : "D-pad choose   A select   B close",
-                    new RectangleF(52, 142 + rows * 28, 550, 29), TextAlignment.Left, storageFont);
+                if (activeStorage != null) { wheel.Draw(graphics); return; }
+                // GTA IV's own help box: top-left, black glass, off-white text.
+                string label = nearbyTrunk != null ? "Press X / E to use the trunk." : "Press X / E to open the weapon stash.";
+                float scale = Game.Resolution.Height / 720f;
+                RectangleF box = new RectangleF(34 * scale, 30 * scale, 330 * scale, 40 * scale);
+                graphics.DrawRectangle(box, Color.FromArgb(200, 0, 0, 0));
+                graphics.DrawText(label, new RectangleF(box.X + 12 * scale, box.Y + 10 * scale, box.Width - 24 * scale, box.Height - 14 * scale),
+                    TextAlignment.Left, storageFont);
             }
             catch (Exception error)
             {
@@ -864,7 +861,7 @@ namespace LibertyFramework.Arsenal
             carried.Remove(record); state.OwnedCarried.Remove(record.WeaponId); Persist();
             RefreshPresentation((int)Player.Character.Weapons.CurrentType);
             RuntimeLog.Info("arsenal_store id=" + record.WeaponId + " to=" + bin.Id);
-            return "Stored " + record.WeaponId;
+            return "Stored " + WeaponName(record.WeaponId);
         }
 
         private string ChangePistolFinish(WeaponRecord record, bool gold)
@@ -936,7 +933,7 @@ namespace LibertyFramework.Arsenal
             if (!state.OwnedCarried.Contains(record.WeaponId)) { state.OwnedCarried.Add(record.WeaponId); }
             Persist(); RefreshPresentation((int)Player.Character.Weapons.CurrentType);
             RuntimeLog.Info("arsenal_take id=" + record.WeaponId + " instance=" + record.InstanceId + " from=" + bin.Id);
-            return "Taken " + record.WeaponId;
+            return "Taken " + WeaponName(record.WeaponId);
         }
 
         private string MarkSafehouse()

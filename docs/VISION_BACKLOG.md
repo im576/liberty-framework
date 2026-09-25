@@ -79,9 +79,9 @@ This is the full list of what we want GTA IV to become, broken into systems and 
 | ID | Component | Status |
 |---|---|---|
 | S-1 | Trunk, safehouse and owned-vehicle storage with ownership rules (busted: lose everything; death: owned weapons go to the last safehouse) | ✅/🟡 (safehouse-on-death bug) |
-| S-2 | **Weapon-wheel-style storage UI** that looks like GTA IV (radial, IV fonts and colours, weapon icons from the game's own HUD textures) replacing the panel | 🔲 |
-| S-3 | **Niko animations**: opening/closing the trunk, reaching in, holstering and slinging (from IV's own animation dictionaries; research which exist) | 🔬 |
-| S-4 | Physical interaction prompts in IV's style (contextual, minimal) | 🔲 |
+| S-2 | **Weapon-wheel-style storage UI** that looks like GTA IV (radial, IV fonts and colours, weapon icons from the game's own HUD textures) replacing the panel | 🟡 installed, needs playtest |
+| S-3 | **Niko animations**: opening/closing the trunk, reaching in, holstering and slinging (from IV's own animation dictionaries; research which exist) | 🟡 trunk installed (`amb@car_stash`, `car_boot`); holster/sling 🔬 |
+| S-4 | Physical interaction prompts in IV's style (contextual, minimal) | 🟡 storage prompt restyled |
 | S-5 | Weight/space per container (trunk size per vehicle class) | 🔲 |
 
 ## 5. Vehicles

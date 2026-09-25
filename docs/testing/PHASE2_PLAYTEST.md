@@ -111,3 +111,17 @@ Status: **READY FOR OWNER TEST** after the integrated package is installed. Use 
    - `direct_natives verified=` (and any `direct_native_rejected`)
    - `dismember_limb_visible`, `dismember_limb_rehidden`, `dismember_limb_floating_removed`, `dismember_limb_landed`, `combat_sever_fallback`
    - `performance_scripts`
+
+### 11. Weapon wheel storage and trunk animation (S-2/S-3)
+
+1. **Prompt.** Walk behind a car (on foot). A black help box appears top-left: "Press X / E to use the trunk."
+2. **Trunk.** Press X (pad) or E. Niko turns to the trunk, plays the open-trunk animation, and the lid opens partway through. The wheel then fades in, centred.
+3. **Wheel.** Eight segments, clockwise from the top: Pistols, SMGs, Rifles, Snipers, Heavy, Thrown, Melee, Shotguns. Each shows the carried weapon's own HUD icon; "+N" means the trunk holds N weapons of that type.
+   - Choose a segment with the right stick, or D-pad left/right.
+   - Cycle through the stored weapons of that type with LB/RB or D-pad up/down.
+   - A takes the stored weapon (it swaps with the one you carry), X stores the carried one, B closes.
+   - Each take or store plays the reach-in animation.
+4. **Close.** Press B. The wheel disappears, Niko plays the close-trunk animation, the lid shuts, and control returns.
+5. **Safehouse.** At a safehouse stash, press X/E. The wheel opens directly with the title SAFEHOUSE; Y opens the gunsmith list inside the wheel (A to choose, pay twice to confirm, Y/B back).
+6. **Interrupt.** Open a trunk, then open DevTools while the wheel is up. Storage must close, the lid shuts, and you get control back after DevTools closes.
+7. **Send these log lines:** `trunk_anim`, `trunk_anim_play_failed`, `wheel_icon_missing`, `arsenal_store`, `arsenal_take`, `arsenal_storage_closed`. Also say whether the animations line up with the lid and whether the wheel is readable.

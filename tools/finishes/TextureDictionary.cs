@@ -19,18 +19,25 @@ namespace LibertyFramework.Finishes
             internal int DataOffset;
 
             internal int BlockBytes { get { return Format == "DXT1" ? 8 : 16; } }
+            internal bool Compressed { get { return Format == "DXT1" || Format == "DXT3" || Format == "DXT5"; } }
+            internal int PixelBytes { get { return Format == "L8" ? 1 : 4; } }
 
             internal int LevelBytes(int level)
             {
                 int width = Math.Max(1, Width >> level);
                 int height = Math.Max(1, Height >> level);
+                if (!Compressed) { return width * height * PixelBytes; }
                 return Math.Max(1, (width + 3) / 4) * Math.Max(1, (height + 3) / 4) * BlockBytes;
             }
         }
 
         internal readonly List<Texture> Textures = new List<Texture>();
 
-        internal static TextureDictionary Parse(RscResource resource)
+        internal static TextureDictionary Parse(RscResource resource) { return Parse(resource, true); }
+
+        // lenient: uncompressed D3D formats (A8R8G8B8 = 21, X8R8G8B8 = 22, L8 = 50) are listed instead of rejected
+        // (the finish pipeline stays strict; the UI icon extractor reads HD weapon packs that use them).
+        internal static TextureDictionary Parse(RscResource resource, bool strict)
         {
             byte[] body = resource.Body;
             TextureDictionary dictionary = new TextureDictionary();
@@ -48,7 +55,12 @@ namespace LibertyFramework.Finishes
                 uint data = BitConverter.ToUInt32(body, entry + 0x48);
                 if ((data >> 28) != 6) { throw new InvalidDataException(texture.Name + " pixel pointer is not in the graphics segment"); }
                 texture.DataOffset = resource.SystemSize + (int)(data & 0x0FFFFFFF);
-                if (texture.Format != "DXT1" && texture.Format != "DXT3" && texture.Format != "DXT5")
+                if (!strict && !texture.Compressed)
+                {
+                    uint code = BitConverter.ToUInt32(body, entry + 0x20);
+                    texture.Format = code == 21 ? "A8R8G8B8" : code == 22 ? "X8R8G8B8" : code == 50 ? "L8" : "D3DFMT" + code;
+                }
+                else if (!texture.Compressed)
                 {
                     throw new InvalidDataException(texture.Name + " format " + texture.Format + " unsupported");
                 }

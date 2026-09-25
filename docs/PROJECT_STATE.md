@@ -5,6 +5,8 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
+**Weapon wheel storage and trunk animation (2026-09-25, Claude):** trunks, safehouse stashes and the gunsmith now use one radial wheel with the weapons' own HUD icons, extracted at install. Niko turns, opens the trunk with IV's `amb@car_stash`/`car_boot` animations, reaches in for each take or store, and shuts it. The storage prompt is now an IV-style help box. `maximumSeveredPeds` is raised to 10. Verify 395/395; installed (phase2 then VL). Owner playtest: [section 11](testing/PHASE2_PLAYTEST.md#11-weapon-wheel-storage-and-trunk-animation-s-2s-3).
+
 **Script cost pass (2026-09-25, Claude):**
 
 - The startup crashes are Rockstar `MTLX.DLL` crashes, present since 09-20 on DirectX 9 too, so not Vulkan or Violent Liberty.

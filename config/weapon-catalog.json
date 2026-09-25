@@ -1,9 +1,16 @@
 {
   "schemaVersion": 1,
   "entries": [
-    { "id": "service-pistol", "weaponId": 7, "family": "service-sidearm", "label": "Pistol", "role": "replacement", "model": "w_glock", "finishes": ["factory"], "attachments": [] },
-    { "id": "combat-pistol", "weaponId": 9, "family": "service-sidearm", "label": "Combat Pistol", "role": "replacement", "model": "w_eagle", "finishes": ["factory"], "attachments": [] },
-    { "id": "gold-test-pistol", "weaponId": 58, "family": "service-sidearm", "label": "Gold Test Pistol", "role": "test", "model": "lf_gold_pistol", "finishes": ["gold-test"], "attachments": ["match-grip"] },
+    { "id": "service-pistol", "weaponId": 7, "family": "service-sidearm", "label": "Glock 17", "role": "replacement", "model": "w_glock", "finishes": ["factory"], "attachments": [] },
+    { "id": "combat-pistol", "weaponId": 9, "family": "service-sidearm", "label": ".44 AutoMag", "role": "replacement", "model": "w_eagle", "finishes": ["factory"], "attachments": [] },
+    { "id": "street-sweeper", "weaponId": 10, "family": "shotgun", "label": "Street Sweeper", "role": "replacement", "model": "w_shotgun", "finishes": ["factory"], "attachments": [] },
+    { "id": "remington-1100", "weaponId": 11, "family": "shotgun", "label": "Remington 1100", "role": "replacement", "model": "w_pumpshot", "finishes": ["factory"], "attachments": [] },
+    { "id": "imi-uzi", "weaponId": 12, "family": "smg", "label": "IMI Uzi", "role": "replacement", "model": "w_uzi", "finishes": ["factory"], "attachments": [] },
+    { "id": "fn-p90", "weaponId": 13, "family": "smg", "label": "FN P90", "role": "replacement", "model": "w_mp5", "finishes": ["factory"], "attachments": [] },
+    { "id": "ak-47", "weaponId": 14, "family": "rifle", "label": "AK-47", "role": "replacement", "model": "w_ak47", "finishes": ["factory"], "attachments": [] },
+    { "id": "hk-mg36", "weaponId": 15, "family": "rifle", "label": "H&K MG36", "role": "replacement", "model": "w_m4", "finishes": ["factory"], "attachments": [] },
+    { "id": "m40a1", "weaponId": 16, "family": "sniper", "label": "M40A1", "role": "replacement", "model": "w_psg1", "finishes": ["factory"], "attachments": [] },
+    { "id": "dsr-1", "weaponId": 17, "family": "sniper", "label": "DSR-1", "role": "replacement", "model": "w_rifle", "finishes": ["factory"], "attachments": [] },    { "id": "gold-test-pistol", "weaponId": 58, "family": "service-sidearm", "label": "Gold Test Pistol", "role": "test", "model": "lf_gold_pistol", "finishes": ["gold-test"], "attachments": ["match-grip"] },
     { "id": "gold-test-carbine", "weaponId": 59, "family": "carbine", "label": "Gold Test Carbine", "role": "add-on", "model": "lf_gold_carbine", "finishes": ["gold-test"], "attachments": ["stability-stock"] },
     { "id": "gold-test-shotgun", "weaponId": 60, "family": "shotgun", "label": "Gold Test Shotgun", "role": "test", "model": "lf_gold_shotgun", "finishes": ["gold-test"], "attachments": ["steady-fore-end"] }
   ],
