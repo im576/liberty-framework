@@ -76,6 +76,14 @@ namespace LibertyFramework.Verify
             check.Equal("aim camera lateral offset field", 0x10, addresses.AimCamLateralOffset);
             check.Near("on-foot aim lateral offset is the right shoulder (0.475 m)", 0.475, memory.ReadSingle(0x103C118u + 0x10), 1e-6);
             check.Near("cover aim lateral offset (0.2 m)", 0.2, memory.ReadSingle(0x103C118u + 3 * 40 + 0x10), 1e-6);
+
+            // T-022: ped skeleton access (Capstone: EXPLODE_CHAR_HEAD worker 0xBA5F20, GET_PED_BONE_POSITION worker 0xBA75B0,
+            // CPed::CopyBoneMatrix 0x9E70B0, CPed::BoneMatrix 0x9E74E0 "shl eax,6; add eax,[ecx+14h]", identity scratch 0x1632C20).
+            check.Equal("ped pool global", 0x18B6F1Cu, addresses.PedPoolGlobal);
+            check.Equal("CPed::CopyBoneMatrix", 0x9E70B0u, addresses.BoneMatrixCopyFunction);
+            check.Equal("CPed::BoneMatrix", 0x9E74E0u, addresses.BoneMatrixPointerFunction);
+            check.Equal("bone matrix identity scratch", 0x1632C20u, addresses.BoneScratchMatrix);
+            check.True("ped skeleton resolved", addresses.PedSkeletonResolved, "");
         }
     }
 }

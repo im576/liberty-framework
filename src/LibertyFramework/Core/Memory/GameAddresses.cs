@@ -84,6 +84,17 @@ namespace LibertyFramework.Core.Memory
         internal int AimCamLateralOffset;
         internal bool AimCamSettingsResolved { get { return AimCamSettingsTable != 0 && AimCamSettingsStride == 40 && AimCamSettingsCount > 0 && AimCamLateralOffset > 0; } }
 
+        // Ped skeleton access (T-022 dismemberment), from the GET_PED_BONE_POSITION implementation:
+        // CPed::CopyBoneMatrix(this, Matrix34* out, int boneTag) and CPed::BoneMatrix(this, int index) which
+        // returns &skeleton->objectMatrices[index] (64-byte stride) or a shared identity scratch when the ped
+        // has no skeleton. The ped pool is the rage pool EXPLODE_CHAR_HEAD reads handles from.
+        internal uint PedPoolGlobal;
+        internal uint BoneMatrixCopyFunction;
+        internal uint BoneMatrixPointerFunction;
+        internal uint BoneScratchMatrix;
+        internal int BoneMatrixStride;
+        internal bool PedSkeletonResolved { get { return PedPoolGlobal != 0 && BoneMatrixCopyFunction != 0 && BoneMatrixPointerFunction != 0 && BoneScratchMatrix != 0 && BoneMatrixStride == 64; } }
+
         internal sealed class HudComponentGlobals
         {
             internal string Name;
@@ -105,6 +116,7 @@ namespace LibertyFramework.Core.Memory
             result.Run("bullets", scanner, result.ResolveBullets);
             result.Run("hud_reticle", scanner, result.ResolveHud);
             result.Run("aim_camera_settings", scanner, result.ResolveAimCameraSettings);
+            result.Run("ped_skeleton", scanner, result.ResolvePedSkeleton);
             return result;
         }
 
@@ -355,6 +367,42 @@ namespace LibertyFramework.Core.Memory
             AimCamSettingsCount = count;
             AimCamLateralOffset = memory.ReadByte(lateral[0] + 16);
             Report.Add("aim_camera_settings ok table=0x" + table.ToString("X8") + " records=" + count + " lateral=+0x" + AimCamLateralOffset.ToString("X"));
+        }
+
+        internal const uint HashExplodeCharHead = 0x4A802E89;
+        internal const uint HashGetPedBonePosition = 0x43475BB3;
+
+        private void ResolvePedSkeleton(CodeScanner scanner)
+        {
+            IMemory memory = scanner.Memory;
+            // EXPLODE_CHAR_HEAD -> worker: "mov ecx,[pedPool]; sub esp,50h; push esi; push [esp+58h]; call pool.GetAt".
+            uint explode = RequireNative(scanner, HashExplodeCharHead, "EXPLODE_CHAR_HEAD");
+            Require(scanner.ShapeAt(explode, "8B 44 24 04 8B 40 08 FF 30 E8"), "EXPLODE_CHAR_HEAD shape");
+            uint explodeWorker = memory.RelativeTarget(explode + 9);
+            Require(scanner.ShapeAt(explodeWorker, "8B 0D ?? ?? ?? ?? 83 EC ?? 56 FF 74 24 ?? E8"), "explode worker shape");
+            uint pool = memory.ReadUInt32(explodeWorker + 2);
+            // GET_PED_BONE_POSITION -> worker; worker+58h: "push [ebp+0Ch]; lea ecx,[esp+..]; push ecx; mov ecx,eax; call CopyBoneMatrix".
+            uint bonePosition = RequireNative(scanner, HashGetPedBonePosition, "GET_PED_BONE_POSITION");
+            Require(scanner.ShapeAt(bonePosition, "FF 74 24 04 68 ?? ?? ?? ?? E8"), "GET_PED_BONE_POSITION shape");
+            uint boneWorker = memory.ReadUInt32(bonePosition + 5);
+            Require(scanner.ShapeAt(boneWorker, "8B 0D") && memory.ReadUInt32(boneWorker + 2) == pool ||
+                scanner.ShapeAt(boneWorker + 9, "8B 0D") && memory.ReadUInt32(boneWorker + 11) == pool, "bone worker does not use the ped pool");
+            Require(scanner.ShapeAt(boneWorker + 0x58, "FF 75 0C 8D 4C 24 ?? 51 8B C8 E8"), "bone worker copy call shape");
+            uint copy = memory.RelativeTarget(boneWorker + 0x58 + 10);
+            Require(scanner.ShapeAt(copy, "57 8B F9 8B 07 FF 90 A0 00 00 00"), "CopyBoneMatrix shape");
+            Require(scanner.ShapeAt(copy + 0x62, "FF 70 04 E8 ?? ?? ?? ?? 83 C4 08 8B CF 50 E8"), "CopyBoneMatrix index/pointer calls");
+            uint pointer = memory.RelativeTarget(copy + 0x62 + 14);
+            Require(scanner.ShapeAt(pointer, "56 8B F1 8B 06 FF 90 A0 00 00 00"), "BoneMatrix shape");
+            Require(scanner.ShapeAt(pointer + 0x35, "C7 05 ?? ?? ?? ?? 00 00 80 3F"), "BoneMatrix scratch identity");
+            List<uint> tails = scanner.FindPattern("8B 44 24 08 C1 E0 06 03 41 ?? 5E C2 04 00", true);
+            Require(tails.Count == 1 && tails[0] > pointer && tails[0] < pointer + 0x100, "BoneMatrix stride tail");
+            PedPoolGlobal = pool;
+            BoneMatrixCopyFunction = copy;
+            BoneMatrixPointerFunction = pointer;
+            BoneScratchMatrix = memory.ReadUInt32(pointer + 0x37);
+            BoneMatrixStride = 64;
+            Report.Add("ped_skeleton ok ped_pool=0x" + pool.ToString("X8") + " copy=0x" + copy.ToString("X8") + " pointer=0x" + pointer.ToString("X8") +
+                " scratch=0x" + BoneScratchMatrix.ToString("X8") + " matrices=+0x" + memory.ReadByte(tails[0] + 9).ToString("X"));
         }
 
         // hud.dat registration: push alpha; push colour; push 0; push &size; push &pos; push type; push name; call register.

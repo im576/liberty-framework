@@ -32,6 +32,14 @@ namespace LibertyFramework.CombatEffects
         [DataMember(Name="minimumLimbLossDamage", IsRequired=true)] internal int MinimumLimbLossDamage;
         [DataMember(Name="minimumLimbLossHits", IsRequired=true)] internal int MinimumLimbLossHits;
         [DataMember(Name="allowedWeaponIds", IsRequired=true)] internal int[] AllowedWeaponIds;
+        // T-022 dismemberment (optional fields; absent = off). A lethal limb hit collapses that limb's bones.
+        [DataMember(Name="dismembermentEnabled", IsRequired=false)] internal bool DismembermentEnabled;
+        [DataMember(Name="severedLimbEnabled", IsRequired=false)] internal bool SeveredLimbEnabled;
+        [DataMember(Name="severedLimbForce", IsRequired=false)] internal float SeveredLimbForce;
+        [DataMember(Name="severedLimbLifetimeMilliseconds", IsRequired=false)] internal int SeveredLimbLifetimeMilliseconds;
+        [DataMember(Name="maximumSeveredPeds", IsRequired=false)] internal int MaximumSeveredPeds;
+        [DataMember(Name="severedLimbLifetimeCorpseMilliseconds", IsRequired=false)] internal int SeveredCorpseLifetimeMilliseconds;
+        [DataMember(Name="stumpEffectName", IsRequired=false)] internal string StumpEffectName;
 
         internal void Validate()
         {
@@ -48,6 +56,10 @@ namespace LibertyFramework.CombatEffects
                 ReactionForceArm < 0 || ReactionForceArm > 10 || ReactionForceLeg < 0 || ReactionForceLeg > 10 ||
                 ReactionVerticalFraction < 0 || ReactionVerticalFraction > 1)
                 throw new InvalidDataException("combat effects visual/reaction bounds invalid");
+            if (DismembermentEnabled && (MaximumSeveredPeds < 1 || MaximumSeveredPeds > 16 || string.IsNullOrEmpty(StumpEffectName) ||
+                SeveredCorpseLifetimeMilliseconds < 1000 || SeveredCorpseLifetimeMilliseconds > 600000 ||
+                (SeveredLimbEnabled && (SeveredLimbForce < 0 || SeveredLimbForce > 30 || SeveredLimbLifetimeMilliseconds < 1000 || SeveredLimbLifetimeMilliseconds > 600000))))
+                throw new InvalidDataException("combat effects dismemberment bounds invalid");
             foreach (int id in AllowedWeaponIds)
                 if (id < 58 || id > 255) throw new InvalidDataException("combat effects requires registered test weapon IDs");
         }

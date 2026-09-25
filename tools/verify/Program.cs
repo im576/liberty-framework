@@ -30,6 +30,8 @@ namespace LibertyFramework.Verify
                 FeelChecks.Run(args[1], check);
                 Console.WriteLine("== Vehicle body parts (T-023)");
                 VehicleChecks.Run(args[0], check);
+                Console.WriteLine("== Dismemberment plans (T-022)");
+                CombatChecks.Run(check);
             }
             catch (Exception error)
             {

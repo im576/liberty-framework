@@ -21,6 +21,8 @@ namespace LibertyFramework.CombatEffects
         private string configHash;
         private long lastSampleMilliseconds;
         private bool disabled;
+        private Dismemberment dismember;
+        private bool dismemberUnavailableLogged;
 
         public CombatEffectsController()
         {
@@ -58,8 +60,20 @@ namespace LibertyFramework.CombatEffects
             try
             {
                 LoadConfig();
-                if (config == null || !config.Enabled) { if (tracked.Count > 0) { Clear(); } return; }
+                if (config == null || !config.Enabled) { if (tracked.Count > 0) { Clear(); } ClearDismember(); return; }
                 long now = clock.ElapsedMilliseconds;
+                // Severed corpses keep collapsing even after a weapon switch, so limbs never grow back.
+                if (dismember != null)
+                {
+                    try { dismember.Update(config, now); }
+                    catch (Exception error)
+                    {
+                        RuntimeLog.Error("feature_disabled dismemberment error=" + error);
+                        ClearDismember();
+                        dismember = null;
+                        dismemberUnavailableLogged = true;
+                    }
+                }
                 if (now - lastSampleMilliseconds < config.SampleIntervalMilliseconds) return;
                 lastSampleMilliseconds = now;
                 Player player = Player;
@@ -100,6 +114,7 @@ namespace LibertyFramework.CombatEffects
             catch (Exception error)
             {
                 RuntimeLog.Error("feature_disabled combat_effects error=" + error);
+                ClearDismember();
                 try { Clear(); } catch (Exception cleanupError) { RuntimeLog.Error("combat_effects_cleanup_failed error=" + cleanupError); }
                 disabled = true;
             }
@@ -150,6 +165,13 @@ namespace LibertyFramework.CombatEffects
                 CombatEffectsNatives.RemoveHead(target);
                 RuntimeLog.Info("combat_head_loss damage=" + damage);
             }
+            bool limb = region == HitRegion.LeftArm || region == HitRegion.RightArm || region == HitRegion.LeftLeg || region == HitRegion.RightLeg;
+            if (config.DismembermentEnabled && limb && target.isDead && damage >= config.MinimumLimbLossDamage && EnsureDismemberment())
+            {
+                Vector3 away = target.Position - Player.Character.Position;
+                float length = (float)Math.Sqrt(away.X * away.X + away.Y * away.Y);
+                dismember.Sever(config, target, bone, length > 0.01f ? new Vector3(away.X / length, away.Y / length, 0) : new Vector3(0, 0, 0), now);
+            }
             if (config.LimbLossPrototypeEnabled && damage >= config.MinimumLimbLossDamage &&
                 (region == HitRegion.LeftArm || region == HitRegion.RightArm ||
                  region == HitRegion.LeftLeg || region == HitRegion.RightLeg))
@@ -193,6 +215,41 @@ namespace LibertyFramework.CombatEffects
         {
             foreach (PedInjuryState state in tracked.Values) StopWounds(state);
             tracked.Clear();
+        }
+
+        // Engine access comes from Gunplay's resolved addresses (one scan per session). Unavailable -> logged once, feature off.
+        private bool EnsureDismemberment()
+        {
+            if (dismember != null) { return true; }
+            if (dismemberUnavailableLogged) { return false; }
+            LibertyFramework.Gunplay.GunplayController gunplay = LibertyFramework.Gunplay.GunplayController.Instance;
+            LibertyFramework.Core.Memory.GameAddresses addresses = gunplay != null ? gunplay.Addresses : null;
+            if (addresses == null || !addresses.PedSkeletonResolved)
+            {
+                dismemberUnavailableLogged = true;
+                RuntimeLog.Error("dismemberment_unavailable ped skeleton not resolved (see engine_resolve ped_skeleton)");
+                return false;
+            }
+            PedSkeleton skeleton = new PedSkeleton(new LibertyFramework.Core.Memory.LiveMemory(), addresses);
+            // Validation before any write: the pool must resolve the player's own ped to a real skeleton
+            // whose head bone the engine can look up.
+            uint self = skeleton.PedFromHandle(Player.Character.GetHashCode());
+            if (self == 0 || skeleton.MatrixBase(self) == 0 || skeleton.IndexOf(self, Player.Character.Model.Hash, 0x4B5) <= 0)
+            {
+                dismemberUnavailableLogged = true;
+                skeleton.Dispose();
+                RuntimeLog.Error("dismemberment_validation_failed player_ped=0x" + self.ToString("X8"));
+                return false;
+            }
+            dismember = new Dismemberment(skeleton);
+            RuntimeLog.Info("dismemberment_ready player_ped=0x" + self.ToString("X8"));
+            return true;
+        }
+
+        private void ClearDismember()
+        {
+            if (dismember == null) { return; }
+            try { dismember.Clear(); } catch (Exception error) { RuntimeLog.Error("dismemberment_cleanup_failed error=" + error.Message); }
         }
 
         private void OnDomainUnload(object sender, EventArgs args)
