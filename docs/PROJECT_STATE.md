@@ -5,6 +5,8 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
+**Startup crash isolation (2026-09-25, Codex):** Owner's loading-screen freeze ended in Windows Error 1000, `scripthook.dll` / `0xc0000417`. The hook log stopped as it began loading Liberty Vehicle Services; installed configs match the saved baseline. With GTA IV closed, only the LVS `.CS` file was hash-checked and moved to an external quarantine for one controlled startup test. Causality and game launch result await the owner. [T-026](tasks/T-026-performance-visual-baseline.md).
+
 **Performance baseline setup (2026-09-25, Codex):** Owner reports 15–20 FPS and world shadow/light/building flicker. Portable PresentMon, Ghidra + JDK, and FusionFix/DXVK reference sources are staged outside the game. Installed GTAIV.exe was imported into a read-only Ghidra project; an elevated capture script and configuration snapshot are prepared. Frame traces and in-game comparison remain pending. [T-026](tasks/T-026-performance-visual-baseline.md).
 
 **Gore bleed/limb presentation installed (2026-09-24, Codex):** Owner reports Violent Liberty's larger stains/streaks work; little visible leaking and intermittent thrown limbs remain. Log confirms all attempted looping blood effects failed. The current build pulses confirmed one-shot effects with fade/slow timing, retains/retries limb clones and marks landing, and tunes the owner's Violent Liberty INI for stronger/longer head/neck and more frequent shotgun bleed. Build 112 sources, verify 339/339; copied install/rollback byte-identical, 7 real files hash-checked. Backup `violent-liberty-20260924-231558`. Owner playtest pending; stump cap geometry remains open. [T-022](tasks/T-022-combat-effects.md).
