@@ -93,6 +93,9 @@ namespace LibertyFramework.Verify
             check.True("sync entry is the 11 stolen bytes the hook expects", sync[0] == 0x81 && sync[1] == 0xEC && sync[6] == 0xA1, BitConverter.ToString(sync));
             // crSkeleton::Update (Capstone: 10 E8 callers of 0x466BE0; body encrypted on disk). In-place call sites:
             // 0x5F6E35, 0x5F6F84, 0x60BA64, 0x60BA79, 0x698769, 0x698830, 0x879D0E, 0x87AF87 (0x876F3B / 0xC1AB3C write elsewhere).
+            // T-026 (Capstone: GET_FRAME_COUNT 0xB8B060 -> 0xB8B120 "mov eax,[1173604h]; ret"; GET_CHAR_HEALTH 0xB9EE50).
+            check.Equal("engine frame counter global", 0x1173604u, addresses.FrameCounterGlobal);
+            check.Equal("GET_CHAR_HEALTH handler", 0xB9EE50u, addresses.GetCharHealthHandler);
             check.Equal("crSkeleton::Update", 0x466BE0u, addresses.SkeletonUpdateFunction);
             check.Equal("in-place skeleton update call sites", 8, addresses.SkeletonUpdateCallSites.Count);
             check.True("update call sites are the eight Capstone-verified ones", addresses.SkeletonUpdateCallSites.Contains(0x5F6E35u) &&

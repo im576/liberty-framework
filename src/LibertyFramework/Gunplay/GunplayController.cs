@@ -87,6 +87,7 @@ namespace LibertyFramework.Gunplay
         // T-026 camera caching (gunplay.json "performance").
         private int cachedGameCamera;
         private bool nativeCostLogged;
+        private EngineThreadProbe threadProbe;
         private bool gameCameraValid;
         private double lastGameCameraReadMilliseconds = double.NegativeInfinity;
         private double lastFovReadMilliseconds = double.NegativeInfinity;
@@ -160,8 +161,14 @@ namespace LibertyFramework.Gunplay
         private void OnTick(object sender, EventArgs args)
         {
             long started = System.Diagnostics.Stopwatch.GetTimestamp();
+            EngineThreadProbe probe = threadProbe;
+            int frameAtStart = probe != null ? probe.FrameCount : 0;
             try { TickBody(sender, args); }
-            finally { LibertyFramework.Core.Performance.Logic.CostMeter.Add("tick.gunplay", started); }
+            finally
+            {
+                LibertyFramework.Core.Performance.Logic.CostMeter.Add("tick.gunplay", started);
+                if (probe != null) { probe.ObserveTick(frameAtStart); }
+            }
         }
 
         private void TickBody(object sender, EventArgs args)
@@ -368,6 +375,17 @@ namespace LibertyFramework.Gunplay
                     lastTimingReportTicks = now;
                     RuntimeLog.Info("performance " + tickTimings.ReportAndReset() + " " + phaseTimings.ReportAndReset());
                     RuntimeLog.Info("performance_scripts " + CostMeter.ReportAndReset());
+                    if (threadProbe != null)
+                    {
+                        RuntimeLog.Info(threadProbe.ReportAndReset());
+                        try
+                        {
+                            Player probePlayer = Player;
+                            Ped probePed = probePlayer != null ? probePlayer.Character : null;
+                            if (probePed != null && probePed.Exists()) { RuntimeLog.Info(threadProbe.ProbeHealth(probePed.GetHashCode(), () => probePed.Health)); }
+                        }
+                        catch (Exception error) { RuntimeLog.Error("direct_native_probe_failed error=" + error.Message); threadProbe = null; }
+                    }
                 }
             }
         }
@@ -381,6 +399,11 @@ namespace LibertyFramework.Gunplay
                 memory = new LiveMemory();
                 CodeScanner scanner = new CodeScanner(memory);
                 addresses = GameAddresses.Resolve(scanner);
+            if (addresses.FrameCounterGlobal != 0)
+            {
+                try { threadProbe = new EngineThreadProbe(addresses.FrameCounterGlobal, addresses.GetCharHealthHandler); }
+                catch (Exception error) { RuntimeLog.Error("engine_thread_probe_unavailable error=" + error.Message); }
+            }
                 RuntimeLog.Info("engine_resolve module_base=0x" + memory.ModuleBase.ToString("X8") + " natives=" + scanner.NativeCount +
                     " elapsed_ms=" + timer.ElapsedMilliseconds);
                 foreach (string line in addresses.Report) { RuntimeLog.Info("engine_resolve " + line); }

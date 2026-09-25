@@ -1,5 +1,10 @@
 # Phase 2 integrated patch notes
 
+## Async shaders and engine probe (Claude), 2026-09-25
+
+- **Fewer hitches from new shaders:** your graphics driver can't prepare shaders ahead of time, so stock DXVK compiled them mid-game (hitches). The DXVK GPLAsync build you downloaded compiles them in the background and ships a shader cache for FusionFix 5.0.1, so first-time hitches should mostly disappear. Violent Liberty and Vulkan stay. It can be undone with `tools/rollback-dxvk-gplasync.ps1`.
+- **Groundwork for the next speed-up:** the log now records whether the game waits for our scripts each frame, and how much faster a direct engine read is than a normal script call. That decides whether the next build can remove most of our remaining per-frame cost.
+
 ## Calmer dismemberment (Claude), 2026-09-25
 
 - **Performance (your log):** normal play dropped from 60-92 ms per frame to 15-24 ms (about 40-65 FPS).

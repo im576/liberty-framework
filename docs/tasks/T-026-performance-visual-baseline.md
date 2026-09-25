@@ -2,6 +2,26 @@
 
 Status: **NEEDS-PLAYTEST**
 
+## Step 1 probe and async DXVK (2026-09-25, Claude)
+
+**Owner run with the memory fast paths:**
+
+- Normal-play frames were 15â€“24 ms p50; the camera phase dropped to 0.01â€“0.3 ms.
+- `combat.dismember` was the remaining spike (45â€“66 ms per tick) until the one-cut-per-body pass.
+- Per `native_cost`, an SHDN native costs 109â€“182 Âµs.
+
+**Changes:**
+
+- **`EngineThreadProbe`** (GameApi).
+  - Reads the engine frame counter at gunplay tick start and end: `GET_FRAME_COUNT` â†’ getter â†’ global `0x1173604` on 1.2.0.59 (verified).
+  - Logs `engine_thread_probe ticks= frame_advanced_during_tick= ticks_same_frame= ticks_next_frame= ticks_after_skipped_frames=` every 30 s.
+  - It also calls `GET_CHAR_HEALTH`'s own handler (0xB9EE50) directly from our thread on the player: 20 calls, compared with the SHDN call and timed (`direct_native get_char_health ... match= direct_us= shdn_us=`).
+  - Read-only; this is the evidence gate for direct natives.
+- **DXVK GPLAsync 2.6.2** (owner-downloaded Nexus mod 385), installed with `tools/install-dxvk-gplasync.ps1`.
+  - Settings: async shader compilation, 2 compiler threads, frame latency 1, the FusionFix 5.0.1 prebuilt shader cache.
+  - Backup: `scripts/LibertyFramework/backups/dxvk-gplasync-20260925-024524`.
+  - Violent Liberty stays on Vulkan.
+
 ## Memory-check pass (2026-09-25, Claude, after owner run 09:01-09:05)
 
 **Evidence from the owner's run:**

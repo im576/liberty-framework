@@ -91,3 +91,13 @@ Status: **READY FOR OWNER TEST** after the integrated package is installed. Use 
 3. **Fight.** Have a 60 s firefight (pistol and shotgun, a few kills).
 4. **Report.** Say whether it feels smoother than before, and where it drops. Send the log lines `native_cost`, every `performance` line, and every `performance_scripts` line.
 5. **Optional frame capture.** In an Administrator PowerShell, run `./tools/capture-performance.ps1 -Label perf-pass -Seconds 120` during steps 2-3.
+
+### 9. Async DXVK and engine probe (T-026)
+
+1. **Launch.** Start the Rockstar Games Launcher first, then GTA IV. The first minute may still compile a few shaders; after that, turning corners and entering new areas should hitch less.
+2. **Play.** Same route as before: 90 s walking, then a 60 s fight. Say whether hitching and FPS changed, and whether Violent Liberty's blood still shows.
+3. **Send:**
+   - these LibertyFramework log lines: `engine_thread_probe`, `direct_native`, `performance`, `performance_scripts`;
+   - the `DXVK mesh path:` line from `plugins\ViolentLiberty.log`;
+   - the first line of `GTAIV_d3d9.log` (it should say `v2.6.2-1-gplasync`).
+4. **If something breaks** (black screen, crash at start, missing blood), close the game and tell me; the rollback restores the previous DXVK exactly.

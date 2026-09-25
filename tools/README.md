@@ -50,3 +50,11 @@ All steps except install/rollback are read-only on the game folder and safe whil
 | Rollback (game closed) | `./tools/rollback-phase1.ps1 -GameDirectory <GTAIV>` — restores the newest phase1 backup |
 
 Installed files: `scripts/LibertyFramework.net.dll`, `scripts/LibertyFramework/config/{gunplay.json,presets/*.json,devtools/locations.json}`, `update/common/data/{WeaponInfo.xml,default.dat,lf_finishes.ide}`, `update/LibertyFramework/LibertyFramework.img`. `default.dat` is the installed Various Pedestrian Actions copy plus one `IDE common:/data/lf_finishes.ide` line; `WeaponInfo.xml` is the T-007 file with `LF_GOLD_PISTOL` using model `lf_gold_pistol`. The superseded `deploy-t00x`/`upgrade-t007` scripts remain for history only.
+
+## Optional DXVK GPLAsync (T-026)
+
+- **Install:** with GTA IV closed, run `./tools/install-dxvk-gplasync.ps1 -GameDirectory '<GTAIV folder>' -DxvkArchivePath '<DXVK 2.6.2 GPLAsync ... FusionFix zip>' -ShaderCacheArchivePath '<FusionFix 5.0 - Shader Cache zip>'`.
+- **What it does:** replaces FusionFix's stock DXVK `vulkan.dll` with the asynchronous-shader build and writes `dxvk.conf` (async on, 2 compiler threads for a 4-thread CPU, frame latency 1). It also adds the prebuilt `GTAIV.dxvk-cache`.
+- **Safety:** only the inspected archive hashes are accepted, and every touched file is backed up.
+- **Rollback:** `./tools/rollback-dxvk-gplasync.ps1 -GameDirectory '<GTAIV folder>' -BackupDirectory '<printed backup path>'`.
+- **Checks after install:** Violent Liberty's log line `DXVK mesh path: ...` shows whether it keeps its validated 2.6.2 path or uses its safe fallback. The DXVK log header should read `v2.6.2-1-gplasync`.

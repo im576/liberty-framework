@@ -133,7 +133,28 @@ namespace LibertyFramework.Core.Memory
             result.Run("hud_reticle", scanner, result.ResolveHud);
             result.Run("aim_camera_settings", scanner, result.ResolveAimCameraSettings);
             result.Run("ped_skeleton", scanner, result.ResolvePedSkeleton);
+            result.Run("frame_counter", scanner, result.ResolveFrameCounter);
             return result;
+        }
+
+        // T-026: the engine frame counter (GET_FRAME_COUNT -> "call getter"; getter = "mov eax,[global]; ret") and the
+        // GET_CHAR_HEALTH handler (native ABI: handler(ctx), ctx+0 = result pointer, ctx+8 = argument array).
+        internal const uint HashGetFrameCount = 0x0DA146AA;
+        internal const uint HashGetCharHealth = 0x4B6C2256;
+        internal uint FrameCounterGlobal;
+        internal uint GetCharHealthHandler;
+
+        private void ResolveFrameCounter(CodeScanner scanner)
+        {
+            IMemory memory = scanner.Memory;
+            uint handler = RequireNative(scanner, HashGetFrameCount, "GET_FRAME_COUNT");
+            if (!scanner.ShapeAt(handler, "E8 ?? ?? ?? ?? 8B 4C 24 04 8B 09 89 01 C3")) { throw new InvalidOperationException("GET_FRAME_COUNT handler shape"); }
+            uint getter = handler + 5 + (uint)memory.ReadInt32(handler + 1);
+            if (!scanner.ShapeAt(getter, "A1 ?? ?? ?? ?? C3")) { throw new InvalidOperationException("frame count getter shape"); }
+            FrameCounterGlobal = memory.ReadUInt32(getter + 1);
+            GetCharHealthHandler = scanner.FindNative(HashGetCharHealth);
+            if (GetCharHealthHandler != 0 && !scanner.ShapeAt(GetCharHealthHandler, "8B 44 24 04 8B 40 08 FF 70 04 FF 30 E8")) { GetCharHealthHandler = 0; }
+            Report.Add("frame_counter ok global=0x" + FrameCounterGlobal.ToString("X8") + " get_char_health=0x" + GetCharHealthHandler.ToString("X8"));
         }
 
         private void Run(string name, CodeScanner scanner, Action<CodeScanner> resolver)
