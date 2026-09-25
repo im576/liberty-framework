@@ -14,6 +14,14 @@ namespace LibertyFramework.CombatEffects
         [DataMember(Name="injuriesEnabled", IsRequired=true)] internal bool InjuriesEnabled;
         [DataMember(Name="woundsEnabled", IsRequired=true)] internal bool WoundsEnabled;
         [DataMember(Name="limbLossPrototypeEnabled", IsRequired=true)] internal bool LimbLossPrototypeEnabled;
+        [DataMember(Name="headLossPrototypeEnabled", IsRequired=true)] internal bool HeadLossPrototypeEnabled;
+        [DataMember(Name="impactEffectName", IsRequired=true)] internal string ImpactEffectName;
+        [DataMember(Name="woundEffectName", IsRequired=true)] internal string WoundEffectName;
+        [DataMember(Name="reactionForceHead", IsRequired=true)] internal float ReactionForceHead;
+        [DataMember(Name="reactionForceTorso", IsRequired=true)] internal float ReactionForceTorso;
+        [DataMember(Name="reactionForceArm", IsRequired=true)] internal float ReactionForceArm;
+        [DataMember(Name="reactionForceLeg", IsRequired=true)] internal float ReactionForceLeg;
+        [DataMember(Name="reactionVerticalFraction", IsRequired=true)] internal float ReactionVerticalFraction;
         [DataMember(Name="scanRadiusMeters", IsRequired=true)] internal float ScanRadiusMeters;
         [DataMember(Name="sampleIntervalMilliseconds", IsRequired=true)] internal int SampleIntervalMilliseconds;
         [DataMember(Name="maximumTrackedPeds", IsRequired=true)] internal int MaximumTrackedPeds;
@@ -35,6 +43,11 @@ namespace LibertyFramework.CombatEffects
                 MinimumInjuryDamage < 1 || MinimumLimbLossDamage < 1 || MinimumLimbLossHits < 1 ||
                 AllowedWeaponIds == null || AllowedWeaponIds.Length == 0)
                 throw new InvalidDataException("combat_effects.json invalid bounds");
+            if (string.IsNullOrEmpty(ImpactEffectName) || string.IsNullOrEmpty(WoundEffectName) ||
+                ReactionForceHead < 0 || ReactionForceHead > 10 || ReactionForceTorso < 0 || ReactionForceTorso > 10 ||
+                ReactionForceArm < 0 || ReactionForceArm > 10 || ReactionForceLeg < 0 || ReactionForceLeg > 10 ||
+                ReactionVerticalFraction < 0 || ReactionVerticalFraction > 1)
+                throw new InvalidDataException("combat effects visual/reaction bounds invalid");
             foreach (int id in AllowedWeaponIds)
                 if (id < 58 || id > 255) throw new InvalidDataException("combat effects requires registered test weapon IDs");
         }
