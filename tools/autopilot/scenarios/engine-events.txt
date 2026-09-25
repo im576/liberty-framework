@@ -1,0 +1,24 @@
+# ADR-0006 core check: the snapshot lists spawned peds and the core reports their damage and deaths.
+events on
+god on
+wanted 0
+goto gun_test_range
+wait 4000
+time 12 0
+spawn 3 6
+wait 3000
+expect "event PedAppeared" 10
+peds
+hurt 0 30
+wait 500
+expect "event PedDamaged handle=\d+ \d+->\d+" 10
+kill 1
+wait 1000
+expect "event PedDied" 10
+give 14 120
+wait 800
+expect "event PlayerWeaponChanged" 10
+status
+clear
+wait 1500
+expect "event PedRemoved" 10

@@ -33,6 +33,8 @@ if (-not (Get-GameProcess)) {
     Start-Sleep -Seconds 12
 }
 $startUtc = [DateTime]::UtcNow
+# expect only accepts log lines written after the most recent engine command.
+$lastCommandUtc = $startUtc
 
 foreach ($raw in Get-Content -LiteralPath $Scenario) {
     $line = $raw.Trim()
@@ -44,17 +46,21 @@ foreach ($raw in Get-Content -LiteralPath $Scenario) {
             'shot' { $file = Save-Screenshot (Join-Path $report ($words[1] + '.png')); $steps.Add("shot $($words[1]) -> $(Split-Path -Leaf $file)") }
             'key' { Send-GameKey $words[1]; $steps.Add("key $($words[1])") }
             'expect' {
-                $timeout = if ($words.Count -gt 2) { [int]$words[2] } else { 20 }
+                # expect <regex, optionally "quoted" when it contains spaces> [seconds]
+                $parsed = [regex]::Match($line, '^expect\s+(?:"(?<q>[^"]+)"|(?<p>\S+))(?:\s+(?<t>\d+))?$')
+                $words = @('expect', $(if ($parsed.Groups['q'].Success) { $parsed.Groups['q'].Value } else { $parsed.Groups['p'].Value }))
+                $timeout = if ($parsed.Groups['t'].Success) { [int]$parsed.Groups['t'].Value } else { 20 }
                 $deadline = (Get-Date).AddSeconds($timeout)
                 $hit = $null
                 while (-not $hit -and (Get-Date) -lt $deadline) {
-                    $since = $startUtc.ToString('yyyy-MM-ddTHH:mm:ss')
+                    $since = $lastCommandUtc.AddSeconds(-1).ToString('yyyy-MM-ddTHH:mm:ss')
                     $hit = Get-SessionLog | Where-Object { [string]::CompareOrdinal($_.Substring(0, [Math]::Min(19, $_.Length)), $since) -ge 0 -and $_ -match $words[1] } | Select-Object -First 1
                     if (-not $hit) { Start-Sleep -Milliseconds 500 }
                 }
                 if ($hit) { $steps.Add("expect $($words[1]): OK $hit") } else { $failed++; $steps.Add("expect $($words[1]): FAILED (no line in $timeout s)") }
             }
             default {
+                $lastCommandUtc = [DateTime]::UtcNow
                 $reply = Invoke-EngineCommand @($line)
                 $steps.Add(($reply -join ' | '))
                 if (($reply -join ' ') -match '=> (error|unknown command|module .* is not running)') { $failed++ }

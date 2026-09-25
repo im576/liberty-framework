@@ -44,7 +44,7 @@ namespace LibertyFramework.Testing
             Register("hurt", "hurt <subject|all> <amount> - reduce health", Hurt);
             Register("kill", "kill <subject|all>", args => Hurt(new[] { args.Length > 0 ? args[0] : "all", "1000" }));
             Register("gore", "gore gallery|arm|leg|head|leak - DevTools gore test on the nearest NPC", Gore);
-            Register("cam", "cam <angle deg> <distance m> <height m> | cam off - review camera around the player", Cam);
+            Register("cam", "cam <angle deg> <distance m> <height m> | cam ped <subject> <angle> <distance> <height> | cam off - review camera", Cam);
             Register("hud", "hud on|off - hide HUD and radar for clean screenshots", Hud);
             Register("anim", "anim <set> <clip> - play a clip on the player", args => Engine.Animations.Play(Player.Character, args[0], args[1], 4f) ? "playing" : "failed");
             Register("events", "events on|off - log every engine event", args => { logEvents = On(args); return "event log " + (logEvents ? "on" : "off"); });
@@ -206,11 +206,19 @@ namespace LibertyFramework.Testing
         {
             if (args.Length > 0 && args[0] == "off") { CameraOff(); return "camera off"; }
             Ped ped = Player.Character;
+            if (args.Length > 0 && args[0] == "ped")
+            {
+                List<Ped> subject = Targets(args[1]);
+                if (subject.Count == 0) { return "no subject " + args[1]; }
+                ped = subject[0];
+                args = args.Skip(2).ToArray();
+            }
             double angle = (ped.Heading + Float(args, 0)) * Math.PI / 180.0;
             float distance = args.Length > 1 ? Float(args, 1) : 2.5f, height = args.Length > 2 ? Float(args, 2) : 0.6f;
             Vector3 target = ped.Position;
             Vector3 position = target + new Vector3((float)(-Math.Sin(angle) * distance), (float)(Math.Cos(angle) * distance), height);
-            if (camera == null) { camera = new Camera(); }
+            CameraOff();
+            camera = new Camera();
             camera.Position = position;
             camera.LookAt(target + new Vector3(0, 0, 0.3f));
             camera.Activate();
@@ -220,8 +228,9 @@ namespace LibertyFramework.Testing
         private void CameraOff()
         {
             if (camera == null) { return; }
+            // The game may already have destroyed a scripted camera (e.g. after a cutscene or death camera).
             try { camera.Deactivate(); camera.Delete(); }
-            catch (Exception error) { RuntimeLog.Error("autopilot_camera_off_failed error=" + error.Message); }
+            catch (Exception error) { RuntimeLog.Info("autopilot_camera_already_gone " + error.Message); }
             camera = null;
         }
 
