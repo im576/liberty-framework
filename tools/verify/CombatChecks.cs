@@ -41,7 +41,7 @@ namespace LibertyFramework.Verify
             string text = Encoding.ASCII.GetString(RscResource.Parse(File.ReadAllBytes(core)).Body);
             foreach (string name in new[] { config.ImpactEffectName, config.ExitEffectName, config.ShotgunEntryEffectName, config.ShotgunChunksEffectName,
                 config.SniperEntryEffectName, config.SniperChunksEffectName, config.HeavyChunksEffectName, config.BleedEffectName, config.ArterialEffectName,
-                config.SeverBurstEffectName, config.SeverMistEffectName, config.MouthBloodEffectName })
+                config.SeverBurstEffectName, config.SeverMistEffectName, config.MouthBloodEffectName, config.MistEffectName, config.DeathEffectName, config.WoundSpurtEffectName })
             {
                 check.True("particle effect exists in gta_core.wpfl: " + name, !string.IsNullOrEmpty(name) && text.Contains(name + "\0"), core);
             }

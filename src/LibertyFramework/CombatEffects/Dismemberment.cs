@@ -36,6 +36,7 @@ namespace LibertyFramework.CombatEffects
         private readonly List<Collapse> records = new List<Collapse>();
         private volatile Collapse[] active = new Collapse[0];
         private readonly byte[] zeroAxes = new byte[48];
+        private bool variationFailureLogged;
 
         internal Dismemberment(PedSkeleton skeleton)
         {
@@ -190,7 +191,7 @@ namespace LibertyFramework.CombatEffects
                     record.LimbThrown = true;
                     onThrowReady(record);
                 }
-                if (!record.EvidenceLogged && record.Ticks >= 40)
+                if (!record.EvidenceLogged && record.Ticks >= 20)
                 {
                     record.EvidenceLogged = true;
                     RuntimeLog.Info("dismember_evidence part=" + record.Name + " clone=" + record.Clone + " hook_calls=" + record.HookHits +
@@ -208,11 +209,20 @@ namespace LibertyFramework.CombatEffects
             Ped clone = World.CreatePed(source.Ped.Model, source.Ped.Position + new Vector3(0, 0, 0.35f));
             if (clone == null || !clone.Exists()) { RuntimeLog.Error("dismember_limb_spawn_failed"); return; }
             clone.Visible = false;
-            for (int component = 0; component < 11; component++)
+            // Same clothes as the victim. SHDN threw InvalidCastException from these getters in playtest 1; the limb
+            // then keeps default clothes rather than failing (and the corpse keeps its stump).
+            try
             {
-                int drawable = Function.Call<int>("GET_CHAR_DRAWABLE_VARIATION", source.Ped, component);
-                int texture = Function.Call<int>("GET_CHAR_TEXTURE_VARIATION", source.Ped, component);
-                Function.Call("SET_CHAR_COMPONENT_VARIATION", clone, component, drawable, texture);
+                for (int component = 0; component < 11; component++)
+                {
+                    int drawable = Function.Call<int>("GET_CHAR_DRAWABLE_VARIATION", source.Ped, component);
+                    int texture = Function.Call<int>("GET_CHAR_TEXTURE_VARIATION", source.Ped, component);
+                    Function.Call("SET_CHAR_COMPONENT_VARIATION", clone, component, drawable, texture);
+                }
+            }
+            catch (Exception error)
+            {
+                if (!variationFailureLogged) { variationFailureLogged = true; RuntimeLog.Error("dismember_limb_clothes_skipped error=" + error.Message); }
             }
             clone.Heading = source.Ped.Heading;
             clone.Die();

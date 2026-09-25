@@ -1,5 +1,20 @@
 # Phase 2 integrated patch notes
 
+## Gore fix after playtest (Claude), 2026-09-24
+
+- **What the log showed:**
+  - Severing did happen: the first arm came off and its limb was thrown.
+  - Then a clothing lookup on the second thrown limb crashed. That switched dismemberment off and restored the corpses' limbs, so every later cut fell back to nothing.
+  - The blood calls ran on every hit, but they were the same small spray the game already plays.
+- **Fixes:**
+  - A failed limb throw no longer turns dismemberment off (the clone just keeps default clothes).
+  - Blood is much bigger (base scale 2.5, up to 4).
+  - Every hit adds a mist; strong hits spurt for 3.5 s; the killing hit bursts.
+  - Every cut adds chunks.
+  - Bleed-out ticks from downed peds only drip, which stops the reaction/log spam.
+- **New DevTools > Gore Test:** play every blood effect on the nearest NPC, with its name on screen. It can also kill the nearest NPC and cut the left arm, the right leg or the head.
+- **Logging:** the log now records whether the engine accepted each effect (`ptfx ... spawned=True/False`).
+
 ## Gore overhaul (Claude), 2026-09-24
 
 - **Blood you can see:** every firearm hit on any NPC, mission peds included, now sprays stock GTA IV blood sized by weapon.

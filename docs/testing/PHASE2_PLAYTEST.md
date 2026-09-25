@@ -55,3 +55,10 @@ Status: **READY FOR OWNER TEST** after the integrated package is installed. Use 
 3. Kill one with a strong headshot (shotgun/sniper/rifle). Expect decapitation.
 4. Run `ReloadScripts` once, then repeat step 2.
 5. Send the log lines: `skeleton_hook_installed` (two), `dismemberment_ready ... hooks=...`, a few `combat_hit` / `combat_sever`, and every `dismember_evidence`. If the game freezes on a first dismemberment, set `dismembermentEnabled` to `false` in the installed `combat_effects.json` and report it.
+
+### 7b. Gore Test page (after playtest 1)
+
+1. Stand next to any NPC. Open DevTools (L3+R3), go to **Gore Test**, choose **Play every blood effect on nearest NPC**, then close the menu. A red caption names each effect every ~2 s. Note which names show visible blood and which don't.
+2. **Kill nearest NPC and cut left arm**, then **cut right leg**, then **cut head**, each on a fresh NPC. Walk around the body.
+3. Then shoot NPCs normally with any gun.
+4. Send the lines `gore_test`, `ptfx`, `dismember`, `combat_sever`, `dismember_evidence`, and any `ERROR`.

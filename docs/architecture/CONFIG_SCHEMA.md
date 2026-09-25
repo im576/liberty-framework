@@ -75,6 +75,29 @@ Finish colour ramps (`shadowRgb`, `midRgb`, `highlightRgb`, `contrast`, `lift`, 
 
 `schemaVersion:1`; `enabled` is the master toggle, on in the integrated Phase 2 playtest build. `reactionsEnabled`, `injuriesEnabled`, `woundsEnabled`, `limbLossPrototypeEnabled`, and `headLossPrototypeEnabled` independently gate force, injury counts, bone-attached stock blood PTFX, limb candidate logging, and corpse-only head removal. `impactEffectName` / `woundEffectName` are installed game PTFX names. `reactionForceHead/Torso/Arm/Leg` and `reactionVerticalFraction` tune the force vector. `scanRadiusMeters` (m), `sampleIntervalMilliseconds` (ms), `maximumTrackedPeds`, `maximumWoundsPerPed`, and `woundLifetimeMilliseconds` (ms) bound sampling and PTFX handles. `reactionCooldownMilliseconds` (ms), `minimumInjuryDamage` (health), `minimumLimbLossDamage` (health), and `minimumLimbLossHits` (count) gate events. `allowedWeaponIds` lists registered test weapon IDs only. The attached effect follows the bone; exact bullet impact coordinates remain unavailable.
 
+**Gore overhaul fields (optional).** All `*EffectName` values are stock `gta_core.wpfl` names, checked offline.
+
+- **Coverage:** `allFirearms` covers every firearm slot; `includeMissionPeds` covers mission peds.
+- **Particle size:**
+  - `effectScale` is the base particle scale (float, ≤5). A hit's scale is `effectScale × damage/40`, clamped to `[0.8 × effectScale, maximumHitScale]`, with `maximumHitScale` ≤8.
+- **Damage thresholds:**
+  - `minimumEffectDamage` (health): hits below it only drip. These are bleed-out ticks.
+  - `exitDamage` / `chunkDamage` (health) gate the exit spray and the chunks.
+- **Per-hit effects:**
+  - Every hit plays the entry effect (`impactEffectName`, or the shotgun/sniper entry) plus `mistEffectName`.
+  - `exitEffectName` plays at `exitDamage`.
+  - Chunks play at `chunkDamage`, and always for shotguns and snipers: `heavyChunksEffectName`, `shotgunChunksEffectName` or `sniperChunksEffectName`.
+  - The killing hit plays `deathEffectName` plus `mouthBloodEffectName`.
+- **Bleeding:**
+  - Each wound drips `bleedEffectName` every `bleedIntervalMilliseconds` for `bleedDurationMilliseconds`.
+  - At `exitDamage` or more, the wound also spurts `woundSpurtEffectName` every `arterialIntervalMilliseconds` for `woundSpurtDurationMilliseconds`.
+  - `maximumEmitters` caps active pulses.
+- **Severing:**
+  - `decapitationEnabled` / `decapitationMinimumDamage` (health) control decapitation.
+  - `pendingDeathWindowMilliseconds` is how long after a hit the ped may die and still be severed.
+  - At the stump: `severBurstEffectName` / `severMistEffectName`, then `arterialEffectName` every `arterialIntervalMilliseconds` for `arterialDurationMilliseconds`.
+- **DevTools Gore Test:** `goreTestScale` (≤8) and `goreTestIntervalMilliseconds` (ms per gallery step).
+
 ## T-011 finish variants
 
 `lf_gold_carbine` uses `w_m4` diffuse `bm_m4a1`, specular `bm_m4a1_s`, and `icon`; `lf_gold_shotgun` uses `w_shotgun` diffuse `cj_shotgun_comp`, specular `cj_shotgun_comp_s`, and `icon`. Their normal maps are retained.

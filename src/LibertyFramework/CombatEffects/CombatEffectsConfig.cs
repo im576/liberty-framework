@@ -65,6 +65,16 @@ namespace LibertyFramework.CombatEffects
         [DataMember(Name="mouthBloodEffectName", IsRequired=false)] internal string MouthBloodEffectName;
         [DataMember(Name="pendingDeathWindowMilliseconds", IsRequired=false)] internal int PendingDeathWindowMilliseconds;
         [DataMember(Name="maximumEmitters", IsRequired=false)] internal int MaximumEmitters;
+        // Visibility pass: hits below minimumEffectDamage (bleed-out ticks) only drip; every other hit adds mist;
+        // strong hits spurt; the killing hit bursts; the DevTools gore test plays effects at goreTestScale.
+        [DataMember(Name="minimumEffectDamage", IsRequired=false)] internal int MinimumEffectDamage;
+        [DataMember(Name="mistEffectName", IsRequired=false)] internal string MistEffectName;
+        [DataMember(Name="deathEffectName", IsRequired=false)] internal string DeathEffectName;
+        [DataMember(Name="woundSpurtEffectName", IsRequired=false)] internal string WoundSpurtEffectName;
+        [DataMember(Name="woundSpurtDurationMilliseconds", IsRequired=false)] internal int WoundSpurtDurationMilliseconds;
+        [DataMember(Name="maximumHitScale", IsRequired=false)] internal float MaximumHitScale;
+        [DataMember(Name="goreTestScale", IsRequired=false)] internal float GoreTestScale;
+        [DataMember(Name="goreTestIntervalMilliseconds", IsRequired=false)] internal int GoreTestIntervalMilliseconds;
 
         internal bool GoreConfigured { get { return EffectScale > 0 && MaximumEmitters > 0 && !string.IsNullOrEmpty(BleedEffectName); } }
 
@@ -89,7 +99,8 @@ namespace LibertyFramework.CombatEffects
                 throw new InvalidDataException("combat effects dismemberment bounds invalid");
             if (GoreConfigured && (EffectScale > 5 || MaximumEmitters > 128 || BleedIntervalMilliseconds < 100 || BleedDurationMilliseconds < 0 ||
                 ArterialIntervalMilliseconds < 100 || ArterialDurationMilliseconds < 0 || PendingDeathWindowMilliseconds < 0 ||
-                PendingDeathWindowMilliseconds > 5000 || ExitDamage < 0 || ChunkDamage < 0 || DecapitationMinimumDamage < 0))
+                PendingDeathWindowMilliseconds > 5000 || ExitDamage < 0 || ChunkDamage < 0 || DecapitationMinimumDamage < 0 || MinimumEffectDamage < 0 || WoundSpurtDurationMilliseconds < 0 ||
+                MaximumHitScale < 0 || MaximumHitScale > 8 || GoreTestScale < 0 || GoreTestScale > 8 || GoreTestIntervalMilliseconds < 0))
                 throw new InvalidDataException("combat effects gore bounds invalid");
             if (AllFirearms) { return; }
             foreach (int id in AllowedWeaponIds)

@@ -9,5 +9,6 @@ namespace LibertyFramework.CombatEffects
         internal int Bleeds;
         internal readonly Dictionary<HitRegion, int> RegionHits = new Dictionary<HitRegion, int>();
         internal bool HeadRemoved;
+        internal bool DeathBurst;
     }
 }
