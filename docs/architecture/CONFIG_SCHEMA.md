@@ -67,6 +67,10 @@ Finish colour ramps (`shadowRgb`, `midRgb`, `highlightRgb`, `contrast`, `lift`, 
 
 `schemaVersion: 1`, `enabled`, `showOnBikes`, `nudgePositionMeters`, `nudgeRotationDegrees`, `weapons[]` (`weaponId`, `weaponInfoType`, `category` numeric `WeaponCategory`), and `placements[]` (`slot`, ScriptHookDotNet `bone`, `position` in meters XYZ, `rotation` in degrees XYZ). A placement can optionally specify `category` and/or `model` to override a slot default. `weaponInfoType` selects the active WeaponInfo.xml entry, whose `<assets model>` determines the prop. The starting offsets require visual calibration in game; DevTools saves changes with a `.bak`.
 
+## combat_effects.json (T-022)
+
+`schemaVersion:1`; `enabled` is the master toggle, default off until the combined playtest. `reactionsEnabled`, `injuriesEnabled`, `woundsEnabled`, `limbLossPrototypeEnabled` independently gate event logging/state. `scanRadiusMeters` (m), `sampleIntervalMilliseconds` (ms), `maximumTrackedPeds`, `maximumWoundsPerPed`, and `woundLifetimeMilliseconds` (ms) bound sampling and memory. `reactionCooldownMilliseconds` (ms), `minimumInjuryDamage` (health), `minimumLimbLossDamage` (health), and `minimumLimbLossHits` (count) gate candidate events. `allowedWeaponIds` lists registered test weapon IDs only. Wound records currently hold an approximate ped position; they do not draw blood or attach a decal.
+
 ## T-011 finish variants
 
 `lf_gold_carbine` uses `w_m4` diffuse `bm_m4a1`, specular `bm_m4a1_s`, and `icon`; `lf_gold_shotgun` uses `w_shotgun` diffuse `cj_shotgun_comp`, specular `cj_shotgun_comp_s`, and `icon`. Their normal maps are retained.
