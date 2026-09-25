@@ -160,6 +160,17 @@ namespace LibertyFramework.Verify
             for (int frame = 0; frame < 400; frame++) { time += 16.65; model.Step(pistol, config.Movement, still, time, 0.01665); }
             check.Near("spread recovers to base at rest", pistol.BaseDegrees, model.Current(pistol, config.Movement, still), 1e-9);
 
+            SpreadModel barePistol = new SpreadModel();
+            SpreadModel grippedPistol = new SpreadModel();
+            for (int shot = 0; shot < 4; shot++)
+            {
+                barePistol.AddShot(pistol, shot * 80, 1.0);
+                grippedPistol.AddShot(pistol, shot * 80, 0.75);
+            }
+            check.True("match grip reduces repeat-shot bloom without altering first-shot base",
+                grippedPistol.Current(pistol, config.Movement, still) < barePistol.Current(pistol, config.Movement, still) &&
+                grippedPistol.Current(pistol, config.Movement, still) > pistol.BaseDegrees, "");
+
             SpreadProfile carbine = config.FindWeapon(59).Spread;
             SpreadModel carbineModel = new SpreadModel();
             time = 0;

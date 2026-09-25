@@ -20,14 +20,14 @@ namespace LibertyFramework.Gunplay.Spread
             chainShots = 0;
         }
 
-        internal void AddShot(SpreadProfile profile, double nowMilliseconds)
+        internal void AddShot(SpreadProfile profile, double nowMilliseconds, double attachmentMultiplier = 1.0)
         {
             if (nowMilliseconds - lastShotMilliseconds > profile.ChainResetMilliseconds) { chainShots = 0; }
             chainShots++;
             lastShotMilliseconds = nowMilliseconds;
             double headroom = Math.Max(0, profile.MaxDegrees - profile.BaseDegrees);
             double multiplier = chainShots <= profile.BurstShotCount ? profile.BurstPerShotMultiplier : 1.0;
-            bloomDegrees = Math.Min(headroom, bloomDegrees + profile.PerShotDegrees * multiplier);
+            bloomDegrees = Math.Min(headroom, bloomDegrees + profile.PerShotDegrees * multiplier * attachmentMultiplier);
         }
 
         internal double Step(SpreadProfile profile, MovementSettings movement, ShooterState state, double nowMilliseconds, double deltaSeconds)

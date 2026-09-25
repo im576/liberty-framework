@@ -8,7 +8,7 @@ Arsenal records now carry a stable `instanceId`, catalog ID, finish, attachment 
 
 The existing CE custom weapon IDs 58–60 and original gold assets are reused. No new native or memory address is called.
 
-A safehouse **GUNSMITH** row now sells the existing gold pistol finish for the configured price. It switches vanilla pistol ID 7 to custom ID 58 with the same ammo and physical instance ID, and records progression level 1. The owner can switch back to factory and re-equip gold for free. The change is visually observable; attachment slots remain metadata only and have no effect yet. If the catalog is absent or corrupt, Arsenal logs `arsenal_catalog_unavailable` and continues its legacy storage operation; a missing/zero gunsmith price disables purchase.
+A safehouse **GUNSMITH** row now sells the existing gold pistol finish for the configured price. It switches vanilla pistol ID 7 to custom ID 58 with the same ammo and physical instance ID, and records progression level 1. The owner can switch back to factory and re-equip gold for free. The nearby safehouse panel also sells a $350 Match grip for gold pistol 58; it reduces per-shot bloom to 75% of the configured pistol increment and persists with that physical instance. Other attachment slots remain metadata only. If the catalog is absent or corrupt, Arsenal logs `arsenal_catalog_unavailable` and continues its legacy storage operation; a missing/zero gold finish price disables that purchase.
 
 ## Offline evidence
 
@@ -24,6 +24,7 @@ Precondition: install `LibertyFramework.net.dll` and `config/weapon-catalog.json
 4. With two owned same-category weapons, take one from storage while carrying the other. Expect the displaced owned record in the same stash or trunk with its original instance ID. The taken weapon should retain its own instance ID. Confirm both IDs are distinct and the log has `arsenal_take_displaced`.
 5. With a purchased owned weapon carried, get **wasted**. Return to the last safehouse stash; its record should retain the same instance ID. Repeat from a save and get **busted**; expect carried weapons to be gone. Restore the backup state after destructive test scenarios.
 6. Carry vanilla pistol ID 7 at a safehouse. Open **ARSENAL**, select **Buy gold finish ($500)** and confirm with **A** twice. Expect money to fall by exactly $500, the visible pistol to become gold ID 58, ammo unchanged, and the same `instanceId` in state with `progression: 1`. Choose **Equip factory finish** with **A**; expect the original model ID 7 and no charge. Choose **Equip gold finish** again; expect gold ID 58 and no charge. Store/take that pistol and reload to confirm the unlock and identity persist. If the player's existing `arsenal.json` lacks `gunsmithGoldFinishPrice`, the purchase row should be absent while storage still works.
+7. At that safehouse, carry gold pistol 58 and choose **Buy Match grip ($350)** from the compact storage panel. Press **A** twice. Expect $350 charged once, `match-grip` in the carried record's attachments, and `attachment_bloom=0.75` in the gunplay state log after firing. Four quick shots should bloom less than before fitting. Store/take and reload; attachment and effect should persist with the same `instanceId`.
 
 ## Integration
 

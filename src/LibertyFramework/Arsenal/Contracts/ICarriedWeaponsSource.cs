@@ -8,5 +8,7 @@ namespace LibertyFramework.Arsenal.Contracts
     {
         int Revision { get; }
         IList<CarriedWeapon> Carried { get; }
+        // Active physical weapon modifier; 1.0 when no supported attachment is fitted.
+        double PerShotBloomMultiplier(int weaponId);
     }
 }

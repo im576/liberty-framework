@@ -17,10 +17,14 @@ namespace LibertyFramework.Verify
             check.True("catalog has service pistol replacement pair", catalog.Find(7).Family == catalog.Find(9).Family &&
                 catalog.Find(7).Role == "replacement" && catalog.Find(9).Role == "replacement", "");
             check.True("catalog registers existing CE add-on", catalog.Find(59).Role == "add-on" && catalog.Find(59).Model == "lf_gold_carbine", "");
+            AttachmentOption grip = catalog.FindAttachment("match-grip");
+            check.True("gold pistol has a priced match grip with bounded bloom effect", grip != null &&
+                grip.Price > 0 && grip.PerShotBloomMultiplier > 0 && grip.PerShotBloomMultiplier < 1 &&
+                catalog.Find(58).Attachments.Contains(grip.Id), "");
 
             ArsenalState state = new ArsenalState();
             WeaponRecord weapon = new WeaponRecord(); weapon.WeaponId = 7; weapon.Owned = true; weapon.Finish = "factory";
-            weapon.Attachments = new List<string>(); weapon.Attachments.Add("prototype-optic"); weapon.Progression = 3;
+            weapon.Attachments = new List<string>(); weapon.Attachments.Add("match-grip"); weapon.Progression = 3;
             WeaponIdentity.Ensure(weapon);
             string originalId = weapon.InstanceId;
             state.CarriedRecords.Add(weapon);
@@ -36,7 +40,7 @@ namespace LibertyFramework.Verify
                 ArsenalState loaded = ArsenalStateStore.LoadOrEmpty(path, error => { throw error; });
                 WeaponRecord carried = loaded.CarriedRecords[0];
                 check.True("physical weapon metadata survives state round trip", carried.InstanceId == originalId &&
-                    carried.Finish == "factory" && carried.Progression == 3 && carried.Attachments[0] == "prototype-optic", "");
+                    carried.Finish == "factory" && carried.Progression == 3 && carried.Attachments[0] == "match-grip", "");
                 WeaponRecord transferred = carried.Clone(); loaded.CarriedRecords.Clear();
                 ArsenalPolicy.FindOrAdd(loaded.VehicleTrunks, "lvs:owned_42").Weapons.Add(transferred);
                 JsonStore.Save(path, loaded);
@@ -49,7 +53,7 @@ namespace LibertyFramework.Verify
                 JsonStore.Save(path, restored);
                 ArsenalState atHome = ArsenalStateStore.LoadOrEmpty(path, error => { throw error; });
                 check.True("safehouse transfer retains physical identity and metadata", atHome.SafehouseStashes[0].Weapons[0].InstanceId == originalId &&
-                    atHome.SafehouseStashes[0].Weapons[0].Attachments[0] == "prototype-optic", "");
+                    atHome.SafehouseStashes[0].Weapons[0].Attachments[0] == "match-grip", "");
                 WeaponRecord upgraded = atHome.SafehouseStashes[0].Weapons[0];
                 upgraded.WeaponId = 58; upgraded.Finish = "gold-test";
                 upgraded.CatalogId = "gold-test-pistol"; upgraded.Progression = 1;

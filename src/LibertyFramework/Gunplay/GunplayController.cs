@@ -87,6 +87,7 @@ namespace LibertyFramework.Gunplay
         private int playerIndex;
         private uint playerPed;
         private int lastAppliedShots;
+        private double lastAttachmentBloomMultiplier = 1.0;
         private bool loggedOwnerMismatch;
         private bool loggedCameraCrossCheck;
         private bool useShdnDirection;
@@ -205,6 +206,7 @@ namespace LibertyFramework.Gunplay
                 if (weaponId != lastWeaponId)
                 {
                     OnWeaponChanged(weaponId, config);
+                    lastAttachmentBloomMultiplier = 1.0;
                 }
                 activeWeaponId = weaponId;
                 activeProfile = config.FindWeapon(weaponId);
@@ -220,10 +222,12 @@ namespace LibertyFramework.Gunplay
                 if (activeProfile != null && shots > 0)
                 {
                     double recoilMultiplier = RecoilMultiplier.For(activeProfile.Recoil, config.Movement, state);
+                    ICarriedWeaponsSource attachmentSource = ArsenalRegistry.CarriedWeapons;
+                    lastAttachmentBloomMultiplier = attachmentSource != null ? attachmentSource.PerShotBloomMultiplier(weaponId) : 1.0;
                     for (int shot = 0; shot < shots; shot++)
                     {
                         recoil.AddShot(activeProfile.Recoil, now, recoilMultiplier);
-                        spread.AddShot(activeProfile.Spread, now);
+                        spread.AddShot(activeProfile.Spread, now, lastAttachmentBloomMultiplier);
                     }
                     lastShotMilliseconds = now;
                     lastAppliedShots += shots;
@@ -283,7 +287,8 @@ namespace LibertyFramework.Gunplay
                     lastStateLogMilliseconds = now;
                     RuntimeLog.Info("gunplay_state weapon=" + weaponId + " profile=" + activeProfile.ProfileName + " state=" + state.Describe() +
                         " cone=" + currentConeDegrees.ToString("0.00") + " accuracy=" + writtenAccuracy.ToString("0.000") + " gain=" + calibrator.Gain.ToString("0.000") +
-                        " aimcam=" + aimCameraActive + " kick_ready=" + KickReady(config) + " shots=" + lastAppliedShots);
+                        " aimcam=" + aimCameraActive + " kick_ready=" + KickReady(config) + " shots=" + lastAppliedShots +
+                        " attachment_bloom=" + lastAttachmentBloomMultiplier.ToString("0.00"));
                 }
             }
             catch (Exception error)

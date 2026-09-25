@@ -77,6 +77,19 @@ namespace LibertyFramework.Arsenal
 
         int ICarriedWeaponsSource.Revision { get { return revision; } }
         IList<CarriedWeapon> ICarriedWeaponsSource.Carried { get { return new List<CarriedWeapon>(presentation); } }
+        double ICarriedWeaponsSource.PerShotBloomMultiplier(int weaponId)
+        {
+            if (weaponCatalog == null) { return 1.0; }
+            WeaponRecord record = Find(carried, weaponId);
+            if (record == null || record.Attachments == null) { return 1.0; }
+            double multiplier = 1.0;
+            foreach (string id in record.Attachments)
+            {
+                AttachmentOption option = weaponCatalog.FindAttachment(id);
+                if (option != null) { multiplier *= option.PerShotBloomMultiplier; }
+            }
+            return multiplier;
+        }
 
         private void OnTick(object sender, EventArgs args)
         {
@@ -786,6 +799,36 @@ namespace LibertyFramework.Arsenal
             {
                 items.Add(MenuItem.Action("Equip factory finish", () => RunAction(() => ChangePistolFinish(choice, false))));
             }
+            if (choice.WeaponId == 58)
+            {
+                AttachmentOption grip = weaponCatalog.FindAttachment("match-grip");
+                WeaponCatalogEntry pistolEntry = weaponCatalog.Find(choice.WeaponId);
+                if (grip != null && pistolEntry != null && pistolEntry.Attachments.Contains(grip.Id))
+                {
+                    if (choice.Attachments != null && choice.Attachments.Contains(grip.Id))
+                        { items.Add(MenuItem.Info(() => grip.Label + " fitted")); }
+                    else
+                        { items.Add(MenuItem.Confirmed("Buy " + grip.Label + " ($" + grip.Price + ")", () => RunAction(() => BuyAttachment(choice, grip)))); }
+                }
+            }
+        }
+
+        private string BuyAttachment(WeaponRecord record, AttachmentOption option)
+        {
+            if (Player == null || Player.Character == null || !StorageAllowed() || Find(carried, record.WeaponId) != record ||
+                record.WeaponId != 58 || weaponCatalog == null ||
+                weaponCatalog.Find(58) == null || !weaponCatalog.Find(58).Attachments.Contains(option.Id))
+                { return "Attachment unavailable"; }
+            WeaponIdentity.Ensure(record);
+            if (record.Attachments.Contains(option.Id)) { return "Already fitted"; }
+            if (Player.Money < option.Price) { return "Not enough money"; }
+            Player.Money = Player.Money - option.Price;
+            previousMoney = Player.Money; moneyDecreaseAt = -1;
+            record.Attachments.Add(option.Id);
+            Persist();
+            RuntimeLog.Info("arsenal_gunsmith_attachment instance=" + record.InstanceId + " id=" + option.Id +
+                " bloom_multiplier=" + option.PerShotBloomMultiplier.ToString("0.00") + " price=" + option.Price);
+            return option.Label + " fitted";
         }
 
         private static string Describe(WeaponRecord record)
