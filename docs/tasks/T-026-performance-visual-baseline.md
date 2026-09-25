@@ -2,6 +2,12 @@
 
 Status: **NEEDS-PLAYTEST**
 
+## Framework-off result and targeted profile (2026-09-25)
+
+The owner reports that with Liberty Framework's DLL absent, the game feels much smoother and generally playable, though random drops remain. The game loaded LVS, ran from about 00:34:13 to 00:36:50, and exited normally. WER also shows a separate attempted startup crash at 00:32:10 (`0xc0000005`, unknown module), so startup reliability remains open even with the framework absent. The smoothness report is qualitative: no PresentMon CSV was captured, and game focus/scene were not instrumented.
+
+A diagnostic build now adds five low-cost per-tick timing buckets to `GunplayController`: setup/input, camera, bullet audit, weapon updates, and HUD/debug. It logs their average and maximum alongside the existing 30-second performance line. It does not change the gameplay calculations. Build: 113 source files, zero errors/warnings; offline verifier: 339 passed, 0 failed. The diagnostic DLL SHA-256 is `32E2FAEDA9DE19DD4C9C7468C778D7089BDC7ADBB98B549791BBDA5F7456699C`. The prior installed DLL remains at `D:\GTAIV-Reborn-Tools\baseline\framework-off-test-20260925\LibertyFramework.net.dll` with SHA-256 `F45293030B0C1CCB2562FC5A08F1D2E76A955C0ECAE2CCA808B0F43A0FEE9E51`.
+
 ## Startup crash isolation (2026-09-25)
 
 The owner's next attempt froze on the loading screen, then crashed at 00:13:37. Windows Application Error 1000 records `GTAIV.exe` 1.2.0.59 faulting in `scripthook.dll` 0.5.1.0 at offset `0x00020861`, exception `0xc0000417`. ScriptHookDotNet logged Direct3D device creation at 00:13:23, then found the Liberty Framework assembly and began loading `LibertyVehicleServicesCE.CS` at 00:13:27; no Liberty Framework or LVS startup entry appeared for this attempt. DXVK initialized the RX 570 without an explicit error in its log. Every copied baseline config hash still matches. This narrows the failure to startup script/hook interaction, but the faulting module alone does not prove which mod caused it.
@@ -37,10 +43,10 @@ The owner reports 15–20 FPS with continual dips and flicker in shadows, lights
 
 ## Human test steps
 
-1. Launch GTA IV through Steam and load the same save/location. This run has Liberty Framework temporarily disabled; its menu, gunplay, dismemberment, Arsenal, and holsters will be absent. Violent Liberty and Liberty Vehicle Services should remain. Note whether loading completes.
-2. Stay in the game window and try the same street or route for 2–3 minutes. Report whether the choppiness and building/shadow/light flicker remain, including approximate FPS if an overlay is available. This A/B alone is qualitative until an external frame trace exists.
-3. For exact frame timing, open **PowerShell as Administrator** after the game loads. From `C:\Users\IM576\GTAIV-Reborn`, run `./tools/capture-performance.ps1 -Label framework-off-street -Seconds 120`, then return focus to the game for the capture. A nonempty CSV should appear under `D:\GTAIV-Reborn-Tools\captures`.
-4. Report the run result. Restore the framework DLL only with GTA IV closed. Do not mark this task DONE until comparable in-game captures and a visual observation exist.
+1. With the diagnostic Liberty Framework DLL installed, launch GTA IV through Steam and load the same save/location. All framework features should be present; report any loading failure.
+2. Stay in the game window for at least 90 seconds, using the same street/route and then briefly aiming/firing. The framework log should print at least two `performance ... phase_setup_avg_ms=... phase_camera_avg_ms=...` lines. Report whether choppiness returns and where it is most noticeable.
+3. For exact external frame timing, open **PowerShell as Administrator** after the game loads. From `C:\Users\IM576\GTAIV-Reborn`, run `./tools/capture-performance.ps1 -Label framework-profile -Seconds 120`, then return focus to the game for the capture. A nonempty CSV should appear under `D:\GTAIV-Reborn-Tools\captures`.
+4. Close GTA IV before changing DLLs. The backup above can restore the prior framework build, or be left out for the proven smoother comparison state. Do not mark this task DONE until the phase logs, comparable frame traces, and visual observation exist.
 
 ## Next analysis
 

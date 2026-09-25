@@ -38,6 +38,7 @@ namespace LibertyFramework.Gunplay
 
         private readonly Stopwatch clock = Stopwatch.StartNew();
         private readonly TickTimings tickTimings = new TickTimings();
+        private readonly GunplayPhaseTimings phaseTimings = new GunplayPhaseTimings();
         private int lastTimingReportTicks;
         private readonly GunplayConfigStore store;
         private readonly ControllerInput controller = new ControllerInput();
@@ -150,6 +151,10 @@ namespace LibertyFramework.Gunplay
         {
             if (disabled) { return; }
             long tickStart = Stopwatch.GetTimestamp();
+            long setupEnd = 0;
+            long cameraEnd = 0;
+            long bulletsEnd = 0;
+            long weaponEnd = 0;
             try
             {
                 double now = Now;
@@ -234,6 +239,7 @@ namespace LibertyFramework.Gunplay
                     lastAppliedShots += shots;
                 }
 
+                setupEnd = Stopwatch.GetTimestamp();
                 int gameCamera = Natives.GameCamHandle();
                 uint aimCam = 0;
                 // Drive-by uses the vehicle follow camera; on foot the third-person aim camera.
@@ -255,12 +261,14 @@ namespace LibertyFramework.Gunplay
                         Game.Resolution.Height != projectionHeight)) { MeasureProjection(gameCamera); }
                 }
 
+                cameraEnd = Stopwatch.GetTimestamp();
                 // Each engine feature fails independently: an exception disables only that feature.
                 if (bullets != null)
                 {
                     try { AuditBullets(config, gameCamera, weaponId, now); }
                     catch (Exception error) { bullets = null; RuntimeLog.Error("feature_disabled shot_audit error=" + error); }
                 }
+                bulletsEnd = Stopwatch.GetTimestamp();
                 try { UpdateSpread(config, now, deltaSeconds); }
                 catch (Exception error) { DisableSpread(error); }
                 try { UpdateRecoil(config, now, deltaSeconds, aimCam, gameCamera); }
@@ -287,6 +295,7 @@ namespace LibertyFramework.Gunplay
                     try { RestoreFeel(); }
                     catch (Exception restoreError) { RuntimeLog.Error("restore_feel_failed error=" + restoreError); }
                 }
+                weaponEnd = Stopwatch.GetTimestamp();
                 if (DebugOverlay && !debugHitDisabled && now - lastDebugHitSampleMilliseconds >= config.DebugHit.ScanIntervalMilliseconds)
                 {
                     try { debugHit.Sample(ped, config.DebugHit.ScanRadiusMeters, now, config.DebugHit.WorldClassificationDelayMilliseconds); lastDebugHitSampleMilliseconds = now; }
@@ -312,13 +321,15 @@ namespace LibertyFramework.Gunplay
             }
             finally
             {
-                tickTimings.Observe(tickStart, Stopwatch.GetTimestamp());
+                long tickEnd = Stopwatch.GetTimestamp();
+                tickTimings.Observe(tickStart, tickEnd);
+                if (weaponEnd != 0) { phaseTimings.Observe(tickStart, setupEnd, cameraEnd, bulletsEnd, weaponEnd, tickEnd); }
                 int now = Environment.TickCount;
                 if (lastTimingReportTicks == 0) { lastTimingReportTicks = now; }
                 else if (unchecked(now - lastTimingReportTicks) >= TimingReportMilliseconds)
                 {
                     lastTimingReportTicks = now;
-                    RuntimeLog.Info("performance " + tickTimings.ReportAndReset());
+                    RuntimeLog.Info("performance " + tickTimings.ReportAndReset() + " " + phaseTimings.ReportAndReset());
                 }
             }
         }
