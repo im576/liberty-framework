@@ -1,0 +1,32 @@
+# W-5 review: both slings and slung long guns in daylight from four sides.
+events on
+god on
+wanted 0
+goto east_park
+wait 4000
+time 13 0
+weather 1
+give 15 200
+give 14 200
+give 7 100
+select 7
+wait 3000
+expect holster_sling_attached 15
+hud off
+cam 0 2.2 0.4
+wait 1500
+shot front
+cam 180 2.2 0.4
+wait 1500
+shot back
+cam 90 2.0 0.4
+wait 1500
+shot left
+cam 270 2.0 0.4
+wait 1500
+shot right
+cam 150 1.4 0.6
+wait 1500
+shot back_close
+cam off
+hud on

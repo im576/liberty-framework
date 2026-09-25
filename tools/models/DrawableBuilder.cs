@@ -10,6 +10,11 @@ namespace LibertyFramework.Models
     // the graphics segment is rebuilt from the new mesh: vertices at offset 0, indices after them (16-byte aligned).
     internal static class DrawableBuilder
     {
+        // Generated models keep their whole graphics segment in ONE page (verified in game 2026-09-25: a strap written as
+        // 12 x 2 KB pages rendered vertices past the first block as garbage; the same mesh in one 32 KB page rendered
+        // correctly). The multi-page placement below reproduces Rockstar's files and is used only by the round-trip selftest.
+        internal static bool SinglePage = true;
+
         internal static RscResource Build(DrawableFile template, Mesh mesh, string textureName)
         {
             mesh.Validate();
@@ -24,7 +29,8 @@ namespace LibertyFramework.Models
             int vertexBytes = mesh.Vertices.Count * layout.Stride;
             int indexBytes = mesh.Indices.Count * 2;
             int shift = ShiftFor(Math.Max(vertexBytes, indexBytes));
-            int indexStart = Place(vertexBytes, indexBytes, shift);
+            if (SinglePage) { shift = 0; while ((256 << shift) < Align(vertexBytes, 16) + indexBytes) { shift++; } }
+            int indexStart = SinglePage ? Align(vertexBytes, 16) : Place(vertexBytes, indexBytes, shift);
             int graphicsUsed = indexStart + indexBytes;
             int graphicsSize;
             uint flags = EncodeGraphics(template.Resource.Flags, graphicsUsed, shift, out graphicsSize);

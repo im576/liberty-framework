@@ -509,6 +509,10 @@ namespace LibertyFramework.CombatEffects
             return best;
         }
 
+        // Same requests as the Gore Test page (1 effect gallery, 2 cut left arm, 3 cut right leg, 4 cut head, 5 wound
+        // leak on the nearest NPC); used by the autopilot. Runs on the next tick.
+        internal void RequestGoreTest(int request) { goreTestRequest = request; }
+
         private List<MenuItem> GoreTestItems()
         {
             return new List<MenuItem> {

@@ -231,6 +231,8 @@ namespace LibertyFramework.Models
         private static int SelfTest(string game, string img)
         {
             ArchiveSource archive = ArchiveSource.Open(game, img);
+            // Compare against Rockstar's own multi-page layout; generated models use one page.
+            DrawableBuilder.SinglePage = false;
             int identical = 0, tested = 0;
             Dictionary<string, int> differences = new Dictionary<string, int>();
             foreach (string name in archive.Names)

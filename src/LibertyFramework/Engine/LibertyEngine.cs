@@ -28,6 +28,10 @@ namespace LibertyFramework.Engine
         public CommandRegistry Commands { get; private set; }
         public EntityService Entities { get; private set; }
         public EngineMemory Memory { get; private set; }
+        public InputService Input { get; private set; }
+        public AnimationService Animations { get; private set; }
+        public UiService Ui { get; private set; }
+        public StateService State { get; private set; }
         public EngineConfig Config { get; private set; }
         public IReadOnlyList<Module> Modules { get { return modules; } }
         public int Frame { get; private set; }
@@ -50,6 +54,10 @@ namespace LibertyFramework.Engine
             Commands = new CommandRegistry();
             Entities = new EntityService();
             Memory = new EngineMemory();
+            Input = new InputService();
+            Animations = new AnimationService();
+            Ui = new UiService();
+            State = new StateService();
         }
 
         internal static void Boot(EngineHost host)
@@ -149,6 +157,8 @@ namespace LibertyFramework.Engine
             catch (Exception error) { RuntimeLog.Error("engine_world_failed error=" + error); }
             CostMeter.Add("engine.world", mark);
 
+            try { Input.Poll(); }
+            catch (Exception error) { RuntimeLog.Error("engine_input_failed error=" + error.Message); }
             mark = Stopwatch.GetTimestamp();
             Scheduler.Run();
             CostMeter.Add("engine.scheduler", mark);
@@ -196,6 +206,8 @@ namespace LibertyFramework.Engine
                 try { module.Render(args); }
                 catch (Exception error) { Fail(module, error); }
             }
+            try { Ui.Draw(args); }
+            catch (Exception error) { RuntimeLog.Error("engine_ui_draw_failed error=" + error.Message); }
         }
 
         // Disables one module: stops its coroutines, drops its subscriptions and entities, and tells the others.

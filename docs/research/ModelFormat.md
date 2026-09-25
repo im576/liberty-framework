@@ -34,6 +34,12 @@ All inputs are read from the player's own game files. Nothing from the game is c
 - **Page size:** the game's files size pages from the largest buffer: page shift = `log2(nextPow2(largest buffer)) - 12`.
 - **Buffer placement:** a buffer never straddles an aligned block of `max(4 KB, 8 pages)`; it moves to the next block instead. The index buffer follows the vertices, 16-byte aligned. With both rules, the rebuilt props match byte for byte.
 
+## In-game finding: one graphics page for generated models (2026-09-25)
+
+The first strap build used Rockstar's placement: 12 pages of 2 KB, with the 21 KB vertex buffer at offset 0. In game, part of the strap rendered correctly and the rest became huge planes. So vertex data beyond a page block was not where the pointer arithmetic expected it.
+
+The same mesh with the whole graphics segment in **one** 32 KB page (flags count 1, shift 7) rendered correctly from all sides (autopilot run `sling-review`). The builder therefore writes generated models as a single page. The multi-page placement stays only for the round-trip self-test against Rockstar's files. Why their multi-page buffers work is still open.
+
 ## RPF2 archives (`playerped.rpf`)
 - **Header:** magic `RPF2`, TOC size, entry count, an unused word, then an encrypted flag.
 - **TOC:** located at 0x800 and AES-encrypted with the IMG key.
