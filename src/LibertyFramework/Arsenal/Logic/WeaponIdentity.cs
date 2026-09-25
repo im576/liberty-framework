@@ -37,5 +37,10 @@ namespace LibertyFramework.Arsenal.Logic
             foreach (WeaponRecord record in records) { if (record.WeaponId == weaponId) { return record; } }
             return null;
         }
+
+        internal static bool CanTake(IList<WeaponRecord> carried, WeaponRecord stored)
+        {
+            return Find(carried, stored.WeaponId) == null;
+        }
     }
 }

@@ -129,8 +129,16 @@ namespace LibertyFramework.Arsenal
         {
             config = JsonStore.Load<ArsenalConfig>(LibertyPaths.ArsenalConfig);
             ArsenalConfigValidator.Validate(config);
-            weaponCatalog = JsonStore.Load<WeaponCatalog>(LibertyPaths.WeaponCatalog);
-            weaponCatalog.Validate();
+            try
+            {
+                weaponCatalog = JsonStore.Load<WeaponCatalog>(LibertyPaths.WeaponCatalog);
+                weaponCatalog.Validate();
+            }
+            catch (Exception error)
+            {
+                weaponCatalog = null;
+                RuntimeLog.Error("arsenal_catalog_unavailable legacy_weapons_active error=" + error);
+            }
             int index = Function.Call<int>("GET_CURRENT_EPISODE");
             episode = index == 0 ? "iv" : index == 1 ? "tlad" : index == 2 ? "tbogt" : "episode_" + index;
             statePath = LibertyPaths.ArsenalState(episode);
@@ -210,7 +218,7 @@ namespace LibertyFramework.Arsenal
                     RuntimeLog.Info("arsenal_gain id=" + record.WeaponId + " owned=" + record.Owned + " mission=" + mission);
                 }
                 WeaponIdentity.Ensure(record);
-                WeaponCatalogEntry entry = weaponCatalog.Find(record.WeaponId);
+                WeaponCatalogEntry entry = weaponCatalog == null ? null : weaponCatalog.Find(record.WeaponId);
                 if (entry != null && string.IsNullOrEmpty(record.CatalogId))
                 {
                     record.CatalogId = entry.Id;
@@ -731,6 +739,25 @@ namespace LibertyFramework.Arsenal
             if (bin == null) { items.Add(MenuItem.Info(() => "Stand at a trunk rear or safehouse stash")); return items; }
             StorageBin selected = bin;
             items.Add(MenuItem.Info(() => (trunk ? "TRUNK " : "SAFEHOUSE ") + selected.Id));
+            if (!trunk && weaponCatalog != null)
+            {
+                WeaponRecord pistol = Find(carried, 7) ?? Find(carried, 58);
+                if (pistol != null)
+                {
+                    WeaponRecord choice = pistol;
+                    items.Add(MenuItem.Info(() => "GUNSMITH: service pistol finish"));
+                    if (choice.WeaponId == 7 && (choice.Progression > 0 || config.GunsmithGoldFinishPrice > 0))
+                    {
+                        string label = choice.Progression > 0 ? "Equip gold finish" :
+                            "Buy gold finish ($" + config.GunsmithGoldFinishPrice + ")";
+                        items.Add(MenuItem.Confirmed(label, () => RunAction(() => ChangePistolFinish(choice, true))));
+                    }
+                    else
+                    {
+                        items.Add(MenuItem.Action("Equip factory finish", () => RunAction(() => ChangePistolFinish(choice, false))));
+                    }
+                }
+            }
             foreach (WeaponRecord record in carried)
             {
                 WeaponRecord choice = record;
@@ -765,9 +792,47 @@ namespace LibertyFramework.Arsenal
             return "Stored " + record.WeaponId;
         }
 
+        private string ChangePistolFinish(WeaponRecord record, bool gold)
+        {
+            if (Player == null || Player.Character == null || !StorageAllowed()) { return "Gunsmith unavailable"; }
+            if (string.IsNullOrEmpty(state.LastSafehouseId) ||
+                Find(carried, record.WeaponId) != record || (record.WeaponId != 7 && record.WeaponId != 58))
+                { return "Service pistol not available"; }
+            bool purchase = gold && record.Progression == 0;
+            if (purchase && config.GunsmithGoldFinishPrice <= 0) { return "Gold finish price not configured"; }
+            if (purchase && Player.Money < config.GunsmithGoldFinishPrice) { return "Not enough money"; }
+            int sourceId = record.WeaponId;
+            int targetId = gold ? 58 : 7;
+            GTA.value.Weapon source = Player.Character.Weapons.FromType((Weapon)sourceId);
+            if (!source.isPresent) { return "Pistol no longer carried"; }
+            int ammo = source.Ammo;
+            ArsenalRegistry.RaiseWeaponsRemoving("gunsmith_finish_switch");
+            Player.Character.Weapons.Select((Weapon)targetId);
+            GTA.value.Weapon target = Player.Character.Weapons.FromType((Weapon)targetId);
+            if (!target.isPresent) { return "Finish switch failed; no charge"; }
+            target.Ammo = ammo;
+            if (purchase)
+            {
+                Player.Money = Player.Money - config.GunsmithGoldFinishPrice;
+                previousMoney = Player.Money; moneyDecreaseAt = -1;
+                record.Progression = 1;
+            }
+            record.WeaponId = targetId;
+            record.CatalogId = gold ? "gold-test-pistol" : "service-pistol";
+            record.Finish = gold ? "gold-test" : "factory";
+            record.Owned = true;
+            state.OwnedCarried.Remove(sourceId);
+            if (!state.OwnedCarried.Contains(targetId)) { state.OwnedCarried.Add(targetId); }
+            Persist(); RefreshPresentation((int)Player.Character.Weapons.CurrentType);
+            RuntimeLog.Info("arsenal_gunsmith_finish instance=" + record.InstanceId + " from=" + sourceId +
+                " to=" + targetId + " paid=" + purchase + " ammo=" + ammo);
+            return gold ? "Gold finish equipped" : "Factory finish equipped";
+        }
+
         private string Take(WeaponRecord record, StorageBin bin)
         {
             if (Player == null || Player.Character == null || !StorageAllowed()) { return "Storage unavailable"; }
+            if (!WeaponIdentity.CanTake(carried, record)) { return "Already carrying this weapon type; store it first"; }
             WeaponRecord displaced = null;
             foreach (WeaponRecord carriedRecord in carried)
             {

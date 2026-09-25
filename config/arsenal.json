@@ -4,6 +4,7 @@
   "longGunLimit": 2,
   "meleeLimit": 1,
   "purchaseWindowMilliseconds": 1500,
+  "gunsmithGoldFinishPrice": 500,
   "trunkDistanceMeters": 2.5,
   "trunkRearOffsetMeters": 2.0,
   "ownedVehicleMatchMeters": 12.0,

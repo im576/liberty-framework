@@ -1,22 +1,20 @@
-# T-023 — LVS CE body variant workshop labels
+# T-023 — LVS CE body variants
 
-Status: **NEEDS-PLAYTEST**
+Status: **BLOCKED**
 
-## Scope
+## Scope and findings
 
-`tools/extend-lvs-body-variants.ps1` transforms the reviewed MIT Liberty Vehicle Services CE source into an extended script for staging. It calls the existing workshop's extra-geometry probe and relabels available geometry as body variants in its native and fallback menus. Preview, purchase/refund, owned-vehicle INI capture, and restore remain LVS's existing implementation. The script refuses upstream source versions other than the reviewed SHA-256. It introduces no external model or texture and no new native.
+The existing MIT Liberty Vehicle Services CE workshop already probes vehicle extras, previews and charges for them, and saves their states in `scripts/LibertyVehicleServicesCE.owned.ini` for owned-car restore. These extras can include body geometry, but may also be taxi signs, roof lights, or other equipment. A generic relabel as "body variants" was rejected before integration because it would misrepresent those parts.
 
-The exact body shape behind each GTA IV extra slot and which car exposes it need live visual verification. No claim is made that every vehicle has variants or that arbitrary extras form exclusive sets.
+The installed GTA IV 1.2.0.59 assets contain `sultanrs.wft` in `pc/models/cdimages/vehicles.img` and a `sultanrs` definition in `common/data/vehicles.ide`. An offline RSC05 asset probe did not reveal the extra-slot mapping. Secondary reports mention a Sultan RS hood-intake variation, but do not establish its native extra index or behavior on this installed build. No third-party body assets were copied, no LVS derivative is shipped, and no game files were modified.
 
-## Human test steps
+## Blocked
 
-Precondition: orchestrator stages the patched `LibertyVehicleServicesCE.CS` from the reviewed MIT source, preserves its LICENSE/CREDITS and existing INI, then installs only while GTA IV is closed. Back up an owned vehicle before testing.
+Need an in-game probe that logs the available extra indices on an owned Sultan RS and records a screenshot before/after each preview. Once a slot is confirmed as a body part, constrain any workshop label or variant grouping to that model and slot. The current generic **Extras** workshop remains functional and retains LVS ownership/persistence.
 
-1. Drive a registered car to an LVS CE workshop. Use the on-screen workshop key to enter the menu, choose **Body variants** (the former **Extras** item), and select it. If this model reports no variants, try a different GTA IV car and record its model. For a car with variants, each row should say `Body variant <slot>` and preview should visibly change the vehicle body geometry when moving left or right.
-2. Press the workshop **Select/Buy** key shown on screen for one variant. Expect the displayed price to be charged exactly once and the variant to remain after exiting the workshop. Cancel a different preview with the on-screen **Back** key; expect no charge and the prior geometry restored.
-3. With the purchased car registered in LVS, close and relaunch GTA IV. Return to the owned car or request delivery. Expect the purchased variant restored from `scripts/LibertyVehicleServicesCE.owned.ini` `extras=` on its `[owned.<id>]` record.
-4. Damage a panel near the variant, repair at the workshop, and test trunk access at the rear. Expect normal collision, damage, and trunk behavior. Repeat a load in TLAD or TBOGT if available and report which model/slot was tested.
+## Human test steps for the spike
 
-## Integration
-
-Run `tools/extend-lvs-body-variants.ps1 -LvsDirectory <reviewed source root> -OutputPath <staging>/scripts/LibertyVehicleServicesCE.CS` during packaging. It generated an output against the reviewed local source without touching the game. This is an MIT derivative; ship the upstream LICENSE and CREDITS beside the generated script.
+1. In IV free roam, drive or register a **Sultan RS** and take it to an LVS workshop. Use the workshop's on-screen controls to open **Extras**.
+2. For each available slot, move **Left/Right** to preview on/off, photograph the car from the same camera angle, and record the slot number plus the visibly changed part. Press the on-screen **Back** key to cancel; verify the car returns to its prior state and no money is charged.
+3. If a hood intake, spoiler, bumper, or other actual body panel is identified, buy that slot with the on-screen **Select** key, close and relaunch GTA IV, and revisit the same owned car. Verify the part is restored and its `extras=` entry is present under the matching `[owned.<id>]` record in `scripts/LibertyVehicleServicesCE.owned.ini`.
+4. Damage and repair nearby panels, open the trunk, and check collision and vehicle entry. Report the model, slot, screenshot pair, INI excerpt, and any log errors so the model-scoped extension can be implemented.
