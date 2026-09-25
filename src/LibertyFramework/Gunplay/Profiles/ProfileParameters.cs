@@ -32,9 +32,13 @@ namespace LibertyFramework.Gunplay.Profiles
             Add("recoil.hipFireMultiplier", p => p.Recoil.HipFireMultiplier, (p, v) => p.Recoil.HipFireMultiplier = v);
             Add("spread.baseDegrees", p => p.Spread.BaseDegrees, (p, v) => p.Spread.BaseDegrees = v);
             Add("spread.perShotDegrees", p => p.Spread.PerShotDegrees, (p, v) => p.Spread.PerShotDegrees = v);
+            Add("spread.burstShotCount", p => p.Spread.BurstShotCount, (p, v) => p.Spread.BurstShotCount = (int)Math.Round(v));
+            Add("spread.burstPerShotMultiplier", p => p.Spread.BurstPerShotMultiplier, (p, v) => p.Spread.BurstPerShotMultiplier = v);
+            Add("spread.chainResetMilliseconds", p => p.Spread.ChainResetMilliseconds, (p, v) => p.Spread.ChainResetMilliseconds = v);
             Add("spread.maxDegrees", p => p.Spread.MaxDegrees, (p, v) => p.Spread.MaxDegrees = v);
             Add("spread.recoveryDelayMilliseconds", p => p.Spread.RecoveryDelayMilliseconds, (p, v) => p.Spread.RecoveryDelayMilliseconds = v);
             Add("spread.recoveryDegreesPerSecond", p => p.Spread.RecoveryDegreesPerSecond, (p, v) => p.Spread.RecoveryDegreesPerSecond = v);
+            Add("spread.shortBurstRecoveryDegreesPerSecond", p => p.Spread.ShortBurstRecoveryDegreesPerSecond, (p, v) => p.Spread.ShortBurstRecoveryDegreesPerSecond = v);
             Add("spread.movingAddDegrees", p => p.Spread.MovingAddDegrees, (p, v) => p.Spread.MovingAddDegrees = v);
             Add("spread.crouchedMultiplier", p => p.Spread.CrouchedMultiplier, (p, v) => p.Spread.CrouchedMultiplier = v);
             Add("spread.coverMultiplier", p => p.Spread.CoverMultiplier, (p, v) => p.Spread.CoverMultiplier = v);

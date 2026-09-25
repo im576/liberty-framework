@@ -156,9 +156,21 @@ namespace LibertyFramework.Verify
                 for (int frame = 0; frame < 20; frame++) { time += 16.65; model.Step(pistol, config.Movement, still, time, 0.01665); }
             }
             double rapid = model.Current(pistol, config.Movement, still);
-            check.True("pistol rapid fire (333 ms) widens spread", rapid > first * 2, "spread=" + rapid.ToString("0.00"));
+            check.True("paced pistol taps remain tight", rapid < first * 1.5, "spread=" + rapid.ToString("0.00"));
             for (int frame = 0; frame < 400; frame++) { time += 16.65; model.Step(pistol, config.Movement, still, time, 0.01665); }
             check.Near("spread recovers to base at rest", pistol.BaseDegrees, model.Current(pistol, config.Movement, still), 1e-9);
+
+            SpreadProfile carbine = config.FindWeapon(59).Spread;
+            SpreadModel carbineModel = new SpreadModel();
+            time = 0;
+            for (int shot = 0; shot < 4; shot++) { carbineModel.AddShot(carbine, time); time += 100; carbineModel.Step(carbine, config.Movement, still, time, 0.1); }
+            double shortBurst = carbineModel.Current(carbine, config.Movement, still);
+            for (int shot = 0; shot < 8; shot++) { carbineModel.AddShot(carbine, time); time += 100; carbineModel.Step(carbine, config.Movement, still, time, 0.1); }
+            double longSpray = carbineModel.Current(carbine, config.Movement, still);
+            check.True("short carbine burst remains below long spray", shortBurst < longSpray && shortBurst < carbine.MaxDegrees * 0.6,
+                "short=" + shortBurst.ToString("0.00") + " long=" + longSpray.ToString("0.00"));
+            for (int frame = 0; frame < 200; frame++) { time += 16.65; carbineModel.Step(carbine, config.Movement, still, time, 0.01665); }
+            check.Near("long spray eventually recovers", carbine.BaseDegrees, carbineModel.Current(carbine, config.Movement, still), 1e-9);
 
             ShooterState running = still;
             running.SpeedMetersPerSecond = 7;

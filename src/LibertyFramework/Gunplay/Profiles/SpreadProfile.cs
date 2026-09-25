@@ -12,9 +12,13 @@ namespace LibertyFramework.Gunplay.Profiles
     {
         [DataMember(Name = "baseDegrees", IsRequired = true)] internal double BaseDegrees;
         [DataMember(Name = "perShotDegrees", IsRequired = true)] internal double PerShotDegrees;
+        [DataMember(Name = "burstShotCount", IsRequired = true)] internal int BurstShotCount;
+        [DataMember(Name = "burstPerShotMultiplier", IsRequired = true)] internal double BurstPerShotMultiplier;
+        [DataMember(Name = "chainResetMilliseconds", IsRequired = true)] internal double ChainResetMilliseconds;
         [DataMember(Name = "maxDegrees", IsRequired = true)] internal double MaxDegrees;
         [DataMember(Name = "recoveryDelayMilliseconds", IsRequired = true)] internal double RecoveryDelayMilliseconds;
         [DataMember(Name = "recoveryDegreesPerSecond", IsRequired = true)] internal double RecoveryDegreesPerSecond;
+        [DataMember(Name = "shortBurstRecoveryDegreesPerSecond", IsRequired = true)] internal double ShortBurstRecoveryDegreesPerSecond;
         [DataMember(Name = "movingAddDegrees", IsRequired = true)] internal double MovingAddDegrees;
         [DataMember(Name = "crouchedMultiplier", IsRequired = true)] internal double CrouchedMultiplier;
         [DataMember(Name = "coverMultiplier", IsRequired = true)] internal double CoverMultiplier;

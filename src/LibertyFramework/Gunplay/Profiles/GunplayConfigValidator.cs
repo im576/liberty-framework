@@ -43,6 +43,7 @@ namespace LibertyFramework.Gunplay.Profiles
 
             RecoilGlobalSettings recoil = config.RecoilGlobal;
             Positive(errors, "debugHit.scanRadiusMeters", config.DebugHit.ScanRadiusMeters);
+            Positive(errors, "debugHit.scanIntervalMilliseconds", config.DebugHit.ScanIntervalMilliseconds);
             Positive(errors, "debugHit.worldClassificationDelayMilliseconds", config.DebugHit.WorldClassificationDelayMilliseconds);
             AimingSwitchSettings cycling = config.SwitchWhileAiming;
             if ((cycling.PreviousButton != "DPadLeft" && cycling.PreviousButton != "DPadRight") ||
@@ -108,9 +109,13 @@ namespace LibertyFramework.Gunplay.Profiles
 
             NonNegative(errors, owner + " spread.baseDegrees", spread.BaseDegrees);
             NonNegative(errors, owner + " spread.perShotDegrees", spread.PerShotDegrees);
+            if (spread.BurstShotCount < 1) { errors.Add(owner + " spread.burstShotCount must be >= 1"); }
+            Fraction(errors, owner + " spread.burstPerShotMultiplier", spread.BurstPerShotMultiplier);
+            NonNegative(errors, owner + " spread.chainResetMilliseconds", spread.ChainResetMilliseconds);
             if (spread.MaxDegrees < spread.BaseDegrees || spread.MaxDegrees > 30) { errors.Add(owner + " spread.maxDegrees must be >= base and <= 30"); }
             NonNegative(errors, owner + " spread.recoveryDelayMilliseconds", spread.RecoveryDelayMilliseconds);
             NonNegative(errors, owner + " spread.recoveryDegreesPerSecond", spread.RecoveryDegreesPerSecond);
+            Positive(errors, owner + " spread.shortBurstRecoveryDegreesPerSecond", spread.ShortBurstRecoveryDegreesPerSecond);
             NonNegative(errors, owner + " spread.movingAddDegrees", spread.MovingAddDegrees);
             Positive(errors, owner + " spread.crouchedMultiplier", spread.CrouchedMultiplier);
             Positive(errors, owner + " spread.coverMultiplier", spread.CoverMultiplier);

@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using Keys = System.Windows.Forms.Keys;
 using GTA;
+using LibertyFramework.Arsenal;
 using LibertyFramework.Core.Config;
 using LibertyFramework.Core.Input;
 using LibertyFramework.Core.Logging;
@@ -423,6 +424,7 @@ namespace LibertyFramework.DevTools
                 RuntimeLog.Info("devtools_menu_closed");
                 return;
             }
+            if (ArsenalCore.StorageOpen) { return; }
             if (Player != null && Player.CanControlCharacter)
             {
                 controlLocked = true;

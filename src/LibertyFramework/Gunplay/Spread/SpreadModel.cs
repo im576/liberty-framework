@@ -9,6 +9,7 @@ namespace LibertyFramework.Gunplay.Spread
     {
         private double bloomDegrees;
         private double lastShotMilliseconds = double.NegativeInfinity;
+        private int chainShots;
 
         internal double BloomDegrees { get { return bloomDegrees; } }
 
@@ -16,20 +17,27 @@ namespace LibertyFramework.Gunplay.Spread
         {
             bloomDegrees = 0;
             lastShotMilliseconds = double.NegativeInfinity;
+            chainShots = 0;
         }
 
         internal void AddShot(SpreadProfile profile, double nowMilliseconds)
         {
+            if (nowMilliseconds - lastShotMilliseconds > profile.ChainResetMilliseconds) { chainShots = 0; }
+            chainShots++;
             lastShotMilliseconds = nowMilliseconds;
             double headroom = Math.Max(0, profile.MaxDegrees - profile.BaseDegrees);
-            bloomDegrees = Math.Min(headroom, bloomDegrees + profile.PerShotDegrees);
+            double multiplier = chainShots <= profile.BurstShotCount ? profile.BurstPerShotMultiplier : 1.0;
+            bloomDegrees = Math.Min(headroom, bloomDegrees + profile.PerShotDegrees * multiplier);
         }
 
         internal double Step(SpreadProfile profile, MovementSettings movement, ShooterState state, double nowMilliseconds, double deltaSeconds)
         {
             if (nowMilliseconds - lastShotMilliseconds >= profile.RecoveryDelayMilliseconds)
             {
-                bloomDegrees = Math.Max(0, bloomDegrees - profile.RecoveryDegreesPerSecond * deltaSeconds);
+                double rate = chainShots <= profile.BurstShotCount ?
+                    profile.ShortBurstRecoveryDegreesPerSecond : profile.RecoveryDegreesPerSecond;
+                bloomDegrees = Math.Max(0, bloomDegrees - rate * deltaSeconds);
+                if (bloomDegrees == 0 && nowMilliseconds - lastShotMilliseconds > profile.ChainResetMilliseconds) { chainShots = 0; }
             }
             return Current(profile, movement, state);
         }

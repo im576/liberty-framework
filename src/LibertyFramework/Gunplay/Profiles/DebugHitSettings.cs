@@ -8,6 +8,7 @@ namespace LibertyFramework.Gunplay.Profiles
     internal sealed class DebugHitSettings
     {
         [DataMember(Name = "scanRadiusMeters", IsRequired = true)] internal float ScanRadiusMeters;
+        [DataMember(Name = "scanIntervalMilliseconds", IsRequired = true)] internal double ScanIntervalMilliseconds;
         [DataMember(Name = "worldClassificationDelayMilliseconds", IsRequired = true)] internal double WorldClassificationDelayMilliseconds;
     }
 }

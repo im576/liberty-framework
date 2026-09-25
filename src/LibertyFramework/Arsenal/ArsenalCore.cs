@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
+using Keys = System.Windows.Forms.Keys;
 using GTA;
 using GTA.Native;
 using LibertyFramework.Arsenal.Contracts;
 using LibertyFramework.Arsenal.Logic;
 using LibertyFramework.Core.Config;
+using LibertyFramework.Core.Input;
 using LibertyFramework.Core.Logging;
 using LibertyFramework.DevTools;
 using LibertyFramework.DevTools.Menu;
@@ -15,6 +18,7 @@ namespace LibertyFramework.Arsenal
     // All game API access stays on Script ticks, including DevTools actions.
     public sealed class ArsenalCore : Script, ICarriedWeaponsSource
     {
+        internal static bool StorageOpen { get; private set; }
         private ArsenalConfig config;
         private ArsenalState state;
         private string episode;
@@ -40,11 +44,26 @@ namespace LibertyFramework.Arsenal
         private DateTime lastDiscoveryUtc = DateTime.MinValue;
         private bool discoveryDisabled;
         private bool overflowDeferredLogged;
+        private readonly ControllerInput storageInput = new ControllerInput();
+        private readonly GTA.Font storageFont = new GTA.Font(17.0F, FontScaling.Pixel);
+        private readonly GTA.Font storageTitleFont = new GTA.Font(20.0F, FontScaling.Pixel, true, false);
+        private StorageBin activeStorage;
+        private Vehicle nearbyTrunk;
+        private SafehouseRule nearbySafehouse;
+        private List<MenuItem> storageItems = new List<MenuItem>();
+        private int storageSelection;
+        private string storageMessage = "";
+        private bool storageControlLocked;
+        private bool previousStorageKey, previousUp, previousDown, previousSelect, previousBack;
+        private int lastStorageScanTicks;
 
         public ArsenalCore()
         {
             Interval = 30;
+            storageFont.Color = Color.White;
+            storageTitleFont.Color = Color.FromArgb(255, 235, 200, 90);
             Tick += OnTick;
+            PerFrameDrawing += OnStorageDraw;
             AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
             DevToolsPages.Register("ARSENAL", BuildPage);
             RuntimeLog.Info("arsenal_started");
@@ -55,7 +74,7 @@ namespace LibertyFramework.Arsenal
 
         private void OnTick(object sender, EventArgs args)
         {
-            if (disabled) { return; }
+            if (disabled) { if (storageControlLocked) { CloseStorageSafely(); } return; }
             try
             {
                 if (config == null) { Initialize(); }
@@ -69,12 +88,13 @@ namespace LibertyFramework.Arsenal
                 DiscoverSafehouses();
                 ObserveSafehouse(ped);
                 PruneTemporaryTrunks();
-                if (openedTrunk != null && !DevToolsMenu.IsOpen) { CloseTrunk(); }
+                if (openedTrunk != null && activeStorage == null && !DevToolsMenu.IsOpen) { CloseTrunk(); }
 
                 bool arrested = Function.Call<bool>("IS_PLAYER_BEING_ARRESTED");
                 bool dead = Function.Call<bool>("IS_PLAYER_DEAD", Player.ID);
                 if (arrested || dead)
                 {
+                    CloseStorage();
                     if (!deadHandled) { HandleLoss(arrested); deadHandled = true; }
                     return;
                 }
@@ -83,6 +103,7 @@ namespace LibertyFramework.Arsenal
                 bool gated = !ArsenalPolicy.MayMoveWeapons(mission, (Function.Call<bool>("HAS_CUTSCENE_LOADED") && !Function.Call<bool>("HAS_CUTSCENE_FINISHED")) ||
                     Function.Call<bool>("IS_SCREEN_FADING") || Function.Call<bool>("IS_SCREEN_FADED_OUT"));
                 Reconcile(ped, mission, gated);
+                UpdateStorageInteraction(ped, gated);
             }
             catch (Exception error)
             {
@@ -434,6 +455,158 @@ namespace LibertyFramework.Arsenal
 
         private void Persist() { JsonStore.Save(statePath, state); }
 
+        private void UpdateStorageInteraction(Ped ped, bool gated)
+        {
+            storageInput.Poll();
+            bool openKey = Game.isKeyPressed(Keys.E) || storageInput.IsDown(ControllerInput.XButton);
+            bool up = Game.isKeyPressed(Keys.Up) || storageInput.IsDown(ControllerInput.DPadUp);
+            bool down = Game.isKeyPressed(Keys.Down) || storageInput.IsDown(ControllerInput.DPadDown);
+            bool select = Game.isKeyPressed(Keys.Enter) || storageInput.IsDown(ControllerInput.AButton);
+            bool back = Game.isKeyPressed(Keys.Back) || storageInput.IsDown(ControllerInput.BButton);
+
+            if (activeStorage != null)
+            {
+                if (gated || DevToolsMenu.IsOpen) { CloseStorage(); }
+                else
+                {
+                    if (up && !previousUp) { storageSelection = (storageSelection + storageItems.Count - 1) % storageItems.Count; }
+                    if (down && !previousDown) { storageSelection = (storageSelection + 1) % storageItems.Count; }
+                    if (select && !previousSelect && storageItems[storageSelection].Activate != null)
+                    {
+                        storageMessage = RunAction(storageItems[storageSelection].Activate);
+                        RebuildStorageItems();
+                    }
+                    if (back && !previousBack) { CloseStorage(); }
+                }
+            }
+            else if (!gated && !DevToolsMenu.IsOpen && Player.CanControlCharacter &&
+                !Function.Call<bool>("IS_CHAR_IN_ANY_CAR", ped))
+            {
+                int now = Environment.TickCount;
+                if (lastStorageScanTicks == 0 || unchecked(now - lastStorageScanTicks) >= 250)
+                {
+                    lastStorageScanTicks = now;
+                    FindNearbyStorage(ped);
+                }
+                if (openKey && !previousStorageKey && (nearbyTrunk != null || nearbySafehouse != null))
+                {
+                    activeStorage = nearbyTrunk != null ? Trunk(nearbyTrunk) :
+                        ArsenalPolicy.FindOrAdd(state.SafehouseStashes, nearbySafehouse.Id);
+                    StorageOpen = true;
+                    if (nearbyTrunk != null)
+                    {
+                        CloseTrunk();
+                        nearbyTrunk.Door(VehicleDoor.Trunk).Open();
+                        openedTrunk = nearbyTrunk;
+                    }
+                    storageSelection = 0;
+                    storageMessage = "";
+                    RebuildStorageItems();
+                    Player.CanControlCharacter = false;
+                    storageControlLocked = true;
+                    RuntimeLog.Info("arsenal_storage_open id=" + activeStorage.Id);
+                }
+            }
+            else { nearbyTrunk = null; nearbySafehouse = null; }
+
+            previousStorageKey = openKey;
+            previousUp = up;
+            previousDown = down;
+            previousSelect = select;
+            previousBack = back;
+        }
+
+        private void FindNearbyStorage(Ped ped)
+        {
+            nearbyTrunk = null;
+            nearbySafehouse = null;
+            Vehicle vehicle = World.GetClosestVehicle(ped.Position, config.TrunkDistanceMeters + config.TrunkRearOffsetMeters);
+            if (vehicle != null && vehicle.Exists() && vehicle.Health > 0 && !Function.Call<bool>("IS_CAR_IN_WATER", vehicle))
+            {
+                Vector3 rear = vehicle.GetOffsetPosition(new Vector3(0, -config.TrunkRearOffsetMeters, 0));
+                if (Distance(ped.Position, rear.X, rear.Y, rear.Z) <= config.TrunkDistanceMeters) { nearbyTrunk = vehicle; }
+            }
+            if (nearbyTrunk != null) { return; }
+            foreach (SafehouseRule house in AllSafehouses())
+            {
+                if (house.Episode == episode && Distance(ped.Position, house.X, house.Y, house.Z) <=
+                    Math.Min(house.Radius, config.TrunkDistanceMeters)) { nearbySafehouse = house; break; }
+            }
+        }
+
+        private void RebuildStorageItems()
+        {
+            storageItems.Clear();
+            StorageBin bin = activeStorage;
+            if (bin == null) { return; }
+            foreach (WeaponRecord record in carried)
+            {
+                WeaponRecord choice = record;
+                storageItems.Add(MenuItem.Action("Store " + Describe(choice), () => Store(choice, bin)));
+            }
+            foreach (WeaponRecord record in new List<WeaponRecord>(bin.Weapons))
+            {
+                WeaponRecord choice = record;
+                storageItems.Add(MenuItem.Action("Take " + Describe(choice), () => Take(choice, bin)));
+            }
+            if (storageItems.Count == 0) { storageItems.Add(MenuItem.Info(() => "No weapons to transfer")); }
+            storageSelection = Math.Min(storageSelection, storageItems.Count - 1);
+        }
+
+        private void CloseStorage()
+        {
+            if (activeStorage == null && !storageControlLocked) { return; }
+            string id = activeStorage != null ? activeStorage.Id : "unknown";
+            activeStorage = null;
+            StorageOpen = false;
+            storageItems.Clear();
+            try { CloseTrunk(); }
+            finally
+            {
+                if (storageControlLocked && Player != null) { Player.CanControlCharacter = true; }
+                storageControlLocked = false;
+            }
+            RuntimeLog.Info("arsenal_storage_closed id=" + id);
+        }
+
+        private void OnStorageDraw(object sender, GraphicsEventArgs args)
+        {
+            if (disabled || (activeStorage == null && nearbyTrunk == null && nearbySafehouse == null) || DevToolsMenu.IsOpen) { return; }
+            try
+            {
+                GTA.Graphics graphics = args.Graphics;
+                graphics.Scaling = FontScaling.Pixel;
+                if (activeStorage == null)
+                {
+                    string label = nearbyTrunk != null ? "Square / X or E  Open trunk" : "Square / X or E  Open safehouse storage";
+                    graphics.DrawRectangle(new RectangleF(36, 580, 420, 38), Color.FromArgb(190, 8, 12, 18));
+                    graphics.DrawText(label, new RectangleF(48, 587, 400, 27), TextAlignment.Left, storageFont);
+                    return;
+                }
+                int rows = Math.Min(10, storageItems.Count);
+                float height = 95 + rows * 28 + 50;
+                graphics.DrawRectangle(new RectangleF(36, 80, 590, height), Color.FromArgb(205, 8, 12, 18));
+                string title = openedTrunk != null ? "TRUNK" : "SAFEHOUSE STORAGE";
+                graphics.DrawText(title, new RectangleF(52, 92, 550, 29), TextAlignment.Left, storageTitleFont);
+                int scroll = Math.Max(0, storageSelection - rows + 1);
+                for (int row = 0; row < rows; row++)
+                {
+                    int index = scroll + row;
+                    if (index >= storageItems.Count) { break; }
+                    float y = 130 + row * 28;
+                    if (index == storageSelection) { graphics.DrawRectangle(new RectangleF(46, y - 2, 570, 27), Color.FromArgb(120, 190, 145, 35)); }
+                    graphics.DrawText(storageItems[index].Label(), new RectangleF(58, y, 540, 26), TextAlignment.Left, storageFont);
+                }
+                graphics.DrawText(storageMessage.Length > 0 ? storageMessage : "D-pad choose   A transfer   B close",
+                    new RectangleF(52, 142 + rows * 28, 550, 29), TextAlignment.Left, storageFont);
+            }
+            catch (Exception error)
+            {
+                RuntimeLog.Error("arsenal_storage_draw_failed error=" + error);
+                disabled = true;
+            }
+        }
+
         private List<MenuItem> BuildPage()
         {
             if (disabled) { return new List<MenuItem> { MenuItem.Info(() => "Arsenal disabled; see log") }; }
@@ -555,6 +728,7 @@ namespace LibertyFramework.Arsenal
         {
             disabled = true;
             RuntimeLog.Error("arsenal_disabled error=" + error);
+            CloseStorageSafely();
             CloseTrunkSafely();
             if (ArsenalRegistry.CarriedWeapons == this) { ArsenalRegistry.CarriedWeapons = null; }
         }
@@ -570,9 +744,20 @@ namespace LibertyFramework.Arsenal
             try { CloseTrunk(); } catch (Exception error) { RuntimeLog.Error("arsenal_trunk_restore_failed error=" + error); }
         }
 
+        private void CloseStorageSafely()
+        {
+            try { CloseStorage(); } catch (Exception error) { RuntimeLog.Error("arsenal_storage_restore_failed error=" + error); }
+        }
+
         private void OnDomainUnload(object sender, EventArgs args)
         {
-            // Domain unload may run outside a Script tick; game natives and door restores stay on ticks.
+            StorageOpen = false;
+            // Restore player control as the DevTools script does on reload; door natives stay on ticks.
+            if (storageControlLocked && Player != null)
+            {
+                try { Player.CanControlCharacter = true; storageControlLocked = false; }
+                catch (Exception error) { RuntimeLog.Error("arsenal_storage_unload_restore_failed error=" + error); }
+            }
             if (ArsenalRegistry.CarriedWeapons == this) { ArsenalRegistry.CarriedWeapons = null; }
         }
     }

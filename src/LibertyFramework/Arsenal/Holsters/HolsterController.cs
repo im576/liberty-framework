@@ -31,7 +31,9 @@ namespace LibertyFramework.Arsenal.Holsters
 
         public HolsterController()
         {
-            Interval = 0;
+            // Attached props follow the ped in the engine; scanning carried weapons every frame
+            // only allocates lists and repeats model lookups without improving animation.
+            Interval = 50;
             LoadConfig();
             ArsenalRegistry.WeaponsRemoving += OnWeaponsRemoving;
             DevToolsPages.Register("Holsters", MenuItems);
@@ -41,7 +43,7 @@ namespace LibertyFramework.Arsenal.Holsters
 
         private void LoadConfig()
         {
-            // Interval is 0 (every frame): check the file for edits at most once per second.
+            // Check the file for edits at most once per second.
             if (config != null && (DateTime.UtcNow - lastConfigCheckUtc).TotalMilliseconds < 1000) { return; }
             lastConfigCheckUtc = DateTime.UtcNow;
             try
@@ -81,7 +83,7 @@ namespace LibertyFramework.Arsenal.Holsters
                 bool onBike = inVehicle && ped.CurrentVehicle != null && ped.CurrentVehicle.Model.isBike;
                 bool visible = HolsterRules.Visible(false, !ped.isDead,
                     // DevTools locks player control while open; keep props visible so Holsters nudges show live.
-                    Natives.IsPlayerPlaying(player) && (Natives.IsPlayerControlOn(player) || DevToolsMenu.IsOpen),
+                    Natives.IsPlayerPlaying(player) && (Natives.IsPlayerControlOn(player) || DevToolsMenu.IsOpen || ArsenalCore.StorageOpen),
                     Natives.IsScreenFadedOut(), inVehicle, onBike, config.ShowOnBikes);
                 if (!visible) { Clear(); return; }
                 ICarriedWeaponsSource source = ArsenalRegistry.CarriedWeapons;

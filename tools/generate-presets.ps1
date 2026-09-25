@@ -19,6 +19,7 @@ function Write-Preset($id, $name, $description, $kick, $recoveryRate, $recoveryF
         $recoil.sustainedFireGrowthPerShot = [math]::Round([double]$recoil.sustainedFireGrowthPerShot * $growth, 3)
         $spread.perShotDegrees = [math]::Round([double]$spread.perShotDegrees * $bloom, 3)
         $spread.recoveryDegreesPerSecond = [math]::Round([double]$spread.recoveryDegreesPerSecond * $bloomRecovery, 3)
+        $spread.shortBurstRecoveryDegreesPerSecond = [math]::Round([double]$spread.shortBurstRecoveryDegreesPerSecond * $bloomRecovery, 3)
         $weapons += [ordered]@{
             weaponId = $weapon.weaponId
             profileName = ($weapon.profileName -replace '_gta4plus', "_$suffix")

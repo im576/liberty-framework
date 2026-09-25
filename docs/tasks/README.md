@@ -24,6 +24,7 @@ Batch compatible offline work and combine human checks into one gameplay session
 | T-017 | [Feel: shake and aiming FOV](T-017-feel-shake-fov.md) | T-010 | NEEDS-PLAYTEST (installed 2026-09-24) |
 | T-020 | [Liberty Arsenal core](T-020-arsenal-core.md) | T-010 | NEEDS-PLAYTEST (installed 2026-09-24) |
 | T-021 | [Visible weapons (holsters)](T-021-holsters.md) | T-020 contracts | NEEDS-PLAYTEST (installed 2026-09-24) |
+| T-024 | [Phase 2 foundations](T-024-phase2-foundations.md) | T-010, T-020, T-021 | NEEDS-PLAYTEST |
 
 **Arsenal run (2026-09-24):** two Codex agents work in separate worktrees/branches (`arsenal/core` = Agent A, `arsenal/feel` = Agent B) against the shared contracts in `src/LibertyFramework/Arsenal/Contracts`; the orchestrator merges, reviews, packages and installs. T-012 (DevTools completeness) is deferred by the owner.
 

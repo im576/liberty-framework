@@ -32,7 +32,7 @@ Polled every second; a valid change is applied live. DevTools "Save live values"
 | `recoilGlobal.maximumDeltaSeconds` | s | frame-time clamp |
 | `feel.enabled`, `shakePitchDegrees`, `shakeHeadingDegrees` | bool, deg | registered test-weapon per-shot jitter applied after recoil through the validated aim camera |
 | `feel.aimFovReductionDegrees`, `fovSmoothingPerSecond` | deg, 1/s | test-weapon aiming field-of-view reduction and easing |
-| `debugHit.scanRadiusMeters`, `worldClassificationDelayMilliseconds` | m, ms | nearby entity scan and delay before a non-damaging shot is shown as world/unknown |
+| `debugHit.scanRadiusMeters`, `scanIntervalMilliseconds`, `worldClassificationDelayMilliseconds` | m, ms, ms | nearby entity scan radius and cadence, and delay before a non-damaging shot is shown as world/unknown |
 | `switchWhileAiming.enabled`, `previousButton`, `nextButton` | bool, `DPadLeft` / `DPadRight` | select only T-020 carried weapons via SHDN while aim is held; controller bindings must differ |
 | `movement.movingSpeedThresholdMetersPerSecond`, `fullMovementPenaltySpeedMetersPerSecond` | m/s | movement penalty ramp |
 | `weapons[]` | — | registered test weapons (IDs 58+ only); see below |
@@ -43,7 +43,7 @@ Polled every second; a valid change is applied live. DevTools "Save live values"
 
 `recoil` (degrees of aim camera, ms): `verticalKickDegrees`, `horizontalKickDegrees` (bias, + right), `horizontalRandomDegrees` (±), `firstShotMultiplier`, `sustainedFireGrowthPerShot`, `sustainedFireShotCap`, `chainResetMilliseconds`, `maxAccumulatedDegrees` (soft cap), `minimumKickFractionAtCap`, `kickDurationMilliseconds`, `recoveryDelayMilliseconds`, `recoveryDegreesPerSecond`, `recoveryFraction` (0–1 of each kick auto-recovered), and multipliers `moving`, `crouched`, `cover`, `vehicle`, `hipFire`.
 
-`spread` (cone half-angle in degrees from the muzzle): `baseDegrees`, `perShotDegrees`, `maxDegrees`, `recoveryDelayMilliseconds`, `recoveryDegreesPerSecond`, `movingAddDegrees` (at full movement), multipliers `crouched`, `cover`, `vehicle`, `hipFire`, `blindFire`, `airborne`, and `pelletPatternDegrees` (display-only allowance for multi-pellet weapons until 16 bullets are measured).
+`spread` (cone half-angle in degrees from the muzzle): `baseDegrees`, `perShotDegrees`, `burstShotCount` (early shots given a reduced bloom increment), `burstPerShotMultiplier` (0–1 early increment), `chainResetMilliseconds` (pause that starts a new burst), `maxDegrees`, `recoveryDelayMilliseconds`, `recoveryDegreesPerSecond` (long spray), `shortBurstRecoveryDegreesPerSecond` (taps and short bursts), `movingAddDegrees` (at full movement), multipliers `crouched`, `cover`, `vehicle`, `hipFire`, `blindFire`, `airborne`, and `pelletPatternDegrees` (display-only allowance for multi-pellet weapons until 16 bullets are measured). Both recovery rates start after the delay; the rate is chosen by burst length.
 
 ## presets/*.json
 
@@ -58,6 +58,10 @@ Polled every second; a valid change is applied live. DevTools "Save live values"
 ## Arsenal: arsenal.json (T-020)
 
 Required `schemaVersion:1`; `sidearmLimit:2`, `longGunLimit:2`, `meleeLimit:1`. `purchaseWindowMilliseconds` is the maximum elapsed time from money decrease to weapon gain for purchase ownership. `trunkDistanceMeters` is interaction distance from the boot; `trunkRearOffsetMeters` locates the boot behind the vehicle (SHDN vehicle local Y points forward). `ownedVehicleMatchMeters` matches LVS model hash and position; `fallbackVehicleMatchMeters` matches Arsenal's remembered vehicle marker. All distances are meters. `categories[]` maps each `WeaponCategory` enum number to `group` (`sidearm`, `longGun`, `melee`, `uncounted`) and `BodySlot` enum number. `safehouses[]` has `id`, `name`, `episode` (`iv`, `tlad`, `tbogt`), world `x/y/z`, `radius` meters, and `verified` boolean. The shipped list is empty because no sourced coordinates were provided; DevTools **Mark safehouse here** records the actual player coordinate, adds a verified entry, and writes `arsenal.json` with a backup.
+
+Phase 2 contextual storage uses the existing `trunkDistanceMeters` for both the vehicle rear and a capped safehouse prompt radius. Controller **Square/X** or keyboard **E** opens the compact panel; **A/Enter** transfers, **B/Backspace** closes. This binding is fixed for the first playtest and should be exposed in config after control-conflict feedback. Nearby vehicle searches run every 250 ms.
+
+The `performance` log line every 30 seconds records ScriptHook tick interval p50/p95/p99, counts over 33/50 ms, and gunplay-loop average/maximum CPU time. Tick intervals are a frame pacing proxy; use PresentMon for final presented-frame comparisons.
 
 Per-episode `state/arsenal_<episode>.json` contains owned-carried IDs, persistent vehicle trunk bins, safehouse stash bins, last safehouse, and last vehicle marker. `JsonStore.Save` writes atomically and maintains `.bak`. A corrupt state file is renamed to `.corrupt_<UTC>` without changing the existing `.bak`, then state starts empty.
 

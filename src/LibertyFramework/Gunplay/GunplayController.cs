@@ -10,6 +10,7 @@ using LibertyFramework.Core.Input;
 using LibertyFramework.Core.Logging;
 using LibertyFramework.Core.Math3;
 using LibertyFramework.Core.Memory;
+using LibertyFramework.Core.Performance.Logic;
 using LibertyFramework.GameApi;
 using LibertyFramework.Gunplay.Aim;
 using LibertyFramework.Gunplay.Crosshair;
@@ -30,11 +31,14 @@ namespace LibertyFramework.Gunplay
     {
         private const int ConfigPollMilliseconds = 1000;
         private const int StateLogMilliseconds = 5000;
-        private const int DetailedAuditBullets = 200;
+        private const int DetailedAuditBullets = 40;
+        private const int TimingReportMilliseconds = 30000;
 
         internal static GunplayController Instance { get; private set; }
 
         private readonly Stopwatch clock = Stopwatch.StartNew();
+        private readonly TickTimings tickTimings = new TickTimings();
+        private int lastTimingReportTicks;
         private readonly GunplayConfigStore store;
         private readonly ControllerInput controller = new ControllerInput();
         private readonly RecoilSolver recoil = new RecoilSolver(Environment.TickCount);
@@ -88,6 +92,8 @@ namespace LibertyFramework.Gunplay
         private bool useShdnDirection;
         private double pixelsPerTangent;
         private bool loggedProjection;
+        private double projectionFov = double.NaN;
+        private int projectionHeight;
         private bool drawFailed;
         private bool feelDisabled;
         private GTA.Camera feelCamera;
@@ -97,6 +103,7 @@ namespace LibertyFramework.Gunplay
         private bool fovRecovered;
         private readonly string fovStatePath = Path.Combine(LibertyPaths.StateDirectory, "feel_fov_restore.json");
         private bool debugHitDisabled;
+        private double lastDebugHitSampleMilliseconds = double.NegativeInfinity;
         private bool aimingSwitchDisabled;
         private double lastFireMilliseconds = double.NegativeInfinity;
         private double fireIntervalMilliseconds;
@@ -140,6 +147,7 @@ namespace LibertyFramework.Gunplay
         private void OnTick(object sender, EventArgs args)
         {
             if (disabled) { return; }
+            long tickStart = Stopwatch.GetTimestamp();
             try
             {
                 double now = Now;
@@ -236,7 +244,10 @@ namespace LibertyFramework.Gunplay
                 if (Natives.CamExists(gameCamera))
                 {
                     lastFov = Natives.CamFov(gameCamera);
-                    if (aiming) { MeasureProjection(gameCamera); }
+                    // Pixel scale depends on FOV and viewport, not camera position. Avoid two
+                    // projection natives every frame while the aim camera is steady.
+                    if (aiming && (double.IsNaN(projectionFov) || Math.Abs(lastFov - projectionFov) > 0.25 ||
+                        Game.Resolution.Height != projectionHeight)) { MeasureProjection(gameCamera); }
                 }
 
                 // Each engine feature fails independently: an exception disables only that feature.
@@ -257,12 +268,12 @@ namespace LibertyFramework.Gunplay
                     try { RestoreFeel(); }
                     catch (Exception restoreError) { RuntimeLog.Error("restore_feel_failed error=" + restoreError); }
                 }
-                if (DebugOverlay && !debugHitDisabled)
+                if (DebugOverlay && !debugHitDisabled && now - lastDebugHitSampleMilliseconds >= config.DebugHit.ScanIntervalMilliseconds)
                 {
-                    try { debugHit.Sample(ped, config.DebugHit.ScanRadiusMeters, now, config.DebugHit.WorldClassificationDelayMilliseconds); }
+                    try { debugHit.Sample(ped, config.DebugHit.ScanRadiusMeters, now, config.DebugHit.WorldClassificationDelayMilliseconds); lastDebugHitSampleMilliseconds = now; }
                     catch (Exception error) { debugHitDisabled = true; debugHit.Reset(); RuntimeLog.Error("feature_disabled debug_hit error=" + error); }
                 }
-                else { debugHit.Reset(); }
+                else if (!DebugOverlay) { debugHit.Reset(); }
                 try { UpdateReticle(config, ped); }
                 catch (Exception error) { DisableHud(error); }
 
@@ -278,6 +289,17 @@ namespace LibertyFramework.Gunplay
             catch (Exception error)
             {
                 DisableAfterError(error);
+            }
+            finally
+            {
+                tickTimings.Observe(tickStart, Stopwatch.GetTimestamp());
+                int now = Environment.TickCount;
+                if (lastTimingReportTicks == 0) { lastTimingReportTicks = now; }
+                else if (unchecked(now - lastTimingReportTicks) >= TimingReportMilliseconds)
+                {
+                    lastTimingReportTicks = now;
+                    RuntimeLog.Info("performance " + tickTimings.ReportAndReset());
+                }
             }
         }
 
@@ -438,6 +460,8 @@ namespace LibertyFramework.Gunplay
                 double measured = pixels / Math.Tan(probeDegrees * Math.PI / 180.0);
                 if (measured <= 1 || double.IsNaN(measured)) { return; }
                 pixelsPerTangent = measured;
+                projectionFov = lastFov;
+                projectionHeight = Game.Resolution.Height;
                 if (!loggedProjection)
                 {
                     loggedProjection = true;
