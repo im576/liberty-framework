@@ -38,7 +38,7 @@ This is the full list of what we want GTA IV to become, broken into systems and 
 | W-2 | Weapon catalogue: families, calibres, ammo types, fire modes, tiers | 🟡 catalogue v1 |
 | W-3 | Physical weapon records (instance, finish, attachments, progression) persisted through carry, trunk, safehouse and death | ✅ |
 | W-4 | Limited carry (sidearm, long guns, melee) with realistic slots | ✅ (edge bugs open) |
-| W-5 | **Visible weapons on the body: strapped, not floating**. Per-weapon attach points on real bones (spine, thigh, chest), a sling/strap mesh, holster models, idle sway from movement, clean hide/show when entering vehicles and cutscenes | 🟡 floating props; straps 🎨 |
+| W-5 | **Visible weapons on the body: strapped, not floating**. Per-weapon attach points on real bones (spine, thigh, chest), a sling/strap mesh, holster models, idle sway from movement, clean hide/show when entering vehicles and cutscenes | 🟡 body-fitted leather straps installed (needs playtest); gun placement calibration pending (`holster_frame`) |
 | W-6 | Attachments that are visible and change handling (grips, stocks, optics, suppressors, lights) | 🟡 stats only; models 🎨 |
 | W-7 | Gunsmith: buy, customise, finishes/camos, tune | 🟡 |
 | W-8 | Weapon condition (dirt, wear, jams), cleaning | 🔲 |
@@ -131,7 +131,7 @@ This is the full list of what we want GTA IV to become, broken into systems and 
 | ID | Component | Status |
 |---|---|---|
 | T-1 | IMG/RSC/WTD read/write (finishes pipeline) | ✅ |
-| T-2 | **Model pipeline**: import/export WDR/WFT (weapons, stump caps, body parts, straps) with an open tool chain; validate in game | 🔬 |
+| T-2 | **Model pipeline**: import/export WDR/WFT (weapons, stump caps, body parts, straps) with an open tool chain; validate in game | 🟡 WDR read/write + skeletons + RPF done (`tools/models`, [ModelFormat](research/ModelFormat.md)); WFT (vehicles) next |
 | T-3 | Animation research: list IV's animation dictionaries, test playback of trunk/holster/interaction anims | 🔬 |
 | T-4 | Timecycle tool: generate and verify Liberty Mood from FusionFix's timecycle, with live reload (F3) | 🔲 |
 | T-5 | AI texture workflow (Real-ESRGAN ncnn-vulkan on the RX 570) with a VRAM budget report | 🔬 |

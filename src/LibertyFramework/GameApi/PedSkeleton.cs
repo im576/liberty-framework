@@ -152,6 +152,16 @@ namespace LibertyFramework.GameApi
             return new float[] { matrix[12], matrix[13], matrix[14] };
         }
 
+        // Full world matrix of a bone (rows: right, forward, up axes, then origin; 4 floats each).
+        internal float[] WorldMatrix(uint ped, int boneTag)
+        {
+            if (ped == 0) { return null; }
+            copy(new IntPtr((int)ped), scratch, boneTag);
+            float[] matrix = new float[16];
+            Marshal.Copy(scratch, matrix, 0, 16);
+            return matrix;
+        }
+
         // Address of objectMatrices[0] or 0 (no skeleton / not an array).
         internal uint MatrixBase(uint ped)
         {

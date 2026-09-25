@@ -18,6 +18,12 @@ namespace LibertyFramework.Arsenal.Holsters
         private readonly Dictionary<BodySlot, GTA.Object> props = new Dictionary<BodySlot, GTA.Object>();
         private readonly Dictionary<BodySlot, int> shownIds = new Dictionary<BodySlot, int>();
         private readonly Dictionary<BodySlot, int> shownModels = new Dictionary<BodySlot, int>();
+        private readonly Dictionary<BodySlot, GTA.Object> slingProps = new Dictionary<BodySlot, GTA.Object>();
+        private readonly HashSet<string> slingProblemsLogged = new HashSet<string>();
+        private readonly HashSet<string> calibrated = new HashSet<string>();
+        private readonly List<KeyValuePair<string, GTA.Object>> pendingCalibration = new List<KeyValuePair<string, GTA.Object>>();
+        private PedSkeleton skeleton;
+        private bool skeletonUnavailable;
         private readonly Dictionary<string, string> modelNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly string journalPath = Path.Combine(LibertyPaths.StateDirectory, "holsters_props.json");
         private bool recovered;
@@ -106,7 +112,9 @@ namespace LibertyFramework.Arsenal.Holsters
                     if (weapon == null || weapon.Slot == BodySlot.None || weapon.InHand || weapon.WeaponId == held) { continue; }
                     if (!wanted.Add(weapon.Slot)) { continue; }
                     Show(ped, weapon);
+                    if (props.ContainsKey(weapon.Slot)) { ShowSling(ped, weapon.Slot); }
                 }
+                Calibrate(ped);
                 foreach (BodySlot slot in new List<BodySlot>(props.Keys)) { if (!wanted.Contains(slot)) { Remove(slot); } }
             }
             catch (Exception error)
@@ -200,12 +208,90 @@ namespace LibertyFramework.Arsenal.Holsters
                 shownIds[weapon.Slot] = weapon.WeaponId;
                 shownModels[weapon.Slot] = model.Hash;
                 SaveJournal();
+                QueueCalibration(weapon.Slot + ":" + modelName + "|" + placement.Bone + "|" + Vector(placement.Position) + "|" + Vector(placement.Rotation), prop);
             }
             catch (Exception error) { prop.Delete(); RuntimeLog.Error("holster_attach_failed error=" + error); throw; }
         }
 
+        // W-5: the strap for a slung long gun; its model is authored in the bone's space (zero offset and rotation).
+        private void ShowSling(Ped ped, BodySlot slot)
+        {
+            HolsterSling sling = config.FindSling(slot);
+            if (sling == null || slingProps.ContainsKey(slot)) { return; }
+            Model model = new Model(sling.Model);
+            if (!model.isValid)
+            {
+                if (slingProblemsLogged.Add(sling.Model)) { RuntimeLog.Error("holster_sling_model_invalid " + sling.Model + " (LibertyModels.img not installed?)"); }
+                return;
+            }
+            HolsterNatives.RequestModel(model);
+            if (!HolsterNatives.HasModelLoaded(model)) { return; }
+            GTA.Object prop = World.CreateObject(model, ped.Position);
+            if (prop == null) { return; }
+            try
+            {
+                prop.Collision = false;
+                prop.AttachToPed(ped, (Bone)Enum.Parse(typeof(Bone), sling.Bone), new Vector3(0, 0, 0), new Vector3(0, 0, 0));
+                slingProps[slot] = prop;
+                SaveJournal();
+                QueueCalibration("sling:" + sling.Model + "|" + sling.Bone + "|(0,0,0)|(0,0,0)", prop);
+            }
+            catch (Exception error) { prop.Delete(); RuntimeLog.Error("holster_sling_attach_failed error=" + error); throw; }
+        }
+
+        // One log line per placement per session: the attached prop's origin and axes in the bone's own frame. This pins
+        // down AttachToPed's offset/rotation convention (units and order) from real data (docs/research/ModelFormat.md).
+        private void QueueCalibration(string key, GTA.Object prop)
+        {
+            if (!calibrated.Contains(key)) { pendingCalibration.Add(new KeyValuePair<string, GTA.Object>(key, prop)); }
+        }
+
+        private void Calibrate(Ped ped)
+        {
+            if (pendingCalibration.Count == 0 || skeletonUnavailable) { return; }
+            if (skeleton == null)
+            {
+                LibertyFramework.Gunplay.GunplayController gunplay = LibertyFramework.Gunplay.GunplayController.Instance;
+                LibertyFramework.Core.Memory.GameAddresses addresses = gunplay != null ? gunplay.Addresses : null;
+                if (addresses == null) { return; }
+                if (!addresses.PedSkeletonResolved) { skeletonUnavailable = true; pendingCalibration.Clear(); return; }
+                skeleton = new PedSkeleton(new LibertyFramework.Core.Memory.LiveMemory(), addresses);
+            }
+            uint pointer = skeleton.PedFromHandle(ped.GetHashCode());
+            foreach (KeyValuePair<string, GTA.Object> pending in pendingCalibration)
+            {
+                if (!calibrated.Add(pending.Key) || pending.Value == null || !pending.Value.Exists()) { continue; }
+                string bone = pending.Key.Split('|')[1];
+                float[] m = skeleton.WorldMatrix(pointer, (int)(Bone)Enum.Parse(typeof(Bone), bone));
+                if (m == null) { continue; }
+                Vector3 origin = pending.Value.GetOffsetPosition(new Vector3(0, 0, 0));
+                Vector3 x = pending.Value.GetOffsetPosition(new Vector3(1, 0, 0)) - origin;
+                Vector3 y = pending.Value.GetOffsetPosition(new Vector3(0, 1, 0)) - origin;
+                Vector3 z = pending.Value.GetOffsetPosition(new Vector3(0, 0, 1)) - origin;
+                Vector3 relative = origin - new Vector3(m[12], m[13], m[14]);
+                RuntimeLog.Info("holster_frame " + pending.Key + " origin_in_bone=" + InBone(m, relative) +
+                    " x_in_bone=" + InBone(m, x) + " y_in_bone=" + InBone(m, y) + " z_in_bone=" + InBone(m, z));
+            }
+            pendingCalibration.Clear();
+        }
+
+        private static string InBone(float[] m, Vector3 v)
+        {
+            return "(" + (v.X * m[0] + v.Y * m[1] + v.Z * m[2]).ToString("0.000") + "," + (v.X * m[4] + v.Y * m[5] + v.Z * m[6]).ToString("0.000") + "," +
+                (v.X * m[8] + v.Y * m[9] + v.Z * m[10]).ToString("0.000") + ")";
+        }
+
+        private static string Vector(float[] v) { return "(" + v[0] + "," + v[1] + "," + v[2] + ")"; }
+
         private void Remove(BodySlot slot)
         {
+            GTA.Object sling;
+            if (slingProps.TryGetValue(slot, out sling))
+            {
+                slingProps.Remove(slot);
+                if (sling != null && sling.Exists()) { sling.Delete(); }
+                SaveJournal();
+            }
             GTA.Object prop;
             if (props.TryGetValue(slot, out prop))
             {
@@ -220,6 +306,7 @@ namespace LibertyFramework.Arsenal.Holsters
         private void Clear()
         {
             foreach (BodySlot slot in new List<BodySlot>(props.Keys)) { Remove(slot); }
+            foreach (BodySlot slot in new List<BodySlot>(slingProps.Keys)) { Remove(slot); }
         }
 
         private void OnWeaponsRemoving(string reason)
@@ -244,7 +331,7 @@ namespace LibertyFramework.Arsenal.Holsters
 
         private void SaveJournal()
         {
-            if (props.Count == 0)
+            if (props.Count == 0 && slingProps.Count == 0)
             {
                 if (File.Exists(journalPath)) { File.Delete(journalPath); }
                 return;
@@ -260,6 +347,13 @@ namespace LibertyFramework.Arsenal.Holsters
                     HolsterPropRecord record = new HolsterPropRecord();
                     record.Handle = pair.Value.GetHashCode(); // SHDN HandleObject.GetHashCode returns the native handle.
                     record.ModelHash = shownModels[pair.Key];
+                    journal.Props.Add(record);
+                }
+                foreach (GTA.Object sling in slingProps.Values)
+                {
+                    HolsterPropRecord record = new HolsterPropRecord();
+                    record.Handle = sling.GetHashCode();
+                    record.ModelHash = sling.Model.Hash;
                     journal.Props.Add(record);
                 }
                 JsonStore.Save(journalPath, journal);

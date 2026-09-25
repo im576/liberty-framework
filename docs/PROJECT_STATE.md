@@ -5,6 +5,12 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
+**Model pipeline T-2 and sling straps (2026-09-25, Claude):**
+- **Tool:** `tools/models` (LibertyModel) reads GTA IV drawables and skeletons from IMG and RPF archives and writes new ones. All 79 weapon-pack models and 45 of Niko's models parse, and all 49 single-mesh props rebuild byte-identical.
+- **First models:** body-fitted leather sling straps, cut from the union of Niko's outfits. They are packed in `LibertyModels.img` and registered through `lf_models.ide`. The holsters attach them to Spine2 whenever a long gun is slung.
+- **Lag fix:** stalls near cars came from reading `Game.Resolution` on the draw thread; it is now cached on the script tick.
+- **Status:** installed, verify 395/395. The in-game load of generated models is not yet verified. See [ModelFormat](research/ModelFormat.md) and playtest [section 12](testing/PHASE2_PLAYTEST.md#12-lag-near-cars-fixed-first-generated-models-sling-straps).
+
 **Weapon wheel storage and trunk animation (2026-09-25, Claude):** trunks, safehouse stashes and the gunsmith now use one radial wheel with the weapons' own HUD icons, extracted at install. Niko turns, opens the trunk with IV's `amb@car_stash`/`car_boot` animations, reaches in for each take or store, and shuts it. The storage prompt is now an IV-style help box. `maximumSeveredPeds` is raised to 10. Verify 395/395; installed (phase2 then VL). Owner playtest: [section 11](testing/PHASE2_PLAYTEST.md#11-weapon-wheel-storage-and-trunk-animation-s-2s-3).
 
 **Script cost pass (2026-09-25, Claude):**

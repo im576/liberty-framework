@@ -15,7 +15,11 @@ namespace LibertyFramework.Finishes
         internal int SystemSize { get { return (int)((Flags & 0x7FF) << (int)(((Flags >> 11) & 0xF) + 8)); } }
         internal int GraphicsSize { get { return (int)(((Flags >> 15) & 0x7FF) << (int)(((Flags >> 26) & 0xF) + 8)); } }
 
-        internal static RscResource Parse(byte[] data)
+        internal static RscResource Parse(byte[] data) { return Parse(data, false); }
+
+        // allowTrailing: some third-party files (e.g. the installed weapon pack's w_m4) inflate to more bytes than the
+        // flags declare. The game allocates and reads only the declared sizes, so the reader keeps exactly those.
+        internal static RscResource Parse(byte[] data, bool allowTrailing)
         {
             if (BitConverter.ToUInt32(data, 0) != 0x05435352) { throw new InvalidDataException("Not an RSC05 resource"); }
             RscResource resource = new RscResource();
@@ -29,7 +33,14 @@ namespace LibertyFramework.Finishes
                 inflater.CopyTo(output);
                 resource.Body = output.ToArray();
             }
-            if (resource.Body.Length != resource.SystemSize + resource.GraphicsSize)
+            int declared = resource.SystemSize + resource.GraphicsSize;
+            if (allowTrailing && resource.Body.Length > declared)
+            {
+                byte[] trimmed = new byte[declared];
+                Buffer.BlockCopy(resource.Body, 0, trimmed, 0, declared);
+                resource.Body = trimmed;
+            }
+            if (resource.Body.Length != declared)
             {
                 throw new InvalidDataException("RSC body " + resource.Body.Length + " != " + (resource.SystemSize + resource.GraphicsSize));
             }

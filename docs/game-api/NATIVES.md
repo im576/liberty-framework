@@ -43,6 +43,8 @@ Same-process `ReloadScripts` cleanup checks journalled handles before creating p
 | `GET_OBJECT_MODEL(Object, uint32_t*)` | Validate prior handle still names the same model | registered 0x5CC55619 | T-021 |
 | `DELETE_OBJECT(Object*)` | Delete verified orphan from prior script domain | registered 0x62FE6290 | T-021 |
 
+W-5 sling straps reuse the same streaming, `World.CreateObject` and `AttachToPed` (zero offset/rotation). The one-time `holster_frame` calibration log reads the prop's axes with ScriptHookDotNet `GTA.Object.GetOffsetPosition` (its IL calls the `GET_OFFSET_FROM_OBJECT_IN_WORLD_COORDS` wrapper) and the bone's world matrix through the engine's `CPed::CopyBoneMatrix` (`PedSkeleton.WorldMatrix`, already resolved for T-022). `Game.Resolution` (IL: `GetScreenResolution` native wrapper) is read only on script ticks, never in `PerFrameDrawing`.
+
 ## T-013 debug hit overlay
 
 | Native | Purpose | CE status | Task |

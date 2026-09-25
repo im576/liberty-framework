@@ -18,6 +18,7 @@ namespace LibertyFramework.Arsenal.Holsters.Logic
         [DataMember(Name = "nudgeRotationDegrees", IsRequired = true)] internal float NudgeRotationDegrees;
         [DataMember(Name = "weapons", IsRequired = true)] internal List<HolsterWeapon> Weapons;
         [DataMember(Name = "placements", IsRequired = true)] internal List<HolsterPlacement> Placements;
+        [DataMember(Name = "slings", IsRequired = false)] internal List<HolsterSling> Slings;
 
         internal void Validate()
         {
@@ -50,6 +51,24 @@ namespace LibertyFramework.Arsenal.Holsters.Logic
             }
             for (BodySlot slot = BodySlot.SidearmPrimary; slot <= BodySlot.Melee; slot++)
             { if (!slots.Contains(slot)) { throw new InvalidDataException("holsters missing placement for " + slot); } }
+            if (Slings != null)
+            {
+                HashSet<BodySlot> slung = new HashSet<BodySlot>();
+                foreach (HolsterSling sling in Slings)
+                {
+                    BodySlot slot;
+                    if (sling == null || !Enum.TryParse<BodySlot>(sling.Slot, out slot) || (slot != BodySlot.LongGun1 && slot != BodySlot.LongGun2) ||
+                        !slung.Add(slot) || string.IsNullOrEmpty(sling.Model) || string.IsNullOrEmpty(sling.Bone))
+                    { throw new InvalidDataException("holsters sling needs a unique long-gun slot, model and bone"); }
+                }
+            }
+        }
+
+        internal HolsterSling FindSling(BodySlot slot)
+        {
+            if (Slings == null) { return null; }
+            foreach (HolsterSling sling in Slings) { if (sling.Slot == slot.ToString()) { return sling; } }
+            return null;
         }
 
         internal HolsterWeapon FindWeapon(int weaponId)

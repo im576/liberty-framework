@@ -51,6 +51,12 @@ All steps except install/rollback are read-only on the game folder and safe whil
 
 Installed files: `scripts/LibertyFramework.net.dll`, `scripts/LibertyFramework/config/{gunplay.json,presets/*.json,devtools/locations.json}`, `update/common/data/{WeaponInfo.xml,default.dat,lf_finishes.ide}`, `update/LibertyFramework/LibertyFramework.img`. `default.dat` is the installed Various Pedestrian Actions copy plus one `IDE common:/data/lf_finishes.ide` line; `WeaponInfo.xml` is the T-007 file with `LF_GOLD_PISTOL` using model `lf_gold_pistol`. The superseded `deploy-t00x`/`upgrade-t007` scripts remain for history only.
 
+## Model pipeline (T-2)
+
+`tools/models` compiles to `LibertyModel.exe`, which reads and writes GTA IV drawables. `package-phase2.ps1` builds and runs it: first the round-trip self-test, then `sling config/models/sling.json`. The generated `LibertyModels.img`, `lf_models.ide` and a `default.dat` with one added IDE line are staged with the other Phase 2 files.
+
+To inspect a model by hand, use `LibertyModel export <game> <archive> <model.wdr> out.obj`. It also writes a PNG preview. `survey` and `selftest` validate whole archives. See [ModelFormat.md](../docs/research/ModelFormat.md).
+
 ## Optional DXVK GPLAsync (T-026)
 
 - **Install:** with GTA IV closed, run `./tools/install-dxvk-gplasync.ps1 -GameDirectory '<GTAIV folder>' -DxvkArchivePath '<DXVK 2.6.2 GPLAsync ... FusionFix zip>' -ShaderCacheArchivePath '<FusionFix 5.0 - Shader Cache zip>'`.

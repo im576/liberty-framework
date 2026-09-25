@@ -54,7 +54,7 @@ foreach ($name in @('gunplay.json', 'combat_effects.json', 'weapon-catalog.json'
     Stage-File (Join-Path $repoRoot "config\$name") "scripts\LibertyFramework\config\$name" 'replace'
 }
 Stage-File (Join-Path $repoRoot 'config\arsenal.json') 'scripts\LibertyFramework\config\arsenal.json' 'merge-defaults'
-Stage-File (Join-Path $repoRoot 'config\holsters.json') 'scripts\LibertyFramework\config\holsters.json' 'keep-existing'
+Stage-File (Join-Path $repoRoot 'config\holsters.json') 'scripts\LibertyFramework\config\holsters.json' 'merge-defaults'
 Get-ChildItem -LiteralPath (Join-Path $repoRoot 'config\presets') -Filter '*.json' | Sort-Object Name | ForEach-Object {
     Stage-File $_.FullName "scripts\LibertyFramework\config\presets\$($_.Name)" 'replace'
 }
@@ -96,6 +96,37 @@ if ($LvsDirectory) {
     if ($LASTEXITCODE -ne 0) { throw 'Patched LibertyVehicleServicesCE.CS does not compile.' }
     Stage-File $lvsPatched 'scripts\LibertyVehicleServicesCE.CS' 'replace'
 }
+# W-5 / T-2: body-fitted sling straps built by tools/models from the player's own playerped.rpf and a weapons.img
+# prop template (config/models/sling.json). Registered through lf_models.ide, added to default.dat once.
+$modelTool = Join-Path $work 'LibertyModel.exe'
+$modelSources = @((Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tools\finishes') -Filter '*.cs' | Where-Object Name -ne 'Program.cs').FullName) +
+    @((Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tools\models') -Filter '*.cs').FullName)
+& $compiler /nologo /target:exe /platform:x86 /warn:4 /warnaserror+ "/out:$modelTool" /reference:System.Runtime.Serialization.dll /reference:System.Drawing.dll /reference:System.Core.dll $modelSources
+if ($LASTEXITCODE -ne 0) { throw 'Model tool build failed.' }
+$modelsOut = Join-Path $work 'models'
+& $modelTool selftest $game 'pc\models\cdimages\weapons.img' | Select-Object -Last 1
+if ($LASTEXITCODE -ne 0) { throw 'Model tool round-trip self-test failed.' }
+& $modelTool sling $game (Join-Path $repoRoot 'config\models\sling.json') $modelsOut
+if ($LASTEXITCODE -ne 0) { throw 'Sling build failed.' }
+Stage-File (Join-Path $modelsOut 'LibertyModels.img') 'update\LibertyFramework\LibertyModels.img' 'replace'
+Stage-File (Join-Path $modelsOut 'lf_models.ide') 'update\common\data\lf_models.ide' 'replace'
+$installedDat = Join-Path $game 'update\common\data\default.dat'
+if (-not (Test-Path -LiteralPath $installedDat -PathType Leaf)) { throw 'update\common\data\default.dat missing; install Phase 1 first.' }
+$datLines = [IO.File]::ReadAllLines($installedDat)
+if (-not ($datLines | Where-Object { $_.Trim() -ieq 'IDE common:/data/lf_models.ide' })) {
+    $out = New-Object System.Collections.Generic.List[string]
+    $added = $false
+    foreach ($line in $datLines) {
+        $out.Add($line)
+        if (-not $added -and $line.Trim() -ieq 'IDE common:/data/lf_finishes.ide') { $out.Add('IDE common:/data/lf_models.ide'); $added = $true }
+    }
+    if (-not $added) { throw 'default.dat has no lf_finishes.ide line to anchor lf_models.ide.' }
+    $datLines = $out.ToArray()
+}
+$stagedDat = Join-Path $work 'default.dat'
+[IO.File]::WriteAllLines($stagedDat, $datLines, (New-Object Text.ASCIIEncoding))
+Stage-File $stagedDat 'update\common\data\default.dat' 'replace'
+
 Remove-Item -LiteralPath $work -Recurse -Force
 
 $manifest = [ordered]@{

@@ -71,6 +71,21 @@ Finish colour ramps (`shadowRgb`, `midRgb`, `highlightRgb`, `contrast`, `lift`, 
 
 `schemaVersion: 1`, `enabled`, `showOnBikes`, `nudgePositionMeters`, `nudgeRotationDegrees`, `weapons[]` (`weaponId`, `weaponInfoType`, `category` numeric `WeaponCategory`), and `placements[]` (`slot`, ScriptHookDotNet `bone`, `position` in meters XYZ, `rotation` in degrees XYZ). A placement can optionally specify `category` and/or `model` to override a slot default. `weaponInfoType` selects the active WeaponInfo.xml entry, whose `<assets model>` determines the prop. The starting offsets require visual calibration in game; DevTools saves changes with a `.bak`.
 
+Optional `slings[]` (W-5): `slot` (`LongGun1` or `LongGun2`, unique), `model` (a strap model from `LibertyModels.img`) and `bone` (ScriptHookDotNet bone). The strap is attached with zero offset and zero rotation because its mesh is authored in that bone's bind-pose space. Packaging now merges missing top-level fields into the installed file (`merge-defaults`), so saved nudges survive.
+
+## Build-time: models/sling.json (T-2 / W-5)
+
+Read by `tools/models` (`LibertyModel sling`) at package time.
+
+- **Body:** `bodyArchive`, `bodyPrefixes` (the outfit meshes the straps must clear), `skeletonModel` and `attachBone` (model bone name, e.g. `Char_Spine2`).
+- **Template:** `templateArchive` and `templateModel` (a single-geometry prop whose drawable and texture dictionary are reused).
+- **Strap shape:** `clearanceMeters` (gap over the outermost outfit), `hipMarginMeters` (where the cut stops past the hip anchor), `widthMeters`, `thicknessMeters`, `textureRepeatMeters` (strap length per texture repeat) and `segments` (points around the loop).
+- **Registration:** `textureDictionary`, `drawDistanceMeters` and `audioMaterial` (IDE `weap` and `amat` entries).
+- **`leather`:** `baseColour`, `edgeColour` and `stitchColour` (RGB), `grainStrength`, `scuffStrength`, `stitchInsetFraction` (of strap width from each edge) and `stitchPeriodPixels`.
+- **`straps[]`:** `model`, plus the shoulder anchor and the hip anchor.
+  - Shoulder anchor: `shoulderBone`, `shoulderTowards` and `shoulderFraction` (a point that far from the first bone toward the second).
+  - Hip anchor: `hipBone`, `hipOffsetMeters` (model space, Z up).
+
 ## combat_effects.json (T-022)
 
 `bloodVisualMode` is `stock` (default if absent) or `external`. In `external`, Liberty Framework keeps hit reactions and dismemberment, leaves impact decals/streaks to the companion, and adds bounded wound/stump pulses plus the game's bleeding flag. Use `external` only when another renderer supplies the broader wound visuals. The Violent Liberty companion and rollback steps are in [ViolentLiberty.md](../research/ViolentLiberty.md).

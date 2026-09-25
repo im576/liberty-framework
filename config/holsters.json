@@ -31,5 +31,9 @@
     {"slot":"LongGun1","bone":"Spine2","position":[-0.16,-0.14,0],"rotation":[0,90,0]},
     {"slot":"LongGun2","bone":"Spine2","position":[0.16,-0.14,0],"rotation":[0,-90,0]},
     {"slot":"Melee","bone":"Pelvis","position":[-0.12,-0.1,0],"rotation":[0,90,0]}
+  ],
+  "slings": [
+    {"slot":"LongGun1","model":"lf_sling_a","bone":"Spine2"},
+    {"slot":"LongGun2","model":"lf_sling_b","bone":"Spine2"}
   ]
 }

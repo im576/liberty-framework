@@ -125,3 +125,12 @@ Status: **READY FOR OWNER TEST** after the integrated package is installed. Use 
 5. **Safehouse.** At a safehouse stash, press X/E. The wheel opens directly with the title SAFEHOUSE; Y opens the gunsmith list inside the wheel (A to choose, pay twice to confirm, Y/B back).
 6. **Interrupt.** Open a trunk, then open DevTools while the wheel is up. Storage must close, the lid shuts, and you get control back after DevTools closes.
 7. **Send these log lines:** `trunk_anim`, `trunk_anim_play_failed`, `wheel_icon_missing`, `arsenal_store`, `arsenal_take`, `arsenal_storage_closed`. Also say whether the animations line up with the lid and whether the wheel is readable.
+
+### 12. Lag near cars fixed, first generated models (sling straps)
+
+1. **Startup.** The game loads a new model archive and IDE (`LibertyModels.img`, `lf_models.ide`). If it crashes or hangs on the loading screen, close it and tell me; the Phase 2 rollback restores `default.dat`.
+2. **Near cars.** Walk up to a car and stand behind it for 20 s. The frame rate should stay normal; before this build it dropped to a few FPS.
+3. **One long gun.** Carry a rifle or shotgun and switch to your pistol or fists. The long gun goes on your back, and a dark leather strap appears across your chest, from the left shoulder to the right hip.
+4. **Two long guns.** Carry a second long gun. A second strap appears in the other direction, so the straps cross in an X.
+5. **Look closely.** Walk, run, crouch and turn the camera around Niko. Say where the straps clip into the body or float off it (chest, back, shoulder, hip), and whether the texture looks like leather.
+6. **Send these log lines:** every `holster_frame` line (this calibrates the rifle placement for the next build), `holster_sling_model_invalid` if present, `draw.storage` from `performance_scripts`, and any `holster` errors.
