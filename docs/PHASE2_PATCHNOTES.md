@@ -1,6 +1,6 @@
 # Phase 2 integrated patch notes
 
-Build prepared 2026-09-24 for the owner's combined playtest. All new gameplay behavior is **NEEDS-PLAYTEST**; no agent ran GTA IV.
+Build installed 2026-09-24 for the owner's combined playtest. All new gameplay behavior is **NEEDS-PLAYTEST**; no agent ran GTA IV. The integrated DLL SHA-256 is `EF44141752B6B5F9EB5FE967588137A7055BD866F15B11CFF993E4E1A35C6390`; 10 installed manifest files match. The backup is `scripts/LibertyFramework/backups/phase2-20260924-183757`.
 
 ## Gunplay
 

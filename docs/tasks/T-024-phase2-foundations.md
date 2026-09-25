@@ -17,4 +17,4 @@ Status: **NEEDS-PLAYTEST**. Owner requested the full Phase 2 build for one combi
 
 ## Offline evidence and limits
 
-`tools/build.ps1` compiles all sources with warnings as errors; `tools/verify.ps1` checks CE native registration, resolver addresses, config, and spread behavior. Exact final build/hash and verifier count are recorded in the integrated Phase 2 report. Gun feel, input conflicts, frame pacing, and camera projection still require the owner's in-game test. Shoulder swap remains T-015 BLOCKED pending a CE-validated lateral camera control.
+`tools/build.ps1` compiled 103 sources with zero warnings/errors; `tools/verify.ps1` passed 268/268 against installed CE binaries. The final DLL SHA-256 and rollback path are in `docs/PHASE2_PATCHNOTES.md`; the integrated installer dry run restored every file byte-for-byte, and the actual install verified all 10 manifest files. Gun feel, input conflicts, frame pacing, and camera projection still require the owner's in-game test. Shoulder swap remains T-015 BLOCKED pending a CE-validated lateral camera control.

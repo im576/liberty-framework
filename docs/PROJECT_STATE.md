@@ -5,9 +5,9 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
-**Phase 2 integration in progress (2026-09-24).** Owner confirmed Phase 1 weapon feel, back holsters including gold variants, and trunk storage worked in-game. Safehouse storage remains provisionally assumed. T-024 gun bloom, nearby storage interaction, and performance instrumentation have passed offline compilation and verification; all new behavior awaits the combined in-game playtest. T-015 shoulder swap remains blocked.
+**Phase 2 integrated build installed (2026-09-24).** Owner confirmed Phase 1 weapon feel, back holsters including gold variants, and trunk storage worked in-game. Safehouse storage remains provisionally assumed. The integrated T-022/T-024/T-025 build passed 268/268 offline checks and an install/rollback dry run, then was installed with backup `phase2-20260924-183757`; all new behavior awaits the [combined owner playtest](testing/PHASE2_PLAYTEST.md). T-015 shoulder swap and T-023 real body variants remain blocked.
 
-**Phase 1 + Liberty Arsenal installed in the game (2026-09-24), awaiting one owner playtest.** Universal free aim, per-weapon recoil and real spread for test weapons 58/59/60, spread crosshair, gold pistol finish, and expanded DevTools plus the Arsenal features (T-011/T-013/T-014/T-016/T-017/T-020/T-021) and Liberty Vehicle Services CE are built and installed. Offline: 240/240 verification checks against the installed GTAIV.exe and ScriptHook.dll; install/rollback dry run byte-identical. No in-game evidence yet for any T-010 behaviour.
+**Phase 1 + Liberty Arsenal baseline (2026-09-24).** Universal free aim, per-weapon recoil and real spread for test weapons 58/59/60, spread crosshair, gold pistol finish, expanded DevTools, Arsenal, and Liberty Vehicle Services CE were installed. The owner reported the tested weapons, tunes, holsters, gold variants, and trunks worked; individual T-010 edge cases are not all evidenced. Safehouse behavior is a provisional assumption.
 
 ## Key decisions (see `docs/architecture/decisions/`)
 
@@ -18,6 +18,7 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Verified in-game (by the human tester)
 
+- 2026-09-24 (owner report): Phase 1 weapon gameplay and tunes worked, visible weapons including gold ones appeared on the player's back, and trunk storage worked perfectly. Safehouse storage is provisionally assumed working, without a direct report. Phase 2 has no in-game result yet.
 - 2026-09-24 (owner report and logs): the T-007 carbine (ID 59) and shotgun (ID 60) identities selected and worked first try alongside the pistol (ID 58).
 - 2026-09-24 (tester report and fresh logs): Steam Complete Edition exe 1.2.0.59 and FusionFix 5.0.1 reach gameplay. Tomasak ScriptHookDotNet 1.7.1.8 loads the probe; startup, heartbeats, domain unload, and restart after `ReloadScripts` were logged, and gameplay continued. Bluetooth DualSense through a Steam Input community layout; in-game auto aim on. With the runtime installed, vanilla pistol aim, fire, reload, cover and vehicle shooting, and save/load passed. See [T-000](tasks/T-000-baseline.md) and [T-001](tasks/T-001-runtime-spike.md).
 - 2026-09-24 (tester report, screenshot, and fresh logs): The first DevTools panel opened, navigated, and closed with the controller; D-pad navigation also opened the phone. `LFWeaponGive` selected custom ID 58, and the vanilla handgun presence changed from true to false. Game heartbeats continued. Candidate firing and save/load have not been confirmed.
@@ -37,6 +38,7 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Changelog
 
+- 2026-09-24 — Phase 2 integration: merged both Sol task branches with T-024, reviewed ownership and installer behavior, built 103 sources with zero build warnings/errors, verified 268/268 CE checks, passed byte-identical install/rollback dry run, and installed 10 manifest files with SHA-256 confirmation. The Phase 1 gold assets, LVS scripts/INI, holster config, and player state were retained. Backup `scripts/LibertyFramework/backups/phase2-20260924-183757`; combined owner playtest pending.
 - 2026-09-24 — T-024 Phase 2 foundations: lower early-burst bloom and faster short-burst recovery for registered test weapons; compact Square/X or E trunk/safehouse panel; lighter holster/debug scans and cached projection; 30-second frame/tick timing lines. Offline checks pass, combined owner playtest pending.
 - 2026-09-24 — T-022 combat effects built on `codex/phase2-combat`: bounded player-attributed sampling, bone-region reactions via force native, stock blood PTFX attached to hit bone with cleanup, transient injury/wound state, corpse-only head-removal spike, and limb-loss candidate gating. CE native checks pass offline; appearance/behavior and actual arm/leg mesh removal remain open for owner playtest.
 - 2026-09-24 — T-025 stream C staged on `codex/phase2-systems`: physical weapon IDs and metadata survive carry/trunk/safehouse/owned-car state; catalog covers a vanilla sidearm pair and existing carbine. A paid safehouse gunsmith choice switches a pistol between factory/gold variants. T-023 body variants remain blocked pending a model/extra-slot visual test; generic LVS Extras remain unchanged. Offline checks pass; integration and owner playtest pending.
