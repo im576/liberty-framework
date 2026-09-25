@@ -1,16 +1,18 @@
 # T-015 — Shoulder swap
 
-Status: **BLOCKED** (Codex Agent B). Controller-first shoulder swap while aiming remains an engine API spike. Liberty Tweaks was used as behavioural reference only.
+Status: **NEEDS-PLAYTEST** (implemented and installed 2026-09-24, Claude). Previously blocked on a validated camera control; the control was found by static analysis of GTAIV.exe 1.2.0.59.
 
-## Blocked
+## How it works
 
-Checked the registered CE native list and ScriptHookDotNet camera wrapper. `SET_CAM_ATTACH_OFFSET` and `SET_CAM_POINT_OFFSET` exist, but their behaviour on the gameplay third-person aim camera is not documented or validated. The existing ADR-0004 aim-camera resolver validates pitch/heading only, and `docs/game-api/MEMORY.md` has no lateral offset field or restore contract. Applying a guessed offset could alter cover, vehicles or mission cameras. No code was written for this feature. Need a disassembly-backed resolver with runtime validation and original-value restore, or a human-tested native spike showing a camera-local offset on CE 1.2.0.59.
+`CCamAimWeapon`'s update chooses a 40-byte settings record per camera state from a table in game data (0x103C118, 15 records). Field `+0x10` is multiplied by the camera's right vector to place the camera beside the shoulder: 0.475 m on foot, 0.2 m in cover, 0.375 m in another state. Fields `+0x1C/+0x20` are the pitch limits clamped by 0xA25230, which proves the table drives the aim camera. See [MEMORY.md](../game-api/MEMORY.md).
 
-Phase 2 research (2026-09-24): the current [Liberty Tweaks source](https://github.com/catsmackaroo/LibertyTweaks/blob/main/LibertyTweaks/Features/Combat/ShoulderSwap.cs) swaps the shoulder by attaching an invisible, collision-enabled object near the ped while aiming. That is a camera-obstruction technique rather than a validated camera offset, and it has no documented safe restore behavior for this project's CE camera. The repository has no reuse license. We will not copy that code or add an unseen collision object to the integrated build. `SET_CAM_ATTACH_OFFSET` exists in the CE native list, but its behavior on the active gameplay aim camera and its original value remain unverified. The task stays blocked while the camera control is investigated.
+Shoulder swap scales `+0x10` of every record by a side factor that slides between +1 (right, vanilla) and −1 (left) over `transitionMilliseconds`. It is a data write only (no code patch, ADR-0004): the resolver finds the table from code shapes, the runtime validates the originals (each |x| ≤ 1.5 m and a right-shoulder value present) and restores them on toggle-off, error, script unload and process exit. Verify checks table address, record count, field offset and the 0.475/0.2 values against GTAIV.exe; FusionFix patches no byte the resolver reads.
 
-Follow-up research: [Liberty Shoulder 0.2.0](https://www.nexusmods.com/gta4/mods/1229) advertises a `CAMERA` swap mode and ships an ASI and INI. Its public file page does not establish compatibility with this installed CE 1.2.0.59 build or disclose a reusable camera implementation. It is a lead for a separate compatibility test, not evidence for a safe offset in this DLL. No third-party binary was installed.
+Config `gunplay.json` → `shoulderSwap`: `enabled`, `controllerButton` (default `LeftShoulder` = LB/L1), `keyboardKey` (default `Z`), `transitionMilliseconds` (180), `requireAiming` (true). The chosen side persists after aiming ends until swapped back. Liberty Tweaks and Liberty Shoulder were not used (reference only; no code, no binary).
 
-## Human test steps after unblock
+## Human test steps
 
-1. Hold L2/LT on foot, press the configured shoulder button and verify the view changes right/left without moving aim or player position.
-2. Repeat while aiming from cover, in a vehicle and during mission camera changes; the setting must restore after aim ends and script reload.
+1. On foot, hold L2/LT to aim and press **L1/LB** (or **Z**): the camera slides to the left shoulder in about 0.2 s; aim and crosshair stay centred. Press again: back to the right. Log: `shoulder_settings_validated`, `shoulder_swap side=left/right`.
+2. Swap to the left, release aim, walk, aim again: still left. Take cover and aim over the edge on both sides; report clipping.
+3. Aim from a vehicle (drive-by) and check nothing odd happens with the car camera.
+4. Swap left, open the pause menu, then run `ReloadScripts`: after the reload the camera is back on the right. Exit the game from the pause menu.

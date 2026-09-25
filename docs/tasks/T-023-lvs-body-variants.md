@@ -1,20 +1,17 @@
-# T-023 — LVS CE body variants
+# T-023 — LVS CE body-part labels
 
-Status: **BLOCKED**
+Status: **NEEDS-PLAYTEST** (implemented and installed 2026-09-24, Claude). Previously blocked on identifying which vehicle extras are body parts; that now comes from the model files themselves.
 
-## Scope and findings
+## How it works
 
-The existing MIT Liberty Vehicle Services CE workshop already probes vehicle extras, previews and charges for them, and saves their states in `scripts/LibertyVehicleServicesCE.owned.ini` for owned-car restore. These extras can include body geometry, but may also be taxi signs, roof lights, or other equipment. A generic relabel as "body variants" was rejected before integration because it would misrepresent those parts.
+`tools/vehicles` reads every vehicle fragment (`.wft`) in the player's own `pc/models/cdimages/vehicles.img` and finds each `extra_N` bone record (name +0x00, parent bone +0x10, model-space position +0x60 in the 0xE0-byte bone records). The part is named from its parent bone and position: bonnet → hood scoop/panel, boot → trunk spoiler/boot panel, bumpers → bumper parts, high and central → roof item (rack, sign or light), high at the rear → rear spoiler/wing, low → lower trim, bones at the car origin → "Body part". 80 models / 295 extras. Offline checks: Sultan RS extra 1 = hood scoop (bonnet, 0/1.224/0.514), police extra 1 = roof light, Infernus extra 1 = trunk spoiler.
 
-The installed GTA IV 1.2.0.59 assets contain `sultanrs.wft` in `pc/models/cdimages/vehicles.img` and a `sultanrs` definition in `common/data/vehicles.ide`. An offline RSC05 asset probe did not reveal the extra-slot mapping. Secondary reports mention a Sultan RS hood-intake variation, but do not establish its native extra index or behavior on this installed build. No third-party body assets were copied, no LVS derivative is shipped, and no game files were modified.
+`tools/package-phase2.ps1 -LvsDirectory <LVS release>` generates `scripts/LibertyFramework/config/vehicle_extras.json` and applies `tools/vehicles/patch-lvs-labels.ps1` to a copy of `LibertyVehicleServicesCE.CS` (MIT, ekzestean): the six workshop "Extra N" texts become e.g. "Hood scoop / hood panel (extra 1)". The dealer list is unchanged. The patch refuses an unexpected LVS version, and the patched script is compiled against ScriptHookDotNet before staging. Unknown models fall back to "Extra N". LVS ownership, pricing and persistence are untouched.
 
-## Blocked
+This names existing geometry truthfully. New body-kit parts (new bumpers, spoilers) need new models and are future asset work.
 
-Need an in-game probe that logs the available extra indices on an owned Sultan RS and records a screenshot before/after each preview. Once a slot is confirmed as a body part, constrain any workshop label or variant grouping to that model and slot. The current generic **Extras** workshop remains functional and retains LVS ownership/persistence.
+## Human test steps
 
-## Human test steps for the spike
-
-1. In IV free roam, drive or register a **Sultan RS** and take it to an LVS workshop. Use the workshop's on-screen controls to open **Extras**.
-2. For each available slot, move **Left/Right** to preview on/off, photograph the car from the same camera angle, and record the slot number plus the visibly changed part. Press the on-screen **Back** key to cancel; verify the car returns to its prior state and no money is charged.
-3. If a hood intake, spoiler, bumper, or other actual body panel is identified, buy that slot with the on-screen **Select** key, close and relaunch GTA IV, and revisit the same owned car. Verify the part is restored and its `extras=` entry is present under the matching `[owned.<id>]` record in `scripts/LibertyVehicleServicesCE.owned.ini`.
-4. Damage and repair nearby panels, open the trunk, and check collision and vehicle entry. Report the model, slot, screenshot pair, INI excerpt, and any log errors so the model-scoped extension can be implemented.
+1. Drive a **Sultan RS** into an LVS workshop, open **Extras**: the row reads "Hood scoop / hood panel (extra 1)". Preview on/off and confirm the hood intake appears/disappears.
+2. Repeat with a **taxi or cabby** (roof sign rows), **police cruiser** (roof light) and **Infernus** (trunk spoiler). Photograph any row whose label does not match the part that changes; report model + extra number.
+3. Buy one extra, save, relaunch, return to the car: still fitted (LVS persistence unchanged). Log `LibertyVehicleServicesCE.log` has no compile/runtime errors.

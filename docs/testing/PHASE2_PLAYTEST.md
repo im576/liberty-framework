@@ -41,3 +41,9 @@ Status: **READY FOR OWNER TEST** after the integrated package is installed. Use 
 - Arm/leg mesh detachment is not implemented; only bounded candidate detection and a separate corpse head native are present.
 - Shoulder swap T-015 remains blocked pending a validated Complete Edition camera offset.
 - New attachment models and mechanical effects, weapon replacements beyond the existing catalog/finish example, and a real vehicle body-kit asset pipeline are not in this installed build.
+
+## 6. Open-items build (2026-09-24)
+
+1. **Shoulder swap:** T-015 card, steps 1–4 (LB/L1 or Z while aiming).
+2. **Dismemberment:** T-022 card update box. Leg and arm kills with gold weapons; report `dismember_evidence` lines.
+3. **Vehicle body labels:** T-023 card steps 1–3 (Sultan RS, taxi/cabby, police, Infernus).

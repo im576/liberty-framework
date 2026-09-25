@@ -1,5 +1,13 @@
 # Phase 2 integrated patch notes
 
+## Open-items build (Claude), 2026-09-24
+
+- **Shoulder swap (T-015):** press LB/L1 (or Z) while aiming to slide the camera to the other shoulder; press again to return. Found the aim camera's shoulder offset in the game's own camera settings table and flip it with an eased slide. Data-only write, validated and restored on exit/reload. Config `gunplay.json` → `shoulderSwap`.
+- **Dismemberment (T-022):** lethal gold-weapon hits to an arm or leg sever it at the elbow/knee (lower hits) or shoulder/hip (upper hits): the limb is removed from the corpse, the stump bleeds and the limb is thrown off as a ragdoll with the victim's clothes. Self-checking; see the T-022 card for the log evidence to report. Corpse head removal continues as before.
+- **Vehicle body-part labels (T-023):** LVS workshop Extras now name what each extra is (hood scoop, trunk spoiler, roof light/sign, bumper part…), read from your own vehicle model files: 80 cars, 295 extras. Unknown models keep "Extra N".
+- Build: 110 sources, 0 errors/warnings; offline verification **296/296** (new: aim-camera table, ped-skeleton resolver, vehicle-extras catalog, limb cut plans). Dry-run install/rollback passed. Installed DLL SHA-256 `80E3193149A919FF083AAA8629A9D8B9245F4DEBFE4BBF6831237B1754B04648`; backup `scripts/LibertyFramework/backups/phase2-20260924-210021`; 12 installed files match the manifest.
+- Not done: new body-kit **models** (needs asset work), wider weapon/attachment models, render-time hook for dismemberment if the engine rebuilds skeletons every frame (the log will tell).
+
 ## Follow-up build, 2026-09-24
 
 - Extended the safehouse gunsmith from the pistol grip to catalog-defined tuning upgrades on all three registered gold weapons: carbine Stability stock ($600, per-shot bloom 0.82) and shotgun Steady fore-end ($450, 0.85). The same purchase validation, persistent physical record, and store/take behavior apply. No new visible model is included.

@@ -69,3 +69,12 @@ T-021 also uses ScriptHookDotNet `Game.CurrentEpisode` (registered `GET_CURRENT_
 Reuses `GET_CHAR_LAST_DAMAGE_BONE` (registered 0x767E5013 via `DebugHitNatives`) and `GET_MISSION_FLAG` (registered 0x2BC64736) on Script.Tick. `Ped.HasBeenDamagedBy` is the existing SHDN wrapper; `World.GetPeds` enumerates only the configured nearby range. No new memory address is introduced. The GTA IV PedBone map is from [Sanny Builder's IV enum](https://github.com/sannybuilder/library/blob/master/gta_iv/enums.json); the correspondence to the CE last-damage-bone return remains an in-game test item.
 
 Follow-up calls through `CombatEffectsNatives` on Script.Tick: `IS_PED_A_MISSION_PED` (0x05801768) excludes script/mission NPCs; `APPLY_FORCE_TO_PED` (0x7305301D) supplies directional reaction force; `TRIGGER_PTFX_ON_PED_BONE` (0x7D3C3C9D) and `START_PTFX_ON_PED_BONE` (0x2209116C) use installed game effect names on the damaged bone; `STOP_PTFX` (0x0EAA4429) cleans tracked wound handles; `EXPLODE_CHAR_HEAD` (0x4A802E89) is optional, corpse-only and once per ped. All six are registered in CE 1.2.0.59 and mapped by the installed ScriptHook.dll (offline verifier 252/252). Signature references: [GTA IV native header](https://github.com/ckeleshi/GTA4.CHS/blob/master/natives.h.txt), [GTA IV PTFX reference](https://pastebin.com/KfLYm5F1). Runtime behavior remains unverified.
+
+## Phase 2 follow-up (Claude, 2026-09-24)
+
+| Native | Purpose | CE status | Task |
+|---|---|---|---|
+| `GET_CHAR_DRAWABLE_VARIATION` / `GET_CHAR_TEXTURE_VARIATION` / `SET_CHAR_COMPONENT_VARIATION` | copy a corpse's clothing onto the thrown-limb clone | registered 0x1A1A6D83 / 0x3A7B78C5 / 0x71A52973 | T-022 |
+| `GET_PED_BONE_POSITION` | resolver anchor for ped skeleton access (not called) | registered 0x43475BB3 | T-022 |
+
+The thrown limb uses SHDN `World.CreatePed`, `Ped.Visible`, `Ped.Die`, `Ped.NoLongerNeeded`, `Ped.Delete`; `START_PTFX_ON_PED_BONE`/`STOP_PTFX`/`APPLY_FORCE_TO_PED` as already registered for T-022.

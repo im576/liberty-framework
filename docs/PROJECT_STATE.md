@@ -5,6 +5,8 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
+**Phase 2 open-items build installed (2026-09-24, Claude):** shoulder swap (T-015), arm/leg dismemberment with thrown limbs (T-022), LVS body-part labels (T-023). Verify 296/296; install/rollback dry run passed; owner playtest pending.
+
 **Phase 2 follow-up installed (2026-09-24):** Enabled the owner-approved corpse head-removal prototype and expanded the safehouse gunsmith to carbine/shotgun tuning attachments. Build 104 sources and offline checks 270/270; install backup `phase2-20260924-194809`. In-game effects remain NEEDS-PLAYTEST. Shoulder swap, true limb mesh removal, and model-verified vehicle body kits still require CE runtime/asset evidence.
 
 **Phase 2 integrated build installed (2026-09-24).** Owner confirmed Phase 1 weapon feel, back holsters including gold variants, and trunk storage worked in-game. Safehouse storage remains provisionally assumed. The integrated T-022/T-024/T-025 build passed 270/270 offline checks and an install/rollback dry run, then was installed with backup `phase2-20260924-184410`; all new behavior awaits the [combined owner playtest](testing/PHASE2_PLAYTEST.md). T-015 shoulder swap and T-023 real body variants remain blocked.
