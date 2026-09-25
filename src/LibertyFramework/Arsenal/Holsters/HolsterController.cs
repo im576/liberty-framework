@@ -25,6 +25,8 @@ namespace LibertyFramework.Arsenal.Holsters
         private readonly List<KeyValuePair<string, GTA.Object>> pendingCalibration = new List<KeyValuePair<string, GTA.Object>>();
         private int calibrationDueTicks;
         private PedSkeleton skeleton;
+        // The WeaponInfo.xml the game loaded; fixed for the session (resolved once).
+        private string activeXmlPath;
         private bool skeletonUnavailable;
         private readonly Dictionary<string, string> modelNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly string journalPath = Path.Combine(LibertyPaths.StateDirectory, "holsters_props.json");
@@ -102,12 +104,14 @@ namespace LibertyFramework.Arsenal.Holsters
                     Natives.IsPlayerPlaying(player) && (Natives.IsPlayerControlOn(player) || DevToolsMenu.IsOpen || ArsenalCore.StorageOpen),
                     Natives.IsScreenFadedOut(), inVehicle, onBike, config.ShowOnBikes);
                 if (!visible) { Clear(); return; }
+                long probe = Stopwatch.GetTimestamp();
                 ICarriedWeaponsSource source = ArsenalRegistry.CarriedWeapons;
                 if (removing && source != null && source.Revision <= removingRevision) { Clear(); return; }
                 removing = false;
                 int held = Natives.CurrentWeapon(ped);
                 IList<CarriedWeapon> carried = source != null ? source.Carried : ReadInventory(ped, held);
                 if (carried == null) { Clear(); return; }
+                LibertyFramework.Core.Performance.Logic.CostMeter.Add("ho.carried", probe); probe = Stopwatch.GetTimestamp();
                 HashSet<BodySlot> wanted = new HashSet<BodySlot>();
                 foreach (CarriedWeapon weapon in carried)
                 {
@@ -117,6 +121,7 @@ namespace LibertyFramework.Arsenal.Holsters
                     if (props.ContainsKey(weapon.Slot)) { ShowSling(ped, weapon.Slot); }
                 }
                 foreach (BodySlot slot in new List<BodySlot>(props.Keys)) { if (!wanted.Contains(slot)) { Remove(slot); } }
+                LibertyFramework.Core.Performance.Logic.CostMeter.Add("ho.show", probe);
             }
             catch (Exception error)
             {
@@ -171,11 +176,15 @@ namespace LibertyFramework.Arsenal.Holsters
 
         private void Show(Ped ped, CarriedWeapon weapon)
         {
+            // Already showing this weapon in this slot: nothing to resolve (the path lookup below touches the file system).
+            int alreadyShown;
+            if (shownIds.TryGetValue(weapon.Slot, out alreadyShown) && alreadyShown == weapon.WeaponId && props.ContainsKey(weapon.Slot)) { return; }
             HolsterWeapon entry = config.FindWeapon(weapon.WeaponId);
             if (entry == null && (weapon.WeaponId < 21 || weapon.WeaponId > 41 || Game.CurrentEpisode == GameEpisode.GTAIV))
             { Remove(weapon.Slot); return; }
             string weaponType = entry != null ? entry.WeaponInfoType : "EPISODIC_" + (weapon.WeaponId - 20);
-            string xmlPath = entry != null ? WeaponInfoXml.ActivePath(LibertyPaths.GameDirectory) :
+            if (activeXmlPath == null) { activeXmlPath = WeaponInfoXml.ActivePath(LibertyPaths.GameDirectory); }
+            string xmlPath = entry != null ? activeXmlPath :
                 Path.Combine(LibertyPaths.GameDirectory, Path.Combine(Game.CurrentEpisode == GameEpisode.TLAD ? "TLAD" : "TBoGT",
                     Path.Combine("common", Path.Combine("data", "WeaponInfo.xml"))));
             string modelKey = xmlPath + "|" + weaponType;

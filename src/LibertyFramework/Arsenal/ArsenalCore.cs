@@ -60,6 +60,9 @@ namespace LibertyFramework.Arsenal
         private bool storageControlLocked;
         private bool previousStorageKey;
         private int lastStorageScanTicks;
+        private int lastStateReadTicks, lastReconcileTicks;
+        private bool cachedArrested, cachedDead, cachedMission, cachedGated;
+        private volatile bool inventoryDirty = true;
         private Size screenSize;
         private int lastScreenReadTicks;
         private int lastSafehouseObserveTicks;
@@ -76,6 +79,15 @@ namespace LibertyFramework.Arsenal
             AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
             DevToolsPages.Register("ARSENAL", BuildPage);
             RuntimeLog.Info("arsenal_started");
+        }
+
+        // Engine events that change what the player carries mark the inventory for re-reading on the next tick.
+        protected internal override void Started()
+        {
+            Engine.Events.Subscribe<LibertyFramework.Engine.Events.PlayerWeaponChanged>(this, e => inventoryDirty = true);
+            Engine.Events.Subscribe<LibertyFramework.Engine.Events.PlayerShot>(this, e => inventoryDirty = true);
+            Engine.Events.Subscribe<LibertyFramework.Engine.Events.PlayerReloaded>(this, e => inventoryDirty = true);
+            Engine.Events.Subscribe<LibertyFramework.Engine.Events.PlayerDied>(this, e => inventoryDirty = true);
         }
 
         int ICarriedWeaponsSource.Revision { get { return revision; } }
@@ -119,9 +131,13 @@ namespace LibertyFramework.Arsenal
                 int money = Player.Money;
                 if (previousMoney >= 0 && money < previousMoney) { moneyDecreaseAt = Environment.TickCount; }
                 previousMoney = money;
+                long probe = System.Diagnostics.Stopwatch.GetTimestamp();
                 RefreshLvs();
+                LibertyFramework.Core.Performance.Logic.CostMeter.Add("ar.lvs", probe); probe = System.Diagnostics.Stopwatch.GetTimestamp();
                 ObserveVehicle(ped);
+                LibertyFramework.Core.Performance.Logic.CostMeter.Add("ar.vehicle", probe); probe = System.Diagnostics.Stopwatch.GetTimestamp();
                 DiscoverSafehouses();
+                LibertyFramework.Core.Performance.Logic.CostMeter.Add("ar.discover", probe); probe = System.Diagnostics.Stopwatch.GetTimestamp();
                 int nowTicks = Environment.TickCount;
                 if (lastSafehouseObserveTicks == 0 || unchecked(nowTicks - lastSafehouseObserveTicks) >= 250)
                 {
@@ -135,8 +151,18 @@ namespace LibertyFramework.Arsenal
                 }
                 if (openedTrunk != null && activeStorage == null && !DevToolsMenu.IsOpen) { CloseTrunk(); }
 
-                bool arrested = Function.Call<bool>("IS_PLAYER_BEING_ARRESTED");
-                bool dead = Function.Call<bool>("IS_PLAYER_DEAD", Player.ID);
+                // Arrest/death/mission/cutscene/fade state: seven SHDN natives, refreshed at most every stateRefresh ms.
+                int stateRefresh = config.StateRefreshMilliseconds > 0 ? config.StateRefreshMilliseconds : 200;
+                if (lastStateReadTicks == 0 || unchecked(nowTicks - lastStateReadTicks) >= stateRefresh)
+                {
+                    lastStateReadTicks = nowTicks;
+                    cachedArrested = Function.Call<bool>("IS_PLAYER_BEING_ARRESTED");
+                    cachedDead = Function.Call<bool>("IS_PLAYER_DEAD", Player.ID);
+                    cachedMission = Function.Call<bool>("GET_MISSION_FLAG");
+                    cachedGated = !ArsenalPolicy.MayMoveWeapons(cachedMission, (Function.Call<bool>("HAS_CUTSCENE_LOADED") && !Function.Call<bool>("HAS_CUTSCENE_FINISHED")) ||
+                        Function.Call<bool>("IS_SCREEN_FADING") || Function.Call<bool>("IS_SCREEN_FADED_OUT"));
+                }
+                bool arrested = cachedArrested, dead = cachedDead, mission = cachedMission, gated = cachedGated;
                 if (arrested || dead)
                 {
                     CloseStorage();
@@ -144,11 +170,19 @@ namespace LibertyFramework.Arsenal
                     return;
                 }
                 deadHandled = false;
-                bool mission = Function.Call<bool>("GET_MISSION_FLAG");
-                bool gated = !ArsenalPolicy.MayMoveWeapons(mission, (Function.Call<bool>("HAS_CUTSCENE_LOADED") && !Function.Call<bool>("HAS_CUTSCENE_FINISHED")) ||
-                    Function.Call<bool>("IS_SCREEN_FADING") || Function.Call<bool>("IS_SCREEN_FADED_OUT"));
-                Reconcile(ped, mission, gated);
+                LibertyFramework.Core.Performance.Logic.CostMeter.Add("ar.safehouse_flags", probe); probe = System.Diagnostics.Stopwatch.GetTimestamp();
+                // The inventory is re-read when the engine reports a weapon change, shot or reload, and at least every
+                // inventoryRefresh ms for pickups and purchases (which change it without an event).
+                int inventoryRefresh = config.InventoryRefreshMilliseconds > 0 ? config.InventoryRefreshMilliseconds : 500;
+                if (inventoryDirty || lastReconcileTicks == 0 || unchecked(nowTicks - lastReconcileTicks) >= inventoryRefresh)
+                {
+                    inventoryDirty = false;
+                    lastReconcileTicks = nowTicks;
+                    Reconcile(ped, mission, gated);
+                }
+                LibertyFramework.Core.Performance.Logic.CostMeter.Add("ar.reconcile", probe); probe = System.Diagnostics.Stopwatch.GetTimestamp();
                 UpdateStorageInteraction(ped, gated);
+                LibertyFramework.Core.Performance.Logic.CostMeter.Add("ar.storage", probe);
             }
             catch (Exception error)
             {
@@ -974,6 +1008,7 @@ namespace LibertyFramework.Arsenal
         private string RunAction(Func<string> action)
         {
             if (disabled) { return "Arsenal disabled; see log"; }
+            inventoryDirty = true;
             try { return action(); }
             catch (Exception error) { Disable(error); return "Arsenal disabled; see log"; }
         }

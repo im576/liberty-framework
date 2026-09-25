@@ -24,6 +24,11 @@ namespace LibertyFramework.Arsenal.Logic
         [DataMember(Name = "safehouseBlipSprite", IsRequired = false)] internal int SafehouseBlipSprite;
         [DataMember(Name = "discoveredSafehouseRadiusMeters", IsRequired = false)] internal float DiscoveredSafehouseRadiusMeters;
         [DataMember(Name = "gunsmithGoldFinishPrice", IsRequired = false)] internal int GunsmithGoldFinishPrice;
+        // ADR-0006 cost control: the weapon inventory is re-read on engine weapon/shot/reload events and at least this
+        // often (pickups and purchases change it without an event); arrest/death/mission/cutscene/fade state at most
+        // this often. 0 or absent = the defaults (500 / 200 ms).
+        [DataMember(Name = "inventoryRefreshMilliseconds", IsRequired = false)] internal int InventoryRefreshMilliseconds;
+        [DataMember(Name = "stateRefreshMilliseconds", IsRequired = false)] internal int StateRefreshMilliseconds;
     }
 
 }
