@@ -56,6 +56,14 @@ namespace LibertyFramework.CombatEffects
 
         internal bool EngineActive { get { return engine != null && engine.PatchCount > 0; } }
 
+        // Corpse cuts already made on this ped (thrown-limb clones excluded).
+        internal int CutsOn(Ped ped)
+        {
+            int count = 0;
+            foreach (Collapse record in records) { if (record.Ped == ped && !record.Clone) { count++; } }
+            return count;
+        }
+
         internal bool IsTracked(Ped ped)
         {
             foreach (Collapse record in records) { if (record.Ped == ped) { return true; } }

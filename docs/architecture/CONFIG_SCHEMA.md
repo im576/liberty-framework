@@ -133,3 +133,4 @@ Each entry defines `id` (stable catalog ID), `family`, `label`, `role` (`replace
   - `activeSampleWindowMilliseconds` (0-30000) is how long after a detected shot the scan runs at `sampleIntervalMilliseconds`.
   - An idle interval of 0, or one not above `sampleIntervalMilliseconds`, keeps full-rate scanning.
 - `combat_effects.json` `dismemberRefreshMilliseconds` (0-1000) is the dismemberment upkeep cadence once the engine collapse is installed and every record is older than 1 s. 0 means every tick.
+- `combat_effects.json` `maximumCutsPerPed` (0-8, 0 = unlimited) is how many cuts one body can receive, counting pending and completed cuts.

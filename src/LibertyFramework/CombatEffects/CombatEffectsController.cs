@@ -305,7 +305,17 @@ namespace LibertyFramework.CombatEffects
         private void Queue(Ped target, LimbCutPlan plan, Vector3 push, long now, float scale)
         {
             if (dismember != null && dismember.IsTracked(target, plan.Name)) return;
-            foreach (PendingCut cut in pending) if (cut.Ped == target && cut.Plan.Name == plan.Name) return;
+            // Playtest: shotgun pellets and follow-up hits on the falling body queued a cut per limb, so one kill
+            // blew off four limbs at once. A ped gets at most maximumCutsPerPed cuts (pending + done); later hits
+            // on the same body only bleed.
+            int cuts = dismember != null ? dismember.CutsOn(target) : 0;
+            foreach (PendingCut cut in pending)
+            {
+                if (cut.Ped != target) continue;
+                if (cut.Plan.Name == plan.Name) return;
+                cuts++;
+            }
+            if (config.MaximumCutsPerPed > 0 && cuts >= config.MaximumCutsPerPed) return;
             PendingCut item = new PendingCut();
             item.Ped = target; item.Plan = plan; item.Push = push; item.Scale = scale;
             item.Deadline = now + config.PendingDeathWindowMilliseconds;

@@ -1,5 +1,14 @@
 # Phase 2 integrated patch notes
 
+## Calmer dismemberment (Claude), 2026-09-25
+
+- **Performance (your log):** normal play dropped from 60-92 ms per frame to 15-24 ms (about 40-65 FPS).
+- **What caused the explosions:** shotgun pellets and hits on a falling body each queued their own cut, so one kill blew off four limbs, each with its own burst.
+- **One cut per body:** now at most one cut per body (`maximumCutsPerPed`); later hits on the same body only bleed. Many cut bodies were also what dropped FPS again in fights.
+- **Limbs drop instead of flying:** the limb appears at the stump and falls with a light push (force 2, down from 6; almost no upward lift).
+- **Less stump spray:** smaller and slower (scale 0.9 instead of 2.0, 6 s instead of 10 s), with a smaller landing splash.
+- **Upkeep:** cut bodies are refreshed every 0.5 s; limbs are removed after 30 s, with at most 4 cut bodies at once.
+
 ## Performance pass 2 (Claude), 2026-09-25
 
 - **Your last log:** engine calls were fine (0.15 ms each). The slow part was our own memory-safety checks, which wait on a Windows lock while the game and DXVK allocate memory. Those checks now skip memory that never moves (the game's data and its NPC and camera tables).
