@@ -81,7 +81,9 @@ function Stop-Game {
     foreach ($name in 'GTAIV', 'PlayGTAIV', 'RockstarSteamHelper', 'RockstarErrorHandler', 'Launcher', 'SocialClubHelper') {
         Get-Process $name -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue }
     }
-    Start-Sleep -Seconds 3
+    $deadline = (Get-Date).AddSeconds(20)
+    while ((Get-GameProcess) -and (Get-Date) -lt $deadline) { Start-Sleep -Milliseconds 500 }
+    Start-Sleep -Seconds 2
 }
 
 function Focus-Game {

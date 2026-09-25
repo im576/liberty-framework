@@ -210,6 +210,7 @@ namespace LibertyFramework.Gunplay
                     FreeAimEnabled = config.FreeAim.Profile == "free" && config.FreeAim.EnabledOnStartup;
                 }
 
+                long probe = Stopwatch.GetTimestamp();
                 Player player = Player;
                 if (player == null || player.Character == null || !Natives.IsPlayerPlaying(player))
                 {
@@ -231,15 +232,18 @@ namespace LibertyFramework.Gunplay
                     try { Natives.VerifyDirect(player, player.Character, Natives.GameCamHandle()); RuntimeLog.Info(DirectNatives.Summary()); }
                     catch (Exception error) { RuntimeLog.Error("direct_natives_verify_failed error=" + error.Message); }
                 }
+                CostMeter.Add("gp.player", probe); probe = Stopwatch.GetTimestamp();
                 playerIndex = Natives.PlayerIndex();
                 playerPed = playerMemory != null ? playerMemory.PedPointer(playerIndex) : 0;
                 controller.Poll();
+                CostMeter.Add("gp.index_pad", probe); probe = Stopwatch.GetTimestamp();
                 if (!aimingSwitchDisabled)
                 {
                     try { CycleWhileAiming(player.Character, config); }
                     catch (Exception error) { aimingSwitchDisabled = true; RuntimeLog.Error("feature_disabled switch_while_aiming error=" + error); }
                 }
 
+                CostMeter.Add("gp.cycle", probe); probe = Stopwatch.GetTimestamp();
                 try { UpdateFreeAim(player, config); }
                 catch (Exception error)
                 {
@@ -248,6 +252,7 @@ namespace LibertyFramework.Gunplay
                     catch (Exception restoreError) { RuntimeLog.Error("restore_freeaim_failed error=" + restoreError.Message); }
                     freeAim = null;
                 }
+                CostMeter.Add("gp.freeaim", probe); probe = Stopwatch.GetTimestamp();
                 Ped ped = player.Character;
                 int weaponId = Natives.CurrentWeapon(ped);
                 if (weaponId != lastWeaponId)
@@ -258,8 +263,11 @@ namespace LibertyFramework.Gunplay
                 activeWeaponId = weaponId;
                 activeProfile = config.FindWeapon(weaponId);
 
+                CostMeter.Add("gp.weapon_id", probe); probe = Stopwatch.GetTimestamp();
                 SampleState(ped);
+                CostMeter.Add("gp.state", probe); probe = Stopwatch.GetTimestamp();
                 int shots = DetectShots(ped, weaponId);
+                CostMeter.Add("gp.shots", probe);
                 if (DebugOverlay && shots > 0)
                 {
                     if (lastFireMilliseconds > 0) { fireIntervalMilliseconds = (now - lastFireMilliseconds) / shots; }
@@ -329,10 +337,13 @@ namespace LibertyFramework.Gunplay
                     catch (Exception error) { bullets = null; RuntimeLog.Error("feature_disabled shot_audit error=" + error); }
                 }
                 bulletsEnd = Stopwatch.GetTimestamp();
+                probe = Stopwatch.GetTimestamp();
                 try { UpdateSpread(config, now, deltaSeconds); }
                 catch (Exception error) { DisableSpread(error); }
+                CostMeter.Add("gp.spread", probe); probe = Stopwatch.GetTimestamp();
                 try { UpdateRecoil(config, now, deltaSeconds, aimCam, gameCamera); }
                 catch (Exception error) { DisableCamera(error); }
+                CostMeter.Add("gp.recoil", probe); probe = Stopwatch.GetTimestamp();
                 if (shoulderSwap != null)
                 {
                     try
@@ -347,6 +358,7 @@ namespace LibertyFramework.Gunplay
                         shoulderSwap = null;
                     }
                 }
+                CostMeter.Add("gp.shoulder", probe); probe = Stopwatch.GetTimestamp();
                 try { UpdateFeel(config, shots, deltaSeconds, aimCam, gameCamera); }
                 catch (Exception error)
                 {
@@ -355,6 +367,7 @@ namespace LibertyFramework.Gunplay
                     try { RestoreFeel(); }
                     catch (Exception restoreError) { RuntimeLog.Error("restore_feel_failed error=" + restoreError); }
                 }
+                CostMeter.Add("gp.feel", probe);
                 weaponEnd = Stopwatch.GetTimestamp();
                 if (DebugOverlay && !debugHitDisabled && now - lastDebugHitSampleMilliseconds >= config.DebugHit.ScanIntervalMilliseconds)
                 {
@@ -412,20 +425,18 @@ namespace LibertyFramework.Gunplay
             Stopwatch timer = Stopwatch.StartNew();
             try
             {
-                memory = new LiveMemory();
-                CodeScanner scanner = new CodeScanner(memory);
-                addresses = GameAddresses.Resolve(scanner);
-                // T-026 step 2: map the direct-native handlers now; they are verified on the first playing tick.
-                try { DirectNatives.Initialize(scanner); }
-                catch (Exception error) { RuntimeLog.Error("direct_natives_unavailable error=" + error.Message); }
-            if (addresses.FrameCounterGlobal != 0)
-            {
-                try { threadProbe = new EngineThreadProbe(addresses.FrameCounterGlobal, addresses.GetCharHealthHandler); }
-                catch (Exception error) { RuntimeLog.Error("engine_thread_probe_unavailable error=" + error.Message); }
-            }
-                RuntimeLog.Info("engine_resolve module_base=0x" + memory.ModuleBase.ToString("X8") + " natives=" + scanner.NativeCount +
-                    " elapsed_ms=" + timer.ElapsedMilliseconds);
-                foreach (string line in addresses.Report) { RuntimeLog.Info("engine_resolve " + line); }
+                // ADR-0006: one memory scan per session, owned by the engine (it also maps the direct-native handlers
+                // and trusts the permanent pools); gunplay shares its reader and addresses.
+                LibertyFramework.Engine.EngineMemory shared = LibertyFramework.Engine.LibertyEngine.Current.Memory;
+                if (!shared.Resolve()) { throw new InvalidOperationException("engine memory unresolved"); }
+                memory = shared.Live;
+                addresses = shared.Addresses;
+                if (addresses.FrameCounterGlobal != 0)
+                {
+                    try { threadProbe = new EngineThreadProbe(addresses.FrameCounterGlobal, addresses.GetCharHealthHandler); }
+                    catch (Exception error) { RuntimeLog.Error("engine_thread_probe_unavailable error=" + error.Message); }
+                }
+                RuntimeLog.Info("gunplay_engine_access elapsed_ms=" + timer.ElapsedMilliseconds);
             }
             catch (Exception error)
             {

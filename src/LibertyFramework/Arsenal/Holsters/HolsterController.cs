@@ -263,7 +263,7 @@ namespace LibertyFramework.Arsenal.Holsters
                 LibertyFramework.Core.Memory.GameAddresses addresses = gunplay != null ? gunplay.Addresses : null;
                 if (addresses == null) { return; }
                 if (!addresses.PedSkeletonResolved) { skeletonUnavailable = true; pendingCalibration.Clear(); return; }
-                skeleton = new PedSkeleton(new LibertyFramework.Core.Memory.LiveMemory(), addresses);
+                skeleton = new PedSkeleton(LibertyFramework.Engine.LibertyEngine.Current.Memory.Live, addresses);
             }
             uint pointer = skeleton.PedFromHandle(ped.GetHashCode());
             foreach (KeyValuePair<string, GTA.Object> pending in pendingCalibration)

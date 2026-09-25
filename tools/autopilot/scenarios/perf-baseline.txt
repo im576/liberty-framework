@@ -1,0 +1,11 @@
+# Performance sample: 35 s walking-idle in the street with a rifle selected, then the timing lines.
+events off
+god on
+wanted 0
+goto east_park
+wait 4000
+time 13 0
+give 14 120
+wait 35000
+expect "performance_scripts" 40
+status

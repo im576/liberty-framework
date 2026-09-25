@@ -561,7 +561,7 @@ namespace LibertyFramework.CombatEffects
             engineChecked = true;
             if (!config.DismembermentEnabled && !config.DecapitationEnabled) return;
             if (!addresses.PedSkeletonResolved) { RuntimeLog.Error("dismemberment_unavailable ped skeleton not resolved (see engine_resolve ped_skeleton)"); return; }
-            PedSkeleton skeleton = new PedSkeleton(new LibertyFramework.Core.Memory.LiveMemory(), addresses);
+            PedSkeleton skeleton = new PedSkeleton(LibertyFramework.Engine.LibertyEngine.Current.Memory.Live, addresses);
             uint pointer = skeleton.PedFromHandle(self.GetHashCode());
             if (pointer == 0 || skeleton.MatrixBase(pointer) == 0 || skeleton.IndexOf(pointer, self.Model.Hash, 0x4B5) <= 0)
             {
