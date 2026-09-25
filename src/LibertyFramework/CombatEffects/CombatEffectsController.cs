@@ -24,7 +24,9 @@ namespace LibertyFramework.CombatEffects
 
         public CombatEffectsController()
         {
-            Interval = 0;
+            // The configured damage sampler has a 25 ms minimum; a per-frame script
+            // adds scheduling cost without improving detection at the shipped 50 ms cadence.
+            Interval = 25;
             LoadConfig();
             Tick += OnTick;
             AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
@@ -56,7 +58,7 @@ namespace LibertyFramework.CombatEffects
             try
             {
                 LoadConfig();
-                if (config == null || !config.Enabled) { Clear(); return; }
+                if (config == null || !config.Enabled) { if (tracked.Count > 0) { Clear(); } return; }
                 long now = clock.ElapsedMilliseconds;
                 if (now - lastSampleMilliseconds < config.SampleIntervalMilliseconds) return;
                 lastSampleMilliseconds = now;

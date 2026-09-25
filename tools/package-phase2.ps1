@@ -1,7 +1,6 @@
 param(
     [Parameter(Mandatory = $true)][string] $GameDirectory,
-    [Parameter(Mandatory = $true)][string] $ScriptHookDotNetReference,
-    [string] $LvsDirectory
+    [Parameter(Mandatory = $true)][string] $ScriptHookDotNetReference
 )
 
 # Package only Phase 2 scripts/config. Phase 1's already-installed gold models and
@@ -56,17 +55,6 @@ Stage-File (Join-Path $repoRoot 'config\arsenal.json') 'scripts\LibertyFramework
 Stage-File (Join-Path $repoRoot 'config\holsters.json') 'scripts\LibertyFramework\config\holsters.json' 'keep-existing'
 Get-ChildItem -LiteralPath (Join-Path $repoRoot 'config\presets') -Filter '*.json' | Sort-Object Name | ForEach-Object {
     Stage-File $_.FullName "scripts\LibertyFramework\config\presets\$($_.Name)" 'replace'
-}
-
-if ($LvsDirectory) {
-    $lvs = (Resolve-Path -LiteralPath $LvsDirectory).Path
-    $extended = Join-Path $stage 'scripts\LibertyVehicleServicesCE.CS'
-    & (Join-Path $PSScriptRoot 'extend-lvs-body-variants.ps1') -LvsDirectory $lvs -OutputPath $extended
-    if ($LASTEXITCODE -ne 0) { throw 'LVS extension failed.' }
-    # Stage-File also records the installed source hash; it is rechecked at install time.
-    Stage-File $extended 'scripts\LibertyVehicleServicesCE.CS' 'replace'
-    Stage-File (Join-Path $lvs 'LICENSE') 'scripts\LibertyVehicleServicesCE\LICENSE.txt' 'replace'
-    Stage-File (Join-Path $lvs 'CREDITS.md') 'scripts\LibertyVehicleServicesCE\CREDITS.md' 'replace'
 }
 
 $manifest = [ordered]@{

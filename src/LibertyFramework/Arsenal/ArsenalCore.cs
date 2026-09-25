@@ -54,6 +54,7 @@ namespace LibertyFramework.Arsenal
         private SafehouseRule nearbySafehouse;
         private List<MenuItem> storageItems = new List<MenuItem>();
         private int storageSelection;
+        private MenuItem storagePendingConfirmation;
         private string storageMessage = "";
         private bool storageControlLocked;
         private bool previousStorageKey, previousUp, previousDown, previousSelect, previousBack;
@@ -555,12 +556,22 @@ namespace LibertyFramework.Arsenal
                 if (gated || DevToolsMenu.IsOpen) { CloseStorage(); }
                 else
                 {
-                    if (up && !previousUp) { storageSelection = (storageSelection + storageItems.Count - 1) % storageItems.Count; }
-                    if (down && !previousDown) { storageSelection = (storageSelection + 1) % storageItems.Count; }
+                    if (up && !previousUp) { storageSelection = (storageSelection + storageItems.Count - 1) % storageItems.Count; storagePendingConfirmation = null; }
+                    if (down && !previousDown) { storageSelection = (storageSelection + 1) % storageItems.Count; storagePendingConfirmation = null; }
                     if (select && !previousSelect && storageItems[storageSelection].Activate != null)
                     {
-                        storageMessage = RunAction(storageItems[storageSelection].Activate);
-                        RebuildStorageItems();
+                        MenuItem item = storageItems[storageSelection];
+                        if (item.RequiresConfirmation && storagePendingConfirmation != item)
+                        {
+                            storagePendingConfirmation = item;
+                            storageMessage = "Press A again to confirm purchase";
+                        }
+                        else
+                        {
+                            storagePendingConfirmation = null;
+                            storageMessage = RunAction(item.Activate);
+                            RebuildStorageItems();
+                        }
                     }
                     if (back && !previousBack) { CloseStorage(); }
                 }
@@ -589,6 +600,7 @@ namespace LibertyFramework.Arsenal
                         openedTrunk = nearbyTrunk;
                     }
                     storageSelection = 0;
+                    storagePendingConfirmation = null;
                     storageMessage = "";
                     RebuildStorageItems();
                     Player.CanControlCharacter = false;
@@ -628,6 +640,7 @@ namespace LibertyFramework.Arsenal
             storageItems.Clear();
             StorageBin bin = activeStorage;
             if (bin == null) { return; }
+            if (openedTrunk == null) { AppendGunsmithItems(storageItems); }
             foreach (WeaponRecord record in carried)
             {
                 WeaponRecord choice = record;
@@ -640,6 +653,7 @@ namespace LibertyFramework.Arsenal
             }
             if (storageItems.Count == 0) { storageItems.Add(MenuItem.Info(() => "No weapons to transfer")); }
             storageSelection = Math.Min(storageSelection, storageItems.Count - 1);
+            storagePendingConfirmation = null;
         }
 
         private void CloseStorage()
@@ -649,6 +663,7 @@ namespace LibertyFramework.Arsenal
             activeStorage = null;
             StorageOpen = false;
             storageItems.Clear();
+            storagePendingConfirmation = null;
             try { CloseTrunk(); }
             finally
             {
@@ -686,7 +701,7 @@ namespace LibertyFramework.Arsenal
                     if (index == storageSelection) { graphics.DrawRectangle(new RectangleF(46, y - 2, 570, 27), Color.FromArgb(120, 190, 145, 35)); }
                     graphics.DrawText(storageItems[index].Label(), new RectangleF(58, y, 540, 26), TextAlignment.Left, storageFont);
                 }
-                graphics.DrawText(storageMessage.Length > 0 ? storageMessage : "D-pad choose   A transfer   B close",
+                graphics.DrawText(storageMessage.Length > 0 ? storageMessage : "D-pad choose   A select   B close",
                     new RectangleF(52, 142 + rows * 28, 550, 29), TextAlignment.Left, storageFont);
             }
             catch (Exception error)
@@ -739,25 +754,7 @@ namespace LibertyFramework.Arsenal
             if (bin == null) { items.Add(MenuItem.Info(() => "Stand at a trunk rear or safehouse stash")); return items; }
             StorageBin selected = bin;
             items.Add(MenuItem.Info(() => (trunk ? "TRUNK " : "SAFEHOUSE ") + selected.Id));
-            if (!trunk && weaponCatalog != null)
-            {
-                WeaponRecord pistol = Find(carried, 7) ?? Find(carried, 58);
-                if (pistol != null)
-                {
-                    WeaponRecord choice = pistol;
-                    items.Add(MenuItem.Info(() => "GUNSMITH: service pistol finish"));
-                    if (choice.WeaponId == 7 && (choice.Progression > 0 || config.GunsmithGoldFinishPrice > 0))
-                    {
-                        string label = choice.Progression > 0 ? "Equip gold finish" :
-                            "Buy gold finish ($" + config.GunsmithGoldFinishPrice + ")";
-                        items.Add(MenuItem.Confirmed(label, () => RunAction(() => ChangePistolFinish(choice, true))));
-                    }
-                    else
-                    {
-                        items.Add(MenuItem.Action("Equip factory finish", () => RunAction(() => ChangePistolFinish(choice, false))));
-                    }
-                }
-            }
+            if (!trunk) { AppendGunsmithItems(items); }
             foreach (WeaponRecord record in carried)
             {
                 WeaponRecord choice = record;
@@ -769,6 +766,26 @@ namespace LibertyFramework.Arsenal
                 items.Add(MenuItem.Action("Take " + Describe(choice), () => RunAction(() => Take(choice, selected))));
             }
             return items;
+        }
+
+        private void AppendGunsmithItems(List<MenuItem> items)
+        {
+            if (weaponCatalog == null) { return; }
+            WeaponRecord pistol = Find(carried, 7) ?? Find(carried, 58);
+            if (pistol == null) { return; }
+            WeaponRecord choice = pistol;
+            items.Add(MenuItem.Info(() => "GUNSMITH: service pistol finish"));
+            if (choice.WeaponId == 7 && (choice.Progression > 0 || config.GunsmithGoldFinishPrice > 0))
+            {
+                string label = choice.Progression > 0 ? "Equip gold finish" :
+                    "Buy gold finish ($" + config.GunsmithGoldFinishPrice + ")";
+                items.Add(choice.Progression > 0 ? MenuItem.Action(label, () => RunAction(() => ChangePistolFinish(choice, true))) :
+                    MenuItem.Confirmed(label, () => RunAction(() => ChangePistolFinish(choice, true))));
+            }
+            else if (choice.WeaponId == 58)
+            {
+                items.Add(MenuItem.Action("Equip factory finish", () => RunAction(() => ChangePistolFinish(choice, false))));
+            }
         }
 
         private static string Describe(WeaponRecord record)
