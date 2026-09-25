@@ -110,10 +110,10 @@ namespace LibertyFramework.Arsenal
                 if (config == null) { Initialize(); }
                 if (config == null || Player == null || Player.Character == null) { return; }
                 Ped ped = Player.Character;
-                // Game.Resolution is a native; the per-frame draw handler reads only this cached copy.
+                // Screen size from the window (Engine.Services.ScreenInfo); never Game.Resolution (deadlocks on the tick).
                 if (screenSize.Height == 0 || unchecked(Environment.TickCount - lastScreenReadTicks) >= 1000)
                 {
-                    screenSize = Game.Resolution;
+                    screenSize = LibertyFramework.Engine.Services.ScreenInfo.Size;
                     lastScreenReadTicks = Environment.TickCount;
                 }
                 int money = Player.Money;

@@ -156,7 +156,7 @@ namespace LibertyFramework.Arsenal.Ui
 
         private void Say(string text) { message = text ?? ""; messageUntil = Environment.TickCount + 2600; }
 
-        // screen comes from the owning script's tick: Game.Resolution is a native and must not be read while drawing.
+        // screen comes from Engine.Services.ScreenInfo (Game.Resolution stalls or deadlocks the game).
         internal void Draw(GTA.Graphics graphics, Size screen)
         {
             if (host == null || screen.Height <= 0) { return; }

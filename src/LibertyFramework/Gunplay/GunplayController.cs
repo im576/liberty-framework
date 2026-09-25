@@ -191,11 +191,10 @@ namespace LibertyFramework.Gunplay
                 GunplayConfig config = store.Active;
                 if (config == null) { store.Poll(false); return; }
                 deltaSeconds = Math.Max(0, Math.Min(config.RecoilGlobal.MaximumDeltaSeconds, deltaSeconds));
-                // Game.Resolution is a native call; PerFrameDrawing runs off the script thread, so the draw path only
-                // reads this cached copy (reading it per frame there stalled frames).
+                // Screen size from the window (ScreenInfo), cached for the draw path; Game.Resolution stalls or deadlocks the game.
                 if (screenResolution.Height == 0 || now - lastResolutionReadMilliseconds >= 1000)
                 {
-                    screenResolution = Game.Resolution;
+                    screenResolution = LibertyFramework.Engine.Services.ScreenInfo.Size;
                     lastResolutionReadMilliseconds = now;
                 }
                 if (now - lastConfigPollMilliseconds >= ConfigPollMilliseconds)

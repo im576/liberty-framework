@@ -11,6 +11,8 @@ namespace LibertyFramework.Engine
         public EngineHost()
         {
             Interval = 0;
+            try { LibertyFramework.Engine.Services.DialogGuard.Start(); }
+            catch (Exception error) { RuntimeLog.Error("dialog_guard_unavailable error=" + error.Message); }
             try { LibertyEngine.Boot(this); }
             catch (Exception error) { RuntimeLog.Error("engine_boot_failed error=" + error); return; }
             Tick += OnTick;

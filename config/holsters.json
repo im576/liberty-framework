@@ -172,5 +172,17 @@
                                             0
                                         ]
                        }
-                   ]
+                   ],
+    "slings":  [
+                   {
+                       "slot":  "LongGun1",
+                       "model":  "lf_sling_a",
+                       "bone":  "Spine2"
+                   },
+                   {
+                       "slot":  "LongGun2",
+                       "model":  "lf_sling_b",
+                       "bone":  "Spine2"
+                   }
+               ]
 }
