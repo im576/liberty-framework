@@ -47,3 +47,11 @@ Status: **READY FOR OWNER TEST** after the integrated package is installed. Use 
 1. **Shoulder swap:** T-015 card, steps 1–4 (LB/L1 or Z while aiming).
 2. **Dismemberment:** T-022 card update box. Leg and arm kills with gold weapons; report `dismember_evidence` lines.
 3. **Vehicle body labels:** T-023 card steps 1–3 (Sultan RS, taxi/cabby, police, Infernus).
+
+## 7. Gore overhaul (2026-09-24)
+
+1. Any gun, any NPC: shoot the torso, then the head, then a limb. Expect a clear blood spray per hit (bigger for shotgun/sniper, chunks on strong hits), mouth blood on head/torso hits, and dripping from the wound for ~25 s.
+2. Kill an NPC with a shot to the lower leg, then another with a shot to the upper arm. Expect the limb gone at the knee / shoulder, a chunk burst, a pumping stump, and the limb flying off. Walk around the body for ~10 s: the limb must stay gone.
+3. Kill one with a strong headshot (shotgun/sniper/rifle). Expect decapitation.
+4. Run `ReloadScripts` once, then repeat step 2.
+5. Send the log lines: `skeleton_hook_installed` (two), `dismemberment_ready ... hooks=...`, a few `combat_hit` / `combat_sever`, and every `dismember_evidence`. If the game freezes on a first dismemberment, set `dismembermentEnabled` to `false` in the installed `combat_effects.json` and report it.

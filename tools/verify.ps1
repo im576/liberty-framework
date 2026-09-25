@@ -31,6 +31,7 @@ $sources = @(
     # T-023 vehicle extras catalog (reads the installed vehicles.img through the finishes IMG/RSC readers).
     (Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tools\finishes') -Filter '*.cs' | Where-Object { $_.Name -ne 'Program.cs' }).FullName
     (Join-Path $repoRoot 'tools\vehicles\VehicleExtrasScanner.cs')
+    (Join-Path $src 'CombatEffects\CombatEffectsConfig.cs')
     # Any folder named Logic holds ScriptHookDotNet-free code that the verifier can test (T-020/T-021 onward).
     (Get-ChildItem -LiteralPath $src -Recurse -Directory -Filter 'Logic' | ForEach-Object { (Get-ChildItem -LiteralPath $_.FullName -Filter '*.cs').FullName })
 )

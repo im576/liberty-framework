@@ -95,6 +95,14 @@ namespace LibertyFramework.Core.Memory
         internal int BoneMatrixStride;
         internal bool PedSkeletonResolved { get { return PedPoolGlobal != 0 && BoneMatrixCopyFunction != 0 && BoneMatrixPointerFunction != 0 && BoneScratchMatrix != 0 && BoneMatrixStride == 64; } }
 
+        // ADR-0005 (T-022): the two fragInst methods that rebuild a ragdolled ped's skeleton matrices every frame
+        // (thiscall, no arguments, plain ret). Dismemberment re-applies its bone collapse right after them.
+        internal uint FragSkeletonSyncFunction;
+        internal uint FragPoseFunction;
+        internal const int FragSkeletonSyncStolenBytes = 11;
+        internal const int FragPoseStolenBytes = 12;
+        internal bool SkeletonHooksResolved { get { return FragSkeletonSyncFunction != 0 && FragPoseFunction != 0; } }
+
         internal sealed class HudComponentGlobals
         {
             internal string Name;
@@ -394,8 +402,14 @@ namespace LibertyFramework.Core.Memory
             uint pointer = memory.RelativeTarget(copy + 0x62 + 14);
             Require(scanner.ShapeAt(pointer, "56 8B F1 8B 06 FF 90 A0 00 00 00"), "BoneMatrix shape");
             Require(scanner.ShapeAt(pointer + 0x35, "C7 05 ?? ?? ?? ?? 00 00 80 3F"), "BoneMatrix scratch identity");
-            List<uint> tails = scanner.FindPattern("8B 44 24 08 C1 E0 06 03 41 ?? 5E C2 04 00", true);
-            Require(tails.Count == 1 && tails[0] > pointer && tails[0] < pointer + 0x100, "BoneMatrix stride tail");
+            // Search only inside BoneMatrix: the live process decrypts extra code, so global pattern counts differ from disk.
+            uint tail = 0;
+            for (uint offset = 0x40; offset < 0x100 && tail == 0; offset++)
+            {
+                if (scanner.ShapeAt(pointer + offset, "8B 44 24 08 C1 E0 06 03 41 ?? 5E C2 04 00")) { tail = pointer + offset; }
+            }
+            Require(tail != 0, "BoneMatrix stride tail");
+            List<uint> tails = new List<uint> { tail };
             PedPoolGlobal = pool;
             BoneMatrixCopyFunction = copy;
             BoneMatrixPointerFunction = pointer;
@@ -403,6 +417,22 @@ namespace LibertyFramework.Core.Memory
             BoneMatrixStride = 64;
             Report.Add("ped_skeleton ok ped_pool=0x" + pool.ToString("X8") + " copy=0x" + copy.ToString("X8") + " pointer=0x" + pointer.ToString("X8") +
                 " scratch=0x" + BoneScratchMatrix.ToString("X8") + " matrices=+0x" + memory.ReadByte(tails[0] + 9).ToString("X"));
+
+            // fragInst skeleton sync (0x5F7D70 on 1.2.0.59): "sub esp,164h; mov eax,[cookie]; xor eax,esp; ...; mov edi,ecx;
+            // ...; mov ecx,[edi+5Ch]" and fragInst pose (0x5F6FB0): "push ebp; mov ebp,esp; and esp,-16; sub esp,114h; push ebx;
+            // mov eax,0FFFFh; ...; cmp [ecx+8],ax". Long patterns stay unique even with the live process's decrypted code.
+            List<uint> sync = scanner.FindPattern("81 EC 64 01 00 00 A1 ?? ?? ?? ?? 33 C4 89 84 24 ?? ?? ?? ?? 56 57 8B F9 89 7C 24 1C 8B 4F 5C", true);
+            List<uint> pose = scanner.FindPattern("55 8B EC 83 E4 F0 81 EC 14 01 00 00 53 B8 FF FF 00 00 56 57 89 4C 24 54 66 39 41 08", true);
+            if (sync.Count == 1 && pose.Count == 1)
+            {
+                FragSkeletonSyncFunction = sync[0];
+                FragPoseFunction = pose[0];
+                Report.Add("skeleton_hooks ok sync=0x" + sync[0].ToString("X8") + " pose=0x" + pose[0].ToString("X8"));
+            }
+            else
+            {
+                Report.Add("skeleton_hooks unavailable sync_count=" + sync.Count + " pose_count=" + pose.Count);
+            }
         }
 
         // hud.dat registration: push alpha; push colour; push 0; push &size; push &pos; push type; push name; call register.

@@ -1,5 +1,21 @@
 # Phase 2 integrated patch notes
 
+## Gore overhaul (Claude), 2026-09-24
+
+- **Blood you can see:** every firearm hit on any NPC, mission peds included, now sprays stock GTA IV blood sized by weapon.
+  - Pistol/rifle: entry spray, plus exit spray on strong hits.
+  - Shotgun and sniper: chunks.
+  - Head and torso hits: blood from the mouth.
+  - The old build passed an invalid particle size, so its blood was invisible.
+- **Bleeding:** wounds keep dripping for 25 s.
+- **Dismemberment:** killing shots to an arm or leg sever it at the elbow/knee or shoulder/hip. A killing headshot takes the head off.
+  - Chunks and mist burst at the cut, the stump sprays for 9 s, and the limb flies off.
+  - Works on any gun, and on peds who die a moment after the hit.
+- **Engine fix:** the skeleton lookup that failed in your last session is fixed.
+  - The limb removal is now re-applied every time the engine rebuilds a ragdoll (ADR-0005 hook), so a cut limb shouldn't pop back.
+  - Hooks are removed on reload and exit.
+- Config: `combat_effects.json` (thresholds, effect names, durations, `effectScale`). Set `dismembermentEnabled=false` to turn off all cutting.
+
 ## Open-items build (Claude), 2026-09-24
 
 - **Shoulder swap (T-015):** press LB/L1 (or Z) while aiming to slide the camera to the other shoulder; press again to return. Found the aim camera's shoulder offset in the game's own camera settings table and flip it with an eased slide. Data-only write, validated and restored on exit/reload. Config `gunplay.json` → `shoulderSwap`.

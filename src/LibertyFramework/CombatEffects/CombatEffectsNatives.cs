@@ -15,21 +15,12 @@ namespace LibertyFramework.CombatEffects
             Function.Call("APPLY_FORCE_TO_PED", ped, 3, x, y, z, 0.0f, 0.0f, 0.0f, 0, 1, 1, 1);
         }
 
-        internal static bool Impact(string name, Ped ped, int bone)
+        // (name, ped, offset xyz, rotation xyz in degrees, bone, SCALE). The CE handler reads the last argument
+        // with movss (0xBD678D): it is a float scale. Passing an integer 0 made every earlier effect invisible.
+        internal static bool Burst(string name, Ped ped, int bone, float scale)
         {
-            return Function.Call<bool>("TRIGGER_PTFX_ON_PED_BONE", name, ped,
-                0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, bone, 0);
-        }
-
-        internal static int StartWound(string name, Ped ped, int bone)
-        {
-            return Function.Call<int>("START_PTFX_ON_PED_BONE", name, ped,
-                0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, bone, 0);
-        }
-
-        internal static void StopWound(int handle)
-        {
-            if (handle > 0) Function.Call("STOP_PTFX", handle);
+            if (string.IsNullOrEmpty(name) || scale <= 0) { return false; }
+            return Function.Call<bool>("TRIGGER_PTFX_ON_PED_BONE", name, ped, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, bone, scale);
         }
 
         internal static void RemoveHead(Ped ped)

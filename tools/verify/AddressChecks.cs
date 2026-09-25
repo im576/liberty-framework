@@ -84,6 +84,14 @@ namespace LibertyFramework.Verify
             check.Equal("CPed::BoneMatrix", 0x9E74E0u, addresses.BoneMatrixPointerFunction);
             check.Equal("bone matrix identity scratch", 0x1632C20u, addresses.BoneScratchMatrix);
             check.True("ped skeleton resolved", addresses.PedSkeletonResolved, "");
+            // ADR-0005 hook targets (Capstone: fragInst skeleton sync 0x5F7D70, called from 0x61183C; fragInst pose 0x5F6FB0,
+            // referenced by four vtables). Both thiscall, no arguments, single plain ret.
+            check.Equal("fragInst skeleton sync", 0x5F7D70u, addresses.FragSkeletonSyncFunction);
+            check.Equal("fragInst pose", 0x5F6FB0u, addresses.FragPoseFunction);
+            byte[] sync = memory.Read(0x5F7D70u, 11);
+            byte[] pose = memory.Read(0x5F6FB0u, 12);
+            check.True("sync entry is the 11 stolen bytes the hook expects", sync[0] == 0x81 && sync[1] == 0xEC && sync[6] == 0xA1, BitConverter.ToString(sync));
+            check.True("pose entry is the 12 stolen bytes the hook expects", pose[0] == 0x55 && pose[3] == 0x83 && pose[6] == 0x81 && pose[11] == 0x00, BitConverter.ToString(pose));
         }
     }
 }

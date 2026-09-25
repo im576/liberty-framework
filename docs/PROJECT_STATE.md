@@ -5,6 +5,8 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
+**Gore overhaul (2026-09-24, Claude):** visible blood on every firearm hit, 25 s bleeding, limb and head severing with burst/arterial spray and thrown limbs, fixed the ped-skeleton resolver, and added the ADR-0005 post-rebuild hook. Verify 312/312. Owner playtest pending ([section 7](testing/PHASE2_PLAYTEST.md)).
+
 **Phase 2 open-items build installed (2026-09-24, Claude):** shoulder swap (T-015), arm/leg dismemberment with thrown limbs (T-022), LVS body-part labels (T-023). Verify 296/296; install/rollback dry run passed; owner playtest pending.
 
 **Phase 2 follow-up installed (2026-09-24):** Enabled the owner-approved corpse head-removal prototype and expanded the safehouse gunsmith to carbine/shotgun tuning attachments. Build 104 sources and offline checks 270/270; install backup `phase2-20260924-194809`. In-game effects remain NEEDS-PLAYTEST. Shoulder swap, true limb mesh removal, and model-verified vehicle body kits still require CE runtime/asset evidence.
@@ -18,6 +20,7 @@ Keep it short: this is a dashboard, not a diary.
 - ADR-0001: CE + FusionFix + Tomasak ScriptHookDotNet 1.7.1.8 loads an x86 .NET Framework 4.0 C# probe and reloads successfully. No downgrade.
 - ADR-0002: FusionFix v5.0.1 ExtendedLimits assigned the custom pistol ID 58. It replaced the vanilla pistol in the handgun inventory; a deliberate switch is needed. Unused episodic slots are deferred.
 - ADR-0004: Engine data (aim camera, CWeaponInfo accuracy, menu prefs, hud.dat reticle globals, bullet list) is located by native-hash/instruction-shape resolvers, validated at runtime, never code-patched, and restored on exit. See docs/game-api/MEMORY.md.
+- ADR-0005: Owner-approved exception to ADR-0004 for dismemberment: after-call hooks on the fragInst skeleton rebuilds (0x5F7D70/0x5F6FB0). Bytes validated, flag-gated, restored on unload/exit.
 - ADR-0003: T-002 implements a JSON sample with live polling and last-valid retention; live log and gameplay checks passed.
 
 ## Verified in-game (by the human tester)

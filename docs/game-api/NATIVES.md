@@ -78,3 +78,5 @@ Follow-up calls through `CombatEffectsNatives` on Script.Tick: `IS_PED_A_MISSION
 | `GET_PED_BONE_POSITION` | resolver anchor for ped skeleton access (not called) | registered 0x43475BB3 | T-022 |
 
 The thrown limb uses SHDN `World.CreatePed`, `Ped.Visible`, `Ped.Die`, `Ped.NoLongerNeeded`, `Ped.Delete`; `START_PTFX_ON_PED_BONE`/`STOP_PTFX`/`APPLY_FORCE_TO_PED` as already registered for T-022.
+
+**Gore overhaul finding (2026-09-24):** the last argument of TRIGGER_PTFX_ON_PED_BONE / START_PTFX_ON_PED_BONE is a **float** scale (the CE handler reads it with movss at 0xBD678D). Passing int 0 made every effect invisible. Arguments: name, ped, offset x/y/z, rotation x/y/z (degrees), bone, float scale. Blood effect names are checked offline against the installed gta_core.wpfl.

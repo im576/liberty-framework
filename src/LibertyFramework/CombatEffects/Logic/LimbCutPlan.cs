@@ -43,6 +43,21 @@ namespace LibertyFramework.CombatEffects.Logic
             }
         }
 
+        // Decapitation: removes neck and head (and, at runtime, every facial child bone) at the base of the neck.
+        internal static LimbCutPlan Head()
+        {
+            return Make("head", 0x4B4, 0x36A1, new[] { 0x4B4, 0x37A0, 0x4B5 });
+        }
+
+        internal static bool IsHeadBone(int boneTag)
+        {
+            switch (boneTag)
+            {
+                case 0x4B4: case 0x4B5: case 0x37A0: return true;
+                default: return false;
+            }
+        }
+
         private static LimbCutPlan Make(string name, int cut, int stump, int[] removed)
         {
             LimbCutPlan plan = new LimbCutPlan();

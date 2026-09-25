@@ -40,6 +40,33 @@ namespace LibertyFramework.CombatEffects
         [DataMember(Name="maximumSeveredPeds", IsRequired=false)] internal int MaximumSeveredPeds;
         [DataMember(Name="severedLimbLifetimeCorpseMilliseconds", IsRequired=false)] internal int SeveredCorpseLifetimeMilliseconds;
         [DataMember(Name="stumpEffectName", IsRequired=false)] internal string StumpEffectName;
+        // Gore overhaul (all optional). Effect names are stock gta_core.wpfl particle effects.
+        [DataMember(Name="allFirearms", IsRequired=false)] internal bool AllFirearms;
+        [DataMember(Name="includeMissionPeds", IsRequired=false)] internal bool IncludeMissionPeds;
+        [DataMember(Name="effectScale", IsRequired=false)] internal float EffectScale;
+        [DataMember(Name="exitEffectName", IsRequired=false)] internal string ExitEffectName;
+        [DataMember(Name="shotgunEntryEffectName", IsRequired=false)] internal string ShotgunEntryEffectName;
+        [DataMember(Name="shotgunChunksEffectName", IsRequired=false)] internal string ShotgunChunksEffectName;
+        [DataMember(Name="sniperEntryEffectName", IsRequired=false)] internal string SniperEntryEffectName;
+        [DataMember(Name="sniperChunksEffectName", IsRequired=false)] internal string SniperChunksEffectName;
+        [DataMember(Name="heavyChunksEffectName", IsRequired=false)] internal string HeavyChunksEffectName;
+        [DataMember(Name="exitDamage", IsRequired=false)] internal int ExitDamage;
+        [DataMember(Name="chunkDamage", IsRequired=false)] internal int ChunkDamage;
+        [DataMember(Name="bleedEffectName", IsRequired=false)] internal string BleedEffectName;
+        [DataMember(Name="bleedIntervalMilliseconds", IsRequired=false)] internal int BleedIntervalMilliseconds;
+        [DataMember(Name="bleedDurationMilliseconds", IsRequired=false)] internal int BleedDurationMilliseconds;
+        [DataMember(Name="arterialEffectName", IsRequired=false)] internal string ArterialEffectName;
+        [DataMember(Name="arterialIntervalMilliseconds", IsRequired=false)] internal int ArterialIntervalMilliseconds;
+        [DataMember(Name="arterialDurationMilliseconds", IsRequired=false)] internal int ArterialDurationMilliseconds;
+        [DataMember(Name="severBurstEffectName", IsRequired=false)] internal string SeverBurstEffectName;
+        [DataMember(Name="severMistEffectName", IsRequired=false)] internal string SeverMistEffectName;
+        [DataMember(Name="decapitationEnabled", IsRequired=false)] internal bool DecapitationEnabled;
+        [DataMember(Name="decapitationMinimumDamage", IsRequired=false)] internal int DecapitationMinimumDamage;
+        [DataMember(Name="mouthBloodEffectName", IsRequired=false)] internal string MouthBloodEffectName;
+        [DataMember(Name="pendingDeathWindowMilliseconds", IsRequired=false)] internal int PendingDeathWindowMilliseconds;
+        [DataMember(Name="maximumEmitters", IsRequired=false)] internal int MaximumEmitters;
+
+        internal bool GoreConfigured { get { return EffectScale > 0 && MaximumEmitters > 0 && !string.IsNullOrEmpty(BleedEffectName); } }
 
         internal void Validate()
         {
@@ -60,6 +87,11 @@ namespace LibertyFramework.CombatEffects
                 SeveredCorpseLifetimeMilliseconds < 1000 || SeveredCorpseLifetimeMilliseconds > 600000 ||
                 (SeveredLimbEnabled && (SeveredLimbForce < 0 || SeveredLimbForce > 30 || SeveredLimbLifetimeMilliseconds < 1000 || SeveredLimbLifetimeMilliseconds > 600000))))
                 throw new InvalidDataException("combat effects dismemberment bounds invalid");
+            if (GoreConfigured && (EffectScale > 5 || MaximumEmitters > 128 || BleedIntervalMilliseconds < 100 || BleedDurationMilliseconds < 0 ||
+                ArterialIntervalMilliseconds < 100 || ArterialDurationMilliseconds < 0 || PendingDeathWindowMilliseconds < 0 ||
+                PendingDeathWindowMilliseconds > 5000 || ExitDamage < 0 || ChunkDamage < 0 || DecapitationMinimumDamage < 0))
+                throw new InvalidDataException("combat effects gore bounds invalid");
+            if (AllFirearms) { return; }
             foreach (int id in AllowedWeaponIds)
                 if (id < 58 || id > 255) throw new InvalidDataException("combat effects requires registered test weapon IDs");
         }

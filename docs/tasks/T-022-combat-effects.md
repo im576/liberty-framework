@@ -1,5 +1,30 @@
 # T-022 — Combat effects detection and safe prototype
 
+> **Update 2026-09-24 (Claude, gore overhaul): supersedes the notes below — NEEDS-PLAYTEST.**
+>
+> **Why the owner saw no gore:**
+> - The ped-skeleton resolver failed at runtime, so dismemberment never armed.
+> - Every particle call passed an int 0 scale. `TRIGGER_PTFX_ON_PED_BONE` reads a float, so nothing showed.
+> - Effects only ran for gold weapons.
+> - Victims weren't dead yet on the frame they were hit.
+> - `blood_stun_punch` is tiny.
+>
+> **Now:**
+> - **Hits:** every firearm, and mission peds too (`allFirearms`, `includeMissionPeds`), gets weapon-specific stock blood:
+>   - entry spray, plus exit spray at 25+ damage;
+>   - chunks at 60+ damage, or for shotguns and snipers;
+>   - blood from the mouth on head/torso hits.
+> - **Bleeding:** each wound drips for 25 s (up to 64 emitters).
+> - **Severing:** a lethal limb hit (20+ damage, or the ped dies within 1.5 s) severs the limb. A lethal head hit (40+ damage) decapitates.
+>   - Burst and mist fire at the stump, which then sprays arterially for 9 s.
+>   - The limb is thrown off.
+>   - The collapse is re-applied after every engine skeleton rebuild through the ADR-0005 hooks, with a per-tick fallback.
+>   - Decapitation falls back to `EXPLODE_CHAR_HEAD`.
+>
+> All names and thresholds are in `combat_effects.json`.
+>
+> **Evidence:** `skeleton_hook_installed` ×2, `dismemberment_ready ... hooks=True`, `combat_hit`, `combat_sever`, and `dismember_evidence ... hook_calls=N`. A nonzero `hook_calls` means the hooks are doing the work.
+
 > **Update 2026-09-24 (Claude): arm and leg dismemberment implemented and installed — NEEDS-PLAYTEST.**
 > A **lethal** hit with a gold weapon on an ambient NPC's arm or leg severs it: upper-arm/thigh hits cut at the shoulder/hip, forearm/hand/calf/foot hits at the elbow/knee (`CombatEffects/Logic/LimbCutPlan.cs`). The corpse's limb bones are collapsed into the joint every tick through the engine's own bone-matrix functions (`GameApi/PedSkeleton.cs`, resolved and verified in MEMORY.md), a blood effect starts on the stump, and a severed limb is thrown: a clone of the same ped wearing the same clothes with every other bone collapsed into the limb, ragdolled with an outward push. The thrown limb only spawns after the engine has been shown to keep the collapsed bones on that corpse, so a full-body clone is never shown. Before arming, the feature validates the ped pool and skeleton on the player's own ped. Limits: 6 severed corpses, corpses kept severed for 120 s, limbs removed after 60 s (`combat_effects.json`: `dismembermentEnabled`, `severedLimbEnabled`, `severedLimbForce`, lifetimes, `maximumSeveredPeds`, `stumpEffectName`).
 > **Evidence to collect:** `dismemberment_ready`, `dismember limb=...`, `dismember_evidence persisted_ticks=N overwritten_ticks=M`, `dismember_limb_thrown`. If `overwritten_ticks` dominates, the engine rebuilds the skeleton each frame, so the limb will not visibly disappear and no limb is thrown. Report it; a render-time hook would then be the next step. Stumps are the collapsed mesh around the joint (no new stump model yet).

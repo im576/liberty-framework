@@ -6,9 +6,8 @@ namespace LibertyFramework.CombatEffects
     {
         internal int LastHealth;
         internal long LastReactionMilliseconds;
-        internal readonly List<WoundRecord> Wounds = new List<WoundRecord>();
+        internal int Bleeds;
         internal readonly Dictionary<HitRegion, int> RegionHits = new Dictionary<HitRegion, int>();
-        internal readonly HashSet<HitRegion> LostLimbs = new HashSet<HitRegion>();
         internal bool HeadRemoved;
     }
 }

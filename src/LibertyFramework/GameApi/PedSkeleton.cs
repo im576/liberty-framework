@@ -38,6 +38,55 @@ namespace LibertyFramework.GameApi
 
         public void Dispose() { Marshal.FreeHGlobal(scratch); }
 
+        [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+        private delegate IntPtr VirtualNoArgs(IntPtr self);
+        private readonly Dictionary<int, VirtualNoArgs> virtuals = new Dictionary<int, VirtualNoArgs>();
+
+        // Calls this->vtable[offset]() (thiscall, no arguments), as CPed::BoneMatrix does with 0xA0 and 0xE0.
+        internal uint CallVirtual(uint self, int offset)
+        {
+            if (self == 0) { return 0; }
+            uint vtable = memory.TryReadPointer(self);
+            uint function = vtable == 0 ? 0 : memory.TryReadPointer(vtable + (uint)offset);
+            if (function == 0) { return 0; }
+            VirtualNoArgs call;
+            lock (virtuals)
+            {
+                if (!virtuals.TryGetValue((int)function, out call))
+                {
+                    call = (VirtualNoArgs)Marshal.GetDelegateForFunctionPointer(new IntPtr((int)function), typeof(VirtualNoArgs));
+                    virtuals[(int)function] = call;
+                }
+            }
+            return (uint)call(new IntPtr((int)self)).ToInt32();
+        }
+
+        // The ped's physics/ragdoll fragment instance (ped vfunc +0xA0) and its skeleton (fragInst vfunc +0xE0).
+        internal uint FragInst(uint ped) { return CallVirtual(ped, 0xA0); }
+        internal uint Skeleton(uint fragInst) { return CallVirtual(fragInst, 0xE0); }
+
+        // Bone index plus every descendant, from crSkeletonData's parent-index array ([skeleton+4] -> [+4]),
+        // the table the engine's own skeleton rebuild walks. Parents must precede children (validated).
+        internal List<int> Subtree(uint skeleton, int root, int boneCount)
+        {
+            List<int> result = new List<int>();
+            uint data = memory.TryReadPointer(skeleton + 4);
+            uint parents = data == 0 ? 0 : memory.TryReadPointer(data + 4);
+            if (parents == 0 || boneCount <= 0 || !memory.IsReadable(parents, boneCount * 4)) { return result; }
+            byte[] raw = memory.Read(parents, boneCount * 4);
+            bool[] inside = new bool[boneCount];
+            for (int index = 0; index < boneCount; index++)
+            {
+                int parent = BitConverter.ToInt32(raw, index * 4);
+                if (index > 0 && (parent < 0 || parent >= index)) { return new List<int>(); }
+                inside[index] = index == root || (index > root && parent >= 0 && inside[parent]);
+                if (inside[index]) { result.Add(index); }
+            }
+            return result;
+        }
+
+        internal uint MatricesOf(uint skeleton) { return skeleton == 0 ? 0 : memory.TryReadPointer(skeleton + 0x14); }
+
         // rage pool: objects +0, flags +4, size +8, item size +12; handle = index << 8 | generation.
         internal uint PedFromHandle(int handle)
         {
