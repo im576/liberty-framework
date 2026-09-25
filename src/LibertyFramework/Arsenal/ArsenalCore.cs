@@ -91,7 +91,15 @@ namespace LibertyFramework.Arsenal
             return multiplier;
         }
 
+        // T-026: every tick's wall-clock cost goes to the shared CostMeter report.
         private void OnTick(object sender, EventArgs args)
+        {
+            long started = System.Diagnostics.Stopwatch.GetTimestamp();
+            try { TickBody(sender, args); }
+            finally { LibertyFramework.Core.Performance.Logic.CostMeter.Add("tick.arsenal", started); }
+        }
+
+        private void TickBody(object sender, EventArgs args)
         {
             if (disabled) { if (storageControlLocked) { CloseStorageSafely(); } return; }
             try

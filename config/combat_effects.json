@@ -88,6 +88,8 @@
     "deathLeakDurationMilliseconds":  20000,
     "severDelayMilliseconds":  300,
     "collapseScale":  0.01,
+    "idleSampleIntervalMilliseconds":  400,
+    "activeSampleWindowMilliseconds":  3000,
     "minimumLimbLossDamage":  20,
     "maximumWoundsPerPed":  6,
     "sampleIntervalMilliseconds":  50,

@@ -88,7 +88,15 @@ namespace LibertyFramework.CombatEffects
             catch (Exception error) { RuntimeLog.Error("combat_effects_config_rejected error=" + error); }
         }
 
+        // T-026: every tick's wall-clock cost goes to the shared CostMeter report.
         private void OnTick(object sender, EventArgs args)
+        {
+            long started = System.Diagnostics.Stopwatch.GetTimestamp();
+            try { TickBody(sender, args); }
+            finally { LibertyFramework.Core.Performance.Logic.CostMeter.Add("tick.combat", started); }
+        }
+
+        private void TickBody(object sender, EventArgs args)
         {
             if (disabled) return;
             try
@@ -114,7 +122,8 @@ namespace LibertyFramework.CombatEffects
                 ResolvePending(now);
                 blood.Update(now);
                 RunGoreTest(shooter, now);
-                if (now - lastSampleMilliseconds < config.SampleIntervalMilliseconds) return;
+                // T-026: full-rate damage sampling only while the player is shooting; a slow scan keeps health baselines.
+                if (now - lastSampleMilliseconds < CurrentSampleInterval()) return;
                 lastSampleMilliseconds = now;
                 if (shooter.isDead || !Natives.IsPlayerPlaying(player) || Natives.IsScreenFadedOut()) { tracked.Clear(); return; }
                 GTA.value.Weapon weapon = shooter.Weapons.Current;
@@ -128,6 +137,16 @@ namespace LibertyFramework.CombatEffects
                 RemoveHooks();
                 disabled = true;
             }
+        }
+
+        private int CurrentSampleInterval()
+        {
+            if (config.IdleSampleIntervalMilliseconds <= config.SampleIntervalMilliseconds) { return config.SampleIntervalMilliseconds; }
+            LibertyFramework.Gunplay.GunplayController gunplay = LibertyFramework.Gunplay.GunplayController.Instance;
+            if (gunplay == null || gunplay.Disabled) { return config.SampleIntervalMilliseconds; } // no shot signal: always full rate
+            int lastShot = LibertyFramework.Gunplay.GunplayController.LastShotTickCount;
+            bool shooting = lastShot != 0 && unchecked(Environment.TickCount - lastShot) < config.ActiveSampleWindowMilliseconds;
+            return shooting ? config.SampleIntervalMilliseconds : config.IdleSampleIntervalMilliseconds;
         }
 
         private bool EligibleWeapon(GTA.value.Weapon weapon)
@@ -153,24 +172,27 @@ namespace LibertyFramework.CombatEffects
             foreach (Ped target in World.GetPeds(shooter.Position, config.ScanRadiusMeters))
             {
                 if (count >= config.MaximumTrackedPeds) break;
-                if (target == null || target == shooter || !target.Exists() || target.isInVehicle()) continue;
+                if (target == null || target == shooter || !target.Exists()) continue;
                 if (dismember != null && dismember.IsTracked(target) && !tracked.ContainsKey(target)) continue; // our own limb clones
                 if (!config.IncludeMissionPeds && CombatEffectsNatives.IsMissionPed(target)) continue;
                 ++count;
                 seen.Add(target);
+                // T-026: one health read per ped per scan; vehicle, attribution and death checks (each a native call)
+                // only when health dropped or a recent hit is waiting for its death.
+                int health = target.Health;
                 PedInjuryState state;
                 if (!tracked.TryGetValue(target, out state))
                 {
                     state = new PedInjuryState();
-                    state.LastHealth = target.Health;
+                    state.LastHealth = health;
                     tracked.Add(target, state);
                     continue;
                 }
-                int damage = state.LastHealth - target.Health;
-                state.LastHealth = target.Health;
-                if (damage > 0 && target.HasBeenDamagedBy(shooter)) OnDamage(shooter, weapon, target, state, damage, now);
-                else if ((target.isDead || target.Health <= 0) && !state.DeathBurst && state.LastAttributedHitMilliseconds > 0 &&
-                    now - state.LastAttributedHitMilliseconds <= config.PendingDeathWindowMilliseconds)
+                int damage = state.LastHealth - health;
+                state.LastHealth = health;
+                if (damage > 0 && !target.isInVehicle() && target.HasBeenDamagedBy(shooter)) OnDamage(shooter, weapon, target, state, damage, now);
+                else if (!state.DeathBurst && state.LastAttributedHitMilliseconds > 0 &&
+                    now - state.LastAttributedHitMilliseconds <= config.PendingDeathWindowMilliseconds && (health <= 0 || target.isDead))
                     DeathBurst(target, state, state.LastBone, config.EffectScale, now);
             }
             foreach (Ped ped in new List<Ped>(tracked.Keys)) if (!seen.Contains(ped)) tracked.Remove(ped);

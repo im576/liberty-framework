@@ -57,6 +57,12 @@ namespace LibertyFramework.Gunplay.Profiles
                 if (string.IsNullOrEmpty(swap.KeyboardKey)) { errors.Add("shoulderSwap.keyboardKey is required"); }
                 if (!(swap.TransitionMilliseconds >= 0 && swap.TransitionMilliseconds <= 2000)) { errors.Add("shoulderSwap.transitionMilliseconds must be 0-2000"); }
             }
+            if (config.Performance != null &&
+                (!(config.Performance.GameCameraRefreshMilliseconds >= 0 && config.Performance.GameCameraRefreshMilliseconds <= 5000) ||
+                 !(config.Performance.FovRefreshMilliseconds >= 0 && config.Performance.FovRefreshMilliseconds <= 5000)))
+            {
+                errors.Add("performance refresh intervals must be 0-5000 ms");
+            }
             NonNegative(errors, "feel.shakePitchDegrees", config.Feel.ShakePitchDegrees);
             NonNegative(errors, "feel.shakeHeadingDegrees", config.Feel.ShakeHeadingDegrees);
             NonNegative(errors, "feel.aimFovReductionDegrees", config.Feel.AimFovReductionDegrees);

@@ -84,6 +84,12 @@ namespace LibertyFramework.Gunplay
         private bool aimCameraActive;
         private bool aiming;
         private double lastFov = 45;
+        // T-026 camera caching (gunplay.json "performance").
+        private int cachedGameCamera;
+        private bool nativeCostLogged;
+        private bool gameCameraValid;
+        private double lastGameCameraReadMilliseconds = double.NegativeInfinity;
+        private double lastFovReadMilliseconds = double.NegativeInfinity;
         private bool drawCrosshair;
         private int playerIndex;
         private uint playerPed;
@@ -118,6 +124,9 @@ namespace LibertyFramework.Gunplay
         internal bool CameraKickEnabled = true;
         internal bool SpreadControlEnabled = true;
         internal bool InfiniteAmmo;
+        // T-026: Environment.TickCount of the player's last detected shot (any weapon with a clip); 0 = none yet.
+        // CombatEffects samples damage at full rate only shortly after a shot.
+        internal static volatile int LastShotTickCount;
         internal bool DebugOverlay;
 
         public GunplayController()
@@ -147,7 +156,15 @@ namespace LibertyFramework.Gunplay
 
         private double Now { get { return clock.Elapsed.TotalMilliseconds; } }
 
+        // T-026: every tick's wall-clock cost goes to the shared CostMeter report.
         private void OnTick(object sender, EventArgs args)
+        {
+            long started = System.Diagnostics.Stopwatch.GetTimestamp();
+            try { TickBody(sender, args); }
+            finally { LibertyFramework.Core.Performance.Logic.CostMeter.Add("tick.gunplay", started); }
+        }
+
+        private void TickBody(object sender, EventArgs args)
         {
             if (disabled) { return; }
             long tickStart = Stopwatch.GetTimestamp();
@@ -190,6 +207,7 @@ namespace LibertyFramework.Gunplay
                     fovRecovered = true;
                 }
                 if (!initialized) { Initialize(config); }
+                if (!nativeCostLogged) { nativeCostLogged = true; LogNativeCost(player); }
                 playerIndex = Natives.PlayerIndex();
                 playerPed = playerMemory != null ? playerMemory.PedPointer(playerIndex) : 0;
                 controller.Poll();
@@ -240,25 +258,44 @@ namespace LibertyFramework.Gunplay
                 }
 
                 setupEnd = Stopwatch.GetTimestamp();
-                int gameCamera = Natives.GameCamHandle();
+                long mark = setupEnd;
+                int gameCamera = CurrentGameCamera(config, now);
+                CostMeter.Add("cam.handle", mark);
                 uint aimCam = 0;
                 // Drive-by uses the vehicle follow camera; on foot the third-person aim camera.
                 aimCamera = state.InVehicle ? vehicleCamera : onFootCamera;
-                if (aimCamera != null)
+                if (aimCamera != null && gameCameraValid)
                 {
+                    mark = Stopwatch.GetTimestamp();
                     try { aimCam = aimCamera.FindActive(gameCamera); }
                     catch (Exception error) { DisableCamera(error); }
+                    CostMeter.Add("cam.find_active", mark);
                 }
                 aimCameraActive = aimCam != 0;
+                mark = Stopwatch.GetTimestamp();
                 aiming = (aimCameraActive && !state.InVehicle) || Game.isGameKeyPressed(GameKey.Aim);
+                CostMeter.Add("cam.aim_key", mark);
                 state.Aiming = aiming;
-                if (Natives.CamExists(gameCamera))
+                if (gameCameraValid)
                 {
-                    lastFov = Natives.CamFov(gameCamera);
+                    // FOV only matters for the aim crosshair; between aims it is refreshed at a slow cadence.
+                    double fovRefresh = config.Performance != null ? config.Performance.FovRefreshMilliseconds : 0;
+                    if (aiming || now - lastFovReadMilliseconds >= fovRefresh)
+                    {
+                        mark = Stopwatch.GetTimestamp();
+                        lastFov = Natives.CamFov(gameCamera);
+                        lastFovReadMilliseconds = now;
+                        CostMeter.Add("cam.fov", mark);
+                    }
                     // Pixel scale depends on FOV and viewport, not camera position. Avoid two
                     // projection natives every frame while the aim camera is steady.
                     if (aiming && (double.IsNaN(projectionFov) || Math.Abs(lastFov - projectionFov) > 0.25 ||
-                        Game.Resolution.Height != projectionHeight)) { MeasureProjection(gameCamera); }
+                        Game.Resolution.Height != projectionHeight))
+                    {
+                        mark = Stopwatch.GetTimestamp();
+                        MeasureProjection(gameCamera);
+                        CostMeter.Add("cam.projection", mark);
+                    }
                 }
 
                 cameraEnd = Stopwatch.GetTimestamp();
@@ -330,6 +367,7 @@ namespace LibertyFramework.Gunplay
                 {
                     lastTimingReportTicks = now;
                     RuntimeLog.Info("performance " + tickTimings.ReportAndReset() + " " + phaseTimings.ReportAndReset());
+                    RuntimeLog.Info("performance_scripts " + CostMeter.ReportAndReset());
                 }
             }
         }
@@ -471,6 +509,7 @@ namespace LibertyFramework.Gunplay
             int clip = current.AmmoInClip;
             int shots = lastClip >= 0 && clip < lastClip ? lastClip - clip : 0;
             lastClip = clip;
+            if (shots > 0) { LastShotTickCount = Environment.TickCount | 1; }
             // A clip drop larger than a magazine means a scripted ammo change, not firing.
             return shots > 0 && shots <= Math.Max(1, current.MaxAmmoInClip) ? Math.Min(shots, 8) : 0;
         }
@@ -529,7 +568,7 @@ namespace LibertyFramework.Gunplay
                 }
                 return;
             }
-            if (!Natives.CamExists(gameCamera)) { return; }
+            if (!gameCameraValid) { return; }
             Vec3 cameraPosition = Natives.CamPosition(gameCamera);
             Vec3 rotation = Natives.CamRotation(gameCamera);
             Vec3 forward = Vec3.FromPitchHeadingDegrees(rotation.X, rotation.Z);
@@ -655,10 +694,43 @@ namespace LibertyFramework.Gunplay
                 (!realRecoilPresent || config.RecoilGlobal.AllowWithRealRecoil);
         }
 
+        // T-026: one-time wall-clock cost of a script native call from this script (two trivial natives, 50 each).
+        private static void LogNativeCost(Player player)
+        {
+            const int Calls = 50;
+            long start = Stopwatch.GetTimestamp();
+            for (int i = 0; i < Calls; i++) { Natives.IsPlayerPlaying(player); }
+            long playing = Stopwatch.GetTimestamp() - start;
+            start = Stopwatch.GetTimestamp();
+            for (int i = 0; i < Calls; i++) { Natives.GameCamHandle(); }
+            long camera = Stopwatch.GetTimestamp() - start;
+            RuntimeLog.Info("native_cost calls=" + Calls + " is_player_playing_us=" + (playing * 1000000.0 / Stopwatch.Frequency / Calls).ToString("0.0") +
+                " get_game_cam_us=" + (camera * 1000000.0 / Stopwatch.Frequency / Calls).ToString("0.0") +
+                " thread=" + System.Threading.Thread.CurrentThread.ManagedThreadId);
+        }
+
+        // The game camera handle only changes on camera-mode switches (cutscenes, phone, death). GET_GAME_CAM and
+        // DOES_CAM_EXIST are re-asked at the configured cadence; in between, the handle's camera-pool slot and
+        // generation byte (read from memory, no native) prove the cached camera still exists.
+        private int CurrentGameCamera(GunplayConfig config, double now)
+        {
+            double refresh = config.Performance != null ? config.Performance.GameCameraRefreshMilliseconds : 0;
+            AimCamera validator = onFootCamera != null ? onFootCamera : vehicleCamera;
+            if (cachedGameCamera != 0 && validator != null && now - lastGameCameraReadMilliseconds < refresh)
+            {
+                gameCameraValid = validator.CameraFromHandle(cachedGameCamera) != 0;
+                if (gameCameraValid) { return cachedGameCamera; }
+            }
+            cachedGameCamera = Natives.GameCamHandle();
+            lastGameCameraReadMilliseconds = now;
+            gameCameraValid = Natives.CamExists(cachedGameCamera);
+            return cachedGameCamera;
+        }
+
         private void UpdateRecoil(GunplayConfig config, double now, double deltaSeconds, uint aimCam, int gameCamera)
         {
             if (aimCamera != null && aimCam != 0 && !aimCamera.Validated && !aimCamera.Rejected &&
-                now - lastShotMilliseconds > 400 && Natives.CamExists(gameCamera))
+                now - lastShotMilliseconds > 400 && gameCameraValid)
             {
                 aimCamera.Sample(aimCam, Natives.CamRotation(gameCamera), config.RecoilGlobal.CameraValidationToleranceDegrees,
                     config.RecoilGlobal.CameraValidationSamples);

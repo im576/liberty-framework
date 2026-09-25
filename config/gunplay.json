@@ -9,6 +9,7 @@
   },
   "debugHit": { "scanRadiusMeters": 60.0, "scanIntervalMilliseconds": 100.0, "worldClassificationDelayMilliseconds": 250.0 },
   "switchWhileAiming": { "enabled": true, "previousButton": "DPadLeft", "nextButton": "DPadRight" },
+  "performance": { "gameCameraRefreshMilliseconds": 500, "fovRefreshMilliseconds": 250 },
   "shoulderSwap": { "enabled": true, "controllerButton": "LeftShoulder", "keyboardKey": "Z", "transitionMilliseconds": 180, "requireAiming": true },
   "freeAim": {
     "profile": "free",

@@ -68,7 +68,15 @@ namespace LibertyFramework.Arsenal.Holsters
             catch (Exception error) { RuntimeLog.Error("holsters_config_rejected error=" + error); }
         }
 
+        // T-026: every tick's wall-clock cost goes to the shared CostMeter report.
         private void OnTick(object sender, EventArgs args)
+        {
+            long started = System.Diagnostics.Stopwatch.GetTimestamp();
+            try { TickBody(sender, args); }
+            finally { LibertyFramework.Core.Performance.Logic.CostMeter.Add("tick.holsters", started); }
+        }
+
+        private void TickBody(object sender, EventArgs args)
         {
             if (disabled) { return; }
             try

@@ -24,6 +24,8 @@ namespace LibertyFramework.Gunplay.Profiles
         [DataMember(Name = "switchWhileAiming", IsRequired = true, Order = 11)] internal AimingSwitchSettings SwitchWhileAiming;
         // Optional so older gunplay.json files (and saved presets) still load; null = shoulder swap off.
         [DataMember(Name = "shoulderSwap", IsRequired = false, Order = 12)] internal ShoulderSwapSettings ShoulderSwap;
+        // T-026, optional: null = refresh camera values every tick.
+        [DataMember(Name = "performance", IsRequired = false, Order = 13)] internal PerformanceSettings Performance;
 
         internal WeaponProfile FindWeapon(int weaponId)
         {

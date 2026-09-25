@@ -84,6 +84,10 @@ namespace LibertyFramework.CombatEffects
         [DataMember(Name="deathLeakDurationMilliseconds", IsRequired=false)] internal int DeathLeakDurationMilliseconds;
         [DataMember(Name="severDelayMilliseconds", IsRequired=false)] internal int SeverDelayMilliseconds;
         [DataMember(Name="collapseScale", IsRequired=false)] internal float CollapseScale;
+        // T-026: damage sampling runs at sampleIntervalMilliseconds only within activeSampleWindowMilliseconds of the
+        // player's last shot, otherwise at idleSampleIntervalMilliseconds (0 or not above sampleInterval = always full rate).
+        [DataMember(Name="idleSampleIntervalMilliseconds", IsRequired=false)] internal int IdleSampleIntervalMilliseconds;
+        [DataMember(Name="activeSampleWindowMilliseconds", IsRequired=false)] internal int ActiveSampleWindowMilliseconds;
         // An external visual mod can draw impact wounds and surface blood while this script owns cuts and reactions.
         [DataMember(Name="bloodVisualMode", IsRequired=false)] internal string BloodVisualMode;
         // Pulse only confirmed one-shot particles when the installed CE build refuses looping blood PTFX.
@@ -165,7 +169,8 @@ namespace LibertyFramework.CombatEffects
                 PendingDeathWindowMilliseconds > 5000 || ExitDamage < 0 || ChunkDamage < 0 || DecapitationMinimumDamage < 0 || MinimumEffectDamage < 0 || WoundSpurtDurationMilliseconds < 0 ||
                 MaximumHitScale < 0 || MaximumHitScale > 8 || GoreTestScale < 0 || GoreTestScale > 8 || GoreTestIntervalMilliseconds < 0 ||
                 MaximumLoopedEffects < 1 || MaximumLoopedEffects > 64 || BurstLoopMilliseconds < 50 || BurstLoopMilliseconds > 5000 ||
-                DeathLeakDurationMilliseconds < 0 || DeathLeakDurationMilliseconds > 120000 || SeverDelayMilliseconds < 0 || SeverDelayMilliseconds > 3000))
+                DeathLeakDurationMilliseconds < 0 || DeathLeakDurationMilliseconds > 120000 || SeverDelayMilliseconds < 0 || SeverDelayMilliseconds > 3000 ||
+                IdleSampleIntervalMilliseconds < 0 || IdleSampleIntervalMilliseconds > 2000 || ActiveSampleWindowMilliseconds < 0 || ActiveSampleWindowMilliseconds > 30000))
                 throw new InvalidDataException("combat effects gore bounds invalid");
             if (AllFirearms) { return; }
             foreach (int id in AllowedWeaponIds)
