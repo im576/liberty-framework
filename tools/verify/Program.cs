@@ -24,6 +24,8 @@ namespace LibertyFramework.Verify
                 LogicChecks.Run(args[1], check);
                 Console.WriteLine("== Arsenal core (T-020)");
                 ArsenalCoreChecks.Run(args[1], check);
+                Console.WriteLine("== Phase 2 ownership and catalog");
+                Phase2SystemsChecks.Run(args[1], check);
                 Console.WriteLine("== Feel and presentation (T-011, T-013..T-017, T-021)");
                 FeelChecks.Run(args[1], check);
             }

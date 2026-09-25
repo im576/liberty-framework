@@ -1,4 +1,5 @@
 using System.Runtime.Serialization;
+using System.Collections.Generic;
 
 // Fields are populated by DataContractJsonSerializer.
 #pragma warning disable 0649
@@ -16,10 +17,16 @@ namespace LibertyFramework.Arsenal.Contracts
         [DataMember(Name = "owned", IsRequired = true, Order = 3)] internal bool Owned;
         [DataMember(Name = "finish", IsRequired = false, Order = 4)] internal string Finish;
         [DataMember(Name = "acquiredUtc", IsRequired = false, Order = 5)] internal string AcquiredUtc;
+        [DataMember(Name = "instanceId", IsRequired = false, Order = 6)] internal string InstanceId;
+        [DataMember(Name = "catalogId", IsRequired = false, Order = 7)] internal string CatalogId;
+        [DataMember(Name = "attachments", IsRequired = false, Order = 8)] internal List<string> Attachments;
+        [DataMember(Name = "progression", IsRequired = false, Order = 9)] internal int Progression;
 
         internal WeaponRecord Clone()
         {
-            return (WeaponRecord)MemberwiseClone();
+            WeaponRecord copy = (WeaponRecord)MemberwiseClone();
+            copy.Attachments = Attachments == null ? null : new List<string>(Attachments);
+            return copy;
         }
     }
 }

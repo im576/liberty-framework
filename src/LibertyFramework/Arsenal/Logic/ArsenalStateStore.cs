@@ -14,6 +14,7 @@ namespace LibertyFramework.Arsenal.Logic
                 ArsenalState state = JsonStore.Load<ArsenalState>(path);
                 if (state.SchemaVersion != 1 || state.OwnedCarried == null || state.VehicleTrunks == null || state.SafehouseStashes == null)
                     { throw new InvalidDataException("Invalid Arsenal state schema."); }
+                WeaponIdentity.Normalize(state);
                 return state;
             }
             catch (Exception error)

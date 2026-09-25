@@ -17,3 +17,5 @@ T-001 uses the [Tomasak v1.7.1.8 release archive](https://github.com/Tomasak/gta
 Future models, textures, audio, and code require source URL, author, license/permission, modifications, and attribution in this directory before inclusion. Do not include ripped commercial-game assets.
 
 T-020 reads the INI format documented by [Liberty Vehicle Services CE](https://github.com/ekzestean/Liberty-Vehicle-Services-CE) (ekzestean, MIT) as an external, read-only integration. The Arsenal parser is newly written from the `[owned.<id>]`, `modelhash`, `episode`, `x/y/z`, and `destroyed` fields; no LVS source is copied into this repository.
+
+T-023's `tools/extend-lvs-body-variants.ps1` generates a derivative of the reviewed LVS CE MIT source (SHA-256 `5D4A3CC92A619E46A9B90CDC8D63620CB209ADC3B6E903733CD63F978F33F67C`) by ekzestean. It changes workshop labels for the upstream vehicle-extra preview/purchase/restore feature and refuses a different upstream revision. Package the upstream MIT LICENSE and CREDITS with the generated script. No GTA IV geometry is copied into this repository.

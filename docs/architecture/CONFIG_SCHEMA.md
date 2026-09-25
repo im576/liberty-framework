@@ -70,3 +70,9 @@ Finish colour ramps (`shadowRgb`, `midRgb`, `highlightRgb`, `contrast`, `lift`, 
 ## T-011 finish variants
 
 `lf_gold_carbine` uses `w_m4` diffuse `bm_m4a1`, specular `bm_m4a1_s`, and `icon`; `lf_gold_shotgun` uses `w_shotgun` diffuse `cj_shotgun_comp`, specular `cj_shotgun_comp_s`, and `icon`. Their normal maps are retained.
+# Phase 2 weapon catalog and physical records (T-025)
+
+`config/weapon-catalog.json` has `schemaVersion: 1` and unique `entries[]` keyed by `weaponId`.
+Each entry defines `id` (stable catalog ID), `family`, `label`, `role` (`replacement`, `add-on`, or `test`), the registered model name, allowed `finishes[]`, and future `attachments[]`. The current catalog points only to already registered GTA IV or Phase 1 models. Finish and attachment values are persisted metadata; they do not yet switch models, alter weapon mechanics, or render attachments. The factory and gold-test finishes correspond to the underlying existing models.
+
+`state/arsenal_<episode>.json` remains schema version 1. Optional `carriedRecords[]` persists full `WeaponRecord` objects. Each record now has optional `instanceId` (UUID without separators), `catalogId`, `attachments[]`, and `progression` in addition to its prior ID, category, ammo, owned, finish, and acquisition time. Missing IDs are generated on load. `ownedCarried[]` remains for old saves. Arsenal snapshots carried ammo and metadata at most every five seconds when changed and immediately during storage/loss transfers. `JsonStore.Save` keeps a `.bak` of the previous state.

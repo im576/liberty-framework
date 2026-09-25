@@ -18,6 +18,7 @@ namespace LibertyFramework.Arsenal.Logic
         [DataMember(Name = "ownedCarried", IsRequired = true)] internal List<int> OwnedCarried = new List<int>();
         [DataMember(Name = "safehouseStashes", IsRequired = true)] internal List<StorageBin> SafehouseStashes = new List<StorageBin>();
         [DataMember(Name = "vehicleTrunks", IsRequired = true)] internal List<StorageBin> VehicleTrunks = new List<StorageBin>();
+        [DataMember(Name = "carriedRecords", IsRequired = false)] internal List<WeaponRecord> CarriedRecords = new List<WeaponRecord>();
     }
 
 }

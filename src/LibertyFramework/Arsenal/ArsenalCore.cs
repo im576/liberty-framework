@@ -9,6 +9,7 @@ using LibertyFramework.Core.Config;
 using LibertyFramework.Core.Logging;
 using LibertyFramework.DevTools;
 using LibertyFramework.DevTools.Menu;
+using LibertyFramework.Weapons.Logic;
 
 namespace LibertyFramework.Arsenal
 {
@@ -16,6 +17,7 @@ namespace LibertyFramework.Arsenal
     public sealed class ArsenalCore : Script, ICarriedWeaponsSource
     {
         private ArsenalConfig config;
+        private WeaponCatalog weaponCatalog;
         private ArsenalState state;
         private string episode;
         private string statePath;
@@ -40,6 +42,7 @@ namespace LibertyFramework.Arsenal
         private DateTime lastDiscoveryUtc = DateTime.MinValue;
         private bool discoveryDisabled;
         private bool overflowDeferredLogged;
+        private DateTime lastSnapshotUtc = DateTime.MinValue;
 
         public ArsenalCore()
         {
@@ -94,11 +97,14 @@ namespace LibertyFramework.Arsenal
         {
             config = JsonStore.Load<ArsenalConfig>(LibertyPaths.ArsenalConfig);
             ArsenalConfigValidator.Validate(config);
+            weaponCatalog = JsonStore.Load<WeaponCatalog>(LibertyPaths.WeaponCatalog);
+            weaponCatalog.Validate();
             int index = Function.Call<int>("GET_CURRENT_EPISODE");
             episode = index == 0 ? "iv" : index == 1 ? "tlad" : index == 2 ? "tbogt" : "episode_" + index;
             statePath = LibertyPaths.ArsenalState(episode);
             state = ArsenalStateStore.LoadOrEmpty(statePath,
                 error => RuntimeLog.Error("arsenal_state_corrupt starting_empty path=" + statePath + " error=" + error));
+            WeaponIdentity.Normalize(state);
             ArsenalRegistry.CarriedWeapons = this;
             RuntimeLog.Info("arsenal_ready episode=" + episode + " state=" + statePath);
         }
@@ -155,7 +161,14 @@ namespace LibertyFramework.Arsenal
             foreach (WeaponRecord record in observed)
             {
                 WeaponRecord prior = Find(carried, record.WeaponId);
-                if (prior != null) { record.Owned = prior.Owned; record.Finish = prior.Finish; record.AcquiredUtc = prior.AcquiredUtc; }
+                if (prior == null) { prior = Find(state.CarriedRecords, record.WeaponId); }
+                if (prior != null)
+                {
+                    record.Owned = prior.Owned; record.Finish = prior.Finish; record.AcquiredUtc = prior.AcquiredUtc;
+                    record.InstanceId = prior.InstanceId; record.CatalogId = prior.CatalogId;
+                    record.Attachments = prior.Attachments == null ? null : new List<string>(prior.Attachments);
+                    record.Progression = prior.Progression;
+                }
                 else
                 {
                     record.Owned = state.OwnedCarried.Contains(record.WeaponId) ||
@@ -164,8 +177,21 @@ namespace LibertyFramework.Arsenal
                     if (record.Owned && !state.OwnedCarried.Contains(record.WeaponId)) { state.OwnedCarried.Add(record.WeaponId); Persist(); }
                     RuntimeLog.Info("arsenal_gain id=" + record.WeaponId + " owned=" + record.Owned + " mission=" + mission);
                 }
+                WeaponIdentity.Ensure(record);
+                WeaponCatalogEntry entry = weaponCatalog.Find(record.WeaponId);
+                if (entry != null && string.IsNullOrEmpty(record.CatalogId))
+                {
+                    record.CatalogId = entry.Id;
+                    if (string.IsNullOrEmpty(record.Finish)) { record.Finish = entry.Finishes[0]; }
+                }
             }
             SetCarried(observed, current);
+            if (CarriedIdentityChanged()) { Persist(); }
+            if ((DateTime.UtcNow - lastSnapshotUtc).TotalSeconds >= 5)
+            {
+                if (CarriedSnapshotChanged()) { Persist(); }
+                lastSnapshotUtc = DateTime.UtcNow;
+            }
             if (gated) { return; }
             if (pendingReplacements.Count > 0)
             {
@@ -276,6 +302,7 @@ namespace LibertyFramework.Arsenal
             ArsenalPolicy.ResolveLoss(carried, busted, destination);
             pendingReplacements.Clear();
             state.OwnedCarried.Clear();
+            state.CarriedRecords.Clear();
             presentation.Clear(); revision++;
             Persist();
         }
@@ -432,7 +459,47 @@ namespace LibertyFramework.Arsenal
             return Math.Sqrt(dx * dx + dy * dy + dz * dz);
         }
 
-        private void Persist() { JsonStore.Save(statePath, state); }
+        private void SnapshotCarried()
+        {
+            state.CarriedRecords.Clear();
+            foreach (WeaponRecord record in carried) { state.CarriedRecords.Add(record.Clone()); }
+        }
+
+        private bool CarriedSnapshotChanged()
+        {
+            if (CarriedIdentityChanged()) { return true; }
+            foreach (WeaponRecord record in carried)
+            {
+                WeaponRecord saved = Find(state.CarriedRecords, record.WeaponId);
+                if (saved == null || saved.Ammo != record.Ammo || saved.Finish != record.Finish ||
+                    saved.CatalogId != record.CatalogId || saved.Progression != record.Progression)
+                    { return true; }
+                if ((saved.Attachments == null ? 0 : saved.Attachments.Count) !=
+                    (record.Attachments == null ? 0 : record.Attachments.Count)) { return true; }
+                if (record.Attachments != null)
+                {
+                    for (int i = 0; i < record.Attachments.Count; i++)
+                    {
+                        if (saved.Attachments[i] != record.Attachments[i]) { return true; }
+                    }
+                }
+            }
+            return false;
+        }
+
+        private bool CarriedIdentityChanged()
+        {
+            if (state.CarriedRecords.Count != carried.Count) { return true; }
+            foreach (WeaponRecord record in carried)
+            {
+                WeaponRecord saved = Find(state.CarriedRecords, record.WeaponId);
+                if (saved == null || saved.InstanceId != record.InstanceId || saved.Owned != record.Owned)
+                    { return true; }
+            }
+            return false;
+        }
+
+        private void Persist() { SnapshotCarried(); JsonStore.Save(statePath, state); }
 
         private List<MenuItem> BuildPage()
         {
@@ -514,11 +581,34 @@ namespace LibertyFramework.Arsenal
         private string Take(WeaponRecord record, StorageBin bin)
         {
             if (Player == null || Player.Character == null || !StorageAllowed()) { return "Storage unavailable"; }
+            WeaponRecord displaced = null;
+            foreach (WeaponRecord carriedRecord in carried)
+            {
+                if (carriedRecord.Category == record.Category && carriedRecord.WeaponId != record.WeaponId)
+                    { displaced = carriedRecord; break; }
+            }
+            WeaponRecord savedDisplaced = null;
+            if (displaced != null && displaced.Owned)
+            {
+                GTA.value.Weapon priorWeapon = Player.Character.Weapons.FromType((Weapon)displaced.WeaponId);
+                savedDisplaced = displaced.Clone(); savedDisplaced.Ammo = priorWeapon.Ammo;
+            }
             Player.Character.Weapons.Select((Weapon)record.WeaponId);
             Player.Character.Weapons.FromType((Weapon)record.WeaponId).Ammo = record.Ammo;
             bin.Weapons.Remove(record);
+            if (savedDisplaced != null)
+            {
+                bin.Weapons.Add(savedDisplaced);
+                RuntimeLog.Info("arsenal_take_displaced id=" + savedDisplaced.WeaponId + " instance=" + savedDisplaced.InstanceId + " to=" + bin.Id);
+            }
+            if (displaced != null) { carried.Remove(displaced); state.OwnedCarried.Remove(displaced.WeaponId); }
+            WeaponRecord restored = record.Clone(); restored.Owned = true;
+            WeaponRecord stale = Find(carried, restored.WeaponId);
+            if (stale != null) { carried.Remove(stale); }
+            carried.Add(restored);
             if (!state.OwnedCarried.Contains(record.WeaponId)) { state.OwnedCarried.Add(record.WeaponId); }
-            Persist(); RuntimeLog.Info("arsenal_take id=" + record.WeaponId + " from=" + bin.Id);
+            Persist(); RefreshPresentation((int)Player.Character.Weapons.CurrentType);
+            RuntimeLog.Info("arsenal_take id=" + record.WeaponId + " instance=" + record.InstanceId + " from=" + bin.Id);
             return "Taken " + record.WeaponId;
         }
 
