@@ -115,7 +115,6 @@ namespace LibertyFramework.Arsenal.Holsters
                     Show(ped, weapon);
                     if (props.ContainsKey(weapon.Slot)) { ShowSling(ped, weapon.Slot); }
                 }
-                Calibrate(ped);
                 foreach (BodySlot slot in new List<BodySlot>(props.Keys)) { if (!wanted.Contains(slot)) { Remove(slot); } }
             }
             catch (Exception error)
