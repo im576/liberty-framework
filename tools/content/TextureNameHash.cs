@@ -1,8 +1,8 @@
 namespace LibertyFramework.Content
 {
     // The key a texture dictionary sorts and looks up its textures by: Jenkins one-at-a-time over the lower-case texture
-    // name (no "pack:/" prefix, no ".dds"). Established offline: it reproduces the stored hash of every texture in the
-    // game's own dictionaries that `LibertyContent wtdcheck` reads (docs/research/ModelFormat.md, texture dictionary).
+    // name (no "pack:/" prefix, no ".dds"). It matched every stored hash in coronas.wtd, hud.wtd and amb_nailgun.wtd;
+    // `LibertyContent wtdcheck` counts matches over whole archives (docs/research/ModelFormat.md, texture dictionary).
     internal static class TextureNameHash
     {
         internal static uint Compute(string name)

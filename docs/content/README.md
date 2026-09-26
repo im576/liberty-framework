@@ -13,6 +13,10 @@ Version 1 status (2026-09-25): **working end to end in game**.
 - `content/props/lf_blender_barrel` is made in Blender and exported by the Liberty Exporter add-on
   ([BLENDER.md](BLENDER.md)).
 
+Version 2 status (2026-09-26): **native texture dictionaries, NEEDS-PLAYTEST** ([T-027](../tasks/T-027-lcc-native-textures.md)).
+- `"textureMode": "native"` writes the `.wtd` from scratch: source size, full mip chain, DXT1 or DXT5 with alpha.
+- Verified offline only (`selftest`, read-back). `lf_native_crate` and `lf_alpha_panel` are the in-game test assets.
+
 ## Layout
 
 ```
@@ -37,6 +41,7 @@ never installs.
 | `textureDictionary` | WTD name (1–23 characters) |
 | `drawDistanceMeters` | IDE draw distance |
 | `audioMaterial` | optional `amat` entry |
+| `textureMode` | optional. `template` (default): the template's dictionary with its texture's pixels replaced (template size, DXT1, opaque). `native`: the dictionary is written from scratch (below) |
 
 ## Commands (`tools/build-content.ps1` → `tools/content/bin/LibertyContent.exe`)
 
@@ -47,12 +52,31 @@ never installs.
 | `build <game> <asset.json> <out>` | validate, compile, read back, previews, `report.json` |
 | `package <game> <out> <img> <ide> <asset.json...>` | build all, then IMG + IDE |
 | `templates <game> <archive>` | usable prop templates with their texture sizes |
+| `selftest [--out <dir>]` | offline tests, no game: DXT codecs, name hash, mip chain, WTD writer, native read-back, validator, manifests, glTF import. `--out` also writes test PNGs and WTDs. `package-phase2.ps1` runs it first |
+| `wtdcheck [--game <game>] <file.wtd\|folder\|archive.img...>` | read only: checks the game's dictionaries against the writer's rules and rebuilds each one with the writer, then compares everything but placement. Archive paths are relative to `--game` |
 
 **Build outputs** go to `<out>/<name>/`:
 - `<name>.wdr` and `<textureDictionary>.wtd`
 - `<name>_preview.png`, drawn from the geometry read back out of the compiled `.wdr`
-- `<name>_texture.png`, the DXT1 texture decoded back
+- `<name>_texture.png`, the texture's top level decoded back out of the `.wtd` (with alpha for DXT5)
 - `report.json`: status, stats, every validation issue and every read-back problem. Agents read this.
+  `compiled` holds `textureMode`, `textureFormat`, `textureLevels` and, in native mode, `textureQuality`
+  (`psnrRgbDb`, `maxErrorRgb`, and for DXT5 `psnrAlphaDb`, `maxErrorAlpha`).
+
+## Native texture mode
+
+- **Texture:** the LOD 0 material's base colour texture times its base colour factor. The size is the nearest power of two
+  on a log scale, 4–2048 per side (note in the report when resampled). Without a texture: 4×4 of the base colour.
+- **Resampling:** an edge-clamped tent filter per channel (bilinear up, area-weighted down, exact at the same size).
+  GDI+ is not used here: it can fade alpha at the image edges (seen with Mono's libgdiplus).
+- **Format:** DXT5 when the material's alpha mode is not `OPAQUE` and a pixel is translucent, else DXT1.
+- **Mips:** the full chain down to a 4-pixel smaller side (256×256 has 7 levels), box-filtered.
+- **Name:** the template drawable's texture name, so the drawable needs no change.
+- **Prototype:** the dictionary bytes whose meaning is not established are copied from the template's own `.wtd`. A note
+  in the report lists any that differ from the builtin prototype. Layout: [ModelFormat.md](../research/ModelFormat.md#texture-dictionary-wtd).
+- **Read-back:** format, size, level count and every level's bytes must match what was encoded. The decoded top level
+  must score at least 20 dB PSNR against the source, colour and alpha.
+- **Open (T-027):** whether the game loads these dictionaries, and how `gta_default` draws DXT5 alpha.
 
 ## Coordinate rules
 
@@ -71,7 +95,7 @@ never installs.
 | LCC001 | error | no triangle meshes |
 | LCC002 | error | point/line primitives |
 | LCC003 | warning | no normals (smooth normals generated) |
-| LCC004 | error | more than 65,535 vertices in one geometry (16-bit indices) |
+| LCC004 | error | more than 65,535 vertices in one material group of a LOD (one geometry, 16-bit indices) |
 | LCC005 | error | textured mesh without UVs |
 | LCC006 | error | out-of-range indices |
 | LCC007 | warning | degenerate triangles (removed) |
@@ -83,13 +107,15 @@ never installs.
 | LCC013 | info | model far above/below Z=0 |
 | LCC014 | info | bounds |
 | LCC015 | warning | skin present (v1 writes static props) |
-| LCC016 | error | more materials per LOD than the writer supports (v1: 1) |
+| LCC016 | error | more materials per LOD than the compiler's capabilities allow (v1: 1) |
 | LCC017 | warning | LOD n not lighter than LOD n−1 |
 | LCC018 | error | no LOD 0 |
 | LCC019 | error | unsupported shader (v1: `gta_default`) |
-| LCC020 | warning | alpha mode other than opaque |
+| LCC020 | warning | alpha mode other than opaque (template mode: output is opaque; native mode: DXT5, drawing unverified in game) |
 | LCC021 / LCC022 | warning | texture not a power of two / larger than 2048 (resampled) |
 | LCC023 | error | texture could not be decoded |
+| LCC024 | error | LOD outside 0–3 (a drawable has four LOD slots) |
+| LCC025 | info | LOD validated but not compiled by this compiler version (v1 compiles LOD 0) |
 
 ## Liberty metadata (glTF extras)
 
@@ -103,7 +129,7 @@ The Blender add-on (`tools/blender/liberty_exporter`, guide: [BLENDER.md](BLENDE
 ## Roadmap
 
 1. **v1 (done):** static props, one material, LOD 0, DXT1, built by template patching (the path proven by the slings), IMG/IDE packaging, read-back, previews, autopilot scenario.
-2. **Structure writer:** multiple geometries/materials and LOD models appended to the resource; then from-scratch texture dictionaries (any size, DXT5 alpha); then solving multi-page resources for large assets.
+2. **Structure writer:** from-scratch texture dictionaries (any size, DXT5 alpha: written, T-027 NEEDS-PLAYTEST); validator IR for material groups and LODs with compiler capabilities (done); multiple geometries/materials and LOD models appended to the resource (next); then solving multi-page resources for large assets.
 3. **Collision:** WBN/phBound import or generation, plus world objects (IDE `objs`) with collision.
 4. **Skinned meshes (WDD), then fragments (WFT) and vehicles.**
 5. **Animations (WAD), then audio.**

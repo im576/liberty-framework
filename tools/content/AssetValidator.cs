@@ -70,7 +70,7 @@ namespace LibertyFramework.Content
                     Add(issues, "warning", "LCC011", "largest extent is " + F(extent) + " m (expected " + MinExtentMeters + "-" + MaxExtentMeters +
                         " m): check the Blender unit scale and that transforms are applied");
                 }
-                float cx = (minX + maxX) / 2, cy = (minY + maxY) / 2, cz = (minZ + maxZ) / 2;
+                float cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
                 float offset = (float)Math.Sqrt(cx * cx + cy * cy);
                 if (offset > Math.Max(0.5f, extent)) { Add(issues, "warning", "LCC012", "the model's centre is " + F(offset) + " m from the origin in X/Y; the pivot (spawn point) is the origin"); }
                 if (maxZ - minZ < 0.25f * Math.Max(maxX - minX, maxY - minY) && Math.Abs(minZ) > extent)
@@ -85,7 +85,7 @@ namespace LibertyFramework.Content
             foreach (ContentMaterial material in asset.Materials)
             {
                 if (Array.IndexOf(SupportedShaders, material.Shader) < 0) { Add(issues, "error", "LCC019", "material " + material.Name + " asks for shader '" + material.Shader + "' (supported: " + string.Join(", ", SupportedShaders) + ")"); }
-                if (material.AlphaMode != "OPAQUE") { Add(issues, "warning", "LCC020", "material " + material.Name + " uses alpha mode " + material.AlphaMode + "; gta_default with DXT1 is opaque (1-bit alpha at most)"); }
+                if (material.AlphaMode != "OPAQUE") { Add(issues, "warning", "LCC020", "material " + material.Name + " uses alpha mode " + material.AlphaMode + "; textureMode template writes opaque DXT1, textureMode native writes DXT5 with alpha (whether gta_default draws it translucent is unverified in game)"); }
                 if (material.Image >= 0 && material.Image < asset.Images.Count && asset.Images[material.Image] != null)
                 {
                     System.Drawing.Bitmap image = asset.Images[material.Image];

@@ -36,6 +36,8 @@ namespace LibertyFramework.Content
             // Native mode only: what was encoded (checked byte for byte on read-back) and the level 0 source pixels.
             internal NativeTexture EncodedTexture;
             internal RgbaImage SourceImage;
+            // Set by Readback in native mode.
+            internal TextureQuality TextureQuality;
             internal bool FlippedWinding;
             internal readonly List<string> Notes = new List<string>();
         }
@@ -75,24 +77,8 @@ namespace LibertyFramework.Content
             TextureDictionary.Texture named = TextureDictionary.Parse(templateDictionary, false).Textures.FirstOrDefault(t => string.Equals(t.Name, referenced, StringComparison.OrdinalIgnoreCase));
             string textureName = named != null ? named.Name : referenced;
 
-            ContentMaterial material = Lod0Material(asset);
-            Bitmap image = material != null && material.Image >= 0 && material.Image < asset.Images.Count ? asset.Images[material.Image] : null;
-            float[] tint = material != null ? material.BaseColour : new float[] { 1, 1, 1, 1 };
-            RgbaImage pixels;
-            if (image == null)
-            {
-                pixels = RgbaImage.Solid(SolidColourTextureSizePixels, SolidColourTextureSizePixels, Channel(tint[0]), Channel(tint[1]), Channel(tint[2]), Channel(tint.Length > 3 ? tint[3] : 1));
-                result.Notes.Add("no texture: " + SolidColourTextureSizePixels + "x" + SolidColourTextureSizePixels + " filled with the base colour");
-            }
-            else
-            {
-                int width = NativeSide(image.Width), height = NativeSide(image.Height);
-                if (width != image.Width || height != image.Height) { result.Notes.Add("texture resampled " + image.Width + "x" + image.Height + " -> " + width + "x" + height + " (power of two, " + TextureEncoder.MinSizePixels + "-" + TextureEncoder.MaxSizePixels + ")"); }
-                pixels = RgbaImage.FromBitmap(image, width, height, tint);
-            }
-            bool alpha = material != null && material.AlphaMode != "OPAQUE" && pixels.HasTranslucency();
-            string format = alpha ? "DXT5" : "DXT1";
-            if (material != null && material.AlphaMode != "OPAQUE" && !alpha) { result.Notes.Add("alpha mode " + material.AlphaMode + " but every pixel is opaque: DXT1"); }
+            string format;
+            RgbaImage pixels = NativeSourcePixels(asset, result.Notes, out format);
             NativeTexture texture = TextureEncoder.Encode(textureName, pixels, format, 0);
             byte[] file = TextureDictionaryWriter.Write(new List<NativeTexture> { texture }, prototype).Resource.Serialize();
             TextureDictionary.Parse(RscResource.Parse(file));
@@ -101,6 +87,32 @@ namespace LibertyFramework.Content
             result.EncodedTexture = texture; result.SourceImage = pixels;
             result.Notes.Add("native texture dictionary: " + texture.Width + "x" + texture.Height + " " + texture.Format + ", " + texture.Levels.Count + " mip levels, prototype " + prototype.Source);
             return file;
+        }
+
+        // Native mode's source: the LOD 0 material's texture at NativeSide x NativeSide, multiplied by its base colour (or a
+        // SolidColourTextureSizePixels square of the base colour without a texture), and the format to encode it in: DXT5
+        // when the material is not opaque and a pixel is translucent, else DXT1.
+        internal static RgbaImage NativeSourcePixels(ContentAsset asset, List<string> notes, out string format)
+        {
+            ContentMaterial material = Lod0Material(asset);
+            Bitmap image = material != null && material.Image >= 0 && material.Image < asset.Images.Count ? asset.Images[material.Image] : null;
+            float[] tint = material != null ? material.BaseColour : new float[] { 1, 1, 1, 1 };
+            RgbaImage pixels;
+            if (image == null)
+            {
+                pixels = RgbaImage.Solid(SolidColourTextureSizePixels, SolidColourTextureSizePixels, Channel(tint[0]), Channel(tint[1]), Channel(tint[2]), Channel(tint.Length > 3 ? tint[3] : 1));
+                notes.Add("no texture: " + SolidColourTextureSizePixels + "x" + SolidColourTextureSizePixels + " filled with the base colour");
+            }
+            else
+            {
+                int width = NativeSide(image.Width), height = NativeSide(image.Height);
+                if (width != image.Width || height != image.Height) { notes.Add("texture resampled " + image.Width + "x" + image.Height + " -> " + width + "x" + height + " (power of two, " + TextureEncoder.MinSizePixels + "-" + TextureEncoder.MaxSizePixels + ")"); }
+                pixels = RgbaImage.FromBitmap(image, width, height, tint);
+            }
+            bool alpha = material != null && material.AlphaMode != "OPAQUE" && pixels.HasTranslucency();
+            format = alpha ? "DXT5" : "DXT1";
+            if (material != null && material.AlphaMode != "OPAQUE" && !alpha) { notes.Add("alpha mode " + material.AlphaMode + " but every pixel is opaque: DXT1"); }
+            return pixels;
         }
 
         // Nearest power of two on a log scale, clamped to the writer's range.

@@ -1,0 +1,23 @@
+{
+  "asset": { "version": "2.0", "generator": "Liberty Content Compiler sample" },
+  "scene": 0,
+  "scenes": [ { "name": "Scene", "nodes": [0], "extras": { "liberty_asset": "lf_native_crate" } } ],
+  "nodes": [ { "name": "lf_native_crate_lod0", "mesh": 0 } ],
+  "meshes": [ { "name": "lf_native_crate", "primitives": [ { "attributes": { "POSITION": 0, "NORMAL": 1, "TEXCOORD_0": 2 }, "indices": 3, "material": 0 } ] } ],
+  "materials": [ { "name": "crate_wood", "pbrMetallicRoughness": { "baseColorTexture": { "index": 0 }, "metallicFactor": 0, "roughnessFactor": 0.9 }, "extras": { "liberty_shader": "gta_default" } } ],
+  "textures": [ { "source": 0 } ],
+  "images": [ { "uri": "lf_native_crate_basecolor.png", "name": "lf_native_crate_basecolor" } ],
+  "accessors": [
+    { "bufferView": 0, "componentType": 5126, "count": 24, "type": "VEC3", "min": [-0.3, 0, -0.3], "max": [0.3, 0.6, 0.3] },
+    { "bufferView": 1, "componentType": 5126, "count": 24, "type": "VEC3" },
+    { "bufferView": 2, "componentType": 5126, "count": 24, "type": "VEC2" },
+    { "bufferView": 3, "componentType": 5123, "count": 36, "type": "SCALAR" }
+  ],
+  "bufferViews": [
+    { "buffer": 0, "byteOffset": 0, "byteLength": 288 },
+    { "buffer": 0, "byteOffset": 288, "byteLength": 288 },
+    { "buffer": 0, "byteOffset": 576, "byteLength": 192 },
+    { "buffer": 0, "byteOffset": 768, "byteLength": 72 }
+  ],
+  "buffers": [ { "uri": "lf_native_crate.bin", "byteLength": 840 } ]
+}

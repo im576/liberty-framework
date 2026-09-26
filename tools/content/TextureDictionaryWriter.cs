@@ -16,8 +16,8 @@ namespace LibertyFramework.Content
     //                    the texture pointer array; the arrays are sorted by TextureNameHash; unused bytes are 0xCD
     //   graphics segment every texture's mip levels back to back, largest level first
     // The fields TextureDictionary.Parse reads are written from the textures; the hash array and the row stride (+0x24) are
-    // derived from rules that reproduce the game's own dictionaries (`LibertyContent wtdcheck`); every other byte comes
-    // from a TextureDictionaryPrototype.
+    // derived from rules matched against the game's own dictionaries (checked by `LibertyContent wtdcheck`); every other
+    // byte comes from a TextureDictionaryPrototype.
     //
     // Page placement: a graphics segment that fits one page (at most 8 MB) is written as ONE page, as generated drawables
     // are (a multi-page drawable rendered garbage in game, docs/research/ModelFormat.md). Larger dictionaries use 8 MB

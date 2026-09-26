@@ -12,7 +12,9 @@ namespace LibertyFramework.Content
     // checks the rules the writer relies on (name hash, hash order, row stride, identical opaque record bytes, mip count)
     // and rebuilds it from its own textures with a prototype captured from itself, then compares field by field. Only
     // placement (pointers, page flags, data offsets) may differ. Dictionaries with uncompressed textures are listed, not
-    // rebuilt (the writer writes DXT only).
+    // rebuilt (the writer writes DXT only). It also records what the writer assumes but Compare cannot see: the record's
+    // +0x40 word (the writer stores 0; Compare skips it with the pointers), the graphics page layout (the writer uses one
+    // page up to 8 MB) and the alignment of texture data (the writer uses 256 bytes).
     internal static class TextureDictionaryCheck
     {
         // Texture record bytes that hold pointers (their values depend on placement, not on the texture).
@@ -21,6 +23,8 @@ namespace LibertyFramework.Content
         internal sealed class Totals
         {
             internal int Files, Rebuilt, Identical, SkippedUncompressed, Failed, Textures, HashOk, OrderOk, StrideOk, PrototypeBuiltin, FullChain, SingleLevel, OtherLevels;
+            internal int Record40Zero, Record40Other, SinglePage, MultiPage;
+            internal int MinDataAlignment = int.MaxValue;
             internal readonly List<string> Problems = new List<string>();
         }
 
@@ -55,6 +59,8 @@ namespace LibertyFramework.Content
             Console.WriteLine("  textures=" + totals.Textures + " nameHash=" + totals.HashOk + " hashOrder(files)=" + totals.OrderOk + " rowStride=" + totals.StrideOk +
                 " prototype==builtin(files)=" + totals.PrototypeBuiltin);
             Console.WriteLine("  mip levels: fullChain(to 4px)=" + totals.FullChain + " single=" + totals.SingleLevel + " other=" + totals.OtherLevels);
+            Console.WriteLine("  record+0x40: zero=" + totals.Record40Zero + " other=" + totals.Record40Other + "; graphics pages(files): one=" + totals.SinglePage + " several=" + totals.MultiPage +
+                "; smallest texture data alignment=" + (totals.MinDataAlignment == int.MaxValue ? "n/a" : totals.MinDataAlignment.ToString()));
             foreach (string problem in totals.Problems) { Console.WriteLine("  " + problem); }
             return totals.Failed == 0 && totals.Rebuilt == totals.Identical ? 0 : 1;
         }
@@ -72,6 +78,8 @@ namespace LibertyFramework.Content
                 bool ordered = true;
                 byte[] firstRecord = null;
                 bool uncompressed = false;
+                int pageBytes = 256 << (int)((original.Flags >> 26) & 0xF);
+                if (original.GraphicsSize <= pageBytes) { totals.SinglePage++; } else { totals.MultiPage++; }
                 for (int i = 0; i < parsed.Textures.Count; i++)
                 {
                     TextureDictionary.Texture texture = parsed.Textures[i];
@@ -81,6 +89,10 @@ namespace LibertyFramework.Content
                     if (stored == TextureNameHash.Compute(texture.Name)) { totals.HashOk++; } else { totals.Problems.Add(label + ": " + texture.Name + " hash 0x" + stored.ToString("X8") + " != 0x" + TextureNameHash.Compute(texture.Name).ToString("X8")); }
                     if (i > 0 && BitConverter.ToUInt32(body, hashes + (i - 1) * 4) >= stored) { ordered = false; }
                     if (!texture.Compressed) { uncompressed = true; continue; }
+                    uint word40 = BitConverter.ToUInt32(body, record + 0x40);
+                    if (word40 == 0) { totals.Record40Zero++; } else { totals.Record40Other++; totals.Problems.Add(label + ": " + texture.Name + " record+0x40 = 0x" + word40.ToString("X8") + " (the writer stores 0)"); }
+                    int dataOffset = texture.DataOffset - original.SystemSize;
+                    if (dataOffset > 0) { totals.MinDataAlignment = Math.Min(totals.MinDataAlignment, dataOffset & -dataOffset); }
                     int stride = BitConverter.ToUInt16(body, record + 0x24);
                     if (stride == TextureDictionaryWriter.RowStrideBytes(texture.Format, texture.Width)) { totals.StrideOk++; }
                     else { totals.Problems.Add(label + ": " + texture.Name + " " + texture.Width + " " + texture.Format + " stride " + stride + " != " + TextureDictionaryWriter.RowStrideBytes(texture.Format, texture.Width)); }

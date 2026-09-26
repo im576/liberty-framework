@@ -1,7 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace LibertyFramework.Content
@@ -32,45 +33,98 @@ namespace LibertyFramework.Content
             return image;
         }
 
-        // Resamples a bitmap to width x height (high-quality bicubic, mirrored edges as PropCompiler's template path does)
-        // and multiplies it by the material's base colour factor (RGBA, 0..1).
+        // A bitmap at width x height, multiplied by the material's base colour factor (RGBA, 0..1). Resampling is Resize, not
+        // GDI+: GDI+'s scaler fades alpha at the image edges (seen with Mono's libgdiplus, whose wrap modes do not stop it),
+        // which would make an opaque texture translucent at its border once alpha is kept (native texture mode).
         internal static RgbaImage FromBitmap(Bitmap source, int width, int height, float[] tint)
         {
-            RgbaImage image = new RgbaImage(width, height);
-            using (Bitmap scaled = new Bitmap(width, height, PixelFormat.Format32bppArgb))
+            return FromBitmap(source, tint).Resize(width, height);
+        }
+
+        // A bitmap at its own size, multiplied by the base colour factor.
+        internal static RgbaImage FromBitmap(Bitmap source, float[] tint)
+        {
+            RgbaImage image = new RgbaImage(source.Width, source.Height);
+            // LockBits converts any source pixel format to 32-bit ARGB.
+            BitmapData data = source.LockBits(new Rectangle(0, 0, source.Width, source.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            try
             {
-                using (Graphics g = Graphics.FromImage(scaled))
+                byte[] row = new byte[source.Width * 4];
+                for (int y = 0; y < source.Height; y++)
                 {
-                    g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                    g.CompositingMode = CompositingMode.SourceCopy;
-                    using (ImageAttributes wrap = new ImageAttributes())
+                    Marshal.Copy(IntPtr.Add(data.Scan0, y * data.Stride), row, 0, row.Length);
+                    for (int x = 0; x < source.Width; x++)
                     {
-                        wrap.SetWrapMode(WrapMode.TileFlipXY);
-                        g.DrawImage(source, new Rectangle(0, 0, width, height), 0, 0, source.Width, source.Height, GraphicsUnit.Pixel, wrap);
+                        // GDI+ memory order is B, G, R, A.
+                        int at = (y * source.Width + x) * 4;
+                        image.Pixels[at] = Scale(row[x * 4 + 2], tint[0]);
+                        image.Pixels[at + 1] = Scale(row[x * 4 + 1], tint[1]);
+                        image.Pixels[at + 2] = Scale(row[x * 4], tint[2]);
+                        image.Pixels[at + 3] = Scale(row[x * 4 + 3], tint.Length > 3 ? tint[3] : 1);
                     }
                 }
-                BitmapData data = scaled.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-                try
-                {
-                    byte[] row = new byte[width * 4];
-                    for (int y = 0; y < height; y++)
-                    {
-                        Marshal.Copy(IntPtr.Add(data.Scan0, y * data.Stride), row, 0, row.Length);
-                        for (int x = 0; x < width; x++)
-                        {
-                            // GDI+ memory order is B, G, R, A.
-                            int at = (y * width + x) * 4;
-                            image.Pixels[at] = Scale(row[x * 4 + 2], tint[0]);
-                            image.Pixels[at + 1] = Scale(row[x * 4 + 1], tint[1]);
-                            image.Pixels[at + 2] = Scale(row[x * 4], tint[2]);
-                            image.Pixels[at + 3] = Scale(row[x * 4 + 3], tint.Length > 3 ? tint[3] : 1);
-                        }
-                    }
-                }
-                finally { scaled.UnlockBits(data); }
             }
+            finally { source.UnlockBits(data); }
             return image;
+        }
+
+        // Separable tent filter, clamped at the edges: bilinear when enlarging, area-weighted when reducing, an exact copy at
+        // the same size. Each channel is filtered on its own, so a fully opaque image stays fully opaque.
+        internal RgbaImage Resize(int width, int height)
+        {
+            if (width == Width && height == Height) { return new RgbaImage(width, height, (byte[])Pixels.Clone()); }
+            List<KeyValuePair<int, double>>[] columns = Weights(Width, width), rows = Weights(Height, height);
+            double[] horizontal = new double[Height * width * 4];
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    foreach (KeyValuePair<int, double> w in columns[x])
+                    {
+                        for (int c = 0; c < 4; c++) { horizontal[(y * width + x) * 4 + c] += Pixels[(y * Width + w.Key) * 4 + c] * w.Value; }
+                    }
+                }
+            }
+            RgbaImage output = new RgbaImage(width, height);
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    for (int c = 0; c < 4; c++)
+                    {
+                        double sum = 0;
+                        foreach (KeyValuePair<int, double> w in rows[y]) { sum += horizontal[(w.Key * width + x) * 4 + c] * w.Value; }
+                        output.Pixels[(y * width + x) * 4 + c] = (byte)Math.Max(0, Math.Min(255, Math.Round(sum)));
+                    }
+                }
+            }
+            return output;
+        }
+
+        // Normalised source weights for each output sample along one axis (tent of half-width max(1, scale), source index
+        // clamped to the image).
+        private static List<KeyValuePair<int, double>>[] Weights(int sourceSize, int outputSize)
+        {
+            double scale = (double)sourceSize / outputSize, support = Math.Max(1.0, scale);
+            List<KeyValuePair<int, double>>[] weights = new List<KeyValuePair<int, double>>[outputSize];
+            for (int i = 0; i < outputSize; i++)
+            {
+                double centre = (i + 0.5) * scale - 0.5;
+                Dictionary<int, double> sums = new Dictionary<int, double>();
+                double total = 0;
+                for (int j = (int)Math.Floor(centre - support); j <= (int)Math.Ceiling(centre + support); j++)
+                {
+                    double w = 1 - Math.Abs(j - centre) / support;
+                    if (w <= 0) { continue; }
+                    int clamped = Math.Max(0, Math.Min(sourceSize - 1, j));
+                    double existing;
+                    sums.TryGetValue(clamped, out existing);
+                    sums[clamped] = existing + w;
+                    total += w;
+                }
+                weights[i] = sums.OrderBy(p => p.Key).Select(p => new KeyValuePair<int, double>(p.Key, p.Value / total)).ToList();
+            }
+            return weights;
         }
 
         // 2x2 box filter (the next mip level), clamped at 1 pixel.
@@ -94,6 +148,28 @@ namespace LibertyFramework.Content
                 }
             }
             return output;
+        }
+
+        // A 32-bit ARGB bitmap of these pixels (previews); the caller disposes it.
+        internal Bitmap ToBitmap()
+        {
+            Bitmap bitmap = new Bitmap(Width, Height, PixelFormat.Format32bppArgb);
+            BitmapData data = bitmap.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+            try
+            {
+                byte[] row = new byte[Width * 4];
+                for (int y = 0; y < Height; y++)
+                {
+                    for (int x = 0; x < Width; x++)
+                    {
+                        int at = (y * Width + x) * 4;
+                        row[x * 4] = Pixels[at + 2]; row[x * 4 + 1] = Pixels[at + 1]; row[x * 4 + 2] = Pixels[at]; row[x * 4 + 3] = Pixels[at + 3];
+                    }
+                    Marshal.Copy(row, 0, IntPtr.Add(data.Scan0, y * data.Stride), row.Length);
+                }
+            }
+            finally { bitmap.UnlockBits(data); }
+            return bitmap;
         }
 
         // RGB bytes (alpha dropped), the input Dxt1Encoder takes.
