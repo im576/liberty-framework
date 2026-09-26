@@ -219,6 +219,29 @@
       "addedIn": "claude/friendly-euler-m7hn4e (Session 1 seed)"
     },
     {
+      "id": "T027-raycast-objects",
+      "task": "T-027",
+      "title": "Raycast RayMask.Objects against a vanilla prop with collision",
+      "kind": "scenario",
+      "run": {
+        "scenario": "raycast-objects"
+      },
+      "needs": [
+        "PROBE-collision"
+      ],
+      "proves": "RayMask.Objects in game: a script-created vanilla prop is hit as kind Object with its own handle (all kinds, and objects only), and a query that leaves objects out passes through it; the raycast link [result+0x0C] resolves objects through the object pool.",
+      "pass": "autopilot PASS: rayto prop all and objects both Hit kind=Object match=True; world,peds,vehicles passed>=1; faults=0; screenshot judged",
+      "unproven": "Only the probe's first candidate is tested; a FAIL on the first rayto may mean that model has no collision in game (the review session then tries the next candidate from the probe report) rather than a raycast fault. Authored (LCC) props need collision first (Session 5).",
+      "review": {
+        "screenshots": {
+          "prop": "a vanilla prop (not a Liberty test crate) stands on the ground about 3 m in front of Niko"
+        }
+      },
+      "reference": "docs/research/Raycast.md",
+      "status": "QUEUED",
+      "addedIn": "claude/nice-edison-xyxc6j (Session 2 audit)"
+    },
+    {
       "id": "T027-raycast-spike",
       "task": "T-027",
       "title": "Raycast research spike (raw include bits)",

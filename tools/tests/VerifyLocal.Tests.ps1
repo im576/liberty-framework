@@ -31,6 +31,10 @@ $only = @(Select-Checks $queue @('T027-raycast') @() $false $false | ForEach-Obj
 Test-That 'only a scenario: package-install is added before it' (($only -join ',') -eq 'LOOP-package-install,T027-raycast') ($only -join ',')
 $threw = $false; try { Select-Checks $queue @('NO-such-check') @() $false $false | Out-Null } catch { $threw = $true }
 Test-That 'only an unknown id: refused' $threw
+$only = @(Select-Checks $queue @('T027-raycast-objects') @() $false $false | ForEach-Object { $_.id })
+Test-That 'only a scenario that needs a probe: the probe and package-install run first' (($only -join ',') -eq 'PROBE-collision,LOOP-package-install,T027-raycast-objects') ($only -join ',')
+$only = @(Select-Checks $queue @() @('scenario') $false $false | ForEach-Object { $_.id })
+Test-That 'kind scenario: a needed probe is still added' ($only -contains 'PROBE-collision') ($only -join ',')
 
 # ---- A full simulated run
 $root = Join-Path $script:Scratch 'verify-local'
@@ -39,6 +43,8 @@ $remote = Join-Path $root 'remote.git'
 & git init -q --bare $remote
 [IO.File]::WriteAllLines((Join-Path $root (Join-Path 'scenarios' 'good.txt')), @('selftest', 'expect "selftest_done passed=\d+ failed=0" 2', 'shot view'))
 [IO.File]::WriteAllLines((Join-Path $root (Join-Path 'scenarios' 'crashy.txt')), @('god on', 'boom'))
+# A scenario that spawns what a probe of the same run found ({probe:<id>:<field>}; the simulated probe reports "simulated").
+[IO.File]::WriteAllLines((Join-Path $root (Join-Path 'scenarios' 'probed.txt')), @('spawnprop {probe:T-probe:probe} 3 0', 'expect "autopilot_prop handle=\d+ model=simulated" 2'))
 foreach ($asset in 'good_asset', 'bad_asset') {
     $folder = Join-Path $root (Join-Path 'reports' (Join-Path 'content' $asset))
     New-Item -ItemType Directory -Force -Path $folder | Out-Null
@@ -71,6 +77,7 @@ $checks = @(
     (New-Check 'T-scenario-good' 'scenario' @{ scenario = 'good' } @{ review = @{ screenshots = @{ view = 'anything' } } }),
     (New-Check 'T-scenario-crash' 'scenario' @{ scenario = 'crashy' }),
     (New-Check 'T-scenario-after-crash' 'scenario' @{ scenario = 'good' }),
+    (New-Check 'T-scenario-probed' 'scenario' @{ scenario = 'probed' } @{ needs = @('T-probe') }),
     (New-Check 'T-manual-pass' 'manual' @{ steps = @('play') } @{ minutes = 1; session = 'play' }),
     (New-Check 'T-manual-skipped' 'manual' @{ steps = @('play') } @{ minutes = 1; session = 'play' })
 )
@@ -92,7 +99,8 @@ $simFile = Join-Path $root 'simulation.json'
 [IO.File]::WriteAllText($simFile, ($sim | ConvertTo-Json -Depth 8))
 Initialize-SimulatedGame (Join-Path $root 'game') @{
     knownCommands = @('god')
-    commands = @{ 'selftest' = @{ reply = 'started'; log = @('selftest_done passed=3 failed=0') }; 'boom' = @{ reply = 'ok'; crash = $true } }
+    commands = @{ 'selftest' = @{ reply = 'started'; log = @('selftest_done passed=3 failed=0') }; 'boom' = @{ reply = 'ok'; crash = $true }
+        'spawnprop simulated 3 0' = @{ reply = 'spawning prop simulated'; log = @('autopilot_prop handle=77 model=simulated') } }
 } @()
 & $verifyLocal -Simulate -SimulationFile $simFile -QueuePath $queuePath -KeepInstall 6>&1 | Out-Null
 $runFolder = Get-ChildItem -LiteralPath (Join-Path $root 'results') -Directory | Select-Object -First 1
@@ -111,6 +119,7 @@ Test-That 'run: content report with a wrong field is FAIL' ($status['T-report-ba
 Test-That 'run: a passing scenario with screenshots to judge is NEEDS-REVIEW' ($status['T-scenario-good'] -eq 'NEEDS-REVIEW')
 Test-That 'run: a crashing scenario is CRASH' ($status['T-scenario-crash'] -eq 'CRASH')
 Test-That 'run: the scenario after a crash relaunches and passes' ($status['T-scenario-after-crash'] -eq 'PASS')
+Test-That 'run: a scenario uses the value its probe found in the same run' ($status['T-scenario-probed'] -eq 'PASS') ($status['T-scenario-probed'])
 Test-That 'run: manual answer p is PASS' ($status['T-manual-pass'] -eq 'PASS')
 Test-That 'run: unanswered manual check is NOT-RUN' ($status['T-manual-skipped'] -eq 'NOT-RUN')
 Test-That 'run: evidence copied (scenario report and screenshot)' (Test-Path -LiteralPath (Join-Path $runFolder.FullName (Join-Path 'T-scenario-good' 'view.png')))

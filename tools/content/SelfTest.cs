@@ -103,6 +103,8 @@ namespace LibertyFramework.Content
                 List<KeyValuePair<string, byte[]>> files = new List<KeyValuePair<string, byte[]>>
                 {
                     new KeyValuePair<string, byte[]>("test_bounds.wbn", bounds.Serialize()),
+                    // A drawable and a bounds resource of the same name: a prop candidate.
+                    new KeyValuePair<string, byte[]>("broken.wbn", bounds.Serialize()),
                     new KeyValuePair<string, byte[]>("broken.wdr", new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 }),
                     new KeyValuePair<string, byte[]>("plain.wtd", new byte[] { 9, 9, 9, 9 }),
                 };
@@ -125,6 +127,8 @@ namespace LibertyFramework.Content
                 t.Check(headers.Keys.Any(k => k.StartsWith(".wbn rsc type 32")), "bounds resource header summarised", string.Join(",", headers.Keys.ToArray()));
                 t.Check(((Dictionary<string, object>)c["collisionRootWords"]).ContainsKey(".wbn root word 0x00ABCDEF"), "root word recorded");
                 t.Check(d.ContainsKey("rule") && c.ContainsKey("rule"), "reports state the structure-only rule");
+                string candidates = string.Join(",", ((System.Collections.ArrayList)c["propCandidates"]).Cast<object>().Select(o => o.ToString()).ToArray());
+                t.Check(candidates == "broken", "a drawable with a same-named bounds resource is a prop candidate (bounds alone are not)", candidates);
             }
             finally { try { Directory.Delete(game, true); } catch (IOException) { } }
         }

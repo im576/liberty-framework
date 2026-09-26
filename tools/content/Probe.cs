@@ -262,9 +262,13 @@ namespace LibertyFramework.Content
             Dictionary<string, int> tableTypes = new Dictionary<string, int>();
             List<object> samples = new List<object>();
             List<string> errors = new List<string>();
+            List<Dictionary<string, object>> candidates = new List<Dictionary<string, object>>();
             foreach (string relative in Archives(game, skipped))
             {
                 Dictionary<string, int> local = new Dictionary<string, int>();
+                // Base name -> extensions in this archive: a drawable (.wdr) shipped next to a bounds resource (.wbn) of the
+                // same name is a model with its own collision file, the candidates for the RayMask.Objects scenario.
+                Dictionary<string, HashSet<string>> byName = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
                 try
                 {
                     ImgArchive archive = ImgArchive.Open(Path.Combine(game, relative), key);
@@ -273,6 +277,10 @@ namespace LibertyFramework.Content
                         string extension = Path.GetExtension(entry.Name).ToLowerInvariant();
                         Count(extensions, extension);
                         Count(local, extension);
+                        string baseName = Path.GetFileNameWithoutExtension(entry.Name);
+                        HashSet<string> kinds;
+                        if (!byName.TryGetValue(baseName, out kinds)) { kinds = new HashSet<string>(); byName[baseName] = kinds; }
+                        kinds.Add(extension);
                         if (!CollisionExtensions.Contains(extension)) { continue; }
                         Count(tableTypes, extension + " table type " + entry.ResourceType);
                         try
@@ -299,9 +307,18 @@ namespace LibertyFramework.Content
                         catch (Exception error) { if (errors.Count < 20) { errors.Add(relative + "/" + entry.Name + ": " + error.Message); } }
                     }
                     byArchive[relative] = Sorted(local);
+                    foreach (KeyValuePair<string, HashSet<string>> pair in byName)
+                    {
+                        if (pair.Value.Contains(".wdr") && pair.Value.Contains(".wbn"))
+                        {
+                            candidates.Add(new Dictionary<string, object> { { "name", pair.Key.ToLowerInvariant() }, { "archive", relative }, { "fragment", pair.Value.Contains(".wft") } });
+                        }
+                    }
                 }
                 catch (Exception error) { byArchive[relative] = new Dictionary<string, object> { { "error", error.Message } }; }
             }
+            // Sorted by name so every run on the same game files names the same first candidate.
+            candidates = candidates.OrderBy(c => (string)c["name"], StringComparer.Ordinal).ToList();
             List<string> loose = new List<string>();
             foreach (string path in Directory.GetFiles(game, "*.*", SearchOption.AllDirectories))
             {
@@ -312,7 +329,10 @@ namespace LibertyFramework.Content
                 { "question", "Which collision (bounds) resources does the game ship, where, how many, and with which resource headers?" },
                 { "collisionExtensions", CollisionExtensions }, { "entryExtensions", Sorted(extensions) },
                 { "collisionTableTypes", Sorted(tableTypes) }, { "collisionHeaders", Sorted(headers) }, { "collisionRootWords", Sorted(firstWords).Take(60).ToDictionary(p => p.Key, p => p.Value) },
-                { "looseCollisionFiles", loose }, { "errors", errors }, { "archives", byArchive }, { "skipped", skipped }, { "samples", samples }
+                { "looseCollisionFiles", loose }, { "errors", errors }, { "archives", byArchive }, { "skipped", skipped }, { "samples", samples },
+                // Model names only (structure): what the raycast-objects scenario spawns ({probe:PROBE-collision:propCandidates}).
+                { "propCandidates", candidates.Select(c => (string)c["name"]).Take(100).ToList() },
+                { "propCandidateDetails", candidates.Take(100).ToList() }, { "propCandidateCount", candidates.Count }
             };
         }
     }

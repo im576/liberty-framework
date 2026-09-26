@@ -46,6 +46,16 @@ function Select-Checks($Queue, [string[]] $Only, [string[]] $Kinds, [bool] $Smok
     }
     if ($Kinds -and $Kinds.Count -gt 0) { $all = @($all | Where-Object { $Kinds -contains $_.kind }) }
     if (-not $IncludePassedManual) { $all = @($all | Where-Object { -not ($_.kind -eq 'manual' -and $_.status -eq 'PASS') }) }
+    # A check's "needs" (e.g. a scenario that spawns the model a probe found) run in the same run: add them when missing.
+    foreach ($check in @($all)) {
+        if (-not $check.PSObject.Properties['needs']) { continue }
+        foreach ($id in @($check.needs)) {
+            if ($all | Where-Object { $_.id -eq $id }) { continue }
+            $needed = $Queue.checks | Where-Object { $_.id -eq $id -and $_.status -ne 'RETIRED' } | Select-Object -First 1
+            if (-not $needed) { throw "check $($check.id) needs $id, which is not in the queue" }
+            $all = @($needed) + $all
+        }
+    }
     # Scenario checks and package-reading checks need the install: add package-install when they are selected.
     $needsInstall = @($all | Where-Object { $_.kind -eq 'scenario' -or ($_.kind -eq 'pc-offline' -and $_.run.tool -eq 'content-report') }).Count -gt 0
     if ($needsInstall -and -not ($all | Where-Object { $_.id -eq 'LOOP-package-install' })) {
@@ -239,7 +249,7 @@ function Invoke-ScenarioCheck($Context, $Check) {
     New-Item -ItemType Directory -Force -Path $runs | Out-Null
     $log = Join-Path $Context.Results ($Check.id + '.log')
     $arguments = (Get-ScriptArguments (Join-Parts $Context.Repo 'tools' 'autopilot' 'Run-Scenario.ps1')) +
-        @('-GameDirectory', $Context.Game, '-Scenario', $scenario, '-OutputDirectory', $runs, '-AutopilotModule', $Context.GameModule)
+        @('-GameDirectory', $Context.Game, '-Scenario', $scenario, '-OutputDirectory', $runs, '-AutopilotModule', $Context.GameModule, '-ProbeDirectory', $Context.Results)
     $run = Invoke-ChildProcess (Get-PowerShellPath) $arguments $Context.ScenarioTimeout $log $Context.Repo
     Import-Module (Join-Parts $Context.Repo 'tools' 'autopilot' 'AutopilotLogic.psm1') -Force 3>$null
     $read = Read-ScenarioResult $run.Output

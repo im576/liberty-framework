@@ -1,0 +1,30 @@
+# RayMask.Objects against a vanilla prop with collision (T-027; Raycast.md R2, Collision.md C6). The model is not chosen
+# from memory: it is the first prop candidate PROBE-collision found in this run's game files (a drawable shipped with a
+# bounds resource of the same name; verify-local runs the probe first because the check "needs" it). If that model has
+# no collision in game, the first rayto fails; the review session then picks the next name from the probe report's
+# propCandidates and records the answer in docs/research/Raycast.md.
+events on
+god on
+wanted 0
+goto east_park
+wait 6000
+time 13 0
+clear
+spawnprop {probe:PROBE-collision:propCandidates} 3 0
+expect "autopilot_prop handle=\d+ model=" 20
+wait 2500
+shot prop
+# Every kind stops the ray: the first thing between the player and the prop's origin is the prop (kind Object).
+rayto prop all
+expect "autopilot_rayto target=prop .*mask=All status=Hit kind=Object .*match=True" 5
+# Only objects stop the ray: the same prop, whatever world geometry lies around it.
+rayto prop objects
+expect "autopilot_rayto target=prop .*mask=Objects status=Hit kind=Object .*match=True" 5
+# Objects left out: the ray passes through the prop (at least one pass) and ends clear or on the world.
+rayto prop world,peds,vehicles
+expect "autopilot_rayto target=prop .*mask=World\|Peds\|Vehicles status=(Clear|Hit kind=World) .*passed=[1-9]" 5
+# Research: which include bits hit an object (R2).
+raybits forward 4 1 -0.3
+raystats
+expect "raycast available=True .*faults=0" 5
+clear

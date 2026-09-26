@@ -16,7 +16,7 @@
 |---|---|---|
 | pc-offline | 8 | automatically (builds and tests that need Windows or the game's files) |
 | probe | 2 | automatically (read-only questions about the game's files; structure only) |
-| scenario | 17 | automatically (autopilot drives the game; about 2-4 minutes each) |
+| scenario | 18 | automatically (autopilot drives the game; about 2-4 minutes each) |
 | manual | 17 | you play and judge; about 160 minutes in total, grouped below |
 
 Statuses: QUEUED (never run on the current code), PASS, FAIL, ERROR, CRASH, NOT-RUN, NEEDS-REVIEW (a person or the review session must judge screenshots or log errors).
@@ -196,6 +196,7 @@ Nothing to set up.
 | `PROBE-drawables` | RESEARCH | probe | exit code 0 and a JSON report; the review session reads it (no pass/fail on the numbers themselves) | QUEUED |
 | `PROBE-collision` | RESEARCH | probe | exit code 0 and a JSON report; the review session reads it | QUEUED |
 | `T027-raycast` | T-027 | scenario | autopilot PASS: ground hit, open sky clear, vehicle hit and filtered, ped hit and passed through, rayto matches, line of sight both ways, faults=0; screenshots judged | QUEUED |
+| `T027-raycast-objects` | T-027 | scenario | autopilot PASS: rayto prop all and objects both Hit kind=Object match=True; world,peds,vehicles passed>=1; faults=0; screenshot judged | QUEUED |
 | `T027-raycast-spike` | T-027 | scenario | autopilot PASS (spawns succeed); the review session reads the raydebug/raybits lines for the vehicle | QUEUED |
 | `SDK-selftest` | T-027 | scenario | autopilot PASS: 'selftest_done passed=N failed=0' | QUEUED |
 | `T028-native-texture-review` | T-028 | scenario | autopilot PASS and the screenshots judged as described | QUEUED |
@@ -226,6 +227,7 @@ Nothing to set up.
 - `PROBE-drawables`: Across the game's model archives: how many drawables use several geometries, several shaders and LOD slots 1-3, how their buffers, shader mappings, bounds and LOD distances are laid out, and whether the reader parses them all. Input for the multi-geometry/LOD writer (Session 4). **Still unproven:** Anything about how the game renders them; this is file structure only.
 - `PROBE-collision`: Which collision-related resources the game ships (by extension and resource type), in which archives, how many, their resource versions and top-level sizes. Input for collision research (Session 5). **Still unproven:** The bound structures' field meanings; those need their own probes once the inventory is known.
 - `T027-raycast`: SDK 1.1 Query.Raycast / HasLineOfSight against world, a vehicle and a ped through the real game line test; filtering and ignore semantics; no faults. **Still unproven:** Objects (props with collision) are not tested in game yet (RayMask.Objects); research questions R1-R6 in docs/research/Raycast.md.
+- `T027-raycast-objects`: RayMask.Objects in game: a script-created vanilla prop is hit as kind Object with its own handle (all kinds, and objects only), and a query that leaves objects out passes through it; the raycast link [result+0x0C] resolves objects through the object pool. **Still unproven:** Only the probe's first candidate is tested; a FAIL on the first rayto may mean that model has no collision in game (the review session then tries the next candidate from the probe report) rather than a raycast fault. Authored (LCC) props need collision first (Session 5). Runs after `PROBE-collision` in the same run.
 - `T027-raycast-spike`: Raw line-test results per include bit for ground, sky, a vehicle and a ped: evidence for Raycast.md open questions. **Still unproven:** Research only; interpretation happens in the review session.
 - `SDK-selftest`: Every Liberty.Sdk service works in game on the new core ABI 5, including the ten raycast/line-of-sight checks.
 - `T028-native-texture-review`: The game loads dictionaries written from scratch and draws DXT1; how gta_default treats DXT5 alpha. **Still unproven:** Alpha behaviour is an observation (translucent, cut-out or ignored); any of the three is a valid answer.

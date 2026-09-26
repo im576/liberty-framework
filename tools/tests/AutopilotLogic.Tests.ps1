@@ -53,3 +53,20 @@ Test-That 'two AUTOPILOT_RESULT lines: ERROR' ((Read-ScenarioResult "AUTOPILOT_R
 Test-That 'missing result file: ERROR' ((Read-ScenarioResult ('AUTOPILOT_RESULT ' + (Join-Path $script:Scratch 'nope.json'))).Status -eq 'ERROR')
 [IO.File]::WriteAllText($resultFile, '{ "status": "GREAT" }')
 Test-That 'unknown status in the result: ERROR' ((Read-ScenarioResult "AUTOPILOT_RESULT $resultFile").Status -eq 'ERROR')
+
+# Scenario values from a probe of the same run ({probe:<id>:<field>})
+$probes = Join-Path $script:Scratch 'probes'
+New-Item -ItemType Directory -Force -Path $probes | Out-Null
+[IO.File]::WriteAllText((Join-Path $probes 'PROBE-collision.json'), '{ "propCandidates": ["", "cj_crate_1", "cj_crate_2"], "empty": [], "odd": ["a b"] }')
+Test-That 'probe value: the first non-empty list element replaces the token' ((Resolve-ScenarioLine 'spawnprop {probe:PROBE-collision:propCandidates} 3 0' $probes) -eq 'spawnprop cj_crate_1 3 0')
+Test-That 'probe value: a line without a token is unchanged' ((Resolve-ScenarioLine 'rayto prop objects' $probes) -eq 'rayto prop objects')
+$thrown = ''; try { Resolve-ScenarioLine 'spawnprop {probe:PROBE-collision:propCandidates} 3 0' '' | Out-Null } catch { $thrown = $_.Exception.Message }
+Test-That 'probe value: no probe folder (run without the probe) fails the step' ($thrown -like 'needs PROBE-collision*') $thrown
+$thrown = ''; try { Resolve-ScenarioLine 'x {probe:PROBE-drawables:any}' $probes | Out-Null } catch { $thrown = $_.Exception.Message }
+Test-That 'probe value: a missing report fails the step' ($thrown -like '*PROBE-drawables.json is missing*') $thrown
+$thrown = ''; try { Resolve-ScenarioLine 'x {probe:PROBE-collision:empty}' $probes | Out-Null } catch { $thrown = $_.Exception.Message }
+Test-That 'probe value: an empty list fails the step (never a guessed value)' ($thrown -like '*no value*') $thrown
+$thrown = ''; try { Resolve-ScenarioLine 'x {probe:PROBE-collision:missing}' $probes | Out-Null } catch { $thrown = $_.Exception.Message }
+Test-That 'probe value: a missing field fails the step' ($thrown -like "*no field 'missing'*") $thrown
+$thrown = ''; try { Resolve-ScenarioLine 'x {probe:PROBE-collision:odd}' $probes | Out-Null } catch { $thrown = $_.Exception.Message }
+Test-That 'probe value: a value that is not one word is refused (no command injection)' ($thrown -like '*not a plain word*') $thrown

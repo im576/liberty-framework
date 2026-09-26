@@ -8,7 +8,10 @@ param(
     [switch] $StopGameAfter,
     # The game-side module (default Autopilot.psm1). verify-local.ps1 -Simulate passes a stub with the same functions
     # (tools/tests/SimulatedGame.psm1) so the runner's decisions are tested without the game.
-    [string] $AutopilotModule = (Join-Path $PSScriptRoot 'Autopilot.psm1')
+    [string] $AutopilotModule = (Join-Path $PSScriptRoot 'Autopilot.psm1'),
+    # Folder with this run's probe reports (<check id>.json), for {probe:<id>:<field>} values (verify-local passes its
+    # results folder).
+    [string] $ProbeDirectory = ''
 )
 
 # Runs one scenario and writes <OutputDirectory>\<scenario>-<time>\report.md with every step, its reply, the
@@ -25,6 +28,7 @@ param(
 #   key <Keys name> [hold ms]    press a key in the game window (default 80 ms)
 #   anything else                an engine command (see "lf help"), sent through the command channel; a refused
 #                                command (unknown, error, module not running, no reply) fails the step
+# Any line may contain {probe:<check id>:<field>}: a value a probe found earlier in the same run (Resolve-ScenarioLine).
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'AutopilotLogic.psm1') -Force 3>$null
 $name = [IO.Path]::GetFileNameWithoutExtension($Scenario)
@@ -58,9 +62,10 @@ try {
     foreach ($raw in $lines) {
         $line = $raw.Trim()
         if ($line.Length -eq 0 -or $line.StartsWith('#')) { continue }
-        $words = $line -split '\s+'
         $executed++
         try {
+            $line = Resolve-ScenarioLine $line $ProbeDirectory
+            $words = $line -split '\s+'
             switch ($words[0]) {
                 'wait' { Start-Sleep -Milliseconds ([int]$words[1]); $steps.Add("wait $($words[1]) ms") }
                 'shot' {

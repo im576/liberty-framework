@@ -87,7 +87,7 @@ still scans the whole result and the first 0x100 bytes behind word 0 and reports
 | # | Question | How it gets answered |
 |---|---|---|
 | R1 | Is the vehicle entity at the same link (`[instance+0x0C]`)? | `raycast` scenario (`ray forward 12 -0.3`, `rayto car`) and self-test `raycast-vehicle` |
-| R2 | Which include bits hit vehicles and objects? | `raybits forward 12 1 -0.3` in both scenarios; objects need a collidable prop |
+| R2 | Which include bits hit vehicles and objects? | `raybits forward 12 1 -0.3` in both scenarios; objects: scenario `raycast-objects` (check `T027-raycast-objects`) spawns the first prop candidate `PROBE-collision` finds in the game's files (a drawable with a same-named bounds resource) |
 | R3 | What does `mode` select (1, -1, 0x40, 8)? | `raydebug ... -1` rows in `raycast-spike`; not needed while mode 1 works |
 | R4 | Do rays see collision that is not streamed in (far from the player)? | Expected no (the game only has nearby collision loaded); a long ray over the map would show it |
 | R5 | Result words beyond +0x2C (material, component, fraction?) | `raydebug` logs all 24 words for comparison |

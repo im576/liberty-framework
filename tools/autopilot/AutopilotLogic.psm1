@@ -63,6 +63,31 @@ function Get-ReviewStatus([string] $Status, [int] $LogErrors) {
     return 'PASS'
 }
 
+# A scenario line may take a value a probe of the same verify-local run found: {probe:<check id>:<field>} is replaced
+# by that field of <ProbeDirectory>\<check id>.json (the first element when the field is a list). The check then declares
+# "needs": ["<check id>"] so the probe runs first. Missing report, field or value throws: the step fails with the reason,
+# and the scenario never runs with a guessed value.
+function Resolve-ScenarioLine([string] $Line, [string] $ProbeDirectory) {
+    $pattern = '\{probe:(?<id>[A-Za-z0-9-]+):(?<field>[A-Za-z0-9_]+)\}'
+    $match = [regex]::Match($Line, $pattern)
+    while ($match.Success) {
+        $id = $match.Groups['id'].Value
+        $field = $match.Groups['field'].Value
+        if (-not $ProbeDirectory) { throw "needs $id results from this run (verify-local.ps1 runs it first)" }
+        $path = Join-Path $ProbeDirectory ($id + '.json')
+        if (-not (Test-Path -LiteralPath $path)) { throw "needs $id results from this run: $path is missing" }
+        $report = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+        if (-not $report.PSObject.Properties[$field]) { throw "$id report has no field '$field'" }
+        $value = @(@($report.$field) | Where-Object { $null -ne $_ -and [string]$_ -ne '' }) | Select-Object -First 1
+        if ($null -eq $value) { throw "$id found no value for '$field' (empty)" }
+        $text = [string]$value
+        if ($text -notmatch '^[A-Za-z0-9_.\-]+$') { throw "$id value '$text' for '$field' is not a plain word" }
+        $Line = $Line.Substring(0, $match.Index) + $text + $Line.Substring($match.Index + $match.Length)
+        $match = [regex]::Match($Line, $pattern)
+    }
+    return $Line
+}
+
 # Run-Scenario.ps1 ends its output with exactly one line "AUTOPILOT_RESULT <path to result.json>". The suite reads the
 # status from that file, never from free text; anything missing or unreadable is ERROR.
 function Read-ScenarioResult([string] $Output) {
@@ -77,4 +102,4 @@ function Read-ScenarioResult([string] $Output) {
     return @{ Status = [string]$result.status; Detail = [string]$result.summary; Path = $path }
 }
 
-Export-ModuleMember -Function ConvertFrom-ExpectLine, Find-ExpectedLine, Test-CommandFailed, Get-ScenarioStatus, Get-ReviewStatus, Read-ScenarioResult
+Export-ModuleMember -Function ConvertFrom-ExpectLine, Find-ExpectedLine, Test-CommandFailed, Get-ScenarioStatus, Get-ReviewStatus, Read-ScenarioResult, Resolve-ScenarioLine

@@ -54,6 +54,7 @@ unproven behaviour is incomplete. The PR description lists the check ids it adds
 | `review.screenshots` | scenario only: `{ "<shot name>": "what the reviewer must see" }`. A passing run becomes NEEDS-REVIEW |
 | `minutes`, `session` | manual only: the owner's time, and the play session it belongs to (`sessions` at the top) |
 | `reference` | the task card section or doc with the full steps |
+| `needs` | optional: check ids that must run earlier in the same run (a scenario that uses a probe's answer); `verify-local.ps1` adds them to the selection |
 | `status` | `QUEUED`, `PASS`, `FAIL`, `ERROR`, `CRASH`, `NOT-RUN`, `NEEDS-REVIEW`, `RETIRED` |
 | `lastRun`, `evidence` | set by the review session: the result folder and files that decided the status |
 
@@ -69,6 +70,10 @@ unproven behaviour is incomplete. The PR description lists the check ids it adds
   the report and records the answer in `docs/research/`.
 - **`scenario`**: an autopilot scenario (`run.scenario` = a file in `tools/autopilot/scenarios`). Use only commands the
   engine already has; if a new command is needed, it is part of the engine change and gets its own offline tests.
+  A line may use `{probe:<check id>:<field>}`: the first value of that field in the probe's report from the same run
+  (e.g. `spawnprop {probe:PROBE-collision:propCandidates} 3 0`), so a model is chosen from the game's files, never
+  from memory. The check lists the probe in `needs` (`checks.py validate` enforces it); without the report the step
+  fails with the reason.
 - **`manual`**: the owner plays and judges (`run.steps`). Keep them few and short, with exact buttons and what the
   owner should see. Prefer a scenario whenever a script can decide.
 

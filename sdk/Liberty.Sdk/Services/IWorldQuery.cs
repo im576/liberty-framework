@@ -39,8 +39,8 @@ namespace Liberty.Sdk
         bool HasLineOfSight(Vec3 from, Vec3 to, RayMask blockers, RayIgnore ignore);
         // Whether viewer's eyes have a clear line to target's head, chest or pelvis. Blockers are world, vehicles and
         // objects; other peds do not block. Both peds' own vehicles are ignored (you see people through their car).
-        // Geometry only: no view cone, distance or lighting. False when either ped does not exist or raycasts are
-        // unavailable.
+        // Geometry only: no view cone, distance or lighting. False when either ped does not exist, raycasts are
+        // unavailable, or the target is farther than engine.json raycastMaxLengthMeters.
         bool HasLineOfSight(PedRef viewer, PedRef target);
     }
 }

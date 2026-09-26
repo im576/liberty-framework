@@ -88,6 +88,22 @@ def errors_in(queue):
             path = reference.split("#")[0]
             if not os.path.isfile(os.path.join(ROOT, path)):
                 problems.append("%s: reference %s does not exist" % (where, path))
+    ids = {c.get("id") for c in queue.get("checks", [])}
+    for check in queue.get("checks", []):
+        # "needs": checks that must run earlier in the same verify-local run (a scenario using a probe's answer through
+        # {probe:<id>:<field>}); verify-local adds them to the selection.
+        needs = check.get("needs", [])
+        if not isinstance(needs, list):
+            problems.append("%s: needs must be a list of check ids" % check.get("id"))
+            continue
+        for needed in needs:
+            if needed not in ids:
+                problems.append("%s: needs %r, which is not in the queue" % (check.get("id"), needed))
+        if check.get("kind") == "scenario" and check.get("run", {}).get("scenario") in scenarios:
+            text = open(os.path.join(SCENARIOS, check["run"]["scenario"] + ".txt"), encoding="utf-8").read()
+            for used in sorted(set(re.findall(r"\{probe:([A-Za-z0-9-]+):[A-Za-z0-9_]+\}", text))):
+                if used not in needs:
+                    problems.append("%s: the scenario uses {probe:%s:...} but the check does not list it in needs" % (check.get("id"), used))
     sessions = {s["id"] for s in queue.get("sessions", [])}
     for check in queue.get("checks", []):
         if check.get("kind") == "manual" and check.get("session") not in sessions:
@@ -165,7 +181,8 @@ def plan_text(queue):
     add("## What each check proves, and what stays unproven")
     add("")
     for check in checks:
-        add("- `%s`: %s%s" % (check["id"], check["proves"], (" **Still unproven:** " + check["unproven"]) if check.get("unproven") else ""))
+        add("- `%s`: %s%s%s" % (check["id"], check["proves"], (" **Still unproven:** " + check["unproven"]) if check.get("unproven") else "",
+                               (" Runs after %s in the same run." % ", ".join("`%s`" % n for n in check["needs"])) if check.get("needs") else ""))
     add("")
     return "\n".join(out)
 
