@@ -39,6 +39,8 @@ namespace LibertyFramework.Verify
                 AtmosphereChecks.Run(args[1], check);
                 Console.WriteLine("== Hot reload file watcher (M5)");
                 HotReloadChecks.Run(check);
+                Console.WriteLine("== Engine configuration (engine.json, ADR-0008 raycast fields)");
+                EngineConfigChecks.Run(args[1], check);
             }
             catch (Exception error)
             {

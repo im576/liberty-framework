@@ -1,0 +1,43 @@
+# ADR-0008 raycast and line of sight (SDK 1.1, T-027): Query.Raycast / HasLineOfSight through the engine commands and the
+# SDK-only autopilot mod. Ground and open air, a vehicle (hit, filtered out, blocking), a ped (hit, passed through,
+# line of sight both ways), then the counters. The SDK self-test (sdk-selftest) repeats these checks.
+events on
+god on
+wanted 0
+goto east_park
+wait 6000
+time 13 0
+raystats
+expect "raycast available=True" 5
+ray down 10
+expect "ray dir=down mask=All status=Hit kind=World" 5
+ray up 3 1.0
+expect "ray dir=up mask=All status=Clear" 5
+spawncar admiral 6
+expect "autopilot_spawncar handle=" 20
+wait 2000
+shot vehicle
+ray forward 12 -0.3
+expect "ray dir=forward mask=All status=Hit kind=Vehicle" 5
+ray forward 12 -0.3 world,peds
+expect "ray dir=forward mask=World\|Peds status=(Clear|Hit kind=World) .*passed=[1-9]" 5
+rayto car
+expect "autopilot_rayto target=car .*match=True" 5
+raybits forward 12 1 -0.3
+clear
+wait 1000
+spawn 1 5 0
+expect "autopilot_spawned count=1" 15
+wait 2500
+shot ped
+ray forward 10 0
+expect "ray dir=forward mask=All status=Hit kind=Ped" 5
+ray forward 10 0 world,vehicles,objects
+expect "ray dir=forward mask=World\|Vehicles\|Objects status=(Clear|Hit kind=World) .*passed=[1-9]" 5
+rayto 0
+expect "autopilot_rayto target=0 .*match=True" 5
+los 0
+expect "autopilot_los subject=0 .*available=True sight=True back=True" 5
+raystats
+expect "raycast available=True .*faults=0" 5
+clear

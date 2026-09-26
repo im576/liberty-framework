@@ -32,11 +32,19 @@ namespace LibertyFramework.Engine
         [DataMember(Name = "hotReloadPollMs", IsRequired = false)] public int HotReloadPollMs;
         // Old assemblies stay loaded after a reload; past this many megabytes of them, reloads are refused.
         [DataMember(Name = "hotReloadMaxLeakMegabytes", IsRequired = false)] public int HotReloadMaxLeakMegabytes;
+        // ADR-0008 raycast: call the game's line test for Query.Raycast / HasLineOfSight.
+        [DataMember(Name = "raycastEnabled", IsRequired = false)] private bool? raycastEnabled;
+        // Hits of kinds a query does not accept that one query may pass through (each costs one more line test).
+        [DataMember(Name = "raycastMaxPasses", IsRequired = false)] private int? raycastMaxPasses;
+        [DataMember(Name = "raycastPassStepMeters", IsRequired = false)] public float RaycastPassStepMeters;
+        [DataMember(Name = "raycastMaxLengthMeters", IsRequired = false)] public float RaycastMaxLengthMeters;
 
         public bool BulletEvents { get { return bulletEvents ?? true; } }
         // ADR-0007: observe the game's damage routine (a code hook) for exact PedDamaged/PedDied.
         public bool ExactDamage { get { return exactDamage ?? true; } }
         public bool GovernorEnabled { get { return governorEnabled ?? true; } }
+        public bool RaycastEnabled { get { return raycastEnabled ?? true; } }
+        public int RaycastMaxPasses { get { return raycastMaxPasses ?? 8; } }
 
         internal void Validate()
         {
@@ -62,6 +70,11 @@ namespace LibertyFramework.Engine
             if (HotReloadPollMs < 250 || HotReloadPollMs > 10000) { throw new InvalidDataException("engine hotReloadPollMs must be 250-10000"); }
             if (HotReloadMaxLeakMegabytes == 0) { HotReloadMaxLeakMegabytes = 32; }
             if (HotReloadMaxLeakMegabytes < 1 || HotReloadMaxLeakMegabytes > 256) { throw new InvalidDataException("engine hotReloadMaxLeakMegabytes must be 1-256"); }
+            if (RaycastMaxPasses < 0 || RaycastMaxPasses > 32) { throw new InvalidDataException("engine raycastMaxPasses must be 0-32"); }
+            if (RaycastPassStepMeters == 0) { RaycastPassStepMeters = 0.05f; }
+            if (!(RaycastPassStepMeters >= 0.01f && RaycastPassStepMeters <= 1f)) { throw new InvalidDataException("engine raycastPassStepMeters must be 0.01-1"); }
+            if (RaycastMaxLengthMeters == 0) { RaycastMaxLengthMeters = 1000f; }
+            if (!(RaycastMaxLengthMeters >= 1f && RaycastMaxLengthMeters <= 5000f)) { throw new InvalidDataException("engine raycastMaxLengthMeters must be 1-5000"); }
         }
 
         internal static EngineConfig Defaults()

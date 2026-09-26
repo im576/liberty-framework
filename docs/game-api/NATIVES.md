@@ -125,4 +125,11 @@ Measured facts:
 
 ## SDK WorldQuery (M3, 2026-09-25)
 
-`Query.*`: GET_WATER_HEIGHT(x, y, z, float*) -> bool; HAS_CHAR_SPOTTED_CHAR(ped, other) (the game's perception check, not geometry); IS_CHAR_ON_SCREEN(ped); CAM_IS_SPHERE_VISIBLE(game cam, x, y, z, radius) with GET_GAME_CAM. Snapshot radius/cone queries make no game calls. GTA IV has no general raycast native; a physics ray test is future engine work.
+`Query.*`: GET_WATER_HEIGHT(x, y, z, float*) -> bool; HAS_CHAR_SPOTTED_CHAR(ped, other) (the game's perception check, not geometry); IS_CHAR_ON_SCREEN(ped); CAM_IS_SPHERE_VISIBLE(game cam, x, y, z, radius) with GET_GAME_CAM. Snapshot radius/cone queries make no game calls. GTA IV has no general raycast native.
+
+## SDK 1.1 raycast (ADR-0008, 2026-09-26)
+
+No new natives. `Query.Raycast` / `HasLineOfSight` call the game's internal line test (`0xA536B0`, not a native) from
+the core; see [MEMORY.md](MEMORY.md#adr-0008-raycast-2026-09-26) and [Raycast.md](../research/Raycast.md).
+`HasLineOfSight(viewer, target)` also uses the existing ped calls `DOES_CHAR_EXIST`, `IS_CHAR_IN_ANY_CAR`,
+`GET_CAR_CHAR_IS_USING` and SHDN `Ped.GetBonePosition` (`GET_PED_BONE_POSITION`), all already listed above.

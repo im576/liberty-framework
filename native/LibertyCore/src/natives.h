@@ -34,9 +34,11 @@ namespace lc
 
         // The native and first argument of the most recent contained fault (-1 when none).
         int last_fault_native() const { return last_fault_native_; }
-        // Native of fault number n (1-based) among the last 16 (-1 for a raw read).
+        // Native of fault number n (1-based) among the last 16 (-1 for a raw read, -2 for the raycast line test).
         int fault_native(uint32_t number) const { return fault_natives_[(number - 1) % 16]; }
         void note_raw_fault(uint32_t number) { fault_natives_[(number - 1) % 16] = -1; }
+        // The raycast line test (ABI 5) reports as native -2.
+        void note_raycast_fault(uint32_t number) { fault_natives_[(number - 1) % 16] = -2; }
         int32_t last_fault_argument() const { return last_fault_argument_; }
 
     private:

@@ -50,3 +50,14 @@ Approved by [ADR-0004](../architecture/decisions/ADR-0004-engine-memory.md). No 
 | `CPed` +0x1E4 / +0x1E8 / +0x1EC | last damager / time / weapon | | read by `HAS_CHAR_BEEN_DAMAGED_BY_CHAR` |
 | Calculator | +0 damager, +4 damage (float), +8 component, +0xC weapon | | detour record |
 | Response | +4 flags, +8 health lost, +0xC armour lost | | detour record |
+
+## ADR-0008 raycast (2026-09-26)
+
+| Item | Anchor | 1.2.0.59 | Use |
+|---|---|---|---|
+| Line test function | entity-type switch `8B 41 28 C1 E8 06 83 E0 0F 83 F8 03 75 17 F6 C2 40 74 0A 8B 81 B4 07 00 00 85 C0 75 1F 8B 81 B0 07 00 00` at function+0x5A; prologue `55 8B EC 83 E4 F0 83 EC 20 8B 45 08 8B 4D 10`; world query call shape at +0x96 | 0xA536B0 | called directly by the core on the engine tick (read-only; SEH-guarded; off after a fault) |
+| Physics world global | `mov ecx,[world]` at function+0x96 | 0x12B9C78 | logged and pinned only (the function reads it itself) |
+| Line test result | +0x00 hit physics instance, +0x10 position, +0x20 normal; initialised to zero with +0x4C = 0xFFFF | 0x60 bytes | position, normal, entity |
+| Physics instance → entity | `[instance+0x0C]` | | hit entity, mapped to a handle through the pools (verified for peds 2026-09-26) |
+
+Research and open questions: [Raycast.md](../research/Raycast.md).

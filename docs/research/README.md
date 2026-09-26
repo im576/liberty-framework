@@ -28,6 +28,7 @@ When a spike confirms or disproves something, **edit the note** and change the t
 | [HudAndCrosshair.md](HudAndCrosshair.md) | Reticle, health ring, custom crosshair options |
 | [Mafia3Combat.md](Mafia3Combat.md) | Why Mafia III combat feels good, tools |
 | [OtherReferences.md](OtherReferences.md) | Max Payne 3, GTA V, GDC talks, other CE mods |
+| [Raycast.md](Raycast.md) | The game's physics line test, what is verified, engine raycast design (ADR-0008) |
 
 ## Template for a new project entry
 

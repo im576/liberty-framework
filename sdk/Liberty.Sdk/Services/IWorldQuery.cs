@@ -4,8 +4,9 @@ using System.Collections.Generic;
 namespace Liberty.Sdk
 {
     // Spatial questions. The snapshot queries cost no game calls (they search this frame's snapshot, so they see peds and
-    // vehicles within the engine's snapshot radius). The game queries ask the game. A geometric ray test is planned
-    // (engine physics); until then, HasSpotted is the game's own perception check, not a line of sight.
+    // vehicles within the engine's snapshot radius). The game queries ask the game. Raycast and HasLineOfSight (SDK 1.1)
+    // are geometric: the game's own physics line test against its collision. HasSpotted is the game's perception check,
+    // not a line of sight.
     public interface IWorldQuery
     {
         // Clears results and fills it with the snapshot peds within radius (nearest first) matching filter (null = any).
@@ -23,5 +24,23 @@ namespace Liberty.Sdk
         bool IsOnScreen(PedRef ped);
         // Whether a sphere is inside the game camera's view.
         bool IsSphereVisible(Vec3 center, float radius);
+
+        // ---- SDK 1.1: raycast and line of sight (engine physics; docs/sdk/README.md "Raycast") ----
+        // Whether raycasts can run now (engine core on, the game's line test found and not switched off after a fault).
+        bool RaycastAvailable { get; }
+        // First thing in stopAt between from and to; anything else, and everything in ignore, is passed through. Only
+        // collision the game has loaded is tested (near the player). Call from OnUpdate, coroutines or commands, never
+        // from OnDraw. Throws ArgumentException for non-finite points, from == to, or a ray longer than
+        // engine.json raycastMaxLengthMeters (1000 m by default).
+        RayHit Raycast(Vec3 from, Vec3 to, RayMask stopAt);
+        RayHit Raycast(Vec3 from, Vec3 to, RayMask stopAt, RayIgnore ignore);
+        // True when nothing in blockers lies between the points (Raycast status Clear). False when blocked,
+        // inconclusive or unavailable; check RaycastAvailable, or use Raycast for the reason.
+        bool HasLineOfSight(Vec3 from, Vec3 to, RayMask blockers, RayIgnore ignore);
+        // Whether viewer's eyes have a clear line to target's head, chest or pelvis. Blockers are world, vehicles and
+        // objects; other peds do not block. Both peds' own vehicles are ignored (you see people through their car).
+        // Geometry only: no view cone, distance or lighting. False when either ped does not exist or raycasts are
+        // unavailable.
+        bool HasLineOfSight(PedRef viewer, PedRef target);
     }
 }

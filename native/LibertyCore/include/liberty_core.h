@@ -10,7 +10,7 @@
 #endif
 #define LC_API LC_EXTERN __declspec(dllexport)
 
-#define LC_ABI_VERSION 4
+#define LC_ABI_VERSION 5
 #define LC_MAX_PEDS 128
 #define LC_MAX_VEHICLES 64
 #define LC_MAX_EVENTS 256
@@ -270,7 +270,7 @@ LC_API int32_t lc_write_dump(const char* reason);
 typedef struct lc_fault
 {
     uint32_t count;
-    int32_t native;
+    int32_t native;          // lc_native_id; -1 raw game-memory read; -2 the raycast line test (ABI 5)
     int32_t argument;
     uint32_t address;
     uint32_t data_address;
@@ -286,33 +286,86 @@ LC_API int32_t lc_damage_hook_install(uint32_t function, uint32_t component_to_b
 // Writes one line per hook (name, target, state); returns the number of hooks.
 LC_API int32_t lc_hooks_report(char* buffer, int32_t size);
 
-// ---- Raycast / line of sight (ABI 4; docs/research/Raycast.md) ----
-// The game's general line test (GameAddresses.LineTestFunction). Called on the engine tick only.
-typedef struct lc_ray
-{
-    float start[3];
-    float end[3];
-    uint32_t include_flags;  // game archetype bits (LC_RAY_* once verified; raw bits for research)
-    int32_t mode;            // the line test's last argument (callers pass 1, -1, 0x40, 8)
-    int32_t ignore_handle;   // entity to skip, or 0
-    int32_t ignore_kind;     // LC_ENTITY_PED / VEHICLE / OBJECT
-} lc_ray;
+// ---- Raycast / line of sight (ABI 5; docs/research/Raycast.md, ADR-0008) ----
+// The game's general line test (GameAddresses.LineTestFunction), called directly. Engine tick only (the game thread is
+// parked in the script); every call runs under the core's SEH guard and a fault switches raycasts off for the session.
+//
+// One query may run several line tests. The game reports the first thing along the segment; when that thing is not a
+// kind the caller accepts (or is on the caller's ignore list), the walk passes through it: the next test starts
+// pass_step metres beyond the hit, with the hit entity handed to the game as its one ignored entity. Hit kinds come
+// from the entity pools (the verified link: entity = [first result word + 0x0C]), not from include bits, so the
+// filtering is correct even for bits nobody has mapped yet.
 
-#define LC_ENTITY_NONE 0
+#define LC_ENTITY_NONE 0     // world geometry, or anything that is not in the ped, vehicle or object pool
 #define LC_ENTITY_PED 1
 #define LC_ENTITY_VEHICLE 2
 #define LC_ENTITY_OBJECT 3
 
+// lc_ray.accept: bit (1 << LC_ENTITY_*) for each kind that stops the ray.
+#define LC_RAY_ACCEPT_WORLD 0x1
+#define LC_RAY_ACCEPT_PEDS 0x2
+#define LC_RAY_ACCEPT_VEHICLES 0x4
+#define LC_RAY_ACCEPT_OBJECTS 0x8
+#define LC_RAY_ACCEPT_ALL 0xF
+
+// Game include bits seen in game (raybits, 2026-09-26): 0x2 hit the ground, 0x20 and 0x40 hit a ped. The rest are
+// unmapped; LC_RAY_INCLUDE_ALL hit both and is what the engine passes.
+#define LC_RAY_INCLUDE_ALL 0xFFFFFFFFu
+
+#define LC_RAY_MAX_IGNORE 4
+#define LC_RAY_RESEARCH 0x1  // lc_ray.flags: also search the whole result for the hit entity (slow; raydebug)
+
+// Return values of lc_raycast.
+#define LC_RAY_CLEAR 0
+#define LC_RAY_HIT 1
+#define LC_RAY_UNAVAILABLE (-1)   // not installed, switched off after a fault, bad sizes, or this call faulted
+#define LC_RAY_INCONCLUSIVE (-2)  // max_passes excluded hits and the segment was not finished
+
+typedef struct lc_ray
+{
+    uint32_t size;           // sizeof(lc_ray)
+    uint32_t hit_size;       // sizeof(lc_ray_hit)
+    float start[3];
+    float end[3];
+    uint32_t include_flags;  // game include bits (LC_RAY_INCLUDE_ALL)
+    int32_t mode;            // the line test's mode argument (callers in the game pass 1, -1, 0x40, 8; 1 verified)
+    uint32_t accept;         // LC_RAY_ACCEPT_*
+    int32_t max_passes;      // excluded hits a query may pass through (0 = report the raw first hit's verdict)
+    float pass_step;         // metres beyond an excluded hit where the next test starts (> 0)
+    int32_t ignore_count;    // 0..LC_RAY_MAX_IGNORE; entities that never stop the ray (the first goes to the game)
+    int32_t ignore_kind[LC_RAY_MAX_IGNORE];    // LC_ENTITY_PED / VEHICLE / OBJECT
+    int32_t ignore_handle[LC_RAY_MAX_IGNORE];
+    uint32_t flags;          // LC_RAY_RESEARCH
+} lc_ray;
+
 typedef struct lc_ray_hit
 {
-    float position[3];
+    float position[3];       // LC_RAY_HIT: the accepted hit; LC_RAY_INCONCLUSIVE: the last excluded hit
     float normal[3];
-    int32_t entity_kind;     // LC_ENTITY_*; NONE for world geometry
-    int32_t entity_handle;
-    int32_t link;            // research: where the entity was found (see raycast notes); -2 none
-    uint32_t raw[24];        // the game's 0x60-byte result, for research and diagnostics
+    float distance;          // metres from lc_ray.start to position
+    int32_t entity_kind;     // LC_ENTITY_*
+    int32_t entity_handle;   // script handle, 0 for world geometry
+    int32_t link;            // where the entity was found: 0x0C (the verified link), -100 - i (raw word i, research),
+                             // a research scan offset, or -2 (not found: world)
+    int32_t tests;           // line tests this query ran
+    int32_t passes;          // hits it passed through
+    uint32_t raw[24];        // the last line test's 0x60-byte result, for research and diagnostics
 } lc_ray_hit;
 
-// Returns 1 when the ray hit, 0 when it did not, -1 when unavailable or the call faulted (contained).
+typedef struct lc_ray_stats
+{
+    uint32_t queries;
+    uint32_t tests;
+    uint32_t hits;
+    uint32_t clears;
+    uint32_t passes;
+    uint32_t inconclusive;
+    uint32_t faults;
+    uint32_t fault_number;   // the lc_faults number of the fault that switched raycasts off, 0 if none
+    int32_t installed;       // 1 while raycasts are available
+} lc_ray_stats;
+
 LC_API int32_t lc_raycast_install(uint32_t line_test);
+// LC_RAY_HIT, LC_RAY_CLEAR, LC_RAY_INCONCLUSIVE or LC_RAY_UNAVAILABLE. hit is always written (zeroed first).
 LC_API int32_t lc_raycast(const lc_ray* ray, lc_ray_hit* hit);
+LC_API void lc_raycast_stats(lc_ray_stats* out);
