@@ -1,7 +1,13 @@
+using System.Globalization;
+using System.Linq;
+
 namespace LibertyFramework.Content
 {
-    // What the current writers can produce. The validator checks assets against these limits, so the IR and validator can
-    // describe multi-material, multi-LOD assets while the compiler still rejects what it cannot write yet.
+    // What the current writers can produce. The validator checks assets against these limits, so the IR, the validator and
+    // the Blender add-on can describe multi-material, multi-LOD, collision-carrying world objects while the compiler still
+    // refuses, with a clear error, what it cannot write yet. A writer that gains a feature turns it on here, and nothing
+    // else has to change. `LibertyContent capabilities` prints ToJson(); the Blender add-on's tests compare their copy of
+    // these limits with it (tools/blender/liberty_exporter/checks.py CAPABILITIES).
     internal sealed class CompilerCapabilities
     {
         // Version 1 (template patching): one material per LOD, LOD 0 compiled; other LODs are validated and reported only.
@@ -15,14 +21,42 @@ namespace LibertyFramework.Content
         internal readonly string Version;
         internal readonly int MaxMaterialsPerLod;
         internal readonly int CompiledLodLevels;
+        // Shaders the drawable writer can emit (a material's liberty_shader).
+        internal readonly string[] Shaders;
+        // asset.json types the compiler builds and packages ("prop": IDE weap entry; "object": static world object).
+        internal readonly string[] AssetTypes;
+        // Collision shapes the collision writer emits; empty = no collision writer.
+        internal readonly string[] CollisionShapes;
+        // Whether asset.json lodDistancesMeters is written into the drawable.
+        internal readonly bool WritesLodDistances;
 
         internal CompilerCapabilities(string version, int maxMaterialsPerLod, int compiledLodLevels)
+            : this(version, maxMaterialsPerLod, compiledLodLevels, new[] { "gta_default" }, new[] { AssetManifest.TypeProp }, new string[0], false)
+        {
+        }
+
+        internal CompilerCapabilities(string version, int maxMaterialsPerLod, int compiledLodLevels, string[] shaders, string[] assetTypes, string[] collisionShapes, bool writesLodDistances)
         {
             Version = version;
             MaxMaterialsPerLod = maxMaterialsPerLod;
             CompiledLodLevels = compiledLodLevels;
+            Shaders = shaders;
+            AssetTypes = assetTypes;
+            CollisionShapes = collisionShapes;
+            WritesLodDistances = writesLodDistances;
         }
 
         internal static readonly CompilerCapabilities Current = new CompilerCapabilities("v1", V1MaxMaterialsPerLod, V1CompiledLodLevels);
+
+        internal string ToJson()
+        {
+            return "{ \"version\": " + Quote(Version) + ", \"maxMaterialsPerLod\": " + MaxMaterialsPerLod.ToString(CultureInfo.InvariantCulture) +
+                ", \"compiledLodLevels\": " + CompiledLodLevels.ToString(CultureInfo.InvariantCulture) + ", \"lodSlots\": " + DrawableLodSlots.ToString(CultureInfo.InvariantCulture) +
+                ", \"maxVerticesPerGeometry\": " + MaxVerticesPerGeometry.ToString(CultureInfo.InvariantCulture) + ", \"shaders\": " + List(Shaders) +
+                ", \"assetTypes\": " + List(AssetTypes) + ", \"collisionShapes\": " + List(CollisionShapes) + ", \"lodDistances\": " + (WritesLodDistances ? "true" : "false") + " }";
+        }
+
+        private static string List(string[] values) { return "[" + string.Join(", ", values.Select(Quote).ToArray()) + "]"; }
+        private static string Quote(string text) { return "\"" + text.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\""; }
     }
 }

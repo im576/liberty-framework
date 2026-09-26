@@ -28,9 +28,18 @@ namespace LibertyFramework.Content
         // "template" (default): the template's dictionary with its texture's pixels replaced (proven in game).
         // "native": a dictionary written from scratch by TextureDictionaryWriter (source size, full mip chain, DXT1 or DXT5).
         [DataMember(Name = "textureMode", IsRequired = false)] internal string TextureMode;
+        // Optional: the distance up to which each LOD is drawn, one entry per LOD level from LOD 0, ascending, the last at
+        // most drawDistanceMeters. Authoring intent for the LOD writer; the validator checks it against the asset's LODs.
+        [DataMember(Name = "lodDistancesMeters", IsRequired = false)] internal float[] LodDistancesMeters;
 
         internal const string TextureModeTemplate = "template";
         internal const string TextureModeNative = "native";
+        // "prop": a model spawned by scripts (IDE weap entry, v1). "object": a static world object placed in the map, with
+        // collision (IDE objs + placement: NEXT_SESSIONS sessions 5-6). The compiler's capabilities decide which it builds.
+        internal const string TypeProp = "prop";
+        internal const string TypeObject = "object";
+        internal static readonly string[] Types = { TypeProp, TypeObject };
+        internal const float MaxDrawDistanceMeters = 1500;
 
         internal string Directory;
 
@@ -47,10 +56,21 @@ namespace LibertyFramework.Content
         {
             AssetManifest manifest = (AssetManifest)new DataContractJsonSerializer(typeof(AssetManifest)).ReadObject(stream);
             if (manifest.SchemaVersion != 1) { throw new InvalidDataException(path + ": schemaVersion must be 1"); }
-            if (manifest.Type != "prop") { throw new InvalidDataException(path + ": type '" + manifest.Type + "' is not supported yet (prop)"); }
+            if (System.Array.IndexOf(Types, manifest.Type) < 0) { throw new InvalidDataException(path + ": type '" + manifest.Type + "' is unknown (" + string.Join(", ", Types) + ")"); }
             if (string.IsNullOrEmpty(manifest.Name) || manifest.Name.Length > 23) { throw new InvalidDataException(path + ": name must be 1-23 characters"); }
             if (string.IsNullOrEmpty(manifest.TextureDictionary) || manifest.TextureDictionary.Length > 23) { throw new InvalidDataException(path + ": textureDictionary must be 1-23 characters"); }
-            if (!(manifest.DrawDistanceMeters > 0 && manifest.DrawDistanceMeters <= 1500)) { throw new InvalidDataException(path + ": drawDistanceMeters must be 0-1500"); }
+            if (!(manifest.DrawDistanceMeters > 0 && manifest.DrawDistanceMeters <= MaxDrawDistanceMeters)) { throw new InvalidDataException(path + ": drawDistanceMeters must be 0-" + MaxDrawDistanceMeters); }
+            if (manifest.LodDistancesMeters != null)
+            {
+                if (manifest.LodDistancesMeters.Length == 0 || manifest.LodDistancesMeters.Length > CompilerCapabilities.DrawableLodSlots)
+                {
+                    throw new InvalidDataException(path + ": lodDistancesMeters must have 1-" + CompilerCapabilities.DrawableLodSlots + " entries (one per LOD)");
+                }
+                foreach (float distance in manifest.LodDistancesMeters)
+                {
+                    if (!(distance > 0 && distance <= MaxDrawDistanceMeters)) { throw new InvalidDataException(path + ": lodDistancesMeters entries must be 0-" + MaxDrawDistanceMeters); }
+                }
+            }
             if (string.IsNullOrEmpty(manifest.TextureMode)) { manifest.TextureMode = TextureModeTemplate; }
             if (manifest.TextureMode != TextureModeTemplate && manifest.TextureMode != TextureModeNative)
             {
