@@ -18,8 +18,9 @@ RAN-PASS / RAN-FAIL / NOT RUN (reason) / NEEDS LOCAL VERIFY. Stop and report ins
 | 1 | Cloud loop, integration of raycast (T-027) and native textures (T-028) | DONE (T-029) | none |
 | 2 | Engine audit and hardening | DONE (PR into `develop`; [report](../reports/2026-09-26-engine-audit.md)) | none |
 | 3 | Blender and compiler authoring side: materials, LODs, collision and world metadata | DONE ([T-030](../tasks/T-030-lcc-authoring-side.md), PR into `develop`) | session 2 merged |
-| 4 | Multi-geometry and LOD drawable writer | IN PROGRESS (`claude/confident-hopper-16pan1`) | session 3 merged; `PROBE-drawables` results strongly preferred |
-| 5 | Collision: research, then writer | queued | `PROBE-collision` results (research may start before) |
+| 4 | Multi-geometry and LOD drawable writer | DONE, capability off ([T-031](../tasks/T-031-structure-writer.md); opt-in `drawableWriter: structure`; round trip, LOD scenario and probe queued) | session 3 merged; `PROBE-drawables` results strongly preferred |
+| 4b | Structure writer as the default | queued | a verification run with `T031-drawable-roundtrip` PASS and `T031-lod-review` showing the LODs |
+| 5 | Collision: research, then writer | NEXT (research part; the writer waits for `PROBE-collision`) | `PROBE-collision` results (research may start before) |
 | 6 | Static world objects (IDE, placement, packaging) | queued | session 5 |
 | 7+ | SDK features for the mod pack | queued | session D |
 | D | Mod pack design document | any time | none |
@@ -88,6 +89,15 @@ self-test already uses). Read-back of every compiled asset; representative fixtu
 shows the LODs switching with distance. If the probe results are not in yet, write the builder against the documented
 layout, keep the capability off in `CompilerCapabilities`, and queue the round trip; turn the capability on only after
 the local run passes.
+
+## Session 4b: structure writer as the default
+
+Only after a run where `T031-drawable-roundtrip` passes and `T031-lod-review` shows the LODs drawn:
+- make `CompilerCapabilities.Current` the structure set, and keep the add-on's `checks.CAPABILITIES` equal;
+- update the fixtures' `expect.json` and `tests/fixtures.py` (the LCC016 refusals become builds);
+- pick default templates from `PROBE-drawables` `structureTemplates`.
+
+If the round trip fails: read its report, fix the rule it names (buffer order, records), and keep the check queued.
 
 ## Session 5: collision
 

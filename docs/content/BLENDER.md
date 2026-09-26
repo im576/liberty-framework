@@ -1,6 +1,6 @@
 # Authoring in Blender (Liberty Exporter add-on)
 
-Blender models and textures the asset. The Liberty Exporter add-on (`tools/blender/liberty_exporter`, v0.3.0) turns
+Blender models and textures the asset. The Liberty Exporter add-on (`tools/blender/liberty_exporter`, v0.4.0) turns
 the scene into a validated asset folder. LibertyContent (docs/content/README.md) then compiles it for GTA IV.
 
 ```
@@ -17,7 +17,7 @@ Tested with Blender 5.2.2 LTS. The minimum version is 4.2, where extensions star
    ```
    blender --background --factory-startup --command extension build --source-dir tools/blender/liberty_exporter --output-dir staging
    ```
-3. Install `staging/liberty_exporter-0.3.0.zip` in Blender: Edit > Preferences > Get Extensions > ⌄ > Install from Disk.
+3. Install `staging/liberty_exporter-0.4.0.zip` in Blender: Edit > Preferences > Get Extensions > ⌄ > Install from Disk.
 4. In the add-on's preferences, set:
    - **Content folder:** the repository's `content` folder.
    - **GTA IV folder:** the folder with `GTAIV.exe`. Builds read the template drawable from the game archives.
@@ -78,6 +78,8 @@ Tested with Blender 5.2.2 LTS. The minimum version is 4.2, where extensions star
 | Template / Model | `template` |
 | Texture dictionary | `textureDictionary` (empty uses the name) |
 | Texture mode | `textureMode`: Template (default, not written) or Native |
+| Drawable writer | `drawableWriter`: Template (default, not written) or Structure (every LOD, one geometry per material; needs Native; NEEDS-PLAYTEST, T-031) |
+| Structure template / Model | `structureTemplate` (Structure only): `*` / `auto` search every IMG for the first drawable that fits |
 | Draw distance (m) | `drawDistanceMeters` |
 | Audio material | `audioMaterial` |
 | LOD distances | `lodDistancesMeters` (when ticked; one entry per LOD the asset has) |
@@ -137,11 +139,12 @@ export.
 | LBX030 | error | LOD distance not above 0, not ascending, or beyond the draw distance |
 | LBX031 | warning | LOD levels with a gap |
 | LBX032 | warning | world object without collision |
+| LBX033 | error | Drawable writer Structure with Texture mode Template (LCC038) |
 
 ## Scripts and tests
 
 - `tools/blender/run-tests.ps1 -GameDirectory <game> -Blender <blender.exe>`:
-  - Blender's extension validation, plus 87 headless tests (0.3.0). Without the game (`--no-game`, the cloud) 78
+  - Blender's extension validation, plus 92 headless tests (0.4.0). Without the game (`--no-game`, the cloud) 83
     run and the 9 that build against the game's archives are NOT-RUN.
   - The tests cover registration, LOD tags, export files and extras, validate and build against the real game
     archives, and axis/metre round trips.
@@ -150,10 +153,13 @@ export.
   - 0.3.0 adds the five authoring fixtures (export, then LibertyContent's status, errors and structure against
     `tests/fixtures.py`), collision and LOD-distance mistakes, the collision/surface/shader operators, and a check that
     `checks.CAPABILITIES` equals `LibertyContent capabilities`.
+  - 0.4.0 adds the structure writer settings (asset.json fields, LBX033, validation with the structure capabilities) and
+    `checks.STRUCTURE_CAPABILITIES` against `capabilities --writer structure`.
 - `tools/blender/make-examples.ps1 -Blender <blender.exe>` regenerates the example assets from code:
   - `content/props/lf_blender_barrel`: a 55-gallon drum with hoops, an original procedural texture, and LOD 0/1.
   - The drum's `.blend` and texture are kept in `source/` for hand editing.
   - `tests/content/fixtures`: the authoring fixtures (`make_fixtures.py`), checked by `LibertyContent fixtures`.
+  - `content/props/lf_lod_post`: the structure writer's four-LOD test post (`make_lf_lod_post.py`, T-031).
 - A portable Blender for tests lives outside the repository. On the owner's PC it is
   `D:\LibertyTools\blender-5.2.2-windows-x64`; set `LIBERTY_BLENDER` to its `blender.exe`.
 

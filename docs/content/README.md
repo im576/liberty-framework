@@ -25,6 +25,13 @@ are authored, imported and validated; the writers do not emit them yet.**
   writer that gains a feature turns it on in one place.
 - Five Blender-made fixtures in `tests/content/fixtures` pin all of this offline (`LibertyContent fixtures`).
 
+Structure writer (2026-09-26, [T-031](../tasks/T-031-structure-writer.md)): **several geometries, shaders and LODs,
+NEEDS-PLAYTEST, opt-in.**
+- `"drawableWriter": "structure"` fills a game drawable of the same or larger structure (a structure template): every
+  LOD, one geometry per material, LOD distances. No structure is synthesised.
+- `LibertyContent roundtrip` tests the writer against the game's own drawables on the PC. `content/props/lf_lod_post`
+  and the `lod-review` scenario test it in game.
+
 ## Layout
 
 ```
@@ -52,6 +59,8 @@ never installs.
 | `drawDistanceMeters` | IDE draw distance |
 | `audioMaterial` | optional `amat` entry |
 | `textureMode` | optional. `template` (default): the template's dictionary with its texture's pixels replaced (template size, DXT1, opaque). `native`: the dictionary is written from scratch (below) |
+| `drawableWriter` | optional. `template` (default, v1). `structure` (NEEDS-PLAYTEST): the structure writer, [below](#structure-writer); needs `textureMode: native` (LCC038) |
+| `structureTemplate` | optional, structure writer only: `{ archive, model }`. `model: "auto"` takes the first drawable (by name) that fits; `archive: "*"` searches every IMG. Absent: `template` |
 | `lodDistancesMeters` | optional. How far each LOD is drawn: one entry per LOD level from LOD 0, ascending, the last at most `drawDistanceMeters` (LCC035). Authoring intent for the LOD writer; v1 checks it but does not write it (LCC037) |
 
 ## Commands (`tools/build-content.ps1` → `tools/content/bin/LibertyContent.exe`)
@@ -60,7 +69,8 @@ never installs.
 |---|---|
 | `sample <dir> <name>` | writes the original test crate as glTF (no Blender needed) |
 | `validate <asset.json> [--report <report.json>]` | import + validation, exit 2 on errors. `--report` writes `report.json` (status `valid`/`invalid`, the structure, every issue) without the game; the Blender add-on's Export uses it |
-| `capabilities` | what this compiler writes, as JSON: materials per LOD, compiled LODs, shaders, asset types, collision shapes, LOD distances |
+| `capabilities [--writer structure]` | what this compiler writes, as JSON: materials per LOD, compiled LODs, shaders, asset types, collision shapes, LOD distances. `--writer structure`: the structure writer's set |
+| `roundtrip --game <game> [--out <json>] [archive...]` | read only: rebuilds every drawable the structure writer can use with it and compares byte for byte (both buffer orders). No archive: every IMG. PC check `T031-drawable-roundtrip` |
 | `fixtures <dir>` | validates every `<dir>/<name>/asset.json` and compares the result with its `expect.json` (below). No game |
 | `build <game> <asset.json> <out>` | validate, compile, read back, previews, `report.json` |
 | `package <game> <out> <img> <ide> <asset.json...>` | build all, then IMG + IDE |
@@ -76,6 +86,9 @@ never installs.
   - `compiled` holds `textureMode`, `textureFormat`, `textureLevels` and, in native mode, `textureQuality`
     (`psnrRgbDb`, `maxErrorRgb`, and for DXT5 `psnrAlphaDb`, `maxErrorAlpha`).
   - `type` and `capabilities` (the `capabilities` JSON) say what was asked and what this compiler writes.
+  - Structure builds add `drawableWriter`, `templateUsed`, `lodCount`, `geometries` (LOD, material, texture, counts),
+    `textures` (one per material, with PSNR) and `lodDistancesWritten` to `compiled`. A fallback build says
+    `"drawableWriter": "template (fallback)"`.
   - `structure` is the asset as the writers see it:
     - `lods`: each level's triangles, vertices and `geometries` (one per material: `material`, `shader`, `textured`,
       `alphaMode`, `meshes`, `triangles`, `vertices`).
@@ -98,6 +111,27 @@ never installs.
 - **Read-back:** format, size, level count and every level's bytes must match what was encoded. The decoded top level
   must score at least 20 dB PSNR against the source, colour and alpha.
 - **Open (T-028):** whether the game loads these dictionaries, and how `gta_default` draws DXT5 alpha.
+
+## Structure writer
+
+`"drawableWriter": "structure"` (NEEDS-PLAYTEST, [T-031](../tasks/T-031-structure-writer.md)):
+- **Template.** The structure template's first model in LOD slot l receives the asset's LOD l; its geometry j receives
+  material group j. The template needs, for every LOD the asset has:
+  - a model with at least that many geometries, in layout 0x59;
+  - a gta_default shader with one texture per geometry, with no shader showing two materials;
+  - no skeleton and no embedded texture dictionary;
+  - measurable sphere records.
+
+  The build error, or the `auto` search, names what is missing.
+- **Trimming.** Extra geometries, models, LOD slots and shaders are trimmed. Every kept shader names one of the asset's
+  textures, `<asset>`, `<asset>_1` and so on, all in one native dictionary.
+- **Graphics** go in one page. The drawable's bounds enclose every LOD, and every sphere record gets the model's sphere.
+- **LOD distances.** `lodDistancesMeters` goes to drawable +0x50.
+- **Fallback.** An `auto` search that finds nothing builds with v1 when v1 can (LOD 0), and says so in the report.
+  Otherwise it is an error.
+- **Offline dry run.** `selftest --out <dir>` leaves `<dir>/synthetic_game`, and
+  `build <dir>/synthetic_game <asset.json> <out>` compiles a structure asset against its four-LOD template.
+- **Research labels:** [ModelFormat.md](../research/ModelFormat.md#structure-writer-t-031-2026-09-26-what-it-relies-on-and-how-each-point-is-proven).
 
 ## Collision (authoring)
 
@@ -169,6 +203,7 @@ optionally followed by digits and Blender's `.001`, is mesh collision unless the
 | LCC035 | error | `lodDistancesMeters`: not one entry per LOD, not ascending, or the last beyond `drawDistanceMeters` |
 | LCC036 | warning | LOD levels with a gap (LOD 2 without LOD 1) |
 | LCC037 | info | `lodDistancesMeters` checked but not written by this compiler version |
+| LCC038 | error | `drawableWriter: structure` without `textureMode: native` |
 
 **Capabilities.** Errors LCC016, LCC019, LCC032 and LCC033 are not authoring mistakes. They are what this compiler
 version cannot write yet, and they name the version. The Blender add-on reports the same limits as warnings and exports
@@ -205,7 +240,7 @@ asset there would fail `package-phase2.ps1`. When a writer gains a feature, its 
 ## Roadmap
 
 1. **v1 (done):** static props, one material, LOD 0, DXT1, built by template patching (the path proven by the slings), IMG/IDE packaging, read-back, previews, autopilot scenario.
-2. **Structure writer:** from-scratch texture dictionaries (any size, DXT5 alpha: written, T-028 NEEDS-PLAYTEST); validator IR for material groups and LODs with compiler capabilities (done); authoring of materials, LODs, LOD distances, collision and world objects with fixtures (done, T-030); multiple geometries/materials and LOD models appended to the resource (next); then solving multi-page resources for large assets.
+2. **Structure writer:** from-scratch texture dictionaries (any size, DXT5 alpha: written, T-028 NEEDS-PLAYTEST); validator IR for material groups and LODs with compiler capabilities (done); authoring of materials, LODs, LOD distances, collision and world objects with fixtures (done, T-030); several geometries, shaders and LODs by the structure writer over game templates (opt-in, T-031 NEEDS-PLAYTEST; default once its checks pass); structures of any size once their layouts are established; then solving multi-page resources for large assets.
 3. **Collision:** WBN/phBound import or generation, plus world objects (IDE `objs`) with collision. The authored shapes and the `object` type are ready for it (T-030).
 4. **Skinned meshes (WDD), then fragments (WFT) and vehicles.**
 5. **Animations (WAD), then audio.**
