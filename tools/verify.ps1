@@ -69,6 +69,8 @@ $sources = @(
     (Join-Path $src 'Engine\Core\CoreBridge.cs')
     # Any folder named Logic holds ScriptHookDotNet-free code that the verifier can test (T-020/T-021 onward).
     (Get-ChildItem -LiteralPath $src -Recurse -Directory -Filter 'Logic' | ForEach-Object { (Get-ChildItem -LiteralPath $_.FullName -Filter '*.cs').FullName })
+    # SDK mods' Logic folders too (T-033: mods/Liberty.World/Logic); they reference only Liberty.Sdk.
+    (Get-ChildItem -LiteralPath (Join-Path $repoRoot 'mods') -Recurse -Directory -Filter 'Logic' | ForEach-Object { (Get-ChildItem -LiteralPath $_.FullName -Filter '*.cs').FullName })
 )
 Invoke-LibertyManaged $compiler /nologo /target:exe /platform:x86 /unsafe /langversion:7.3 /warn:4 "/out:$output" "/reference:$sdkDll" /reference:System.Runtime.Serialization.dll /reference:System.Xml.dll /reference:System.Drawing.dll /reference:System.Core.dll $sources
 if ($LASTEXITCODE -ne 0) { throw "Verifier build failed with exit code $LASTEXITCODE" }

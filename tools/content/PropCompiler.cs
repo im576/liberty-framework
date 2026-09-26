@@ -73,6 +73,7 @@ namespace LibertyFramework.Content
             if (manifest.BorrowsCollision)
             {
                 BorrowedCollision.Borrowed borrowed = BorrowedCollision.Find(game, manifest.Collision.Borrow, result.Notes);
+                if (borrowed == null) { return result; }
                 result.Collision = borrowed.Resource;
                 result.CollisionFrom = borrowed.From;
                 result.CollisionType = borrowed.ResourceType;

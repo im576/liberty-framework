@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "name": "lf_world_wall",
+  "type": "object",
+  "source": "lf_world_wall.gltf",
+  "template": {
+    "archive": "pc/models/cdimages/weapons.img",
+    "model": "amb_nailgun"
+  },
+  "textureDictionary": "lf_world_wall",
+  "drawDistanceMeters": 300.0,
+  "collision": {
+    "borrow": {
+      "archive": "*",
+      "model": "auto"
+    }
+  }
+}

@@ -37,6 +37,7 @@ namespace LibertyFramework.Verify
             Section(check, "SDK examples in the docs compile against the current SDK", delegate { SdkExampleChecks.Run(repo, check); });
             Section(check, "Engine plumbing: scheduler, events, ledger, commands, manifests (engine audit)", delegate { EnginePlumbingChecks.Run(check); });
             Section(check, "Engine configuration (engine.json, ADR-0008 raycast fields)", delegate { EngineConfigChecks.Run(repo, check); });
+            Section(check, "World objects: config and streaming (T-033)", delegate { WorldObjectsChecks.Run(repo, check); });
 
             Console.WriteLine("RESULT passed=" + check.Passed + " failed=" + check.Failed + (check.NotRun > 0 ? " notrun=" + check.NotRun : ""));
             return check.Failed == 0 ? 0 : 1;

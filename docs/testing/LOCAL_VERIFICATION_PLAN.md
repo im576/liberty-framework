@@ -14,10 +14,10 @@
 
 | Kind | Pending | Runs |
 |---|---|---|
-| pc-offline | 10 | automatically (builds and tests that need Windows or the game's files) |
-| probe | 2 | automatically (read-only questions about the game's files; structure only) |
-| scenario | 19 | automatically (autopilot drives the game; about 2-4 minutes each) |
-| manual | 17 | you play and judge; about 160 minutes in total, grouped below |
+| pc-offline | 12 | automatically (builds and tests that need Windows or the game's files) |
+| probe | 3 | automatically (read-only questions about the game's files; structure only) |
+| scenario | 21 | automatically (autopilot drives the game; about 2-4 minutes each) |
+| manual | 18 | you play and judge; about 162 minutes in total, grouped below |
 
 Statuses: QUEUED (never run on the current code), PASS, FAIL, ERROR, CRASH, NOT-RUN, NEEDS-REVIEW (a person or the review session must judge screenshots or log errors).
 
@@ -181,6 +181,19 @@ Nothing to set up.
 - Pass when: IDs 58, 59 and 60 select and fire; switching to the vanilla counterpart keeps total ammo
 - Full steps: [docs/tasks/T-007-weapon-slots.md](../../docs/tasks/T-007-weapon-slots.md)
 
+### World objects (about 2 minutes)
+
+Free roam; the build from this run installed (the test wall stands at East Park).
+
+**Walk into the test wall** `T033-world-walk` (T-033, 2 min)
+
+1. DevTools > TELEPORT > East Park (or the autopilot's east_park); the test wall stands about 8 m north, ahead of you.
+2. Walk straight into it, then try to walk through it along its length.
+3. Answer p if it blocks you somewhere (say where), f if you walk straight through everywhere, s to skip.
+
+- Pass when: the wall blocks the player at least where the borrowed shape is (its exact outline is the vanilla prop's, not the wall's)
+- Full steps: [docs/tasks/T-033-world-objects.md](../../docs/tasks/T-033-world-objects.md)
+
 ## Automated checks
 
 | Id | Task | Kind | What passes | Status |
@@ -216,6 +229,11 @@ Nothing to set up.
 | `T024-trunk-review` | T-024 | scenario | autopilot PASS and the screenshots judged | QUEUED |
 | `T026-perf-baseline` | T-026 | scenario | autopilot PASS; the review session reads the performance lines | QUEUED |
 | `T026-perf-stress` | T-026 | scenario | autopilot PASS; the review session reads the governor and memory figures | QUEUED |
+| `PROBE-bounds-layout` | T-032 | probe | exit code 0 and a JSON report; the review session reads it | QUEUED |
+| `T032-collision-borrow-report` | T-032 | pc-offline | report.json fields match: the build found a prop candidate and shipped its bounds as lf_col_crate.wbn | QUEUED |
+| `T032-collision-borrow` | T-032 | scenario | autopilot PASS (both rays hit the crate as kind Object) and the screenshot shows the crate | QUEUED |
+| `T033-world-wall-report` | T-033 | pc-offline | report.json fields match | QUEUED |
+| `T033-world-objects` | T-033 | scenario | autopilot PASS (spawned with a handle; the ray hits it) and the screenshot shows the wall | QUEUED |
 
 ## What each check proves, and what stays unproven
 
@@ -267,3 +285,9 @@ Nothing to set up.
 - `T022-combat-effects`: Combat effects and dismemberment on ambient peds. **Still unproven:** Stump cap geometry remains an open item.
 - `T023-lvs-labels`: The T-023 labels on real vehicles.
 - `T026-performance-feel`: The owner's perception of frame pacing on the develop build (the perf scenarios measure script cost).
+- `PROBE-bounds-layout`: For each class of collision resource (extension, RSC type, root word): which root words are pointers, small integers (with their values: counts and type codes), floats or zero, the same one level down, and a bound on the root's size. Input for decoding one class before any collision writer (Collision.md plan step 3). **Still unproven:** Field meanings: the review session reads them from the measured layout plus the classes' counts, and writes them down in Collision.md with labels.
+- `T032-collision-borrow-report`: The auto borrow found PROBE-collision's first prop candidate in the owner's game and packaged its bounds resource with the crate (compiled.collision.from names it). **Still unproven:** That the game pairs it with the crate (T032-collision-borrow).
+- `T032-collision-borrow`: Collision.md C4-C6 for this project's archive: a model registered in lf_content.ide gets collision from a same-named bounds resource for a script-created object, and the engine's raycast hits it. **Still unproven:** Player and vehicle collision against it (T033-world-walk); authored collision shapes (need the collision writer).
+- `T033-world-wall-report`: A type-object asset compiles, reads back and is packaged with its borrowed collision.
+- `T033-world-objects`: mods/Liberty.World loads config/world/objects.json, streams lf_world_wall in within 150 m, snaps it to the ground, and its borrowed collision stops the engine's ray. **Still unproven:** Removal beyond 180 m is not driven here (the verifier tests the decision); player collision is T033-world-walk.
+- `T033-world-walk`: Borrowed collision works for the player against a placed world object. **Still unproven:** Collision matching the wall's own outline needs the collision writer.

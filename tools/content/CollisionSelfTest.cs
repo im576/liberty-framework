@@ -87,6 +87,15 @@ namespace LibertyFramework.Content
             }
             finally { try { Directory.Delete(game, true); } catch (IOException) { } }
 
+            string empty = StructureSelfTest.FakeGameFiles(new KeyValuePair<string, byte[]>("lonely.wbn", FakeBounds(0xEF, 4)));
+            try
+            {
+                List<string> emptyNotes = new List<string>();
+                t.Check(BorrowedCollision.Find(empty, new AssetManifest.TemplateRef { Archive = "*", Model = "auto" }, emptyNotes) == null && emptyNotes.Any(n => n.Contains("built without collision")),
+                    "auto with no candidate: no borrow and a note (the package goes on)");
+            }
+            finally { try { Directory.Delete(empty, true); } catch (IOException) { } }
+
             ContentAsset authored = SelfTest.Asset(SelfTest.Box("a", 0, 0, 1));
             ContentCollision box = new ContentCollision { Name = "hull", Shape = ContentCollision.ShapeBox };
             box.HalfExtents[0] = box.HalfExtents[1] = box.HalfExtents[2] = 0.5f; box.Centre[2] = 0.5f;

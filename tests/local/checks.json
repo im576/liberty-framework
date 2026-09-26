@@ -36,6 +36,11 @@
       "id": "confirm",
       "title": "Session 7: confirmations",
       "setup": "Nothing to set up."
+    },
+    {
+      "id": "world",
+      "title": "World objects",
+      "setup": "Free roam; the build from this run installed (the test wall stands at East Park)."
     }
   ],
   "checks": [
@@ -887,6 +892,124 @@
       "reference": "docs/tasks/T-026-performance-visual-baseline.md#human-test-steps",
       "status": "QUEUED",
       "addedIn": "claude/friendly-euler-m7hn4e (Session 1 seed)"
+    },
+    {
+      "id": "PROBE-bounds-layout",
+      "task": "T-032",
+      "title": "Collision resource layout, measured per class",
+      "kind": "probe",
+      "run": {
+        "tool": "probe",
+        "probe": "bounds"
+      },
+      "pass": "exit code 0 and a JSON report; the review session reads it",
+      "proves": "For each class of collision resource (extension, RSC type, root word): which root words are pointers, small integers (with their values: counts and type codes), floats or zero, the same one level down, and a bound on the root's size. Input for decoding one class before any collision writer (Collision.md plan step 3).",
+      "unproven": "Field meanings: the review session reads them from the measured layout plus the classes' counts, and writes them down in Collision.md with labels.",
+      "reference": "docs/research/Collision.md",
+      "status": "QUEUED",
+      "addedIn": "claude/confident-hopper-16pan1 (sessions 5-6)"
+    },
+    {
+      "id": "T032-collision-borrow-report",
+      "task": "T-032",
+      "title": "lf_col_crate ships a borrowed collision resource",
+      "kind": "pc-offline",
+      "run": {
+        "tool": "content-report",
+        "asset": "lf_col_crate",
+        "expect": {
+          "status": "ok",
+          "compiled.collision.mode": "borrowed",
+          "compiled.collision.file": "lf_col_crate.wbn"
+        }
+      },
+      "pass": "report.json fields match: the build found a prop candidate and shipped its bounds as lf_col_crate.wbn",
+      "proves": "The auto borrow found PROBE-collision's first prop candidate in the owner's game and packaged its bounds resource with the crate (compiled.collision.from names it).",
+      "unproven": "That the game pairs it with the crate (T032-collision-borrow).",
+      "reference": "docs/tasks/T-032-collision.md",
+      "status": "QUEUED",
+      "addedIn": "claude/confident-hopper-16pan1 (sessions 5-6)"
+    },
+    {
+      "id": "T032-collision-borrow",
+      "task": "T-032",
+      "title": "Borrowed collision on a LibertyContent model stops the engine's ray",
+      "kind": "scenario",
+      "run": {
+        "scenario": "collision-borrow"
+      },
+      "pass": "autopilot PASS (both rays hit the crate as kind Object) and the screenshot shows the crate",
+      "proves": "Collision.md C4-C6 for this project's archive: a model registered in lf_content.ide gets collision from a same-named bounds resource for a script-created object, and the engine's raycast hits it.",
+      "unproven": "Player and vehicle collision against it (T033-world-walk); authored collision shapes (need the collision writer).",
+      "review": {
+        "screenshots": {
+          "crate": "the LIBERTY SUPPLY crate standing in front of the player, textured; note anything else in view"
+        }
+      },
+      "reference": "docs/tasks/T-032-collision.md",
+      "status": "QUEUED",
+      "addedIn": "claude/confident-hopper-16pan1 (sessions 5-6)"
+    },
+    {
+      "id": "T033-world-wall-report",
+      "task": "T-033",
+      "title": "lf_world_wall builds as a world object with borrowed collision",
+      "kind": "pc-offline",
+      "run": {
+        "tool": "content-report",
+        "asset": "lf_world_wall",
+        "expect": {
+          "status": "ok",
+          "type": "object",
+          "compiled.collision.mode": "borrowed"
+        }
+      },
+      "pass": "report.json fields match",
+      "proves": "A type-object asset compiles, reads back and is packaged with its borrowed collision.",
+      "reference": "docs/tasks/T-033-world-objects.md",
+      "status": "QUEUED",
+      "addedIn": "claude/confident-hopper-16pan1 (sessions 5-6)"
+    },
+    {
+      "id": "T033-world-objects",
+      "task": "T-033",
+      "title": "The world mod places a static world object near the player",
+      "kind": "scenario",
+      "run": {
+        "scenario": "world-objects"
+      },
+      "pass": "autopilot PASS (spawned with a handle; the ray hits it) and the screenshot shows the wall",
+      "proves": "mods/Liberty.World loads config/world/objects.json, streams lf_world_wall in within 150 m, snaps it to the ground, and its borrowed collision stops the engine's ray.",
+      "unproven": "Removal beyond 180 m is not driven here (the verifier tests the decision); player collision is T033-world-walk.",
+      "review": {
+        "screenshots": {
+          "wall_ahead": "a low grey-textured wall (2 m long, about 1.1 m high) ahead of the player, standing on the ground (not floating or sunk), seen end-on (running away from the player, north-south: heading 90 applied); across the view means the heading was not applied; note if it is missing"
+        }
+      },
+      "reference": "docs/tasks/T-033-world-objects.md",
+      "status": "QUEUED",
+      "addedIn": "claude/confident-hopper-16pan1 (sessions 5-6)"
+    },
+    {
+      "id": "T033-world-walk",
+      "task": "T-033",
+      "session": "world",
+      "minutes": 2,
+      "title": "Walk into the test wall",
+      "kind": "manual",
+      "run": {
+        "steps": [
+          "DevTools > TELEPORT > East Park (or the autopilot's east_park); the test wall stands about 8 m north, ahead of you.",
+          "Walk straight into it, then try to walk through it along its length.",
+          "Answer p if it blocks you somewhere (say where), f if you walk straight through everywhere, s to skip."
+        ]
+      },
+      "pass": "the wall blocks the player at least where the borrowed shape is (its exact outline is the vanilla prop's, not the wall's)",
+      "proves": "Borrowed collision works for the player against a placed world object.",
+      "unproven": "Collision matching the wall's own outline needs the collision writer.",
+      "reference": "docs/tasks/T-033-world-objects.md",
+      "status": "QUEUED",
+      "addedIn": "claude/confident-hopper-16pan1 (sessions 5-6)"
     }
   ]
 }

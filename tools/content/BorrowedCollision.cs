@@ -50,6 +50,8 @@ namespace LibertyFramework.Content
             return found.OrderBy(c => c.Key, StringComparer.Ordinal).ToList();
         }
 
+        // The borrowed bounds, or null when "auto" finds no candidate (the build then ships no collision and says so, so one
+        // asset cannot fail the whole package). A named model that is missing is an error.
         internal static Borrowed Find(string game, AssetManifest.TemplateRef reference, List<string> notes)
         {
             byte[] key = null;
@@ -60,7 +62,11 @@ namespace LibertyFramework.Content
             if (string.Equals(model, AssetManifest.AutoTemplate, StringComparison.OrdinalIgnoreCase))
             {
                 List<KeyValuePair<string, string>> candidates = Candidates(game, key, archives, notes);
-                if (candidates.Count == 0) { throw new InvalidDataException("collision borrow: no drawable with a same-named " + Extension + " in " + reference.Archive); }
+                if (candidates.Count == 0)
+                {
+                    notes.Add("collision borrow: no drawable with a same-named " + Extension + " in " + reference.Archive + "; built without collision");
+                    return null;
+                }
                 model = candidates[0].Key;
                 archiveName = candidates[0].Value;
                 notes.Add("collision borrowed from the first of " + candidates.Count + " prop candidates: " + archiveName + "/" + model);

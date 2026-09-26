@@ -1,0 +1,22 @@
+# Static world objects (T-033): the world mod (mods/Liberty.World) places config/world/objects.json's "test_wall"
+# (lf_world_wall: a type-object asset compiled by LibertyContent, registered in lf_content.ide, with collision borrowed
+# from a vanilla prop, T-032) 8 m north of the east_park teleport, snapped to the ground, as soon as the player is within
+# 150 m. The "world" reply lists it with its handle once spawned; "world ray" casts the engine's ray from the player to it.
+# A miss there with a hit in collision-borrow means the shape borrowed from a small prop does not reach where the ray
+# aims (0.3 m above the wall's origin); a miss in both means the borrowed collision is not paired with the model.
+god on
+wanted 0
+goto east_park
+wait 8000
+time 13 0
+weather 1
+world
+expect "world objects=1 spawned=1 test_wall:handle \d+" 10
+hud off
+wait 1500
+shot wall_ahead
+hud on
+world ray test_wall
+expect "world_ray name=test_wall .*status=Hit kind=Object .*match=True" 5
+raystats
+expect "raycast available=True .*faults=0" 5

@@ -1,0 +1,26 @@
+# Borrowed collision (T-032, docs/research/Collision.md C4-C6). lf_col_crate is the sample crate compiled by this project
+# and shipped in LibertyContent.img with a vanilla prop's own bounds resource renamed to lf_col_crate.wbn: the first prop
+# candidate PROBE-collision lists, the same model raycast-objects spawns. Its IDE entry is the "weap" class every
+# LibertyContent model uses. If the game pairs a model with a same-named bounds resource from this archive for a
+# script-created object, the rays below hit the crate (kind Object); if not, they pass through it. Compare with
+# raycast-objects: a vanilla hit there and a pass here means the pairing, not the shape, is missing.
+events on
+god on
+wanted 0
+goto east_park
+wait 6000
+time 13 0
+clear
+spawnprop lf_col_crate 3 0
+expect "autopilot_prop handle=\d+ model=lf_col_crate" 20
+wait 2500
+hud off
+shot crate
+hud on
+rayto prop all
+expect "autopilot_rayto target=prop .*mask=All status=Hit kind=Object .*match=True" 5
+rayto prop objects
+expect "autopilot_rayto target=prop .*mask=Objects status=Hit kind=Object .*match=True" 5
+raystats
+expect "raycast available=True .*faults=0" 5
+clear
