@@ -8,9 +8,9 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
 . (Join-Path $PSScriptRoot 'toolchains.ps1')
 if (-not $ClangBin) { $ClangBin = Get-LibertyToolchain 'clang' }
-$compiler = Join-Path $ClangBin 'i686-w64-mingw32-clang++.exe'
+$compiler = Join-Path $ClangBin (Get-LibertyNativeName 'i686-w64-mingw32-clang++')
 if (-not (Test-Path -LiteralPath $compiler)) { throw "clang not found: $compiler (run tools/get-toolchains.ps1)" }
-$env:PATH = "$ClangBin;$env:PATH"
+$env:PATH = $ClangBin + [IO.Path]::PathSeparator + $env:PATH
 
 $core = Join-Path $repoRoot 'native\LibertyCore'
 $outputDirectory = Join-Path $core 'bin'
@@ -24,3 +24,4 @@ if ($LASTEXITCODE -ne 0) { throw "LibertyCore build failed with exit code $LASTE
 
 Write-Host "Built $output"
 Write-Host ("SHA256 " + (Get-FileHash -LiteralPath $output -Algorithm SHA256).Hash)
+

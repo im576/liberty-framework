@@ -1,14 +1,20 @@
 param(
-    [Parameter(Mandatory = $true)]
-    [string] $GameDirectory
+    # Folder containing GTAIV.exe. Omit it with -NoGame (the cloud container): the sections that read the game's exe and
+    # archives are then reported NOT-RUN and the result is not a full verification.
+    [string] $GameDirectory,
+    [switch] $NoGame
 )
 
 # Offline verification: builds tools/verify/OfflineVerify.exe from the game-independent sources and
 # runs it against GTAIV.exe on disk. Does not start or modify the game.
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$exe = Join-Path (Resolve-Path -LiteralPath $GameDirectory).Path 'GTAIV.exe'
-$compiler = Join-Path $env:WINDIR 'Microsoft.NET\Framework\v4.0.30319\csc.exe'
+. (Join-Path $PSScriptRoot 'toolchains.ps1')
+if ($NoGame) { $exe = '--no-game' }
+elseif ($GameDirectory) { $exe = Join-Path (Resolve-Path -LiteralPath $GameDirectory).Path 'GTAIV.exe' }
+else { throw 'Pass -GameDirectory <GTAIV folder>, or -NoGame for the repository-only checks' }
+# Windows uses the framework's own compiler, as before; elsewhere the Roslyn toolchain under Mono.
+$compiler = if (Test-LibertyWindows) { Join-Path $env:WINDIR 'Microsoft.NET\Framework\v4.0.30319\csc.exe' } else { Join-Path (Get-LibertyToolchain 'roslyn') 'csc.exe' }
 $output = Join-Path $repoRoot 'tools\verify\bin\OfflineVerify.exe'
 $src = Join-Path $repoRoot 'src\LibertyFramework'
 
@@ -39,7 +45,9 @@ $sources = @(
     (Get-ChildItem -LiteralPath $src -Recurse -Directory -Filter 'Logic' | ForEach-Object { (Get-ChildItem -LiteralPath $_.FullName -Filter '*.cs').FullName })
 )
 New-Item -ItemType Directory -Force -Path (Split-Path -Parent $output) | Out-Null
-& $compiler /nologo /target:exe /platform:x86 /warn:4 "/out:$output" /reference:System.Runtime.Serialization.dll /reference:System.Xml.dll /reference:System.Drawing.dll /reference:System.Core.dll $sources
+# The framework compiler is C# 5; pin the same language level elsewhere so a cloud build cannot accept newer syntax.
+$language = @(if (-not (Test-LibertyWindows)) { '/langversion:5' })
+Invoke-LibertyManaged $compiler /nologo /target:exe /platform:x86 /warn:4 @language "/out:$output" /reference:System.Runtime.Serialization.dll /reference:System.Xml.dll /reference:System.Drawing.dll /reference:System.Core.dll $sources
 if ($LASTEXITCODE -ne 0) { throw "Verifier build failed with exit code $LASTEXITCODE" }
-& $output $exe $repoRoot
+Invoke-LibertyManaged $output $exe $repoRoot
 if ($LASTEXITCODE -ne 0) { throw "Offline verification failed (exit $LASTEXITCODE)" }

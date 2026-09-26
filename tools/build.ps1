@@ -20,13 +20,13 @@ if (-not (Test-Path -LiteralPath $compiler)) {
 
 function Get-Sources([string] $root) {
     Get-ChildItem -LiteralPath $root -Recurse -Filter '*.cs' |
-        Where-Object { $_.FullName -notmatch '\\(bin|obj)\\' } |
+        Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } |
         Sort-Object FullName |
         ForEach-Object { $_.FullName }
 }
 
 function Invoke-Compiler([string] $name, [string[]] $arguments) {
-    & $compiler @arguments
+    Invoke-LibertyManaged $compiler @arguments
     if ($LASTEXITCODE -ne 0) { throw "$name failed to compile (exit $LASTEXITCODE)" }
 }
 

@@ -23,9 +23,16 @@ def compiler_path(preferences):
     return ""
 
 
+def command(compiler):
+    """LibertyContent.exe is a .NET Framework program: Windows runs it directly, Linux and macOS through Mono."""
+    if os.name != "nt" and compiler.lower().endswith(".exe"):
+        return ["mono", compiler]
+    return [compiler]
+
+
 def run(compiler, arguments, timeout_seconds):
     flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
-    completed = subprocess.run([compiler] + list(arguments), capture_output=True, text=True, timeout=timeout_seconds, creationflags=flags)
+    completed = subprocess.run(command(compiler) + list(arguments), capture_output=True, text=True, timeout=timeout_seconds, creationflags=flags)
     return completed.returncode, (completed.stdout or "") + (completed.stderr or "")
 
 

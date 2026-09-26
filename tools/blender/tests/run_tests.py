@@ -2,15 +2,17 @@
 #   blender -b --factory-startup --python-exit-code 1 --python run_tests.py -- <repo> <game> <output>
 # Builds scenes from code, runs the add-on's operators, then checks what Blender exported and what LibertyContent
 # (validate and build, against the real game archives) made of it. Prints PASS/FAIL lines and "RESULT passed=N failed=M".
+# <game> may be --no-game (the cloud container, bpy as a Python module): builds need the game's template archives, so
+# the operators export and validate instead and every expectation about a build is printed as NOT-RUN, never PASS.
 
 import json
 import os
 import shutil
 import sys
 
+import bpy  # first: as the bpy Python module (cloud container), importing bpy is what puts addon_utils on the path
 import addon_utils
 import bmesh
-import bpy
 import numpy as np
 
 arguments = sys.argv[sys.argv.index("--") + 1:]
@@ -20,13 +22,29 @@ sys.path.insert(0, os.path.join(REPO, "tools", "blender"))
 CONTENT = os.path.join(OUTPUT, "content")
 BUILD = os.path.join(OUTPUT, "build")
 COMPILER = os.path.join(REPO, "tools", "content", "bin", "LibertyContent.exe")
-results = {"passed": 0, "failed": 0}
+NO_GAME = GAME == "--no-game"
+results = {"passed": 0, "failed": 0, "notrun": 0}
 
 
 def expect(condition, label, detail=""):
     key = "passed" if condition else "failed"
     results[key] += 1
     print("%s %s%s" % ("PASS" if condition else "FAIL", label, ("  (" + str(detail) + ")") if detail and not condition else ""))
+
+
+def expect_built(condition, label, detail=lambda: ""):
+    """An expectation about a compiled build: condition and detail are callables so nothing reads a build that a
+    --no-game run never made."""
+    if NO_GAME:
+        results["notrun"] += 1
+        print("NOT-RUN %s (needs the game's archives to build)" % label)
+        return
+    expect(condition(), label, detail())
+
+
+def build():
+    """The Build operator; without the game, Export (glTF, asset.json and the compiler's validation) instead."""
+    return call(bpy.ops.liberty.export if NO_GAME else bpy.ops.liberty.build)
 
 
 def call(operator, **options):
@@ -161,7 +179,7 @@ def main():
     prefs = bpy.context.preferences.addons["liberty_exporter"].preferences
     prefs.content_root = CONTENT
     prefs.compiler_path = COMPILER
-    prefs.game_directory = GAME
+    prefs.game_directory = "" if NO_GAME else GAME
     prefs.build_directory = BUILD
     expect(hasattr(bpy.types.Scene, "liberty_asset") and hasattr(bpy.ops.liberty, "build"), "addon registers")
     scene = bpy.context.scene
@@ -181,9 +199,11 @@ def main():
     call(bpy.ops.liberty.check)
     issues = state.get(scene).issues
     expect(not checks.has_errors(issues), "barrel check has no errors", codes(issues))
-    outcome = call(bpy.ops.liberty.build)
+    outcome = build()
     result = state.get(scene)
-    expect(outcome == {'FINISHED'} and result.status == "ok", "barrel build ok", "%s %s %s" % (outcome, result.status, result.log[-600:]))
+    if NO_GAME:
+        expect(outcome == {'FINISHED'} and result.status == "exported", "barrel export validated", "%s %s %s" % (outcome, result.status, result.log[-600:]))
+    expect_built(lambda: outcome == {'FINISHED'} and result.status == "ok", "barrel build ok", lambda: "%s %s %s" % (outcome, result.status, result.log[-600:]))
     folder = os.path.join(CONTENT, "props", "lf_bt_barrel")
     manifest = json.load(open(os.path.join(folder, "asset.json"), encoding="utf-8"))
     expect(manifest["name"] == "lf_bt_barrel" and manifest["source"] == "lf_bt_barrel.gltf" and manifest["textureDictionary"] == "lf_bt_barrel" and
@@ -194,10 +214,10 @@ def main():
     scene_extras = document["scenes"][0].get("extras", {})
     expect(scene_extras.get("liberty_exporter") == "0.1.0" and "liberty_exporter" not in scene.keys(), "scene tags exported and removed again", scene_extras)
     expect(any(i.get("uri", "").endswith(".png") for i in document.get("images", [])), "texture written as PNG", document.get("images"))
-    built = report("lf_bt_barrel")
-    expect(built["lods"] == 3 and built["metadata"].get("liberty_exporter") == "0.1.0", "report: 3 LODs, exporter metadata", built)
-    expect(os.path.isfile(result.preview) and os.path.isfile(result.texture), "previews written", result.preview)
-    expect(not any(i["code"] == "LCC017" for i in built["issues"]), "LOD triangle order accepted")
+    built = {} if NO_GAME else report("lf_bt_barrel")
+    expect_built(lambda: built["lods"] == 3 and built["metadata"].get("liberty_exporter") == "0.1.0", "report: 3 LODs, exporter metadata", lambda: built)
+    expect_built(lambda: os.path.isfile(result.preview) and os.path.isfile(result.texture), "previews written", lambda: result.preview)
+    expect_built(lambda: not any(i["code"] == "LCC017" for i in built["issues"]), "LOD triangle order accepted")
 
     # 2. Orientation: an asymmetric box keeps Blender's axes and metres through glTF and the compiler.
     clear_scene()
@@ -217,10 +237,10 @@ def main():
     settings.asset_name = "lf_bt_array"
     modifier = obj.modifiers.new("array", 'ARRAY')
     modifier.count = 2
-    call(bpy.ops.liberty.build)
+    build()
     result = state.get(scene)
     built = report("lf_bt_array") if os.path.isfile(os.path.join(BUILD, "lf_bt_array", "report.json")) else {}
-    expect(result.status == "ok" and built.get("compiled", {}).get("triangles") == 24, "modifiers applied (24 triangles)", built.get("compiled"))
+    expect_built(lambda: result.status == "ok" and built.get("compiled", {}).get("triangles") == 24, "modifiers applied (24 triangles)", lambda: built.get("compiled"))
     obj.modifiers.remove(modifier)
 
     # 4. Two materials in LOD 0: rejected in Blender, nothing written.
@@ -290,13 +310,15 @@ def main():
     settings.asset_name = "lf_bt_coll"
     settings.collection = collection
     expect(checks.lod_of(far) == 1, "LOD inherited from the parent")
-    call(bpy.ops.liberty.build)
+    build()
     result = state.get(scene)
     built = report("lf_bt_coll") if os.path.isfile(os.path.join(BUILD, "lf_bt_coll", "report.json")) else {}
-    expect(result.status == "ok" and built.get("lods") == 2, "collection export builds with 2 LODs", "%s %s" % (result.status, built.get("lods")))
-    expect(built.get("metadata", {}).get("liberty_exporter") == "0.1.0" and "liberty_exporter" not in collection.keys(), "collection export carries exporter metadata", built.get("metadata"))
+    if NO_GAME:
+        expect(result.status == "exported", "collection export validated", result.log[-400:])
+    expect_built(lambda: result.status == "ok" and built.get("lods") == 2, "collection export builds with 2 LODs", lambda: "%s %s" % (result.status, built.get("lods")))
+    expect_built(lambda: built.get("metadata", {}).get("liberty_exporter") == "0.1.0" and "liberty_exporter" not in collection.keys(), "collection export carries exporter metadata", lambda: built.get("metadata"))
 
-    print("RESULT passed=%d failed=%d" % (results["passed"], results["failed"]))
+    print("RESULT passed=%d failed=%d%s" % (results["passed"], results["failed"], (" notrun=%d" % results["notrun"]) if results["notrun"] else ""))
     if results["failed"]:
         sys.exit(1)
 
