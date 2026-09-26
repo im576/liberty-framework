@@ -97,6 +97,10 @@ Optional `slings[]` (W-5): `slot` (`LongGun1` or `LongGun2`, unique), `model` (a
 | `hotReload` | Optional (false). Development: reload a mod assembly in `scripts\LibertyFramework\mods` when its file changes. The change must settle for one poll, and the content hash must differ from the loaded copy. Also switchable at runtime with `lf hotreload on/off`. |
 | `hotReloadPollMs` | Optional (1000). How often the mods folder is checked while hot reload is on (250–10000). |
 | `hotReloadMaxLeakMegabytes` | Optional (32). .NET Framework cannot unload a replaced assembly, so each reload keeps the old copy in the 32-bit address space. Past this total, reloads are refused until the game restarts (1–256). |
+| `raycastEnabled` | Optional (true). ADR-0008: install the core's call into the game's line test for `Query.Raycast` / `HasLineOfSight`. Off = every raycast answers `Unavailable`. |
+| `raycastMaxPasses` | Optional (8). Hits of kinds a query does not stop at (or ignored entities) that one query passes through, each costing one more line test. Beyond it the query is `Inconclusive` (0–32). |
+| `raycastPassStepMeters` | Optional (0.05). How far beyond a passed-through hit the next line test starts (0.01–1). |
+| `raycastMaxLengthMeters` | Optional (1000). Longest ray a query accepts; longer rays throw `ArgumentException` in the calling module (1–5000). |
 
 Defaults apply when the file is absent or invalid (logged).
 

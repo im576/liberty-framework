@@ -5,6 +5,11 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
+**Engine raycast / line of sight, SDK 1.1 (2026-09-26, Claude, [T-027](tasks/T-027-engine-raycast.md), [ADR-0008](architecture/decisions/ADR-0008-engine-raycast.md)):**
+- **Research** ([Raycast.md](research/Raycast.md)): the game's line test `0xA536B0` on the physics world; the spike verified ground and ped hits and the hit-entity link `[instance+0x0C]`.
+- **Built:** core ABI 5 (`lc_raycast` with kind filtering by pass-through, 4 ignored entities, fault → off; unit test 13/13), SDK 1.1 `Query.Raycast` / `HasLineOfSight` (points and peds), `engine.json` raycast fields, `lf ray`/`raystats`, self-test checks, scenario `raycast`.
+- **Status:** builds clean (Linux container); owner's Windows build + verify and the `raycast`/`sdk-selftest` runs pending. Vehicle hits are the first unverified fact.
+
 **Liberty Engine (ADR-0006, 2026-09-25, Claude):**
 - **Engine:** a native C++ core (world snapshot, events) plus one C# host running every mechanic as a module, with events, coroutines and services. It is verified in game (21/21 natives) and documented in [ENGINE.md](architecture/ENGINE.md).
 - **Autopilot:** Claude launches and tests the game itself (`tools/autopilot`). The engine-events, gore-review, sling-review and perf-baseline scenarios pass.
@@ -58,6 +63,7 @@ Keep it short: this is a dashboard, not a diary.
 - ADR-0002: FusionFix v5.0.1 ExtendedLimits assigned the custom pistol ID 58. It replaced the vanilla pistol in the handgun inventory; a deliberate switch is needed. Unused episodic slots are deferred.
 - ADR-0004: Engine data (aim camera, CWeaponInfo accuracy, menu prefs, hud.dat reticle globals, bullet list) is located by native-hash/instruction-shape resolvers, validated at runtime, never code-patched, and restored on exit. See docs/game-api/MEMORY.md.
 - ADR-0005: Owner-approved exception to ADR-0004 for dismemberment: after-call hooks on the fragInst skeleton rebuilds (0x5F7D70/0x5F6FB0). Bytes validated, flag-gated, restored on unload/exit.
+- ADR-0008: The engine core calls the game's physics line test (0xA536B0) directly for raycasts: resolved by pattern and pinned offline, called only on the engine tick under SEH, read-only, switched off on the first fault.
 - ADR-0003: T-002 implements a JSON sample with live polling and last-valid retention; live log and gameplay checks passed.
 
 ## Verified in-game (by the human tester)

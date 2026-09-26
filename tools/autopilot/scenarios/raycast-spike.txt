@@ -1,4 +1,7 @@
-﻿# Raycast research spike (docs/research/Raycast.md): raw game line test results against ground, sky, a vehicle and a ped.
+# Raycast research spike (docs/research/Raycast.md): raw first hits of the game line test against ground, sky, a vehicle
+# and a ped, and which include bits hit each. Run 2026-09-26: ground and ped verified; the vehicle rays at +0.5 m
+# (about 1.5 m above the ground) passed over the admiral's roof, so the vehicle rays now start 0.3 m below the player
+# position (about 0.7 m above the ground, door height).
 god on
 wanted 0
 goto east_park
@@ -10,9 +13,10 @@ raydebug forward 30
 spawncar admiral 6
 expect "autopilot_spawncar handle=" 20
 wait 2000
-raydebug forward 12
-raybits forward 12
-raydebug forward 12 FFFFFFFF -1
+raydebug forward 12 FFFFFFFF 1 -0.3
+raybits forward 12 1 -0.3
+raydebug forward 12 FFFFFFFF -1 -0.3
+raydebug forward 12 FFFFFFFF 1 0.5
 clear
 wait 1000
 spawn 1 4 0

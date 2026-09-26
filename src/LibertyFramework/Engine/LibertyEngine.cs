@@ -25,7 +25,7 @@ namespace LibertyFramework.Engine
     // throws is stopped alone; everything it owned is released through the resource ledger.
     public sealed class LibertyEngine : ILiberty
     {
-        public const string Version = "1.0.0";
+        public const string Version = "1.1.0";
         private const int PhaseWorld = 0, PhaseScheduler = 1, PhaseUi = 2, PhaseCommands = 3, PhaseDraw = 4, FirstModulePhase = 8, MaxPhases = 64;
 
         public static LibertyEngine Current { get; private set; }
@@ -85,6 +85,9 @@ namespace LibertyFramework.Engine
         private volatile int phase = -1;
         private WorldBuilder builder;
         private bool started;
+        // The thread running engine frames (the SHDN script thread, while the game thread is parked) and the draw pass.
+        private int engineThreadId;
+        private bool drawing;
         private int lastReportMs;
 
         private LibertyEngine(EngineHost host)
@@ -337,8 +340,10 @@ namespace LibertyFramework.Engine
             Commands.Register(null, "restart", "restart <module> - stop it (and its dependents), then start fresh instances", args => RestartCommand(args));
             Commands.Register(null, "reload", "reload <module> - load its mod assembly again and swap every module in it (dev)", args => ReloadCommand(args));
             Commands.Register(null, "hotreload", "hotreload [on|off] - reload mod assemblies when their file changes (dev)", args => HotReloadCommand(args));
-            Commands.Register(null, "raydebug", "raydebug down|up|forward [m] [flags hex] [mode] - raw game line test from the player (research)", args => RayDebugCommand(args));
-            Commands.Register(null, "raybits", "raybits down|up|forward [m] [mode] - which include-flag bits hit (research)", args => RayBitsCommand(args));
+            Commands.Register(null, "ray", "ray down|up|forward [m] [height m] [mask: all|world,peds,vehicles,objects] - Query.Raycast from the player", args => RayCommand(args));
+            Commands.Register(null, "raystats", "raycast counters (queries, line tests, hits, passes, faults)", args => RayStatsCommand());
+            Commands.Register(null, "raydebug", "raydebug down|up|forward [m] [flags hex] [mode] [height m] - raw first hit of one game line test (research)", args => RayDebugCommand(args));
+            Commands.Register(null, "raybits", "raybits down|up|forward [m] [mode] [height m] - which include bits (0-31) hit, and what (research)", args => RayBitsCommand(args));
             Commands.Register(null, "inspector", "inspector [on|off] - on-screen engine and module inspector (dev)", args => InspectorCommand(args));
         }
 
@@ -346,7 +351,7 @@ namespace LibertyFramework.Engine
         {
             return "engine " + Version + " sdk " + SdkVersion.Text + " frame=" + Frame + " core=" + (UsingCore ? "on" : "off") +
                 " peds=" + World.Peds.Count + " vehicles=" + World.Vehicles.Count + " modules=" + runtimes.Count(m => m.Module.Running) + "/" + runtimes.Count +
-                " coroutines=" + Scheduler.Running + " resources=" + Ledger.Count + " episode=" + Episode;
+                " coroutines=" + Scheduler.Running + " resources=" + Ledger.Count + " raycast=" + (Query.RaycastAvailable ? "on" : "off") + " episode=" + Episode;
         }
 
         private string ModulesReport()
@@ -411,21 +416,22 @@ namespace LibertyFramework.Engine
             return ReloadAssembly(m.SourcePath);
         }
 
-        // ---- raycast research (docs/research/Raycast.md) ----
+        // ---- raycast (ADR-0008, docs/research/Raycast.md) ----
 
-        private LcRay PlayerRay(string direction, float meters, uint flags, int mode)
+        // A ray from the player: origin = player position + height (the position is about 1 m above the ground), along
+        // the player's facing, straight down or straight up.
+        private void PlayerSegment(string direction, float meters, float height, out Vec3 from, out Vec3 to)
         {
             PlayerState player = World.Player;
-            Vec3 origin = player.Position + new Vec3(0, 0, 0.5f);
-            double radians = player.Heading * Math.PI / 180.0;
-            Vec3 along = direction == "down" ? new Vec3(0, 0, -1) : direction == "up" ? new Vec3(0, 0, 1) :
-                new Vec3((float)-Math.Sin(radians), (float)Math.Cos(radians), 0);
-            Vec3 end = origin + along * meters;
-            return new LcRay
-            {
-                StartX = origin.X, StartY = origin.Y, StartZ = origin.Z, EndX = end.X, EndY = end.Y, EndZ = end.Z,
-                IncludeFlags = flags, Mode = mode, IgnoreHandle = player.Ped.Handle, IgnoreKind = 1,
-            };
+            from = player.Position + new Vec3(0, 0, height);
+            Vec3 along = direction == "down" ? new Vec3(0, 0, -1) : direction == "up" ? new Vec3(0, 0, 1) : Vec3.FromHeading(player.Heading);
+            to = from + along * meters;
+        }
+
+        private RayIgnore PlayerIgnore()
+        {
+            PedRef ped = World.Player.Ped;
+            return ped.IsNone ? RayIgnore.Nothing : RayIgnore.Of(ped).And(World.Player.Vehicle);
         }
 
         private static float FloatArg(string[] args, int index, float fallback)
@@ -434,39 +440,96 @@ namespace LibertyFramework.Engine
             return args.Length > index && float.TryParse(args[index], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out value) ? value : fallback;
         }
 
-        private string RayDebugCommand(string[] args)
+        private static int IntArg(string[] args, int index, int fallback)
         {
-            string direction = args.Length > 0 ? args[0] : "down";
-            uint flags = args.Length > 2 ? Convert.ToUInt32(args[2], 16) : 0xFFFFFFFFu;
-            int mode = args.Length > 3 ? int.Parse(args[3]) : 1;
-            LcRay ray = PlayerRay(direction, FloatArg(args, 1, direction == "down" ? 10f : 20f), flags, mode);
-            LcRayHit hit = new LcRayHit();
-            int result = core.Raycast(ref ray, ref hit);
-            string raw = hit.Raw == null ? "" : string.Join(" ", hit.Raw.Select(w => w.ToString("X8")).ToArray());
-            RuntimeLog.Info("raydebug dir=" + direction + " flags=0x" + flags.ToString("X") + " mode=" + mode + " result=" + result +
-                " start=(" + ray.StartX.ToString("0.00") + "," + ray.StartY.ToString("0.00") + "," + ray.StartZ.ToString("0.00") + ")" +
-                " pos=(" + hit.X.ToString("0.000") + "," + hit.Y.ToString("0.000") + "," + hit.Z.ToString("0.000") + ")" +
-                " normal=(" + hit.NormalX.ToString("0.000") + "," + hit.NormalY.ToString("0.000") + "," + hit.NormalZ.ToString("0.000") + ")" +
-                " kind=" + hit.EntityKind + " handle=" + hit.EntityHandle + " link=" + hit.Link + " raw=" + raw);
-            return "result=" + result + " kind=" + hit.EntityKind + " handle=" + hit.EntityHandle + " link=" + hit.Link;
+            int value;
+            return args.Length > index && int.TryParse(args[index], System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out value) ? value : fallback;
         }
 
+        private static string F(float value) { return value.ToString("0.000", System.Globalization.CultureInfo.InvariantCulture); }
+
+        private static string Describe(Vec3 v) { return "(" + F(v.X) + "," + F(v.Y) + "," + F(v.Z) + ")"; }
+
+        // "all", or a comma list of world, peds, vehicles, objects.
+        private static RayMask ParseMask(string text)
+        {
+            if (string.IsNullOrEmpty(text) || text == "all") { return RayMask.All; }
+            RayMask mask = RayMask.None;
+            foreach (string part in text.Split(','))
+            {
+                switch (part.Trim())
+                {
+                    case "world": mask |= RayMask.World; break;
+                    case "peds": mask |= RayMask.Peds; break;
+                    case "vehicles": mask |= RayMask.Vehicles; break;
+                    case "objects": mask |= RayMask.Objects; break;
+                    default: throw new ArgumentException("unknown ray mask part '" + part + "' (world, peds, vehicles, objects, all)");
+                }
+            }
+            return mask;
+        }
+
+        // Production query, exactly as a mod makes it: lf ray forward 20 -0.3 world,vehicles
+        private string RayCommand(string[] args)
+        {
+            string direction = args.Length > 0 ? args[0] : "forward";
+            Vec3 from, to;
+            PlayerSegment(direction, FloatArg(args, 1, direction == "down" ? 10f : 20f), FloatArg(args, 2, 0.5f), out from, out to);
+            RayMask mask = ParseMask(args.Length > 3 ? args[3] : "all");
+            RayHit hit = Query.Raycast(from, to, mask, PlayerIgnore());
+            string line = "ray dir=" + direction + " mask=" + mask.ToString().Replace(", ", "|") + " status=" + hit.Status + " kind=" + hit.Kind +
+                " handle=" + hit.EntityHandle + " distance=" + F(hit.Distance) + " pos=" + Describe(hit.Position) + " normal=" + Describe(hit.Normal) +
+                " tests=" + hit.Tests + " passed=" + hit.PassedThrough + " from=" + Describe(from) + " to=" + Describe(to);
+            RuntimeLog.Info(line);
+            return line;
+        }
+
+        // Research: the raw first hit of one line test (no pass-through), with the whole game result.
+        private unsafe string RayDebugCommand(string[] args)
+        {
+            string direction = args.Length > 0 ? args[0] : "down";
+            uint flags = args.Length > 2 ? Convert.ToUInt32(args[2], 16) : LcRay.IncludeAll;
+            int mode = IntArg(args, 3, 1);
+            Vec3 from, to;
+            PlayerSegment(direction, FloatArg(args, 1, direction == "down" ? 10f : 20f), FloatArg(args, 4, 0.5f), out from, out to);
+            LcRayHit raw;
+            RayHit hit = Query.Cast(from, to, RayMask.All, PlayerIgnore(), 0, LcRay.FlagResearch, flags, mode, out raw);
+            string[] words = new string[LcRayHit.RawWords];
+            for (int i = 0; i < LcRayHit.RawWords; i++) { words[i] = raw.Raw[i].ToString("X8"); }
+            RuntimeLog.Info("raydebug dir=" + direction + " flags=0x" + flags.ToString("X") + " mode=" + mode + " status=" + hit.Status +
+                " start=" + Describe(from) + " pos=" + Describe(hit.Position) + " normal=" + Describe(hit.Normal) + " distance=" + F(hit.Distance) +
+                " kind=" + hit.Kind + " handle=" + hit.EntityHandle + " link=" + raw.Link + " raw=" + string.Join(" ", words));
+            return "status=" + hit.Status + " kind=" + hit.Kind + " handle=" + hit.EntityHandle + " link=" + raw.Link + " distance=" + F(hit.Distance);
+        }
+
+        // Research: which single include bit (0-31) makes the line test hit, and what (kind/height) it hits.
         private string RayBitsCommand(string[] args)
         {
             string direction = args.Length > 0 ? args[0] : "down";
-            int mode = args.Length > 2 ? int.Parse(args[2]) : 1;
+            int mode = IntArg(args, 2, 1);
             float meters = FloatArg(args, 1, direction == "down" ? 10f : 20f);
+            Vec3 from, to;
+            PlayerSegment(direction, meters, FloatArg(args, 3, 0.5f), out from, out to);
             List<string> parts = new List<string>();
-            for (int bit = 0; bit < 16; bit++)
+            for (int bit = 0; bit < 32; bit++)
             {
-                LcRay ray = PlayerRay(direction, meters, 1u << bit, mode);
-                LcRayHit hit = new LcRayHit();
-                int result = core.Raycast(ref ray, ref hit);
-                parts.Add("b" + bit + "=" + result + (result == 1 ? "/k" + hit.EntityKind + "/z" + hit.Z.ToString("0.00") : ""));
+                LcRayHit raw;
+                RayHit hit = Query.Cast(from, to, RayMask.All, PlayerIgnore(), 0, 0, 1u << bit, mode, out raw);
+                if (hit.Status == RayStatus.Unavailable) { parts.Add("b" + bit + "=unavailable"); break; }
+                if (hit.Status == RayStatus.Hit) { parts.Add("b" + bit + "=" + hit.Kind + "/" + F(hit.Distance) + "m"); }
             }
-            string line = "raybits dir=" + direction + " m=" + meters.ToString("0.0") + " mode=" + mode + " " + string.Join(" ", parts.ToArray());
+            string line = "raybits dir=" + direction + " m=" + meters.ToString("0.0") + " mode=" + mode + " start=" + Describe(from) +
+                " hits: " + (parts.Count == 0 ? "none" : string.Join(" ", parts.ToArray()));
             RuntimeLog.Info(line);
             return line;
+        }
+
+        private string RayStatsCommand()
+        {
+            LcRayStats stats = core.RaycastStats();
+            return "raycast available=" + Query.RaycastAvailable + " enabled=" + Config.RaycastEnabled + " installed=" + stats.Installed +
+                " queries=" + stats.Queries + " tests=" + stats.Tests + " hits=" + stats.Hits + " clears=" + stats.Clears + " passes=" + stats.Passes +
+                " inconclusive=" + stats.Inconclusive + " faults=" + stats.Faults + (stats.FaultNumber != 0 ? " fault_number=" + stats.FaultNumber : "");
         }
 
         private string InspectorCommand(string[] args)
@@ -635,9 +698,15 @@ namespace LibertyFramework.Engine
             core.SetPhase(index);
         }
 
+        // True where game functions may be called: on the engine's own thread, outside the draw pass.
+        internal bool InGameContext { get { return !drawing && engineThreadId != 0 && System.Threading.Thread.CurrentThread.ManagedThreadId == engineThreadId; } }
+
+        internal CoreBridge Core { get { return core; } }
+
         internal void RunFrame()
         {
             long frameStart = Stopwatch.GetTimestamp();
+            engineThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
             Frame++;
             Watchdog.FrameBegin(Frame);
             try
@@ -721,7 +790,8 @@ namespace LibertyFramework.Engine
             catch (Exception error) { RuntimeLog.Error("engine_episode_unknown error=" + error.Message); }
             bool coreUp = Memory.Resolve() && Config.CoreEnabled && core.Initialize(Memory.Scanner, Memory.Addresses);
             if (coreUp && Config.ExactDamage) { core.InstallDamageHook(Memory.Addresses); }
-            if (coreUp) { core.InstallRaycast(Memory.Addresses); }
+            if (coreUp && Config.RaycastEnabled) { core.InstallRaycast(Memory.Addresses); }
+            else if (!Config.RaycastEnabled) { RuntimeLog.Info("engine_raycast_disabled_by_config"); }
             if (!Config.CoreEnabled) { RuntimeLog.Info("engine_core_disabled_by_config"); }
             RegisterPhases();
             builder = new WorldBuilder(core, World, Events, Config);
@@ -769,6 +839,7 @@ namespace LibertyFramework.Engine
 
         internal void Draw(GraphicsEventArgs args)
         {
+            drawing = true;
             try
             {
                 foreach (ModuleRuntime m in runtimes)
@@ -781,6 +852,7 @@ namespace LibertyFramework.Engine
                 Ui.Draw(args, DrawModules);
             }
             catch (Exception error) { RuntimeLog.Error("engine_ui_draw_failed error=" + error.Message); }
+            finally { drawing = false; }
         }
 
         private void DrawModules(ICanvas canvas)

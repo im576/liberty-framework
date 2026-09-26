@@ -109,6 +109,7 @@ The core only uses natives that match SHDN's result at startup (`engine_verify a
 | `Engine.State` | `Load<T>(module, name)` / `Save` to `state\<module>\<name>.json`. |
 | `Engine.Commands` | `Register(module, name, usage, handler)`. Reached from the console (`lf <command>`) and from the autopilot file channel. |
 | `Engine.Memory` | The session's one scan of GTAIV.exe (`GameAddresses`, native table) and the shared `LiveMemory`, with trusted permanent ranges. |
+| `Engine.Query` | SDK `IWorldQuery`: snapshot queries, ground/water, and (ADR-0008) `Raycast`/`HasLineOfSight` through the core's call into the game's line test. Engine thread only (`InGameContext`); never from the draw pass. |
 | `ScreenInfo.Size` | Game window size. **Never** use `GTA.Game.Resolution`: it stalls or deadlocks the game. |
 | `DialogGuard` | Presses OK on known harmless modal boxes (FusionFix "Error building shader!") and logs any other box. |
 
@@ -120,7 +121,7 @@ The core only uses natives that match SHDN's result at startup (`engine_verify a
 
 ## Testing a change
 
-1. Build with `tools/build.ps1` (Roslyn C# 7.3, warnings are errors) and `tools/build-core.ps1` (clang).
+1. Build with `tools/build.ps1` (Roslyn C# 7.3, warnings are errors) and `tools/build-core.ps1` (clang; it also builds and runs the core's unit tests in `native/LibertyCore/tests`).
 2. Run offline checks with `tools/verify.ps1`. Every native must be in `docs/game-api/native-hashes.csv`.
 3. Package and install with `tools/package-phase2.ps1` and `tools/install-phase2.ps1` (game closed).
 4. Test in game with `tools/autopilot/Run-Scenario.ps1 -Scenario tools/autopilot/scenarios/<name>.txt`. It launches the game (retrying the known startup crash), runs the steps, takes screenshots and writes a `report.md`. Add a scenario for every new mechanic.

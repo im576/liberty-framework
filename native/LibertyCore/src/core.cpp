@@ -11,6 +11,7 @@
 #include "safe_call.h"
 #include "damage_hook.h"
 #include "hooks.h"
+#include "ray_walk.h"
 
 namespace
 {
@@ -596,10 +597,22 @@ LC_API int32_t lc_damage_hook_install(uint32_t function, uint32_t component_to_b
 
 LC_API int32_t lc_hooks_report(char* buffer, int32_t size) { return lc::hooks::report(buffer, size); }
 
-// ---- raycast ----
+// ---- raycast (ADR-0008, docs/research/Raycast.md) ----
 namespace
 {
+    static_assert(sizeof(lc_ray) == 92, "lc_ray layout (CoreAbi.LcRay)");
+    static_assert(sizeof(lc_ray_hit) == 144, "lc_ray_hit layout (CoreAbi.LcRayHit)");
+
     uint32_t g_line_test = 0;
+    lc_ray_stats g_ray_stats{};
+
+    // The line test's result block (0x60 bytes): +0x00 the hit physics instance, +0x10 position, +0x20 normal. Every
+    // caller in the game zeroes it and sets +0x4C to 0xFFFF first.
+    const int kRayResultWords = 24;
+    const uint32_t kRayResultMarkerOffset = 0x4C;
+    const int kRayPositionWord = 4, kRayNormalWord = 8;
+    // The hit entity is [instance + 0x0C] (raycast-spike 2026-09-26: a ray into a ped found that ped there).
+    const uint32_t kInstanceEntityOffset = 0x0C;
 
     struct LineTestCall
     {
@@ -610,16 +623,18 @@ namespace
         void* result;
         uint32_t flags;
         int32_t mode;
-        int32_t returned;
+        bool returned;
     };
 
-    typedef int32_t(__cdecl* LineTest)(const float*, const float*, uint32_t, void*, uint32_t, int32_t, int32_t);
+    // cdecl bool TestLine(Vec3* start, Vec3* end, CEntity* ignore, Result* out, uint includeFlags, int mode, int):
+    // the function sets only al, so the return is read as one byte (never the whole eax) and any non-zero value is a hit.
+    typedef uint8_t(__cdecl* LineTest)(const float*, const float*, uint32_t, void*, uint32_t, int32_t, int32_t);
 
     void line_test_thunk(void* p)
     {
         LineTestCall* c = static_cast<LineTestCall*>(p);
         // Every caller in the game passes a trailing 4 (unused by the function itself); pass it the same way.
-        c->returned = reinterpret_cast<LineTest>(c->function)(c->start, c->end, c->ignore, c->result, c->flags, c->mode, 4);
+        c->returned = reinterpret_cast<LineTest>(c->function)(c->start, c->end, c->ignore, c->result, c->flags, c->mode, 4) != 0;
     }
 
     lc::RagePool* pool_of(int32_t kind)
@@ -627,6 +642,7 @@ namespace
         return kind == LC_ENTITY_PED ? g.peds_pool : kind == LC_ENTITY_VEHICLE ? g.vehicles_pool : kind == LC_ENTITY_OBJECT ? g.objects_pool : nullptr;
     }
 
+    // Entity address of a live script handle (0 when stale or unknown). Pure pool arithmetic, no game call.
     uint32_t entity_of(int32_t kind, int32_t handle)
     {
         lc::RagePool* pool = pool_of(kind);
@@ -638,6 +654,7 @@ namespace
 
     bool classify(uint32_t address, int32_t& kind, int32_t& handle)
     {
+        if (address < 0x10000) { return false; }
         for (int32_t k = LC_ENTITY_PED; k <= LC_ENTITY_OBJECT; k++)
         {
             lc::RagePool* pool = pool_of(k);
@@ -647,45 +664,131 @@ namespace
         }
         return false;
     }
+
+    // Research only (LC_RAY_RESEARCH): look for the entity anywhere in the result, then behind its first word.
+    int32_t research_link(const uint32_t* result, int32_t& kind, int32_t& handle, uint32_t& entity)
+    {
+        for (int i = 0; i < kRayResultWords; i++)
+        {
+            if (classify(result[i], kind, handle)) { entity = result[i]; return -100 - i; }
+        }
+        for (uint32_t offset = 0; offset < 0x100 && result[0] > 0x10000; offset += 4)
+        {
+            uint32_t value = 0;
+            if (safe_read32(result[0] + offset, value) && classify(value, kind, handle)) { entity = value; return static_cast<int32_t>(offset); }
+        }
+        return -2;
+    }
+
+    struct RayContext
+    {
+        const lc_ray* ray;
+        uint32_t result[kRayResultWords];
+        float normal[3];
+        int32_t link;
+        bool faulted;
+    };
+
+    lc::ray::Probe run_line_test(RayContext& c, const lc::ray::Vec& from, const lc::ray::Vec& to, uint32_t ignore)
+    {
+        lc::ray::Probe p;
+        alignas(16) float start[4] = { from.x, from.y, from.z, 0.0f };
+        alignas(16) float end[4] = { to.x, to.y, to.z, 0.0f };
+        alignas(16) uint32_t result[kRayResultWords] = {};
+        result[kRayResultMarkerOffset / 4] = 0xFFFF;
+        LineTestCall call{ g_line_test, start, end, ignore, result, c.ray->include_flags, c.ray->mode, false };
+        g_ray_stats.tests++;
+        if (!lc::safe_invoke(reinterpret_cast<uint32_t>(&line_test_thunk), &call))
+        {
+            c.faulted = true;
+            p.status = lc::ray::kFailed;
+            return p;
+        }
+        std::memcpy(c.result, result, sizeof(result));
+        if (!call.returned) { p.status = lc::ray::kClear; return p; }
+        p.status = lc::ray::kHit;
+        std::memcpy(&p.position, &result[kRayPositionWord], 12);
+        std::memcpy(c.normal, &result[kRayNormalWord], 12);
+        c.link = -2;
+        uint32_t entity = 0;
+        int32_t kind = LC_ENTITY_NONE, handle = 0;
+        if (result[0] > 0x10000 && safe_read32(result[0] + kInstanceEntityOffset, entity) && classify(entity, kind, handle))
+        {
+            c.link = static_cast<int32_t>(kInstanceEntityOffset);
+        }
+        else
+        {
+            entity = 0; kind = LC_ENTITY_NONE; handle = 0;
+            if (c.ray->flags & LC_RAY_RESEARCH) { c.link = research_link(result, kind, handle, entity); }
+        }
+        p.kind = kind;
+        p.handle = handle;
+        // World geometry is never handed back as the ignored entity: only pool entities are known to be CEntity.
+        p.entity = kind == LC_ENTITY_NONE ? 0 : entity;
+        return p;
+    }
 }
 
 LC_API int32_t lc_raycast_install(uint32_t line_test)
 {
     g_line_test = line_test;
-    return line_test != 0 ? 1 : 0;
+    g_ray_stats = lc_ray_stats{};
+    g_ray_stats.installed = line_test != 0 ? 1 : 0;
+    return g_ray_stats.installed;
 }
 
 LC_API int32_t lc_raycast(const lc_ray* ray, lc_ray_hit* hit)
 {
-    if (ray == nullptr || hit == nullptr) { return -1; }
+    if (ray == nullptr || hit == nullptr || ray->size != sizeof(lc_ray) || ray->hit_size != sizeof(lc_ray_hit)) { return LC_RAY_UNAVAILABLE; }
     std::memset(hit, 0, sizeof(lc_ray_hit));
     hit->link = -2;
-    if (g_line_test == 0) { return -1; }
-    alignas(16) float start[4] = { ray->start[0], ray->start[1], ray->start[2], 0.0f };
-    alignas(16) float end[4] = { ray->end[0], ray->end[1], ray->end[2], 0.0f };
-    // The game's own result initialisation (every caller): zeroes, vectors zero, +0x4C = 0xFFFF.
-    alignas(16) uint32_t result[24] = {};
-    result[0x4C / 4] = 0xFFFF;
-    uint32_t ignore = ray->ignore_handle != 0 ? entity_of(ray->ignore_kind, ray->ignore_handle) : 0;
-    LineTestCall call{ g_line_test, start, end, ignore, result, ray->include_flags, ray->mode, 0 };
-    if (!lc::safe_invoke(reinterpret_cast<uint32_t>(&line_test_thunk), &call)) { return -1; }
-    std::memcpy(hit->raw, result, sizeof(result));
-    if (call.returned == 0) { return 0; }
-    std::memcpy(hit->position, &result[4], 12);
-    std::memcpy(hit->normal, &result[8], 12);
-    // Research: find the hit entity. link = -100 - i when raw word i is an entity itself; link = offset when the
-    // entity pointer sits at raw[0] + offset (raw[0] looks like the physics instance).
-    int32_t kind = 0, handle = 0;
-    for (int i = 0; i < 24 && hit->link == -2; i++)
+    if (!g.initialised || g_line_test == 0 || ray->ignore_count < 0 || ray->ignore_count > LC_RAY_MAX_IGNORE) { return LC_RAY_UNAVAILABLE; }
+    g_ray_stats.queries++;
+    lc::ray::Query q;
+    q.start = lc::ray::Vec{ ray->start[0], ray->start[1], ray->start[2] };
+    q.end = lc::ray::Vec{ ray->end[0], ray->end[1], ray->end[2] };
+    q.accept = ray->accept;
+    q.max_passes = ray->max_passes < 0 ? 0 : ray->max_passes;
+    q.step = ray->pass_step;
+    q.ignore_count = ray->ignore_count;
+    for (int i = 0; i < ray->ignore_count; i++) { q.ignore_kind[i] = ray->ignore_kind[i]; q.ignore_handle[i] = ray->ignore_handle[i]; }
+    q.first_ignore = ray->ignore_count > 0 ? entity_of(ray->ignore_kind[0], ray->ignore_handle[0]) : 0;
+
+    RayContext context{};
+    context.ray = ray;
+    context.link = -2;
+    lc::ray::Outcome out = lc::ray::walk(q, [&](const lc::ray::Vec& from, const lc::ray::Vec& to, uint32_t ignore) {
+        return run_line_test(context, from, to, ignore);
+    });
+    hit->tests = out.tests;
+    hit->passes = out.passes;
+    g_ray_stats.passes += static_cast<uint32_t>(out.passes);
+    std::memcpy(hit->raw, context.result, sizeof(context.result));
+    if (context.faulted)
     {
-        if (classify(result[i], kind, handle)) { hit->link = -100 - i; }
+        // A fault in the game's own physics query means an assumption about it is wrong: off for the session.
+        uint32_t number = lc::last_fault().count;
+        g.natives.note_raycast_fault(number);
+        g_ray_stats.faults++;
+        g_ray_stats.fault_number = number;
+        g_ray_stats.installed = 0;
+        g_line_test = 0;
+        return LC_RAY_UNAVAILABLE;
     }
-    for (int offset = 0; offset < 0x100 && hit->link == -2 && result[0] > 0x10000; offset += 4)
-    {
-        uint32_t value = 0;
-        if (safe_read32(result[0] + offset, value) && classify(value, kind, handle)) { hit->link = offset; }
-    }
-    hit->entity_kind = kind;
-    hit->entity_handle = handle;
-    return 1;
+    if (out.result == lc::ray::kFailed) { return LC_RAY_UNAVAILABLE; }
+    if (out.result == lc::ray::kClear) { g_ray_stats.clears++; return LC_RAY_CLEAR; }
+    hit->position[0] = out.last.position.x; hit->position[1] = out.last.position.y; hit->position[2] = out.last.position.z;
+    std::memcpy(hit->normal, context.normal, sizeof(context.normal));
+    hit->distance = out.distance;
+    hit->entity_kind = out.last.kind;
+    hit->entity_handle = out.last.handle;
+    hit->link = context.link;
+    if (out.result == lc::ray::kInconclusive) { g_ray_stats.inconclusive++; return LC_RAY_INCONCLUSIVE; }
+    g_ray_stats.hits++;
+    return LC_RAY_HIT;
+}
+
+LC_API void lc_raycast_stats(lc_ray_stats* out)
+{
+    if (out != nullptr) { *out = g_ray_stats; }
 }

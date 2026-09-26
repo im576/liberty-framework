@@ -3,7 +3,8 @@ param(
     [string] $ClangBin
 )
 
-# Builds native/LibertyCore -> native/LibertyCore/bin/LibertyCore.dll (32-bit, C++20, statically linked, warnings are errors).
+# Builds native/LibertyCore -> native/LibertyCore/bin/LibertyCore.dll (32-bit, C++20, statically linked, warnings are errors),
+# then builds and runs the core's game-independent unit tests (native/LibertyCore/tests/*.cpp); a failing test fails the build.
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
 . (Join-Path $PSScriptRoot 'toolchains.ps1')
@@ -24,3 +25,13 @@ if ($LASTEXITCODE -ne 0) { throw "LibertyCore build failed with exit code $LASTE
 
 Write-Host "Built $output"
 Write-Host ("SHA256 " + (Get-FileHash -LiteralPath $output -Algorithm SHA256).Hash)
+
+# Unit tests: pure algorithms only (no game, no DLL), one executable per file.
+$testDirectory = Join-Path $core 'tests'
+foreach ($test in Get-ChildItem -LiteralPath $testDirectory -Filter '*.cpp' | Sort-Object Name) {
+    $testExe = Join-Path $outputDirectory ($test.BaseName + '.exe')
+    & $compiler -std=c++20 -O2 -Wall -Wextra -Werror -fno-exceptions -fno-rtti -static -o $testExe $test.FullName
+    if ($LASTEXITCODE -ne 0) { throw "$($test.Name) failed to build (exit $LASTEXITCODE)" }
+    & $testExe
+    if ($LASTEXITCODE -ne 0) { throw "$($test.BaseName) failed (exit $LASTEXITCODE)" }
+}

@@ -17,6 +17,7 @@ Those projects are GPL-3.0 and are not copied (AGENTS.md rule 7). This table tra
 | Signatures / pattern scan | **Done**: `CodeScanner`, `IMemory.FindPattern/FindNative`; every address resolved by pattern and checked offline (verifier) | `Core/Memory`, `tools/verify` |
 | Memory read/write | **Done**: `IMemory` (capability), patches recorded and restored on stop/unload | `MemoryService` |
 | Hooks / detours | **Done** (core): ADR-0007 hook manager: entry detours with verified displaced bytes, owned, listed (lf hooks), restored on unload; ADR-0005 skeleton call-site hooks still separate | hooks.cpp |
+| Physics queries (raycast) | **Built** (SDK 1.1): the game's line test called by the core (ADR-0008), pass-through filtering by kind, up to 4 ignored entities; ground and peds verified, vehicles pending (T-027) | `Query.Raycast`, `core.cpp` `lc_raycast`, `ray_walk.h` |
 | Exception-safe game calls | **Done**: SEH-contained native calls and raw reads in the core; faulting native disabled and logged | `safe_call.cpp` |
 | Version / episode detection | **Done**: game version, episode (IV/TLAD/TBoGT) | `MemoryService.GameVersion`, `ILiberty.Episode` |
 | **Tooling** | | |
@@ -33,7 +34,7 @@ Those projects are GPL-3.0 and are not copied (AGENTS.md rule 7). This table tra
 |---|---|---|
 | **M1 SDK 1.0 core** | SDK, services, core ABI, crash safety, Arsenal wheel/trunk on Liberty.Ui/choreography, docs | **Done 2026-09-25**: suite 9/11 → all targeted re-runs pass (trunk wheel + choreography in game, self-test) |
 | **M2 Hooks + exact damage** | ADR-0007 core hook manager; damage hook: attacker, victim, weapon, damage, armour, bone, hit position/direction, type, kill | **Done 2026-09-25**: autopilot `exact-damage` passes (exact bullet hits with hit points, falls typed Fall, exact kills) |
-| **M3 WorldQuery** | snapshot queries (radius/cone of peds and vehicles), ground/water, perception and visibility; later engine raycast/line of sight | layer 1 done (`Liberty.Query`, self-test); raycast open |
+| **M3 WorldQuery** | snapshot queries (radius/cone of peds and vehicles), ground/water, perception and visibility; engine raycast/line of sight | layer 1 done (`Liberty.Query`, self-test); layer 2 raycast built (ADR-0008, SDK 1.1: `Raycast`, `HasLineOfSight`; ground and peds verified by the spike), autopilot `raycast` + self-test pending on the installed build (T-027) |
 | **M4 Content pipeline 1** | glTF → IR → validators → WDR/WTD (single page) → IMG; read-back verification; preview renders; Blender add-on v0; autopilot asset scenario | **Done 2026-09-25** (`docs/content/README.md`): the glTF test crate compiles, reads back identical, spawns and renders correctly in game (`asset-review`) |
 | **M5 Developer loop** | per-module hot reload (dev), visual inspector | **Done 2026-09-26**: `hot-reload` scenario (the autopilot reloads itself and its self-test passes 38/38), `inspector-review` |
 | **M6 Content pipeline 2+** | skinned meshes, LODs, collision bounds, multi-page resources, WDD/WFT, animations | per-format scenarios |
