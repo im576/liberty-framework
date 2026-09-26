@@ -20,6 +20,8 @@ namespace LibertyFramework.Engine.Core
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern uint lc_native_hash(int id);
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern int lc_init(ref LcAddressBook book, uint[] handlers, byte[] error, int errorSize);
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern void lc_set_native_verified(int id, int verified);
+        [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern int lc_raycast_install(uint lineTest);
+        [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern int lc_raycast(ref LcRay ray, ref LcRayHit hit);
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern int lc_call_native(int id, int argc, int[] args, int[] outs);
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern IntPtr lc_frame(ref LcFrameInput input);
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern void lc_shutdown();
@@ -140,6 +142,23 @@ namespace LibertyFramework.Engine.Core
             return ok;
         }
 
+        internal bool RaycastReady { get; private set; }
+
+        internal bool InstallRaycast(GameAddresses addresses)
+        {
+            if (!Available || addresses == null || !addresses.LineTestResolved) { return false; }
+            RaycastReady = lc_raycast_install(addresses.LineTestFunction) != 0;
+            RuntimeLog.Info("engine_raycast installed=" + RaycastReady + " line_test=0x" + addresses.LineTestFunction.ToString("X8"));
+            return RaycastReady;
+        }
+
+        // 1 hit, 0 no hit, -1 unavailable or contained fault. Engine tick only.
+        internal int Raycast(ref LcRay ray, ref LcRayHit hit)
+        {
+            if (!RaycastReady) { return -1; }
+            if (hit.Raw == null) { hit.Raw = new uint[24]; }
+            return lc_raycast(ref ray, ref hit);
+        }
         internal string HooksReport()
         {
             if (!Loaded) { return "core not loaded"; }

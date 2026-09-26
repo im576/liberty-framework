@@ -10,7 +10,7 @@
 #endif
 #define LC_API LC_EXTERN __declspec(dllexport)
 
-#define LC_ABI_VERSION 3
+#define LC_ABI_VERSION 4
 #define LC_MAX_PEDS 128
 #define LC_MAX_VEHICLES 64
 #define LC_MAX_EVENTS 256
@@ -285,3 +285,34 @@ LC_API void lc_faults(lc_fault* out, uint32_t number);
 LC_API int32_t lc_damage_hook_install(uint32_t function, uint32_t component_to_bone);
 // Writes one line per hook (name, target, state); returns the number of hooks.
 LC_API int32_t lc_hooks_report(char* buffer, int32_t size);
+
+// ---- Raycast / line of sight (ABI 4; docs/research/Raycast.md) ----
+// The game's general line test (GameAddresses.LineTestFunction). Called on the engine tick only.
+typedef struct lc_ray
+{
+    float start[3];
+    float end[3];
+    uint32_t include_flags;  // game archetype bits (LC_RAY_* once verified; raw bits for research)
+    int32_t mode;            // the line test's last argument (callers pass 1, -1, 0x40, 8)
+    int32_t ignore_handle;   // entity to skip, or 0
+    int32_t ignore_kind;     // LC_ENTITY_PED / VEHICLE / OBJECT
+} lc_ray;
+
+#define LC_ENTITY_NONE 0
+#define LC_ENTITY_PED 1
+#define LC_ENTITY_VEHICLE 2
+#define LC_ENTITY_OBJECT 3
+
+typedef struct lc_ray_hit
+{
+    float position[3];
+    float normal[3];
+    int32_t entity_kind;     // LC_ENTITY_*; NONE for world geometry
+    int32_t entity_handle;
+    int32_t link;            // research: where the entity was found (see raycast notes); -2 none
+    uint32_t raw[24];        // the game's 0x60-byte result, for research and diagnostics
+} lc_ray_hit;
+
+// Returns 1 when the ray hit, 0 when it did not, -1 when unavailable or the call faulted (contained).
+LC_API int32_t lc_raycast_install(uint32_t line_test);
+LC_API int32_t lc_raycast(const lc_ray* ray, lc_ray_hit* hit);

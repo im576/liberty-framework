@@ -101,6 +101,9 @@ namespace LibertyFramework.Verify
             check.Equal("object pool global", 0x1632C60u, addresses.ObjectPoolGlobal);
             // ADR-0007: damage-response routine (only real writer of [ped+0xA78]) and the component-to-bone helper (Capstone).
             check.Equal("ped damage-response routine", 0xCA3820u, addresses.DamageResponseFunction);
+            // Raycast: the general line test (Capstone: GET_GROUND_Z_FOR_3D_COORD -> A523F0 -> A54510 -> 738880 on [world]).
+            check.Equal("line test function", 0xA536B0u, addresses.LineTestFunction);
+            check.Equal("physics world global", 0x12B9C78u, addresses.PhysicsWorldGlobal);
             check.Equal("component-to-bone helper", 0xA76700u, addresses.ComponentToBoneFunction);
             // T-026 step 2: every direct native is registered; handlers match the Capstone thread-safety scan (all clean).
             System.Collections.Generic.Dictionary<string, uint> scanned = new System.Collections.Generic.Dictionary<string, uint> {

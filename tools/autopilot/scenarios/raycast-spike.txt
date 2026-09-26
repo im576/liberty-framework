@@ -1,0 +1,24 @@
+﻿# Raycast research spike (docs/research/Raycast.md): raw game line test results against ground, sky, a vehicle and a ped.
+god on
+wanted 0
+goto east_park
+wait 6000
+raydebug down 10
+raydebug up 60
+raybits down 10
+raydebug forward 30
+spawncar admiral 6
+expect "autopilot_spawncar handle=" 20
+wait 2000
+raydebug forward 12
+raybits forward 12
+raydebug forward 12 FFFFFFFF -1
+clear
+wait 1000
+spawn 1 4 0
+expect "autopilot_spawned count=1" 15
+wait 2500
+raydebug forward 8
+raybits forward 8
+raydebug forward 8 FFFFFFFF -1
+clear

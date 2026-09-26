@@ -2,11 +2,11 @@ using System.Runtime.InteropServices;
 
 namespace LibertyFramework.Engine.Core
 {
-    // Field-for-field mirror of native/LibertyCore/include/liberty_core.h (ABI version 3). CoreBridge checks the sizes
+    // Field-for-field mirror of native/LibertyCore/include/liberty_core.h (ABI version 4). CoreBridge checks the sizes
     // against the native lc_snapshot.size before reading anything.
     internal static class CoreAbi
     {
-        internal const uint Version = 3;
+        internal const uint Version = 4;
         internal const int MaxPeds = 128;
         internal const int MaxVehicles = 64;
         internal const int MaxEvents = 256;
@@ -140,6 +140,27 @@ namespace LibertyFramework.Engine.Core
         internal float ToX, ToY, ToZ;
     }
 
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    internal struct LcRay
+    {
+        internal float StartX, StartY, StartZ;
+        internal float EndX, EndY, EndZ;
+        internal uint IncludeFlags;
+        internal int Mode;
+        internal int IgnoreHandle;
+        internal int IgnoreKind;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    internal struct LcRayHit
+    {
+        internal float X, Y, Z;
+        internal float NormalX, NormalY, NormalZ;
+        internal int EntityKind;
+        internal int EntityHandle;
+        internal int Link;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 24)] internal uint[] Raw;
+    }
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     internal struct LcDamage
     {

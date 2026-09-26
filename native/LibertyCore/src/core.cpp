@@ -595,3 +595,97 @@ LC_API int32_t lc_damage_hook_install(uint32_t function, uint32_t component_to_b
 }
 
 LC_API int32_t lc_hooks_report(char* buffer, int32_t size) { return lc::hooks::report(buffer, size); }
+
+// ---- raycast ----
+namespace
+{
+    uint32_t g_line_test = 0;
+
+    struct LineTestCall
+    {
+        uint32_t function;
+        const float* start;
+        const float* end;
+        uint32_t ignore;
+        void* result;
+        uint32_t flags;
+        int32_t mode;
+        int32_t returned;
+    };
+
+    typedef int32_t(__cdecl* LineTest)(const float*, const float*, uint32_t, void*, uint32_t, int32_t, int32_t);
+
+    void line_test_thunk(void* p)
+    {
+        LineTestCall* c = static_cast<LineTestCall*>(p);
+        // Every caller in the game passes a trailing 4 (unused by the function itself); pass it the same way.
+        c->returned = reinterpret_cast<LineTest>(c->function)(c->start, c->end, c->ignore, c->result, c->flags, c->mode, 4);
+    }
+
+    lc::RagePool* pool_of(int32_t kind)
+    {
+        return kind == LC_ENTITY_PED ? g.peds_pool : kind == LC_ENTITY_VEHICLE ? g.vehicles_pool : kind == LC_ENTITY_OBJECT ? g.objects_pool : nullptr;
+    }
+
+    uint32_t entity_of(int32_t kind, int32_t handle)
+    {
+        lc::RagePool* pool = pool_of(kind);
+        if (pool == nullptr || !pool->valid() || handle <= 0) { return 0; }
+        int index = handle >> 8;
+        if (index < 0 || index >= pool->size() || pool->handle_at(index) != handle) { return 0; }
+        return pool->object_at(index);
+    }
+
+    bool classify(uint32_t address, int32_t& kind, int32_t& handle)
+    {
+        for (int32_t k = LC_ENTITY_PED; k <= LC_ENTITY_OBJECT; k++)
+        {
+            lc::RagePool* pool = pool_of(k);
+            if (pool == nullptr || !pool->valid()) { continue; }
+            int32_t h = pool->handle_of(address);
+            if (h != 0) { kind = k; handle = h; return true; }
+        }
+        return false;
+    }
+}
+
+LC_API int32_t lc_raycast_install(uint32_t line_test)
+{
+    g_line_test = line_test;
+    return line_test != 0 ? 1 : 0;
+}
+
+LC_API int32_t lc_raycast(const lc_ray* ray, lc_ray_hit* hit)
+{
+    if (ray == nullptr || hit == nullptr) { return -1; }
+    std::memset(hit, 0, sizeof(lc_ray_hit));
+    hit->link = -2;
+    if (g_line_test == 0) { return -1; }
+    alignas(16) float start[4] = { ray->start[0], ray->start[1], ray->start[2], 0.0f };
+    alignas(16) float end[4] = { ray->end[0], ray->end[1], ray->end[2], 0.0f };
+    // The game's own result initialisation (every caller): zeroes, vectors zero, +0x4C = 0xFFFF.
+    alignas(16) uint32_t result[24] = {};
+    result[0x4C / 4] = 0xFFFF;
+    uint32_t ignore = ray->ignore_handle != 0 ? entity_of(ray->ignore_kind, ray->ignore_handle) : 0;
+    LineTestCall call{ g_line_test, start, end, ignore, result, ray->include_flags, ray->mode, 0 };
+    if (!lc::safe_invoke(reinterpret_cast<uint32_t>(&line_test_thunk), &call)) { return -1; }
+    std::memcpy(hit->raw, result, sizeof(result));
+    if (call.returned == 0) { return 0; }
+    std::memcpy(hit->position, &result[4], 12);
+    std::memcpy(hit->normal, &result[8], 12);
+    // Research: find the hit entity. link = -100 - i when raw word i is an entity itself; link = offset when the
+    // entity pointer sits at raw[0] + offset (raw[0] looks like the physics instance).
+    int32_t kind = 0, handle = 0;
+    for (int i = 0; i < 24 && hit->link == -2; i++)
+    {
+        if (classify(result[i], kind, handle)) { hit->link = -100 - i; }
+    }
+    for (int offset = 0; offset < 0x100 && hit->link == -2 && result[0] > 0x10000; offset += 4)
+    {
+        uint32_t value = 0;
+        if (safe_read32(result[0] + offset, value) && classify(value, kind, handle)) { hit->link = offset; }
+    }
+    hit->entity_kind = kind;
+    hit->entity_handle = handle;
+    return 1;
+}

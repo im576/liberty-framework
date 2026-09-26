@@ -136,6 +136,7 @@ namespace LibertyFramework.Core.Memory
             result.Run("frame_counter", scanner, result.ResolveFrameCounter);
             result.Run("entity_pools", scanner, result.ResolveEntityPools);
             result.Run("damage", scanner, result.ResolveDamage);
+            result.Run("line_test", scanner, result.ResolveLineTest);
             return result;
         }
 
@@ -166,6 +167,30 @@ namespace LibertyFramework.Core.Memory
             DamageResponseFunction = function;
             ComponentToBoneFunction = memory.RelativeTarget(worker + 0x2A);
             Report.Add("damage ok response=0x" + function.ToString("X8") + " component_to_bone=0x" + ComponentToBoneFunction.ToString("X8"));
+        }
+
+        // Raycast / line of sight: the game's general line test (research: docs/research/Raycast.md).
+        // cdecl bool TestLine(Vec3* start, Vec3* end, CEntity* ignore, Result* out, uint includeFlags, int mode):
+        // it picks the ignored entity's physics instance by entity type ([e+0x28] >> 6 & 0xF: 3 ped, 2 vehicle, else
+        // [e+0x38]) and runs the physics-world query (thiscall 738880 on [world]). Found by its type switch; the
+        // start is checked by its prologue and by the world query it calls.
+        internal uint LineTestFunction;
+        internal uint PhysicsWorldGlobal;
+        internal bool LineTestResolved { get { return LineTestFunction != 0 && PhysicsWorldGlobal != 0; } }
+
+        private void ResolveLineTest(CodeScanner scanner)
+        {
+            IMemory memory = scanner.Memory;
+            List<uint> matches = scanner.FindPattern("8B 41 28 C1 E8 06 83 E0 0F 83 F8 03 75 17 F6 C2 40 74 0A 8B 81 B4 07 00 00 85 C0 75 1F 8B 81 B0 07 00 00", true);
+            Require(matches.Count == 1, "line test type switch (matches=" + matches.Count + ")");
+            uint function = matches[0] - 0x5A;
+            Require(scanner.ShapeAt(function, "55 8B EC 83 E4 F0 83 EC 20 8B 45 08 8B 4D 10"), "line test prologue");
+            // mov ecx,[world]; push 0; push [ebp+1Ch]; push 7; push -1; push edx; push eax; push [ebp+14h]; lea eax,[esp+1Ch]; push eax; call query
+            Require(scanner.ShapeAt(function + 0x96, "8B 0D ?? ?? ?? ?? 6A 00 FF 75 1C 6A 07 6A FF 52 50 FF 75 14 8D 44 24 1C 50 E8"), "line test world query");
+            PhysicsWorldGlobal = memory.ReadUInt32(function + 0x98);
+            LineTestFunction = function;
+            Report.Add("line_test ok function=0x" + function.ToString("X8") + " world=0x" + PhysicsWorldGlobal.ToString("X8") +
+                " query=0x" + memory.RelativeTarget(function + 0xAF).ToString("X8"));
         }
 
         // ADR-0006 core v2: the vehicle and object rage pools, from their DOES_*_EXIST handlers. Handler:
