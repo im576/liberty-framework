@@ -17,6 +17,8 @@ namespace LibertyFramework.Content
     //   build <game> <asset.json> <out>                  validate, compile, read back, preview, report
     //   package <game> <out> <img> <ide> <asset.json...> build every asset, then one IMG and its IDE
     //   templates <game> <archive>                       list drawables usable as prop templates
+    //   selftest [--out <dir>]                           offline tests (DXT codecs, WTD writer round trips, validator); no game
+    //   wtdcheck [--game <dir>] <wtd|folder|img...>      rebuild game dictionaries with the WTD writer and compare (read only)
     internal static class Program
     {
         private static int Main(string[] args)
@@ -28,8 +30,11 @@ namespace LibertyFramework.Content
                 if (args.Length >= 4 && args[0] == "build") { string ignored; return Build(args[1], args[2], args[3], out ignored); }
                 if (args.Length >= 6 && args[0] == "package") { return Package(args[1], args[2], args[3], args[4], args.Skip(5).ToArray()); }
                 if (args.Length >= 3 && args[0] == "templates") { return Templates(args[1], args[2]); }
+                if (args.Length >= 1 && args[0] == "selftest") { return SelfTest.Run(args.Skip(1).ToArray()); }
+                if (args.Length >= 2 && args[0] == "wtdcheck") { return TextureDictionaryCheck.Run(args.Skip(1).ToArray()); }
                 Console.WriteLine("usage: LibertyContent sample <dir> <name> | validate <asset.json> | build <game> <asset.json> <out> |");
-                Console.WriteLine("       package <game> <out> <img> <ide> <asset.json...> | templates <game> <archive>");
+                Console.WriteLine("       package <game> <out> <img> <ide> <asset.json...> | templates <game> <archive> |");
+                Console.WriteLine("       selftest [--out <dir>] | wtdcheck [--game <dir>] <file.wtd|folder|archive.img...>");
                 return 1;
             }
             catch (Exception error)
@@ -43,7 +48,7 @@ namespace LibertyFramework.Content
         {
             AssetManifest manifest = AssetManifest.Load(manifestPath);
             ContentAsset asset = GltfImporter.Import(manifest.SourcePath);
-            List<AssetValidator.Issue> issues = AssetValidator.Validate(asset, 1);
+            List<AssetValidator.Issue> issues = AssetValidator.Validate(asset, CompilerCapabilities.Current);
             foreach (AssetValidator.Issue issue in issues) { Console.WriteLine(issue); }
             Console.WriteLine("validate " + manifest.Name + ": " + (AssetValidator.HasErrors(issues) ? "FAILED" : "ok") + " (" + issues.Count + " issues)");
             return AssetValidator.HasErrors(issues) ? 2 : 0;
@@ -55,7 +60,7 @@ namespace LibertyFramework.Content
             string folder = Path.Combine(output, manifest.Name);
             Directory.CreateDirectory(folder);
             ContentAsset asset = GltfImporter.Import(manifest.SourcePath);
-            List<AssetValidator.Issue> issues = AssetValidator.Validate(asset, 1);
+            List<AssetValidator.Issue> issues = AssetValidator.Validate(asset, CompilerCapabilities.Current);
             foreach (AssetValidator.Issue issue in issues) { Console.WriteLine("  " + issue); }
             List<string> readback = new List<string>();
             PropCompiler.Result compiled = null;
