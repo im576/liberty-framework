@@ -88,12 +88,25 @@ namespace LibertyFramework.Content
             Need need = NeedOf(asset);
             PropCompiler.Result result = new PropCompiler.Result { DrawableWriter = AssetManifest.WriterStructure, TextureMode = AssetManifest.TextureModeNative };
             AssetManifest.TemplateRef reference = manifest.StructureTemplateOrDefault;
-            Template template = Find(game, reference, need, result.Notes);
-            if (template == null)
+            bool auto = string.Equals(reference.Model, AssetManifest.AutoTemplate, StringComparison.OrdinalIgnoreCase);
+            // An auto search moves on when a drawable that matched still cannot be written (for example no room for a texture
+            // name): one asset must not fail the whole package. An explicit template's failure is the error.
+            foreach (Template template in Find(game, reference, need, result.Notes))
             {
-                fallback = "structure writer: no drawable in " + reference.Archive + " fits (" + need.Describe() + ")";
-                return null;
+                try { return Build(game, manifest, asset, need, template, result); }
+                catch (InvalidDataException error)
+                {
+                    if (!auto) { throw; }
+                    result.Notes.Add("template " + template.Name + " matched but could not be written (" + error.Message + "); trying the next");
+                    result.Parts.Clear(); result.Textures.Clear(); result.TextureSources.Clear(); result.FlippedWinding = false;
+                }
             }
+            fallback = "structure writer: no drawable in " + reference.Archive + " fits (" + need.Describe() + ")";
+            return null;
+        }
+
+        private static PropCompiler.Result Build(string game, AssetManifest manifest, ContentAsset asset, Need need, Template template, PropCompiler.Result result)
+        {
             result.TemplateUsed = template.Name;
 
             // Meshes per LOD and material group, in the template's winding.
@@ -172,7 +185,8 @@ namespace LibertyFramework.Content
             return (asset.Length + suffix.Length > 23 ? asset.Substring(0, 23 - suffix.Length) : asset) + suffix;
         }
 
-        private static Template Find(string game, AssetManifest.TemplateRef reference, Need need, List<string> notes)
+        // Drawables that fit, in search order (an explicit reference yields it or throws why not).
+        private static IEnumerable<Template> Find(string game, AssetManifest.TemplateRef reference, Need need, List<string> notes)
         {
             byte[] key = null;
             try { key = ImgArchive.FindKey(Path.Combine(game, "GTAIV.exe")); }
@@ -208,14 +222,15 @@ namespace LibertyFramework.Content
                     string name = archiveName + "/" + Path.GetFileNameWithoutExtension(entry.Name);
                     if (reason == null)
                     {
-                        if (auto) { notes.Add("template search: " + name + " is the first of " + examined + " drawables examined that fits"); }
-                        return new Template { Name = name, File = file, ShaderMaterial = shaderMaterial };
+                        if (auto) { notes.Add("template search: " + name + " fits (" + examined + " drawables examined)"); }
+                        yield return new Template { Name = name, File = file, ShaderMaterial = shaderMaterial };
+                        if (!auto) { yield break; }
+                        continue;
                     }
                     if (!auto) { throw new InvalidDataException("structure template " + name + " does not fit the asset (" + need.Describe() + "): " + reason); }
                 }
             }
-            if (!auto) { throw new InvalidDataException("structure template " + reference.Model + " not found in " + reference.Archive); }
-            return null;
+            if (!auto && examined == 0) { throw new InvalidDataException("structure template " + reference.Model + " not found in " + reference.Archive); }
         }
 
         // Prototype bytes for the texture dictionary: captured from the v1 template's own dictionary when it has one, as

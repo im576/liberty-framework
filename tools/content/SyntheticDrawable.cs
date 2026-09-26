@@ -29,6 +29,8 @@ namespace LibertyFramework.Content
             // Test switches: geometry 1 reuses geometry 0's vertex buffer; the first model's record 0 gets radius 0.
             internal bool ShareFirstVertexBuffer;
             internal bool BreakFirstRecord;
+            // The fill of the system segment's unused tail: 0xCD as RAGE leaves it, or 0 so a renamed texture has no room.
+            internal byte TailFill = Fill;
         }
 
         internal const int OneRecord = 0, PerGeometry = 1, PerGeometryPlusModel = 2;
@@ -182,7 +184,7 @@ namespace LibertyFramework.Content
             }
             w.F32(root + DrawableFile.DrawableRadius, geometries.Max(g => g.RadiusAround(cx, cy, cz)));
 
-            while (w.Bytes.Count % 256 != 0) { w.Bytes.Add(Fill); }
+            while (w.Bytes.Count % 256 != 0) { w.Bytes.Add(spec.TailFill); }
             int systemSize = w.Bytes.Count;
             int graphicsSize;
             uint flags = DrawableBuilder.EncodeGraphics((uint)(systemSize / 256), cursor, shift, out graphicsSize);

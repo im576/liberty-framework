@@ -162,9 +162,9 @@ namespace LibertyFramework.Content
             return game;
         }
 
-        private static AssetManifest StructureManifest(string template, string textureMode, string lodDistances)
+        private static AssetManifest StructureManifest(string template, string textureMode, string lodDistances, string name = "lf_struct")
         {
-            return SelfTest.ParseManifest("{\"schemaVersion\":1,\"name\":\"lf_struct\",\"type\":\"prop\",\"source\":\"x.gltf\",\"template\":{\"archive\":\"pc/models/cdimages/test.img\",\"model\":\"aaa_single\"}," +
+            return SelfTest.ParseManifest("{\"schemaVersion\":1,\"name\":\"" + name + "\",\"type\":\"prop\",\"source\":\"x.gltf\",\"template\":{\"archive\":\"pc/models/cdimages/test.img\",\"model\":\"aaa_single\"}," +
                 "\"textureDictionary\":\"lf_struct\",\"drawDistanceMeters\":100,\"textureMode\":\"" + textureMode + "\",\"drawableWriter\":\"structure\"," +
                 "\"structureTemplate\":{\"archive\":\"pc/models/cdimages/test.img\",\"model\":\"" + template + "\"}" + (lodDistances != null ? ",\"lodDistancesMeters\":[" + lodDistances + "]" : "") + "}");
         }
@@ -203,12 +203,41 @@ namespace LibertyFramework.Content
                 Dictionary<string, object> compiled = (Dictionary<string, object>)parsed["compiled"];
                 t.Check((string)compiled["drawableWriter"] == "structure" && Convert.ToInt32(compiled["lodCount"]) == 2 && ((System.Collections.IList)compiled["geometries"]).Count == 3 &&
                     ((System.Collections.IList)compiled["textures"]).Count == 2 && (string)((Dictionary<string, object>)parsed["capabilities"])["version"] == "v2-structure", "report.json: writer, LOD count, geometries, textures, capabilities");
-                if (output != null) { File.WriteAllText(Path.Combine(output, "structure_report.json"), report); File.WriteAllBytes(Path.Combine(output, "structure.wdr"), result.Drawable); }
+                if (output != null)
+                {
+                    File.WriteAllText(Path.Combine(output, "structure_report.json"), report);
+                    File.WriteAllBytes(Path.Combine(output, "structure.wdr"), result.Drawable);
+                    // A game folder any build can run against offline: `build <out>/synthetic_game <asset.json> <dir>` with a
+                    // structure asset finds bbb_lods (four LODs, two geometries each) by the "*"/"auto" search.
+                    string keep = Path.Combine(output, "synthetic_game");
+                    if (Directory.Exists(keep)) { Directory.Delete(keep, true); }
+                    CopyFolder(game, keep);
+                }
 
                 string refused;
                 try { PropCompiler.Compile(game, StructureManifest("aaa_single", "native", null), asset); refused = null; }
                 catch (InvalidDataException error) { refused = error.Message; }
                 t.Check(refused != null && refused.Contains("does not fit") && refused.Contains("LOD 0 has 1 geometries, the asset needs 2"), "an explicit template that does not fit is an error naming why", refused);
+
+                // Auto search: a drawable that matches but cannot be written (no free tail for a longer texture name) is
+                // skipped with a note, and the next one is used; the same drawable named explicitly is the error.
+                SyntheticDrawable.Spec noTail = FourLods();
+                noTail.TailFill = 0;
+                noTail.Textures = new[] { "a", "b", "c" };
+                string crowdedGame = FakeGame(new KeyValuePair<string, RscResource>("aaa_notail.wdr", SyntheticDrawable.Build(noTail)),
+                    new KeyValuePair<string, RscResource>("bbb_lods.wdr", SyntheticDrawable.Build(FourLods())));
+                try
+                {
+                    // A 22-character name does not fit the template's 16-byte name slots, so it needs the free tail.
+                    const string longName = "lf_structure_long_name";
+                    PropCompiler.Result moved = PropCompiler.Compile(crowdedGame, StructureManifest("auto", "native", "20,50", longName), asset);
+                    t.Check(moved.TemplateUsed.EndsWith("/bbb_lods") && moved.Notes.Any(n => n.Contains("aaa_notail matched but could not be written")),
+                        "auto moves past a template that cannot be written", moved.TemplateUsed + " | " + string.Join(" | ", moved.Notes.ToArray()));
+                    try { PropCompiler.Compile(crowdedGame, StructureManifest("aaa_notail", "native", "20,50", longName), asset); refused = null; }
+                    catch (InvalidDataException error) { refused = error.Message; }
+                    t.Check(refused != null && refused.Contains("no room"), "the same template named explicitly is the error", refused);
+                }
+                finally { try { Directory.Delete(crowdedGame, true); } catch (IOException) { } }
 
                 ContentAsset crowded = SelfTest.Asset(SelfTest.Box("a", 0, 0, 1), SelfTest.Box("b", 0, 1, 0.5f));
                 crowded.Materials.Add(new ContentMaterial { Name = "third" });
@@ -258,6 +287,13 @@ namespace LibertyFramework.Content
                 t.Check(Convert.ToInt32(((Dictionary<string, object>)d["structureWriterEligibility"])["eligible"]) == 3, "probe counts drawables the structure writer can use");
             }
             finally { try { Directory.Delete(game, true); } catch (IOException) { } }
+        }
+
+        private static void CopyFolder(string from, string to)
+        {
+            Directory.CreateDirectory(to);
+            foreach (string file in Directory.GetFiles(from)) { File.Copy(file, Path.Combine(to, Path.GetFileName(file))); }
+            foreach (string folder in Directory.GetDirectories(from)) { CopyFolder(folder, Path.Combine(to, Path.GetFileName(folder))); }
         }
 
         internal static bool SameMesh(Mesh a, Mesh b)

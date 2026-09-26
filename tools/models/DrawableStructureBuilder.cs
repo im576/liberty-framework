@@ -28,6 +28,8 @@ namespace LibertyFramework.Models
             VerticesFirst,  // every geometry's vertices in order, then every geometry's indices
         }
 
+        // Properties, not fields, for the settings only the content compiler assigns: LibertyModel compiles this file too,
+        // with warnings as errors and CS0649 (field never assigned) on (tools/package-phase2.ps1).
         internal sealed class Plan
         {
             // One entry per template model, in DrawableFile.Models order (LOD 0 first): the meshes of the geometries to keep.
@@ -35,17 +37,17 @@ namespace LibertyFramework.Models
             // every kept model of its LOD. A LOD whose models are all dropped has its slot cleared.
             internal readonly List<List<Mesh>> ModelMeshes = new List<List<Mesh>>();
             // Texture name to give each kept shader (index = shader index), or null to keep the template's name.
-            internal string[] ShaderTextures;
+            internal string[] ShaderTextures { get; set; }
             // Shaders kept (the collection is shortened to this count); -1 keeps every shader.
             internal int ShaderCount = -1;
             // Drawable +0x50: one value per LOD slot; NaN (or a null array) keeps the template's value.
-            internal float[] LodDistances;
+            internal float[] LodDistances { get; set; }
             // One graphics page (generated drawables; proven in game for one geometry) or Rockstar's page rules (round trip).
             internal bool SinglePage = true;
             internal GraphicsOrder Order = GraphicsOrder.Interleaved;
             // Round trip: each record gets its own geometry's sphere (and the model's). Generated drawables write the
             // whole model's sphere into every record, which encloses whatever each record stands for.
-            internal bool ExactBounds;
+            internal bool ExactBounds { get; set; }
         }
 
         // A sphere record: centre, then radius.
