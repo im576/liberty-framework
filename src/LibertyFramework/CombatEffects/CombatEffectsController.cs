@@ -19,7 +19,7 @@ namespace LibertyFramework.CombatEffects
     // drips for a while, and region reactions. A killing hit to a limb severs it at the joint (with an arterial
     // spurt and a thrown limb); a killing head hit decapitates. The optional external blood mode leaves ordinary
     // hit/wound visuals to a separate renderer while preserving the cut and its stock stump particle effects.
-    [LibertyFramework.Engine.Module("combat", Order = 20)]
+    [global::Liberty.Sdk.Module("combat", Order = 20, Capabilities = new[] { global::Liberty.Sdk.Capabilities.EngineInternal }, Description = "Combat effects: hit reactions, blood, dismemberment")]
     public sealed class CombatEffectsController : LibertyFramework.Engine.Module
     {
         private sealed class PendingCut
@@ -64,6 +64,19 @@ namespace LibertyFramework.CombatEffects
             Tick += OnTick;
             AppDomain.CurrentDomain.DomainUnload += OnUnload;
             AppDomain.CurrentDomain.ProcessExit += OnUnload;
+        }
+
+        // Console / autopilot: the DevTools gore tests on the nearest NPC.
+        protected internal override void OnStart()
+        {
+            Engine.Commands.Register(this, "gore", "gore gallery|arm|leg|head|leak - DevTools gore test on the nearest NPC", args =>
+            {
+                string[] names = { "", "gallery", "arm", "leg", "head", "leak" };
+                int request = Array.IndexOf(names, args.Length > 0 ? args[0] : "");
+                if (request <= 0) { return "gore gallery|arm|leg|head|leak"; }
+                RequestGoreTest(request);
+                return "gore " + args[0] + " requested on the nearest NPC";
+            });
         }
 
         private void LoadConfig()

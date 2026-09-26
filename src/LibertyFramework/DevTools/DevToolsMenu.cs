@@ -20,7 +20,7 @@ namespace LibertyFramework.DevTools
     // Liberty DevTools. Open/close: hold L3+R3 (0.7 s) or F10. D-pad/arrows move, left/right adjust,
     // A/Enter select, B/Backspace back. Player controls are locked while open so the D-pad never
     // reaches the phone; they are restored on close, error and script unload.
-    [LibertyFramework.Engine.Module("devtools", Order = 90)]
+    [global::Liberty.Sdk.Module("devtools", Order = 90, Capabilities = new[] { global::Liberty.Sdk.Capabilities.EngineInternal }, Description = "Liberty DevTools: controller menu, live tuning, teleports, debug overlay")]
     public sealed class DevToolsMenu : LibertyFramework.Engine.Module
     {
         private const int ChordHoldMilliseconds = 700;
@@ -61,6 +61,18 @@ namespace LibertyFramework.DevTools
             PerFrameDrawing += OnDraw;
             AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
             RuntimeLog.Info("devtools_started");
+        }
+
+        // Console / autopilot: "goto <location id>" uses the same data-driven teleports as the TELEPORT page.
+        protected internal override void OnStart()
+        {
+            Engine.Commands.Register(this, "goto", "goto <location id> - teleport to a DevTools location (config/devtools/locations.json)", args =>
+            {
+                TeleportLocation location = args.Length > 0 ? teleports.Find(args[0]) : null;
+                if (location != null) { return teleports.Start(Player, location); }
+                string error;
+                return "unknown location; known: " + string.Join(",", teleports.Load(out error).ConvertAll(l => l.Id).ToArray());
+            });
         }
 
         private static GunplayController Gunplay { get { return GunplayController.Instance; } }

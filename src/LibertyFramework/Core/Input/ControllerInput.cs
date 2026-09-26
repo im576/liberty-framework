@@ -49,6 +49,11 @@ namespace LibertyFramework.Core.Input
         internal ushort Pressed { get; private set; }
         internal double RightX { get; private set; }
         internal double RightY { get; private set; }
+        internal double LeftX { get; private set; }
+        internal double LeftY { get; private set; }
+        // 0..1.
+        internal double LeftTrigger { get; private set; }
+        internal double RightTrigger { get; private set; }
 
         internal void Poll()
         {
@@ -56,6 +61,10 @@ namespace LibertyFramework.Core.Input
             Buttons = 0;
             RightX = 0;
             RightY = 0;
+            LeftX = 0;
+            LeftY = 0;
+            LeftTrigger = 0;
+            RightTrigger = 0;
             Connected = false;
             if (available)
             {
@@ -99,6 +108,10 @@ namespace LibertyFramework.Core.Input
             Buttons = state.Buttons;
             RightX = Normalize(state.RightX);
             RightY = Normalize(state.RightY);
+            LeftX = Normalize(state.LeftX);
+            LeftY = Normalize(state.LeftY);
+            LeftTrigger = state.LeftTrigger / 255.0;
+            RightTrigger = state.RightTrigger / 255.0;
         }
 
         internal bool IsDown(ushort mask)

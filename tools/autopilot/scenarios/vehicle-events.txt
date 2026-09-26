@@ -1,0 +1,14 @@
+# Core v2 vehicles: a spawned car enters the snapshot (VehicleAppeared), is listed with health, and leaves on delete.
+events on
+god on
+wanted 0
+goto east_park
+wait 5000
+time 13 0
+spawncar admiral 8
+expect "autopilot_spawncar handle=" 15
+expect "event VehicleAppeared" 15
+vehicles
+pools
+clear
+expect "event VehicleRemoved" 10

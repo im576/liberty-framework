@@ -13,7 +13,7 @@ using LibertyFramework.GameApi;
 
 namespace LibertyFramework.Arsenal.Holsters
 {
-    [LibertyFramework.Engine.Module("holsters", Order = 40)]
+    [global::Liberty.Sdk.Module("holsters", Order = 40, Capabilities = new[] { global::Liberty.Sdk.Capabilities.EngineInternal }, Description = "Visible holstered and slung weapons")]
     public sealed class HolsterController : LibertyFramework.Engine.Module
     {
         private readonly Dictionary<BodySlot, GTA.Object> props = new Dictionary<BodySlot, GTA.Object>();

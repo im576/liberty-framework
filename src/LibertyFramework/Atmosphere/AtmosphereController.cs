@@ -17,7 +17,7 @@ namespace LibertyFramework.Atmosphere
     //   (clear sky straight into a storm) are excluded. Missions own the weather: we release it while one runs.
     // - Breath: on cold nights and grey/wet days the player and a few nearby pedestrians exhale vapour puffs.
     // - Density: ped/car density eases down when the frame time rises and back up when it recovers.
-    [LibertyFramework.Engine.Module("atmosphere", Order = 50)]
+    [global::Liberty.Sdk.Module("atmosphere", Order = 50, Capabilities = new[] { global::Liberty.Sdk.Capabilities.EngineInternal }, Description = "Atmosphere: breath, weather and mood")]
     public sealed class AtmosphereController : LibertyFramework.Engine.Module
     {
         private readonly Stopwatch clock = Stopwatch.StartNew();

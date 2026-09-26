@@ -2,8 +2,17 @@
   "schemaVersion": 1,
   "coreEnabled": true,
   "pedRadiusMeters": 120,
+  "vehicleRadiusMeters": 150,
+  "bulletEvents": true,
   "coreSpotCheckFrames": 300,
   "coreSpotCheckToleranceMeters": 0.05,
   "disabledModules": [],
-  "loadModAssemblies": false
+  "loadModAssemblies": true,
+  "governorEnabled": true,
+  "moduleBudgetMs": 2.0,
+  "throttledIntervalMs": 100,
+  "targetFrameMs": 33.3,
+  "lowAddressSpaceMegabytes": 600,
+  "watchdogStallMilliseconds": 5000,
+  "adaptiveDensityFloor": 0
 }

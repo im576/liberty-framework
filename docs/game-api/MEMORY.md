@@ -29,3 +29,13 @@ Approved by [ADR-0004](../architecture/decisions/ADR-0004-engine-memory.md). No 
 - Aim-camera field validation needs a few seconds of aiming; until it passes, no kick is written. If it fails, the log shows `aimcam_validation_failed` with the compared values and camera kick stays off.
 - The accuracy-to-degrees factor (`spreadCalibration.tangentPerAccuracyUnit` = 0.02 × 0.65 × 0.2) comes from the disassembly. The aim-settle factor is now neutralised for test weapons; a small ped-skill term and a mode-dependent ×0.7 branch remain, which the shot audit measures and the auto-calibration gain absorbs.
 - Aim-camera validation accepts sign flips and (after 20° of turning) a constant heading offset; it never writes before validating.
+
+## Core ABI v2 entity pools (2026-09-25)
+
+| Item | Anchor | 1.2.0.59 | Use |
+|---|---|---|---|
+| Vehicle pool global | DOES_VEHICLE_EXIST handler → worker `mov ecx,[pool]; push ebx; push [esp+8]; xor bl,bl; call GetAt` | 0x12E22A4 | core vehicle list, pool stats |
+| Object pool global | DOES_OBJECT_EXIST, same shape | 0x1632C60 | pool stats |
+| Entity matrix pointer | GET_CAR_COORDINATES / GET_CAR_HEADING workers `mov eax,[entity+20h]` | +0x20 | skip vehicles without a matrix |
+| Vehicle driver pointer | GET_DRIVER_OF_CAR worker `mov eax,[vehicle+0F50h]` | +0xF50 | driver handle via the ped pool (read only) |
+| Bullet list | IS_BULLET_IN_AREA scan (existing) | count/array/stride/owner | core BulletFired events (copied under the core's SEH guard) |

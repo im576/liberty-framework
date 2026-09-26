@@ -79,6 +79,47 @@ namespace LibertyFramework.Engine.Core
             RuntimeLog.Info("engine_verify GET_CAR_CHAR_IS_USING ok=" + ok);
         }
 
+        // The vehicle natives need a live vehicle to compare against; the world builder calls this when one is near.
+        // All eight must pass: the core lists vehicles only when every one of them is verified.
+        internal static bool VerifyVehicleNatives(CoreBridge core, Vehicle vehicle)
+        {
+            int handle = vehicle.GetHashCode();
+            List<Check> checks = new List<Check>
+            {
+                New(CoreAbi.DoesVehicleExist, "DOES_VEHICLE_EXIST", () => new[] { handle }, true),
+                New(CoreAbi.GetCarCoordinates, "GET_CAR_COORDINATES", () => new[] { handle }, false, Out.Float, Out.Float, Out.Float),
+                New(CoreAbi.GetCarHeading, "GET_CAR_HEADING", () => new[] { handle }, false, Out.Float),
+                New(CoreAbi.GetCarSpeed, "GET_CAR_SPEED", () => new[] { handle }, false, Out.Float),
+                New(CoreAbi.GetCarHealth, "GET_CAR_HEALTH", () => new[] { handle }, false, Out.Int),
+                New(CoreAbi.GetCarModel, "GET_CAR_MODEL", () => new[] { handle }, false, Out.Int),
+                New(CoreAbi.GetDriverOfCar, "GET_DRIVER_OF_CAR", () => new[] { handle }, false, Out.Int),
+            };
+            int accepted = 0;
+            List<string> rejected = new List<string>();
+            foreach (Check check in checks)
+            {
+                bool ok = false;
+                try { ok = Compare(core, check); }
+                catch (Exception error) { RuntimeLog.Error("engine_verify_failed " + check.Name + " error=" + error.Message); }
+                core.SetVerified(check.Id, ok);
+                if (ok) { accepted++; } else { rejected.Add(check.Name); }
+            }
+            // GET_ENGINE_HEALTH returns a float in the result slot (no out argument): compared bit for bit.
+            bool engine = false;
+            try
+            {
+                int direct = core.Call(CoreAbi.GetEngineHealth, new[] { handle }, new int[4]);
+                float shdn = Function.Call<float>("GET_ENGINE_HEALTH", vehicle);
+                engine = direct != int.MinValue && direct == BitConverter.ToInt32(BitConverter.GetBytes(shdn), 0);
+                if (!engine) { RuntimeLog.Error("engine_verify_mismatch GET_ENGINE_HEALTH direct=0x" + direct.ToString("X8") + " shdn=" + shdn); }
+            }
+            catch (Exception error) { RuntimeLog.Error("engine_verify_failed GET_ENGINE_HEALTH error=" + error.Message); }
+            core.SetVerified(CoreAbi.GetEngineHealth, engine);
+            if (engine) { accepted++; } else { rejected.Add("GET_ENGINE_HEALTH"); }
+            RuntimeLog.Info("engine_verify vehicles accepted=" + accepted + "/" + (checks.Count + 1) + (rejected.Count > 0 ? " rejected=" + string.Join(",", rejected.ToArray()) : ""));
+            return rejected.Count == 0;
+        }
+
         private static void VerifyGameTimer(CoreBridge core)
         {
             int[] outs = new int[4];

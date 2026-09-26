@@ -134,7 +134,33 @@ namespace LibertyFramework.Core.Memory
             result.Run("aim_camera_settings", scanner, result.ResolveAimCameraSettings);
             result.Run("ped_skeleton", scanner, result.ResolvePedSkeleton);
             result.Run("frame_counter", scanner, result.ResolveFrameCounter);
+            result.Run("entity_pools", scanner, result.ResolveEntityPools);
             return result;
+        }
+
+        // ADR-0006 core v2: the vehicle and object rage pools, from their DOES_*_EXIST handlers. Handler:
+        // "push esi; mov esi,[esp+8]; mov eax,[esi+8]; push [eax]; call worker"; worker: "mov ecx,[pool]; push ebx;
+        // push [esp+8]; xor bl,bl; call pool.GetAt". Same layout as the ped pool (objects +0, flags +4, size +8, item +12).
+        internal const uint HashDoesVehicleExist = 0x67A42263;
+        internal const uint HashDoesObjectExist = 0x6DAB78CD;
+        internal uint VehiclePoolGlobal;
+        internal uint ObjectPoolGlobal;
+
+        private void ResolveEntityPools(CodeScanner scanner)
+        {
+            VehiclePoolGlobal = PoolFromExistsNative(scanner, HashDoesVehicleExist, "DOES_VEHICLE_EXIST");
+            ObjectPoolGlobal = PoolFromExistsNative(scanner, HashDoesObjectExist, "DOES_OBJECT_EXIST");
+            Report.Add("entity_pools ok vehicle_pool=0x" + VehiclePoolGlobal.ToString("X8") + " object_pool=0x" + ObjectPoolGlobal.ToString("X8"));
+        }
+
+        private static uint PoolFromExistsNative(CodeScanner scanner, uint hash, string name)
+        {
+            IMemory memory = scanner.Memory;
+            uint handler = RequireNative(scanner, hash, name);
+            Require(scanner.ShapeAt(handler, "56 8B 74 24 08 8B 46 08 FF 30 E8"), name + " handler shape");
+            uint worker = memory.RelativeTarget(handler + 10);
+            Require(scanner.ShapeAt(worker, "8B 0D ?? ?? ?? ?? 53 FF 74 24 08 32 DB E8"), name + " worker shape");
+            return memory.ReadUInt32(worker + 2);
         }
 
         // T-026: the engine frame counter (GET_FRAME_COUNT -> "call getter"; getter = "mov eax,[global]; ret") and the

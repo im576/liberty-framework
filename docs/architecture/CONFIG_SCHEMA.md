@@ -83,7 +83,16 @@ Optional `slings[]` (W-5): `slot` (`LongGun1` or `LongGun2`, unique), `model` (a
 | `coreSpotCheckFrames` | How often the core's player position is compared with SHDN (at least 30). |
 | `coreSpotCheckToleranceMeters` | Allowed drift before the core is switched off (0–5). |
 | `disabledModules` | Module ids that are not constructed. |
-| `loadModAssemblies` | Also load `[Module]` classes from `scripts\LibertyFramework\mods\*.dll`. |
+| `loadModAssemblies` | Also load `[Module]` classes from `scripts\LibertyFramework\mods\*.dll` (Liberty SDK mods). |
+| `vehicleRadiusMeters` | Optional (150). Vehicles listed in the snapshot and reported in events (10–500). |
+| `bulletEvents` | Optional (true). Read the game's bullet trace list each frame and publish `BulletFired`. |
+| `governorEnabled` | Optional (true). The performance governor throttles modules over budget and computes `Perf.Pressure`. |
+| `moduleBudgetMs` | Optional (2.0). Average ms per update a module may use when its manifest gives no `BudgetMs` (0.1–50). |
+| `throttledIntervalMs` | Optional (100). Update interval the governor gives a module that stays over budget (10–2000). |
+| `targetFrameMs` | Optional (33.3). Frame time the governor treats as full pressure's starting point (8–100). |
+| `lowAddressSpaceMegabytes` | Optional (600). Free 32-bit address space below which pressure rises (100–2000). |
+| `watchdogStallMilliseconds` | Optional (5000). An engine frame running longer than this is logged with the running phase and a minidump (1000–60000). |
+| `adaptiveDensityFloor` | Optional (0 = off). When above 0, the governor lowers ped and vehicle density toward this fraction as `Perf.Pressure` rises (0–1). Off by default because it changes the vanilla population. |
 
 Defaults apply when the file is absent or invalid (logged).
 

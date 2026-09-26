@@ -11,15 +11,20 @@ namespace LibertyFramework.Engine
         public EngineHost()
         {
             Interval = 0;
+            // Before anything touches Liberty.Sdk types (see SdkResolver).
+            SdkResolver.Install();
             try { LibertyFramework.Engine.Services.DialogGuard.Start(); }
             catch (Exception error) { RuntimeLog.Error("dialog_guard_unavailable error=" + error.Message); }
-            try { LibertyEngine.Boot(this); }
+            try { Boot(); }
             catch (Exception error) { RuntimeLog.Error("engine_boot_failed error=" + error); return; }
             Tick += OnTick;
             PerFrameDrawing += OnDraw;
             BindConsoleCommand("lf", new ConsoleCommandDelegate(OnConsole), "- Liberty engine command, e.g. 'lf engine' or 'lf help'");
             AppDomain.CurrentDomain.DomainUnload += OnUnload;
         }
+
+        // Separate method so the SDK assembly is bound only after the resolver is installed.
+        private void Boot() { LibertyEngine.Boot(this); }
 
         internal void BindCommand(string command, ConsoleCommandDelegate handler, string help) { BindConsoleCommand(command, handler, help); }
 

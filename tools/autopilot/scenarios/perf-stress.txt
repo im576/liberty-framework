@@ -1,0 +1,19 @@
+# Performance under load: baseline sample, 25 extra peds, second sample; governor and memory figures in the log.
+events off
+god on
+wanted 0
+goto east_park
+wait 5000
+time 13 0
+wait 10000
+perf
+costs
+stress 25
+wait 15000
+perf
+pools
+costs
+modules
+clear
+wait 3000
+perf

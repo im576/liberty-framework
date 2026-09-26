@@ -9,7 +9,7 @@ namespace LibertyFramework.WeaponProbe
 {
     // Console commands kept from T-007 (LFWeaponStatus / LFWeaponGive / LFWeaponVanilla); they now
     // use the configured test weapons. Weapon grants only happen on an explicit command.
-    [LibertyFramework.Engine.Module("weapon-probe", Order = 110)]
+    [global::Liberty.Sdk.Module("weapon-probe", Order = 110, Capabilities = new[] { global::Liberty.Sdk.Capabilities.EngineInternal }, Description = "Weapon slot probe (diagnostics)")]
     public sealed class WeaponSlotProbe : LibertyFramework.Engine.Module
     {
         public WeaponSlotProbe()

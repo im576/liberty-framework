@@ -1,0 +1,15 @@
+# SDK 1.0: every Liberty.Sdk service exercised by the SDK-only autopilot mod (mods/Liberty.Autopilot), then the
+# engine's module, performance and pool reports.
+events on
+god on
+wanted 0
+goto east_park
+wait 5000
+time 13 0
+weather 1
+modules
+selftest
+expect "selftest_done passed=\d+ failed=0" 90
+perf
+pools
+owned autopilot

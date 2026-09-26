@@ -23,15 +23,35 @@ namespace LibertyFramework.Engine.Core
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern int lc_call_native(int id, int argc, int[] args, int[] outs);
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern IntPtr lc_frame(ref LcFrameInput input);
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern void lc_shutdown();
+        [DllImport(Dll, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)] private static extern int lc_install_crash_handler(string directory);
+        [DllImport(Dll, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)] private static extern void lc_register_phase(int index, string name);
+        [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern void lc_set_phase(int index);
+        [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern int lc_get_phase();
+        [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern void lc_faults(out LcFault fault, uint number);
+        [DllImport(Dll, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)] private static extern int lc_write_dump(string reason);
 
         internal bool Available { get; private set; }
+        // The DLL is loaded (crash capture and phases work even when the snapshot is off).
+        internal bool Loaded { get; private set; }
         private readonly bool[] verified = new bool[CoreAbi.NativeCount];
         private LcFrameInput input;
 
         internal static string DllPath { get { return Path.Combine(LibertyPaths.Root, Path.Combine("bin", Dll)); } }
+        internal static string CrashDirectory { get { return Path.Combine(LibertyPaths.Root, "crashes"); } }
 
-        internal bool Initialize(CodeScanner scanner, GameAddresses addresses)
+        internal static int ExpectedSnapshotBytes
         {
+            get
+            {
+                return sizeof(LcSnapshotHead) + CoreAbi.MaxPeds * sizeof(LcPed) + 4 + CoreAbi.MaxVehicles * sizeof(LcVehicle) + 4 + CoreAbi.MaxBullets * sizeof(LcBullet) + 8 +
+                    CoreAbi.MaxEvents * sizeof(LcEvent);
+            }
+        }
+
+        // Loads the DLL and installs crash capture; independent of address resolution so crashes during startup are caught.
+        internal bool Load()
+        {
+            if (Loaded) { return true; }
             try
             {
                 if (!File.Exists(DllPath)) { RuntimeLog.Error("engine_core_missing path=" + DllPath); return false; }
@@ -39,7 +59,23 @@ namespace LibertyFramework.Engine.Core
                 if (LoadLibrary(DllPath) == IntPtr.Zero) { RuntimeLog.Error("engine_core_load_failed error=" + Marshal.GetLastWin32Error()); return false; }
                 uint abi = lc_abi_version();
                 if (abi != CoreAbi.Version) { RuntimeLog.Error("engine_core_abi_mismatch core=" + abi + " engine=" + CoreAbi.Version); return false; }
-                int expected = sizeof(LcSnapshotHead) + CoreAbi.MaxPeds * sizeof(LcPed) + 8 + CoreAbi.MaxEvents * sizeof(LcEvent);
+                Loaded = true;
+                int dumps = lc_install_crash_handler(CrashDirectory);
+                RuntimeLog.Info("engine_crash_capture dir=" + CrashDirectory + " minidumps=" + (dumps != 0));
+                return true;
+            }
+            catch (Exception error)
+            {
+                RuntimeLog.Error("engine_core_unavailable error=" + error.Message);
+                return false;
+            }
+        }
+
+        internal bool Initialize(CodeScanner scanner, GameAddresses addresses)
+        {
+            try
+            {
+                if (!Load()) { return false; }
                 uint[] handlers = new uint[CoreAbi.NativeCount];
                 int missing = 0;
                 for (int id = 0; id < CoreAbi.NativeCount; id++)
@@ -51,6 +87,16 @@ namespace LibertyFramework.Engine.Core
                 book.Size = (uint)sizeof(LcAddressBook);
                 book.PedPoolGlobal = addresses.PedPoolGlobal;
                 book.FrameCounter = addresses.FrameCounterGlobal;
+                book.VehiclePoolGlobal = addresses.VehiclePoolGlobal;
+                book.ObjectPoolGlobal = addresses.ObjectPoolGlobal;
+                if (addresses.BulletsResolved)
+                {
+                    book.BulletCountGlobal = addresses.BulletCountGlobal;
+                    book.BulletArrayGlobal = addresses.BulletArrayGlobal;
+                    book.BulletStride = addresses.BulletStride;
+                    book.BulletOwnerOffset = addresses.BulletOwnerOffset;
+                    book.BulletMaximum = addresses.BulletMaximum;
+                }
                 byte[] error = new byte[256];
                 if (lc_init(ref book, handlers, error, error.Length) == 0)
                 {
@@ -59,9 +105,9 @@ namespace LibertyFramework.Engine.Core
                 }
                 input.Size = (uint)sizeof(LcFrameInput);
                 Available = true;
-                SnapshotBytes = expected;
-                RuntimeLog.Info("engine_core_loaded abi=" + abi + " natives=" + (CoreAbi.NativeCount - missing) + "/" + CoreAbi.NativeCount +
-                    " ped_pool=0x" + book.PedPoolGlobal.ToString("X8") + " frame_counter=0x" + book.FrameCounter.ToString("X8"));
+                RuntimeLog.Info("engine_core_loaded abi=" + CoreAbi.Version + " natives=" + (CoreAbi.NativeCount - missing) + "/" + CoreAbi.NativeCount +
+                    " ped_pool=0x" + book.PedPoolGlobal.ToString("X8") + " vehicle_pool=0x" + book.VehiclePoolGlobal.ToString("X8") +
+                    " object_pool=0x" + book.ObjectPoolGlobal.ToString("X8") + " frame_counter=0x" + book.FrameCounter.ToString("X8"));
                 return true;
             }
             catch (Exception error)
@@ -71,8 +117,6 @@ namespace LibertyFramework.Engine.Core
                 return false;
             }
         }
-
-        internal int SnapshotBytes { get; private set; }
 
         // Direct call for verification; returns int.MinValue when the core refused the call.
         internal int Call(int id, int[] args, int[] outs) { return lc_call_native(id, args == null ? 0 : args.Length, args ?? new int[0], outs ?? new int[4]); }
@@ -85,32 +129,87 @@ namespace LibertyFramework.Engine.Core
 
         internal bool IsVerified(int id) { return verified[id]; }
 
-        // Runs the core frame. Returns null when the core is unavailable or rejected the input.
-        internal LcSnapshotHead* Frame(int playerPed, float pedRadius, uint enabled)
+        internal void RegisterPhase(int index, string name) { if (Loaded) { lc_register_phase(index, name); } }
+
+        // Marks what the engine is running, so a crash report names the module (no allocation).
+        internal void SetPhase(int index) { if (Loaded) { lc_set_phase(index); } }
+
+        internal int Phase { get { return Loaded ? lc_get_phase() : -1; } }
+
+        // Watchdog: a minidump of the stalled process (scripts\LibertyFramework\crashes\stall-*.dmp).
+        internal bool WriteStallDump(string reason) { return Loaded && lc_write_dump(reason) != 0; }
+
+        // Runs the core frame. Returns null when the core is unavailable or rejected the input. A fault that escaped the core's
+        // own containment (a corrupted-state exception) switches the core off for the session instead of reaching the game.
+        [System.Runtime.ExceptionServices.HandleProcessCorruptedStateExceptions, System.Security.SecurityCritical]
+        internal LcSnapshotHead* Frame(int playerPed, float pedRadius, float vehicleRadius, uint enabled)
         {
             if (!Available) { return null; }
             input.PlayerPed = playerPed;
             input.PedRadius = pedRadius;
+            input.VehicleRadius = vehicleRadius;
             input.Enabled = enabled;
-            IntPtr snapshot = lc_frame(ref input);
+            IntPtr snapshot;
+            try { snapshot = lc_frame(ref input); }
+            catch (AccessViolationException error)
+            {
+                RuntimeLog.Error("engine_core_fault_escaped error=" + error.Message + "; core disabled for this session");
+                Available = false;
+                return null;
+            }
             if (snapshot == IntPtr.Zero) { return null; }
             LcSnapshotHead* head = (LcSnapshotHead*)snapshot.ToPointer();
-            if (head->Size != SnapshotBytes)
+            if (head->Size != ExpectedSnapshotBytes)
             {
-                RuntimeLog.Error("engine_core_snapshot_size core=" + head->Size + " engine=" + SnapshotBytes);
+                RuntimeLog.Error("engine_core_snapshot_size core=" + head->Size + " engine=" + ExpectedSnapshotBytes);
                 Available = false;
                 return null;
             }
             return head;
         }
 
+        private uint faultsSeen;
+
+        // Faults the core contained since the last call, one log line each (the faulting native is already off in the core).
+        internal void ReportFaults()
+        {
+            if (!Loaded) { return; }
+            LcFault latest;
+            lc_faults(out latest, 0);
+            if (latest.Count == faultsSeen) { return; }
+            uint first = Math.Max(faultsSeen + 1, latest.Count > 16 ? latest.Count - 15 : 1);
+            for (uint number = first; number <= latest.Count; number++)
+            {
+                LcFault fault;
+                lc_faults(out fault, number);
+                string what = fault.Native >= 0 && fault.Native < CoreAbi.NativeNames.Length ? CoreAbi.NativeNames[fault.Native] + (fault.Argument != 0 ? " handle=" + fault.Argument : "") : "raw game-memory read";
+                RuntimeLog.Error("engine_core_fault number=" + number + " in=" + what + " code=0x" + fault.Code.ToString("X8") +
+                    " address=0x" + fault.Address.ToString("X8") + " data=0x" + fault.DataAddress.ToString("X8") + "; that native is off for the session");
+            }
+            faultsSeen = latest.Count;
+        }
+
         internal static LcPed* Peds(LcSnapshotHead* head) { return (LcPed*)((byte*)head + sizeof(LcSnapshotHead)); }
 
-        internal static int EventCount(LcSnapshotHead* head) { return *(int*)((byte*)Peds(head) + CoreAbi.MaxPeds * sizeof(LcPed)); }
+        private static byte* AfterPeds(LcSnapshotHead* head) { return (byte*)Peds(head) + CoreAbi.MaxPeds * sizeof(LcPed); }
 
-        internal static int EventsDropped(LcSnapshotHead* head) { return *(int*)((byte*)Peds(head) + CoreAbi.MaxPeds * sizeof(LcPed) + 4); }
+        internal static int VehicleCount(LcSnapshotHead* head) { return *(int*)AfterPeds(head); }
 
-        internal static LcEvent* Events(LcSnapshotHead* head) { return (LcEvent*)((byte*)Peds(head) + CoreAbi.MaxPeds * sizeof(LcPed) + 8); }
+        internal static LcVehicle* Vehicles(LcSnapshotHead* head) { return (LcVehicle*)(AfterPeds(head) + 4); }
+
+        private static byte* AfterVehicles(LcSnapshotHead* head) { return AfterPeds(head) + 4 + CoreAbi.MaxVehicles * sizeof(LcVehicle); }
+
+        internal static int BulletCount(LcSnapshotHead* head) { return *(int*)AfterVehicles(head); }
+
+        internal static LcBullet* Bullets(LcSnapshotHead* head) { return (LcBullet*)(AfterVehicles(head) + 4); }
+
+        private static byte* AfterBullets(LcSnapshotHead* head) { return AfterVehicles(head) + 4 + CoreAbi.MaxBullets * sizeof(LcBullet); }
+
+        internal static int EventCount(LcSnapshotHead* head) { return *(int*)AfterBullets(head); }
+
+        internal static int EventsDropped(LcSnapshotHead* head) { return *(int*)(AfterBullets(head) + 4); }
+
+        internal static LcEvent* Events(LcSnapshotHead* head) { return (LcEvent*)(AfterBullets(head) + 8); }
 
         internal void Shutdown()
         {

@@ -1,0 +1,42 @@
+namespace Liberty.Sdk
+{
+    // Ped bone ids (the tags GTA IV natives take), verified against Niko's skeleton (docs/research/ModelFormat.md).
+    public enum Bone
+    {
+        Root = 0x0000,
+        Pelvis = 0x01A1,
+        Spine = 0x04B2,
+        Spine1 = 0x04B3,
+        Spine2 = 0x36A0,
+        Spine3 = 0x36A1,
+        Neck = 0x04B4,
+        Head = 0x04B5,
+        LeftClavicle = 0x04C0,
+        LeftUpperArm = 0x04C1,
+        LeftForearm = 0x04C2,
+        LeftHand = 0x04C3,
+        RightClavicle = 0x04C7,
+        RightUpperArm = 0x04C8,
+        RightForearm = 0x04C9,
+        RightHand = 0x04D0,
+        LeftThigh = 0x01A2,
+        LeftCalf = 0x01A3,
+        LeftFoot = 0x01A4,
+        RightThigh = 0x01A7,
+        RightCalf = 0x01A8,
+        RightFoot = 0x01A9,
+        LeftToe = 0x01A5,
+        RightToe = 0x04B0,
+        NeckRoll = 0x37A0,
+        LeftUpperArmRoll = 0x38A0,
+        LeftForearmTwist = 0x38A1,
+        RightUpperArmRoll = 0x39A0,
+        RightForearmTwist = 0x39A1,
+        LeftCalfRoll = 0x38B0,
+        RightCalfRoll = 0x39B0,
+        LeftFinger0 = 0x35D0,
+        LeftFinger1 = 0x35D3,
+        RightFinger0 = 0x35B0,
+        RightFinger1 = 0x35B3,
+    }
+}

@@ -105,3 +105,14 @@ Keep it short: this is a dashboard, not a diary.
 - 2026-09-24 — Recorded tester's partial T-000 baseline; left T-000 open for gameplay/vehicle/runtime-install evidence.
 - 2026-09-24 — Recovered the interrupted Claude scaffold; completed the research summary, task queue, setup/test templates, architecture notes, and original brief. No gameplay implementation or in-game verification.
 - 2026-09-24 — Initial research notes and scaffold started. Task backlog written.
+
+## SDK 1.0 build-out (Claude, 2026-09-25, in progress)
+
+- **Liberty.Sdk 1.0**: public API assembly (`sdk/Liberty.Sdk`), no ScriptHookDotNet types. `LibertyEngine` implements `ILiberty` with all services (player, peds, vehicles, props, weapons, tasks, cameras, animation + choreography, FX, audio, streaming, input capture, UI with list/radial menus and canvas, world control, blips, state, config, commands, log, perf, modules, memory, natives). Modules are discovered from `[Liberty.Sdk.Module]` manifests, with dependency order, SDK version and capability checks. Everything a module owns is released through the resource ledger when it stops.
+- **Deploy**: `Liberty.Sdk.dll` goes **next to GTAIV.exe**. ScriptHookDotNet loads script assemblies from bytes into a domain whose ApplicationBase is the game folder, and its `GetTypes()` failure kills the game. `scripts\Liberty.Sdk.dll` is not probed (a stray copy there is harmless).
+- **Mods**: SDK-only mods in `mods/<Name>` build to `scripts\LibertyFramework\mods\`. The autopilot is now such a mod (`mods/Liberty.Autopilot`) and includes an SDK self-test (`lf selftest`, scenario `sdk-selftest`).
+- **Core ABI v2**: vehicle, object and bullet lists; pool stats; reload-start inference; crash minidumps + phase names; stall watchdog; SEH-contained native calls (`safe_call.cpp`).
+- **Crash found and fixed**: `GET_DRIVER_OF_CAR` faulted on some pooled vehicles and corrupted game state; the core now reads the driver from `[vehicle+0xF50]`. `GET_CAR_COORDINATES` dereferences the entity matrix unchecked, so vehicles without one (+0x20) are skipped.
+- **In game (2026-09-25)**: boots with 9/9 modules; 21/21 + 8/8 natives verified; 17 vehicles in the snapshot, zero faults; SDK self-test 32/33 before the last fix (the ped-bone check now uses SHDN's wrapper; not yet re-run).
+- **Research answer**: `ATTACH_OBJECT_TO_PED/CAR` take rotations in **radians** (90 → 116.6°, measured). The SDK converts from degrees.
+- **Not done yet**: Arsenal wheel/trunk ported onto Liberty.Ui / choreography; Content Compiler (glTF); hooks for exact damage; episode tests; SDK reference docs and IV-SDK parity matrix; full autopilot suite run on this build.

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Liberty.Sdk;
 using LibertyFramework.Core.Config;
 using LibertyFramework.Core.Logging;
 
@@ -11,31 +12,34 @@ namespace LibertyFramework.Engine.Services
     // Named commands any module can register. Reached from the ScriptHookDotNet console ("lf <command> ...") and from
     // the file channel scripts\LibertyFramework\autopilot\inbox\*.cmd (one command per line), which the autopilot uses:
     // replies go to autopilot\outbox\<name>.out and every command is logged. Commands run on the engine thread.
-    public sealed class CommandRegistry
+    public sealed class CommandRegistry : ICommands
     {
         private sealed class Entry
         {
-            internal Module Owner;
+            internal LibertyModule Owner;
             internal string Usage;
             internal Func<string[], string> Handler;
         }
 
         private readonly Dictionary<string, Entry> commands = new Dictionary<string, Entry>(StringComparer.OrdinalIgnoreCase);
         private int lastPollMs;
+        // The engine's current-module context around each handler (capability checks, implicit ownership).
+        internal Action<LibertyModule> Enter = m => { };
+        internal Func<LibertyModule> Current = () => null;
         private const int PollIntervalMs = 250;
 
         public static string Inbox { get { return Path.Combine(LibertyPaths.Root, Path.Combine("autopilot", "inbox")); } }
         public static string Outbox { get { return Path.Combine(LibertyPaths.Root, Path.Combine("autopilot", "outbox")); } }
 
         // owner null = engine command. Handler gets the words after the command name and returns the reply.
-        public void Register(Module owner, string name, string usage, Func<string[], string> handler)
+        public void Register(LibertyModule owner, string name, string usage, Func<string[], string> handler)
         {
             Entry entry = new Entry();
             entry.Owner = owner; entry.Usage = usage; entry.Handler = handler;
             commands[name] = entry;
         }
 
-        internal void RemoveOwner(Module owner)
+        internal void RemoveOwner(LibertyModule owner)
         {
             foreach (string name in commands.Where(pair => pair.Value.Owner == owner).Select(pair => pair.Key).ToList()) { commands.Remove(name); }
         }
@@ -56,12 +60,15 @@ namespace LibertyFramework.Engine.Services
             else if (entry.Owner != null && !entry.Owner.Running) { reply = "module " + entry.Owner.Id + " is not running"; }
             else
             {
+                LibertyModule previous = Current();
+                Enter(entry.Owner);
                 try { reply = entry.Handler(words.Skip(1).ToArray()) ?? "ok"; }
                 catch (Exception error)
                 {
                     reply = "error " + error.Message;
                     if (entry.Owner != null) { LibertyEngine.Current.Fail(entry.Owner, error); }
                 }
+                finally { Enter(previous); }
             }
             RuntimeLog.Info("command source=" + source + " line=\"" + line + "\" reply=\"" + reply + "\"");
             return reply;

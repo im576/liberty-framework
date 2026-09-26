@@ -6,7 +6,7 @@ using LibertyFramework.Core.Logging;
 namespace LibertyFramework
 {
     // T-001 only verifies that a managed script can load and keep ticking on CE.
-    [LibertyFramework.Engine.Module("probe", Order = 100)]
+    [global::Liberty.Sdk.Module("probe", Order = 100, Capabilities = new[] { global::Liberty.Sdk.Capabilities.EngineInternal }, Description = "Runtime probe (diagnostics)")]
     public sealed class RuntimeProbe : LibertyFramework.Engine.Module
     {
         internal static string ActiveProbeLabel = "none";

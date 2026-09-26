@@ -32,8 +32,18 @@ namespace lc
         int32_t call1(int id, int32_t a) { int32_t args[1] = { a }; return call(id, args, nullptr); }
         int32_t out1(int id, int32_t a, int32_t& out) { int32_t args[1] = { a }; return call(id, args, &out); }
 
+        // The native and first argument of the most recent contained fault (-1 when none).
+        int last_fault_native() const { return last_fault_native_; }
+        // Native of fault number n (1-based) among the last 16 (-1 for a raw read).
+        int fault_native(uint32_t number) const { return fault_natives_[(number - 1) % 16]; }
+        void note_raw_fault(uint32_t number) { fault_natives_[(number - 1) % 16] = -1; }
+        int32_t last_fault_argument() const { return last_fault_argument_; }
+
     private:
         uint32_t handlers_[LC_N_COUNT] = {};
         bool verified_[LC_N_COUNT] = {};
+        int last_fault_native_ = -1;
+        int fault_natives_[16] = {};
+        int32_t last_fault_argument_ = 0;
     };
 }

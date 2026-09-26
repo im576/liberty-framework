@@ -1,4 +1,5 @@
 #include "natives.h"
+#include "safe_call.h"
 
 namespace lc
 {
@@ -29,6 +30,14 @@ namespace lc
             { "GET_HOURS_OF_DAY", 0x0A9F7BA1, 0, 0 },
             { "GET_MINUTES_OF_DAY", 0x3DFE691D, 0, 0 },
             { "GET_CURRENT_WEATHER", 0x27E421EA, 0, 1 },
+            { "DOES_VEHICLE_EXIST", 0x67A42263, 1, 0 },
+            { "GET_CAR_COORDINATES", 0x2D432EAB, 1, 3 },
+            { "GET_CAR_HEADING", 0x46803CFA, 1, 1 },
+            { "GET_CAR_SPEED", 0x16DD2D00, 1, 1 },
+            { "GET_CAR_HEALTH", 0x4D417CD3, 1, 1 },
+            { "GET_ENGINE_HEALTH", 0x2B0A05E0, 1, 0 },
+            { "GET_CAR_MODEL", 0x5FF84497, 1, 1 },
+            { "GET_DRIVER_OF_CAR", 0x22457083, 1, 1 },
         };
 
         struct Context
@@ -38,7 +47,6 @@ namespace lc
             void* args;
         };
 
-        using Handler = void(__cdecl*)(Context*);
     }
 
     const NativeInfo& native_info(int id) { return kNatives[id]; }
@@ -54,7 +62,16 @@ namespace lc
         for (int i = 0; i < info.in_args; i++) { argv[count++] = static_cast<uint32_t>(args[i]); }
         for (int i = 0; i < info.out_args; i++) { argv[count++] = reinterpret_cast<uint32_t>(&out_slots[i]); }
         Context context{ result, static_cast<uint32_t>(count), argv };
-        reinterpret_cast<Handler>(handlers_[id])(&context);
+        // Contained call: a native that faults on some entity is switched off for the session (safe_call.h).
+        if (!safe_invoke(handlers_[id], &context))
+        {
+            verified_[id] = false;
+            last_fault_native_ = id;
+            fault_natives_[(last_fault().count - 1) % 16] = id;
+            last_fault_argument_ = info.in_args > 0 ? args[0] : 0;
+            for (int i = 0; i < info.out_args && outs != nullptr; i++) { outs[i] = 0; }
+            return 0;
+        }
         for (int i = 0; i < info.out_args && outs != nullptr; i++) { outs[i] = out_slots[i]; }
         return result[0];
     }

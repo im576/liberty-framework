@@ -1,0 +1,22 @@
+# Liberty.Ui review: the SDK list menu and radial menu, framed for screenshots, then closed (input returns).
+god on
+wanted 0
+goto east_park
+wait 5000
+time 13 0
+weather 1
+hud off
+menu-test
+wait 1500
+shot sdk_list_menu
+key Down
+wait 300
+key Down
+wait 300
+shot sdk_list_menu_moved
+menu-close
+radial-test
+wait 1500
+shot sdk_radial_menu
+menu-close
+hud on

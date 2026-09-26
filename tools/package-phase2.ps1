@@ -53,6 +53,14 @@ function Stage-File([string] $source, [string] $relativePath, [string] $policy) 
 $entries = @()
 Stage-File (Join-Path $repoRoot 'src\LibertyFramework\bin\Release\LibertyFramework.net.dll') 'scripts\LibertyFramework.net.dll' 'replace'
 Stage-File (Join-Path $repoRoot 'native\LibertyCore\bin\LibertyCore.dll') 'scripts\LibertyFramework\bin\LibertyCore.dll' 'replace'
+# Liberty SDK next to GTAIV.exe: ScriptHookDotNet loads script assemblies from bytes (Assembly.Load(byte[])) into a domain whose
+# ApplicationBase is the game folder, so that is the only place the engine's (and every mod's) Liberty.Sdk reference is probed.
+# SDK-only mods go where the engine discovers them.
+Stage-File (Join-Path $repoRoot 'sdk\Liberty.Sdk\bin\Liberty.Sdk.dll') 'Liberty.Sdk.dll' 'replace'
+Get-ChildItem -LiteralPath (Join-Path $repoRoot 'mods') -Directory | ForEach-Object {
+    $modDll = Join-Path $_.FullName ('bin\' + $_.Name + '.dll')
+    if (Test-Path -LiteralPath $modDll) { Stage-File $modDll "scripts\LibertyFramework\mods\$($_.Name).dll" 'replace' }
+}
 foreach ($name in @('gunplay.json', 'combat_effects.json', 'weapon-catalog.json', 'atmosphere.json', 'engine.json')) {
     Stage-File (Join-Path $repoRoot "config\$name") "scripts\LibertyFramework\config\$name" 'replace'
 }

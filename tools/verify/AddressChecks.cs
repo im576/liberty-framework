@@ -96,6 +96,9 @@ namespace LibertyFramework.Verify
             // T-026 (Capstone: GET_FRAME_COUNT 0xB8B060 -> 0xB8B120 "mov eax,[1173604h]; ret"; GET_CHAR_HEALTH 0xB9EE50).
             check.Equal("engine frame counter global", 0x1173604u, addresses.FrameCounterGlobal);
             check.Equal("GET_CHAR_HEALTH handler", 0xB9EE50u, addresses.GetCharHealthHandler);
+            // ADR-0006 core v2: DOES_VEHICLE_EXIST / DOES_OBJECT_EXIST handler -> worker "mov ecx,[pool]; push ebx; ..." (Capstone).
+            check.Equal("vehicle pool global", 0x12E22A4u, addresses.VehiclePoolGlobal);
+            check.Equal("object pool global", 0x1632C60u, addresses.ObjectPoolGlobal);
             // T-026 step 2: every direct native is registered; handlers match the Capstone thread-safety scan (all clean).
             System.Collections.Generic.Dictionary<string, uint> scanned = new System.Collections.Generic.Dictionary<string, uint> {
                 { "IS_PLAYER_PLAYING", 0xBB2530 }, { "GET_PLAYER_ID", 0xBB1F30 }, { "IS_CHAR_DUCKING", 0xB9F750 }, { "IS_PED_IN_COVER", 0xBA0150 },

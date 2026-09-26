@@ -1,71 +1,168 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using System.IO;
 using GTA;
+using Liberty.Sdk;
+using LibertyFramework.Core.Config;
+using LibertyFramework.Engine.Ui;
 
 namespace LibertyFramework.Engine.Services
 {
-    // Shared player-facing UI in GTA IV's style: the top-left help box and short notifications above the radar.
-    // Modules post text on their tick; the engine draws it in its draw pass from cached state (no natives while drawing).
-    public sealed class UiService
+    // SDK IUi: GTA IV-style help box (top left), notifications (above the radar), subtitles (bottom centre), list and
+    // radial menus, textures and the per-module canvas. Menus take input capture while open (released on close or
+    // when the owner stops). Everything a module opened is closed when it stops (resource ledger).
+    // Threading: modules post on the engine tick; the draw pass reads snapshots only.
+    public sealed class UiService : IUi
     {
-        private sealed class Notice { internal string Text; internal int UntilMs; }
+        private sealed class TimedText { internal string Text; internal int UntilMs; internal LibertyModule Owner; }
 
-        private readonly GTA.Font font = new GTA.Font(17.0F, FontScaling.Pixel);
+        private readonly LibertyEngine engine;
+        private readonly TextureStore textures = new TextureStore();
+        private readonly Canvas canvas;
+        private readonly List<IMenu> menus = new List<IMenu>();
         private readonly object gate = new object();
-        private string help;
-        private Module helpOwner;
-        private int helpUntilMs;
-        private readonly List<Notice> notices = new List<Notice>();
+        private readonly List<TimedText> notices = new List<TimedText>();
+        private TimedText help, subtitle;
+        private IMenu[] drawMenus = new IMenu[0];
 
-        public UiService() { font.Color = Color.FromArgb(240, 236, 238, 240); }
-
-        // Shows a help box until durationMs passes or the owner clears it (durationMs <= 0 = until cleared).
-        public void ShowHelp(Module owner, string text, int durationMs)
+        internal UiService(LibertyEngine engine)
         {
-            lock (gate) { help = text; helpOwner = owner; helpUntilMs = durationMs > 0 ? Environment.TickCount + durationMs : int.MaxValue; }
+            this.engine = engine;
+            canvas = new Canvas(textures);
         }
 
-        public void ClearHelp(Module owner)
+        internal Canvas Canvas { get { return canvas; } }
+        internal TextureStore Textures { get { return textures; } }
+
+        public TextureRef LoadTexture(string path) { return textures.Load(path); }
+
+        public TextureRef LoadTexture(byte[] png, string cacheKey) { return textures.Add(png, cacheKey); }
+
+        public TextureRef WeaponIcon(int weapon)
         {
-            lock (gate) { if (helpOwner == owner) { help = null; helpOwner = null; } }
+            string path = Path.Combine(LibertyPaths.Root, Path.Combine("ui", Path.Combine("icons", weapon + ".png")));
+            return File.Exists(path) ? textures.Load(path) : TextureRef.None;
+        }
+
+        public void ShowHelp(LibertyModule owner, string text, int durationMs)
+        {
+            lock (gate) { help = new TimedText { Text = text, Owner = owner, UntilMs = durationMs > 0 ? Environment.TickCount + durationMs : int.MaxValue }; }
+        }
+
+        public void ClearHelp(LibertyModule owner)
+        {
+            lock (gate) { if (help != null && help.Owner == owner) { help = null; } }
         }
 
         public void Notify(string text, int durationMs)
         {
             lock (gate)
             {
-                Notice notice = new Notice();
-                notice.Text = text; notice.UntilMs = Environment.TickCount + durationMs;
-                notices.Add(notice);
+                notices.Add(new TimedText { Text = text, UntilMs = Environment.TickCount + durationMs });
                 if (notices.Count > 4) { notices.RemoveAt(0); }
             }
         }
 
-        internal void Draw(GraphicsEventArgs args)
+        public void Subtitle(string text, int durationMs)
         {
-            Size screen = ScreenInfo.Size;
-            if (screen.Height <= 0) { return; }
-            float scale = screen.Height / 720f;
+            lock (gate) { subtitle = new TimedText { Text = text, UntilMs = Environment.TickCount + durationMs }; }
+        }
+
+        public IMenu OpenList(LibertyModule owner, ListMenu menu)
+        {
+            ListMenuView view = new ListMenuView(owner, menu, Closed);
+            return Open(owner, view);
+        }
+
+        public IMenu OpenRadial(LibertyModule owner, RadialMenu menu)
+        {
+            RadialMenuView view = new RadialMenuView(owner, menu, textures, Closed);
+            return Open(owner, view);
+        }
+
+        private IMenu Open(LibertyModule owner, IMenu view)
+        {
+            menus.Add(view);
+            engine.Input.CaptureForUi(owner, view);
+            engine.Ledger.Add(owner, "menu", view.GetHashCode(), () => view.Close());
+            Publish();
+            return view;
+        }
+
+        private void Closed(IMenu view)
+        {
+            menus.Remove(view);
+            LibertyModule owner = view is ListMenuView ? ((ListMenuView)view).Owner : ((RadialMenuView)view).Owner;
+            engine.Ledger.Forget(owner, "menu", view.GetHashCode());
+            engine.Input.ReleaseForUi(owner, view);
+            Publish();
+        }
+
+        public bool AnyMenuOpen { get { return menus.Count > 0; } }
+
+        private readonly HashSet<LibertyModule> hudHiders = new HashSet<LibertyModule>();
+
+        // DISPLAY_HUD / DISPLAY_RADAR persist until changed; the HUD returns when the last hiding module stops.
+        public void SetHudVisible(LibertyModule owner, bool visible)
+        {
+            if (!visible)
+            {
+                if (!hudHiders.Add(owner)) { return; }
+                if (hudHiders.Count == 1) { GTA.Native.Function.Call("DISPLAY_HUD", false); GTA.Native.Function.Call("DISPLAY_RADAR", false); }
+                engine.Ledger.Add(owner, "hud", 0, () =>
+                {
+                    if (hudHiders.Remove(owner) && hudHiders.Count == 0) { GTA.Native.Function.Call("DISPLAY_HUD", true); GTA.Native.Function.Call("DISPLAY_RADAR", true); }
+                });
+            }
+            else { engine.Ledger.Release(owner, "hud", 0); }
+        }
+
+        private void Publish() { drawMenus = menus.ToArray(); }
+
+        // Engine tick: the top menu gets this frame's input.
+        internal void Update()
+        {
+            if (menus.Count == 0) { return; }
+            IMenu top = menus[menus.Count - 1];
+            MenuInput input = MenuInput.Read(engine.Input);
+            ListMenuView list = top as ListMenuView;
+            if (list != null) { list.Update(input); return; }
+            RadialMenuView radial = top as RadialMenuView;
+            if (radial != null) { radial.Update(input); }
+        }
+
+        // Draw pass: modules' canvases first, then menus, help, notifications and subtitles on top.
+        internal void Draw(GraphicsEventArgs args, Action<ICanvas> drawModules)
+        {
+            if (!canvas.Begin(args.Graphics, ScreenInfo.Size)) { return; }
+            drawModules(canvas);
+            canvas.Opacity = 1f;
+            foreach (IMenu menu in drawMenus)
+            {
+                ListMenuView list = menu as ListMenuView;
+                if (list != null) { list.Draw(canvas); continue; }
+                RadialMenuView radial = menu as RadialMenuView;
+                if (radial != null) { radial.Draw(canvas); }
+            }
             int now = Environment.TickCount;
-            GTA.Graphics graphics = args.Graphics;
-            graphics.Scaling = FontScaling.Pixel;
             lock (gate)
             {
-                if (help != null && (helpUntilMs == int.MaxValue || unchecked(now - helpUntilMs) < 0) && (helpOwner == null || helpOwner.Running))
+                if (help != null && (help.UntilMs == int.MaxValue || unchecked(now - help.UntilMs) < 0) && (help.Owner == null || help.Owner.Running))
                 {
-                    RectangleF box = new RectangleF(34 * scale, 30 * scale, 330 * scale, 40 * scale);
-                    graphics.DrawRectangle(box, Color.FromArgb(200, 0, 0, 0));
-                    graphics.DrawText(help, new RectangleF(box.X + 12 * scale, box.Y + 10 * scale, box.Width - 24 * scale, box.Height - 14 * scale), TextAlignment.Left, font);
+                    canvas.Rect(34, 30, 360, 44, new Rgba(0, 0, 0, 200));
+                    canvas.Text(help.Text, 46, 40, 336, 30, TextStyle.Body, TextAlign.Left, Rgba.White);
                 }
                 notices.RemoveAll(n => unchecked(now - n.UntilMs) >= 0);
-                float y = screen.Height - 220 * scale;
+                float y = 720 - 220;
                 for (int i = notices.Count - 1; i >= 0; i--)
                 {
-                    RectangleF box = new RectangleF(34 * scale, y, 330 * scale, 30 * scale);
-                    graphics.DrawRectangle(box, Color.FromArgb(180, 0, 0, 0));
-                    graphics.DrawText(notices[i].Text, new RectangleF(box.X + 10 * scale, box.Y + 6 * scale, box.Width - 20 * scale, box.Height - 8 * scale), TextAlignment.Left, font);
-                    y -= 34 * scale;
+                    canvas.Rect(34, y, 360, 32, new Rgba(0, 0, 0, 180));
+                    canvas.Text(notices[i].Text, 44, y + 7, 340, 24, TextStyle.Body, TextAlign.Left, Rgba.White);
+                    y -= 36;
+                }
+                if (subtitle != null && unchecked(now - subtitle.UntilMs) < 0)
+                {
+                    canvas.Text(subtitle.Text, canvas.Width / 2 - 400, 720 - 110, 800, 30, TextStyle.Emphasis, TextAlign.Center, Rgba.White);
                 }
             }
         }

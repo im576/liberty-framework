@@ -25,7 +25,7 @@ namespace LibertyFramework.Verify
             SortedSet<string> names = new SortedSet<string>();
             foreach (string file in Directory.GetFiles(Path.Combine(repoRoot, Path.Combine("src", "LibertyFramework")), "*.cs", SearchOption.AllDirectories))
             {
-                foreach (Match match in Regex.Matches(File.ReadAllText(file), "Function\\.Call(?:<[^>]+>)?\\(\"([A-Z0-9_]+)\""))
+                foreach (Match match in Regex.Matches(File.ReadAllText(file), "(?:Function\\.Call(?:<[^>]+>)?|NativeCall\\.\\w+)\\(\"([A-Z0-9_]+)\""))
                 {
                     names.Add(match.Groups[1].Value);
                 }
