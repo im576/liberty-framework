@@ -19,6 +19,7 @@ namespace LibertyFramework.Engine
         [DataMember(Name = "loadModAssemblies", IsRequired = false)] public bool LoadModAssemblies;
         [DataMember(Name = "vehicleRadiusMeters", IsRequired = false)] public float VehicleRadiusMeters;
         [DataMember(Name = "bulletEvents", IsRequired = false)] private bool? bulletEvents;
+        [DataMember(Name = "exactDamage", IsRequired = false)] private bool? exactDamage;
         [DataMember(Name = "governorEnabled", IsRequired = false)] private bool? governorEnabled;
         [DataMember(Name = "moduleBudgetMs", IsRequired = false)] public float ModuleBudgetMs;
         [DataMember(Name = "throttledIntervalMs", IsRequired = false)] public int ThrottledIntervalMs;
@@ -26,8 +27,15 @@ namespace LibertyFramework.Engine
         [DataMember(Name = "lowAddressSpaceMegabytes", IsRequired = false)] public int LowAddressSpaceMegabytes;
         [DataMember(Name = "watchdogStallMilliseconds", IsRequired = false)] public int WatchdogStallMilliseconds;
         [DataMember(Name = "adaptiveDensityFloor", IsRequired = false)] public float AdaptiveDensityFloor;
+        // Development hot reload (ROADMAP M5): reload a mod assembly when its file in mods\ changes.
+        [DataMember(Name = "hotReload", IsRequired = false)] public bool HotReload;
+        [DataMember(Name = "hotReloadPollMs", IsRequired = false)] public int HotReloadPollMs;
+        // Old assemblies stay loaded after a reload; past this many megabytes of them, reloads are refused.
+        [DataMember(Name = "hotReloadMaxLeakMegabytes", IsRequired = false)] public int HotReloadMaxLeakMegabytes;
 
         public bool BulletEvents { get { return bulletEvents ?? true; } }
+        // ADR-0007: observe the game's damage routine (a code hook) for exact PedDamaged/PedDied.
+        public bool ExactDamage { get { return exactDamage ?? true; } }
         public bool GovernorEnabled { get { return governorEnabled ?? true; } }
 
         internal void Validate()
@@ -50,6 +58,10 @@ namespace LibertyFramework.Engine
             if (WatchdogStallMilliseconds == 0) { WatchdogStallMilliseconds = 5000; }
             if (WatchdogStallMilliseconds < 1000 || WatchdogStallMilliseconds > 60000) { throw new InvalidDataException("engine watchdogStallMilliseconds must be 1000-60000"); }
             if (!(AdaptiveDensityFloor >= 0 && AdaptiveDensityFloor <= 1)) { throw new InvalidDataException("engine adaptiveDensityFloor must be 0-1"); }
+            if (HotReloadPollMs == 0) { HotReloadPollMs = 1000; }
+            if (HotReloadPollMs < 250 || HotReloadPollMs > 10000) { throw new InvalidDataException("engine hotReloadPollMs must be 250-10000"); }
+            if (HotReloadMaxLeakMegabytes == 0) { HotReloadMaxLeakMegabytes = 32; }
+            if (HotReloadMaxLeakMegabytes < 1 || HotReloadMaxLeakMegabytes > 256) { throw new InvalidDataException("engine hotReloadMaxLeakMegabytes must be 1-256"); }
         }
 
         internal static EngineConfig Defaults()

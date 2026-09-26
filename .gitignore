@@ -22,3 +22,7 @@ tools/mood/bin/
 
 tools/toolchains.local.json
 native/**/bin/
+
+__pycache__/
+*.pyc
+*.blend1

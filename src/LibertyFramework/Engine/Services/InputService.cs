@@ -75,10 +75,10 @@ namespace LibertyFramework.Engine.Services
         public LibertyModule CapturedBy { get { return capturer ?? (uiCaptures.Count > 0 ? uiCaptures[uiCaptures.Count - 1].Key : null); } }
 
         // Open menus: the top menu's owner sees input, and player control stays locked while any menu is open.
-        internal void CaptureForUi(LibertyModule owner, object menu)
+        internal void CaptureForUi(LibertyModule owner, object menu, bool lockControl)
         {
             uiCaptures.Add(new KeyValuePair<LibertyModule, object>(owner, menu));
-            engine.Player.LockControlInternal(menu);
+            if (lockControl) { engine.Player.LockControlInternal(menu); }
         }
 
         internal void ReleaseForUi(LibertyModule owner, object menu)

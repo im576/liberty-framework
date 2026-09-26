@@ -39,3 +39,14 @@ Approved by [ADR-0004](../architecture/decisions/ADR-0004-engine-memory.md). No 
 | Entity matrix pointer | GET_CAR_COORDINATES / GET_CAR_HEADING workers `mov eax,[entity+20h]` | +0x20 | skip vehicles without a matrix |
 | Vehicle driver pointer | GET_DRIVER_OF_CAR worker `mov eax,[vehicle+0F50h]` | +0xF50 | driver handle via the ped pool (read only) |
 | Bullet list | IS_BULLET_IN_AREA scan (existing) | count/array/stride/owner | core BulletFired events (copied under the core's SEH guard) |
+
+## ADR-0007 exact damage (2026-09-25)
+
+| Item | Anchor | 1.2.0.59 | Use |
+|---|---|---|---|
+| Ped damage-response routine | signature `83 EC 0C 53 8B 5C 24 18 57 8A 43 04 8B F9 A8 01 0F 85` plus the component store `8B 47 08 89 86 78 0A 00 00` at +0x291 | 0xCA3820 | entry detour (observe only) |
+| Component to bone | `GET_CHAR_LAST_DAMAGE_BONE` handler → worker → `mov ecx,[eax+0A78h] … call` at worker+0x2A | 0xA76700 | bone tag of the damaged component |
+| `CPed` +0xA78 | last damage component | | read by `GET_CHAR_LAST_DAMAGE_BONE` |
+| `CPed` +0x1E4 / +0x1E8 / +0x1EC | last damager / time / weapon | | read by `HAS_CHAR_BEEN_DAMAGED_BY_CHAR` |
+| Calculator | +0 damager, +4 damage (float), +8 component, +0xC weapon | | detour record |
+| Response | +4 flags, +8 health lost, +0xC armour lost | | detour record |

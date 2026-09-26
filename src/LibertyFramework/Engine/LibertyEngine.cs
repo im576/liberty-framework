@@ -54,6 +54,7 @@ namespace LibertyFramework.Engine
         public AudioService Audio { get; private set; }
         public StreamingService Streaming { get; private set; }
         public WorldControlService WorldControl { get; private set; }
+        public WorldQueryService Query { get; private set; }
         public BlipService Blips { get; private set; }
         public LogService Log { get; private set; }
         public PerfService Perf { get; private set; }
@@ -73,6 +74,11 @@ namespace LibertyFramework.Engine
         internal LibertyModule CurrentModule { get; private set; }
 
         private readonly List<ModuleRuntime> runtimes = new List<ModuleRuntime>();
+        private readonly Dictionary<Assembly, string> assemblyPaths = new Dictionary<Assembly, string>();
+        private readonly ModuleReloader reloader = new ModuleReloader(LibertyPaths.ModsDirectory);
+        private bool hotReloadActive;
+        private int reloadCount;
+        private long leakedReloadBytes;
         private readonly CoreBridge core = new CoreBridge();
         private readonly string[] phaseNames = new string[MaxPhases];
         private volatile int phase = -1;
@@ -111,6 +117,7 @@ namespace LibertyFramework.Engine
             Fx = new FxService(this);
             Audio = new AudioService(this);
             WorldControl = new WorldControlService(this);
+            Query = new WorldQueryService(this);
             Blips = new BlipService(this);
             Perf = new PerfService(this);
             ModuleList = new ModuleService(this);
@@ -122,6 +129,7 @@ namespace LibertyFramework.Engine
         string ILiberty.EngineVersion { get { return Version; } }
         Episode ILiberty.Episode { get { return Episode; } }
         IWorldState ILiberty.World { get { return World; } }
+        IWorldQuery ILiberty.Query { get { return Query; } }
         IEventBus ILiberty.Events { get { return Events; } }
         IScheduler ILiberty.Scheduler { get { return Scheduler; } }
         IPlayer ILiberty.Player { get { return Player; } }
@@ -154,6 +162,7 @@ namespace LibertyFramework.Engine
             Current = engine;
             LibertyHost.Current = engine;
             engine.LoadConfig();
+            engine.hotReloadActive = engine.Config.HotReload;
             // Crash capture is installed first, before anything else touches the game.
             engine.core.Load();
             engine.Governor = new Governor(engine.Config);
@@ -187,41 +196,24 @@ namespace LibertyFramework.Engine
             List<Assembly> assemblies = new List<Assembly> { typeof(LibertyEngine).Assembly };
             if (Config.LoadModAssemblies && Directory.Exists(LibertyPaths.ModsDirectory))
             {
-                foreach (string path in Directory.GetFiles(LibertyPaths.ModsDirectory, "*.dll"))
+                foreach (string file in Directory.GetFiles(LibertyPaths.ModsDirectory, "*.dll"))
                 {
-                    // From bytes, like ScriptHookDotNet: no file lock, so a mod can be replaced and picked up by ReloadScripts.
-                    try { assemblies.Add(Assembly.Load(File.ReadAllBytes(path))); RuntimeLog.Info("engine_mod_assembly " + Path.GetFileName(path)); }
+                    // From bytes, like ScriptHookDotNet: no file lock, so a mod can be replaced and picked up by a reload.
+                    string path = Path.GetFullPath(file);
+                    try
+                    {
+                        byte[] bytes = File.ReadAllBytes(path);
+                        Assembly assembly = Assembly.Load(bytes);
+                        assemblies.Add(assembly);
+                        assemblyPaths[assembly] = path;
+                        reloader.Loaded(path, bytes);
+                        RuntimeLog.Info("engine_mod_assembly " + Path.GetFileName(path));
+                    }
                     catch (Exception error) { RuntimeLog.Error("engine_mod_assembly_failed " + Path.GetFileName(path) + " error=" + error.Message); }
                 }
             }
             List<KeyValuePair<ModuleManifest, Type>> found = new List<KeyValuePair<ModuleManifest, Type>>();
-            foreach (Assembly assembly in assemblies)
-            {
-                Type[] types;
-                try { types = assembly.GetTypes(); }
-                catch (ReflectionTypeLoadException error)
-                {
-                    RuntimeLog.Error("engine_assembly_partial " + assembly.GetName().Name + " error=" + error.LoaderExceptions.FirstOrDefault());
-                    types = error.Types.Where(t => t != null).ToArray();
-                }
-                foreach (Type type in types)
-                {
-                    if (type.IsAbstract || !typeof(LibertyModule).IsAssignableFrom(type)) { continue; }
-                    ModuleAttribute attribute = (ModuleAttribute)Attribute.GetCustomAttribute(type, typeof(ModuleAttribute));
-                    if (attribute == null) { RuntimeLog.Error("engine_module_unmarked " + type.FullName); continue; }
-                    ModuleManifest manifest = ModuleManifest.From(attribute, assembly.GetName().Name);
-                    if (!SdkVersion.IsCompatible(manifest.SdkVersion))
-                    {
-                        RuntimeLog.Error("engine_module_sdk_incompatible " + manifest.Id + " wants=" + manifest.SdkVersion + " engine=" + SdkVersion.Text);
-                        continue;
-                    }
-                    if (typeof(Module).IsAssignableFrom(type) && !manifest.Has(Capabilities.EngineInternal))
-                    {
-                        RuntimeLog.Error("engine_module_missing_capability " + manifest.Id + " engine modules must declare " + Capabilities.EngineInternal);
-                    }
-                    found.Add(new KeyValuePair<ModuleManifest, Type>(manifest, type));
-                }
-            }
+            foreach (Assembly assembly in assemblies) { found.AddRange(ScanModules(assembly)); }
             List<KeyValuePair<ModuleManifest, Type>> accepted = new List<KeyValuePair<ModuleManifest, Type>>();
             foreach (KeyValuePair<ModuleManifest, Type> pair in found.OrderBy(p => p.Key.Order).ThenBy(p => p.Key.Id, StringComparer.Ordinal))
             {
@@ -231,23 +223,69 @@ namespace LibertyFramework.Engine
             }
             foreach (KeyValuePair<ModuleManifest, Type> pair in DependencyOrder(accepted))
             {
-                if (runtimes.Count + FirstModulePhase >= MaxPhases) { RuntimeLog.Error("engine_module_limit " + pair.Key.Id); continue; }
-                try
-                {
-                    LibertyModule module = (LibertyModule)Activator.CreateInstance(pair.Value, true);
-                    module.Manifest = pair.Key;
-                    ModuleRuntime runtime = new ModuleRuntime(module, FirstModulePhase + runtimes.Count, pair.Key.Has(Capabilities.EngineInternal));
-                    runtime.BudgetMs = pair.Key.BudgetMs > 0 ? pair.Key.BudgetMs : Config.ModuleBudgetMs;
-                    runtimes.Add(runtime);
-                    RuntimeLog.Info("engine_module_loaded " + pair.Key.Id + " version=" + pair.Key.Version + " assembly=" + pair.Key.Assembly +
-                        (pair.Key.Requires.Length > 0 ? " requires=" + string.Join(",", pair.Key.Requires) : "") +
-                        (pair.Key.Capabilities.Length > 0 ? " capabilities=" + string.Join(",", pair.Key.Capabilities) : ""));
-                }
-                catch (Exception error)
-                {
-                    RuntimeLog.Error("engine_module_construct_failed " + pair.Key.Id + " error=" + (error.InnerException ?? error));
-                }
+                LibertyModule module;
+                try { module = Instantiate(pair.Key, pair.Value); }
+                catch (Exception error) { RuntimeLog.Error("engine_module_construct_failed " + pair.Key.Id + " error=" + (error.InnerException ?? error)); continue; }
+                AddRuntime(module, pair.Value);
             }
+        }
+
+        // Module types of one assembly with their manifests; SDK-incompatible ones are refused (logged).
+        private static List<KeyValuePair<ModuleManifest, Type>> ScanModules(Assembly assembly)
+        {
+            List<KeyValuePair<ModuleManifest, Type>> found = new List<KeyValuePair<ModuleManifest, Type>>();
+            Type[] types;
+            try { types = assembly.GetTypes(); }
+            catch (ReflectionTypeLoadException error)
+            {
+                RuntimeLog.Error("engine_assembly_partial " + assembly.GetName().Name + " error=" + error.LoaderExceptions.FirstOrDefault());
+                types = error.Types.Where(t => t != null).ToArray();
+            }
+            foreach (Type type in types)
+            {
+                if (type.IsAbstract || !typeof(LibertyModule).IsAssignableFrom(type)) { continue; }
+                ModuleAttribute attribute = (ModuleAttribute)Attribute.GetCustomAttribute(type, typeof(ModuleAttribute));
+                if (attribute == null) { RuntimeLog.Error("engine_module_unmarked " + type.FullName); continue; }
+                ModuleManifest manifest = ModuleManifest.From(attribute, assembly.GetName().Name);
+                if (!SdkVersion.IsCompatible(manifest.SdkVersion))
+                {
+                    RuntimeLog.Error("engine_module_sdk_incompatible " + manifest.Id + " wants=" + manifest.SdkVersion + " engine=" + SdkVersion.Text);
+                    continue;
+                }
+                if (typeof(Module).IsAssignableFrom(type) && !manifest.Has(Capabilities.EngineInternal))
+                {
+                    RuntimeLog.Error("engine_module_missing_capability " + manifest.Id + " engine modules must declare " + Capabilities.EngineInternal);
+                }
+                found.Add(new KeyValuePair<ModuleManifest, Type>(manifest, type));
+            }
+            return found;
+        }
+
+        private static LibertyModule Instantiate(ModuleManifest manifest, Type type)
+        {
+            LibertyModule module = (LibertyModule)Activator.CreateInstance(type, true);
+            module.Manifest = manifest;
+            return module;
+        }
+
+        private ModuleRuntime AddRuntime(LibertyModule module, Type type)
+        {
+            ModuleManifest manifest = module.Manifest;
+            if (runtimes.Count + FirstModulePhase >= MaxPhases) { RuntimeLog.Error("engine_module_limit " + manifest.Id); return null; }
+            string source;
+            assemblyPaths.TryGetValue(type.Assembly, out source);
+            ModuleRuntime runtime = new ModuleRuntime(module, FirstModulePhase + runtimes.Count, manifest.Has(Capabilities.EngineInternal), source);
+            runtime.BudgetMs = manifest.BudgetMs > 0 ? manifest.BudgetMs : Config.ModuleBudgetMs;
+            runtimes.Add(runtime);
+            if (started)
+            {
+                phaseNames[runtime.Phase] = "module." + runtime.Id;
+                core.RegisterPhase(runtime.Phase, phaseNames[runtime.Phase]);
+            }
+            RuntimeLog.Info("engine_module_loaded " + manifest.Id + " version=" + manifest.Version + " assembly=" + manifest.Assembly +
+                (manifest.Requires.Length > 0 ? " requires=" + string.Join(",", manifest.Requires) : "") +
+                (manifest.Capabilities.Length > 0 ? " capabilities=" + string.Join(",", manifest.Capabilities) : ""));
+            return runtime;
         }
 
         // Stable topological order: a module comes after everything it requires; otherwise Order, then id. A module
@@ -292,8 +330,12 @@ namespace LibertyFramework.Engine
             Commands.Register(null, "costs", "named cost samples since the last call (resets them)", args => CostMeter.ReportAndReset());
             Commands.Register(null, "pools", "game pool occupancy (peds, vehicles, objects)", args => PoolsReport());
             Commands.Register(null, "natives", "raw native calls made through the SDK, per module", args => Natives.Report());
+            Commands.Register(null, "hooks", "code hooks the core installed (ADR-0007)", args => core.HooksReport());
             Commands.Register(null, "owned", "owned <module> - resources a module holds", args => OwnedReport(args));
             Commands.Register(null, "stop", "stop <module> - stop a module and release everything it owns", args => StopCommand(args));
+            Commands.Register(null, "restart", "restart <module> - stop it (and its dependents), then start fresh instances", args => RestartCommand(args));
+            Commands.Register(null, "reload", "reload <module> - load its mod assembly again and swap every module in it (dev)", args => ReloadCommand(args));
+            Commands.Register(null, "hotreload", "hotreload [on|off] - reload mod assemblies when their file changes (dev)", args => HotReloadCommand(args));
         }
 
         public string Status()
@@ -340,6 +382,157 @@ namespace LibertyFramework.Engine
             StopModule(m, "stopped by command", false);
             return "stopped " + m.Id;
         }
+
+        private string RestartCommand(string[] args)
+        {
+            ModuleRuntime m = Find(args.Length > 0 ? args[0] : "");
+            if (m == null) { return "unknown module"; }
+            HashSet<ModuleRuntime> wasRunning = new HashSet<ModuleRuntime>(runtimes.Where(r => r.Module.Running));
+            StopModule(m, "restarting", false);
+            List<ModuleRuntime> restart = new List<ModuleRuntime> { m };
+            restart.AddRange(runtimes.Where(r => r != m && wasRunning.Contains(r) && !r.Module.Running));
+            foreach (ModuleRuntime r in restart) { r.Replace(Instantiate(r.Manifest, r.Module.GetType())); }
+            StartInOrder(restart);
+            string result = Describe(restart);
+            RuntimeLog.Info("engine_module_restarted " + result);
+            return "restarted " + result;
+        }
+
+        private string ReloadCommand(string[] args)
+        {
+            ModuleRuntime m = Find(args.Length > 0 ? args[0] : "");
+            if (m == null) { return "unknown module"; }
+            // Engine modules live in the SHDN-loaded engine assembly: SHDN's ReloadScripts reloads that.
+            if (m.SourcePath == null) { return m.Id + " is built into the engine assembly; use restart (or SHDN ReloadScripts for new engine code)"; }
+            return ReloadAssembly(m.SourcePath);
+        }
+
+        private string HotReloadCommand(string[] args)
+        {
+            if (args.Length > 0) { hotReloadActive = args[0] == "on"; }
+            return "hot reload " + (hotReloadActive ? "on" : "off") + ": " + LibertyPaths.ModsDirectory + " reloads=" + reloadCount +
+                " leaked_kb=" + (leakedReloadBytes >> 10) + " limit_mb=" + Config.HotReloadMaxLeakMegabytes;
+        }
+
+        // Development hot reload (ROADMAP M5). Loads a new copy of a mod assembly and swaps its modules in place:
+        //  1. every module from that file stops as usual (OnStop, then everything it owns is released), and so do its
+        //     dependents;
+        //  2. fresh instances of the new types take over the slots (modules new in the file get new slots);
+        //  3. the reloaded modules and the stopped dependents (fresh instances too) start in dependency order.
+        // The old assembly stays loaded (.NET Framework cannot unload it outside its AppDomain), so reloads are counted
+        // against hotReloadMaxLeakMegabytes of the 32-bit address space.
+        internal string ReloadAssembly(string path)
+        {
+            path = Path.GetFullPath(path);
+            string file = Path.GetFileName(path);
+            if (leakedReloadBytes >= (long)Config.HotReloadMaxLeakMegabytes << 20)
+            {
+                RuntimeLog.Error("engine_reload_refused " + file + " leaked_kb=" + (leakedReloadBytes >> 10));
+                return "reload limit reached (" + (leakedReloadBytes >> 20) + " MB of old assemblies stay loaded); restart the game";
+            }
+            byte[] bytes;
+            Assembly assembly;
+            try
+            {
+                bytes = File.ReadAllBytes(path);
+                assembly = Assembly.Load(bytes);
+            }
+            catch (Exception error)
+            {
+                RuntimeLog.Error("engine_reload_load_failed " + file + " error=" + error.Message);
+                return "reload of " + file + " failed: " + error.Message;
+            }
+            assemblyPaths[assembly] = path;
+            reloadCount++;
+            leakedReloadBytes += bytes.Length;
+            reloader.Loaded(path, bytes);
+
+            List<KeyValuePair<ModuleManifest, Type>> found = ScanModules(assembly).Where(p => !Config.DisabledModules.Contains(p.Key.Id)).ToList();
+            List<ModuleRuntime> old = runtimes.Where(r => SamePath(r.SourcePath, path)).ToList();
+            foreach (KeyValuePair<ModuleManifest, Type> pair in found.ToList())
+            {
+                ModuleRuntime existing = Find(pair.Key.Id);
+                if (existing != null && !SamePath(existing.SourcePath, path))
+                {
+                    RuntimeLog.Error("engine_reload_duplicate_id " + pair.Key.Id + " already loaded from " + (existing.SourcePath ?? "the engine assembly"));
+                    found.Remove(pair);
+                    continue;
+                }
+                string missing = pair.Key.Requires.FirstOrDefault(r => Find(r) == null && !found.Any(f => f.Key.Id == r));
+                if (missing != null) { RuntimeLog.Error("engine_reload_dependency_missing " + pair.Key.Id + " requires=" + missing); found.Remove(pair); }
+            }
+
+            HashSet<ModuleRuntime> wasRunning = new HashSet<ModuleRuntime>(runtimes.Where(r => r.Module.Running));
+            foreach (ModuleRuntime m in old) { StopModule(m, "reloading", false); }
+            List<ModuleRuntime> restart = new List<ModuleRuntime>();
+            foreach (KeyValuePair<ModuleManifest, Type> pair in found)
+            {
+                LibertyModule fresh;
+                try { fresh = Instantiate(pair.Key, pair.Value); }
+                catch (Exception error) { RuntimeLog.Error("engine_module_construct_failed " + pair.Key.Id + " error=" + (error.InnerException ?? error)); continue; }
+                ModuleRuntime slot = old.FirstOrDefault(r => r.Id == pair.Key.Id);
+                if (slot != null)
+                {
+                    slot.Replace(fresh);
+                    slot.BudgetMs = pair.Key.BudgetMs > 0 ? pair.Key.BudgetMs : Config.ModuleBudgetMs;
+                    restart.Add(slot);
+                }
+                else
+                {
+                    ModuleRuntime added = AddRuntime(fresh, pair.Value);
+                    if (added != null) { restart.Add(added); }
+                }
+            }
+            foreach (ModuleRuntime m in old.Where(r => !restart.Contains(r))) { m.Module.FailureReason = "not in the reloaded assembly"; }
+            foreach (ModuleRuntime m in runtimes.Where(r => wasRunning.Contains(r) && !r.Module.Running && !old.Contains(r)).ToList())
+            {
+                m.Replace(Instantiate(m.Manifest, m.Module.GetType()));
+                restart.Add(m);
+            }
+            StartInOrder(restart);
+            string result = Describe(restart);
+            RuntimeLog.Info("engine_module_reloaded assembly=" + file + " modules=" + result + " reloads=" + reloadCount + " leaked_kb=" + (leakedReloadBytes >> 10));
+            return "reloaded " + file + ": " + result;
+        }
+
+        private void PollHotReload(int now)
+        {
+            try
+            {
+                foreach (string path in reloader.Poll(now, Config.HotReloadPollMs)) { ReloadAssembly(path); }
+            }
+            catch (Exception error)
+            {
+                RuntimeLog.Error("engine_hot_reload_failed error=" + error);
+                hotReloadActive = false;
+            }
+        }
+
+        // Starts each module once everything it requires runs; modules whose requirement never starts are reported by StartModule.
+        private void StartInOrder(List<ModuleRuntime> modules)
+        {
+            List<ModuleRuntime> pending = runtimes.Where(modules.Contains).ToList();
+            bool progress = true;
+            while (pending.Count > 0 && progress)
+            {
+                progress = false;
+                foreach (ModuleRuntime m in pending.ToList())
+                {
+                    if (!m.Manifest.Requires.All(r => { ModuleRuntime d = Find(r); return d != null && d.Module.Running; })) { continue; }
+                    StartModule(m);
+                    pending.Remove(m);
+                    progress = true;
+                }
+            }
+            foreach (ModuleRuntime m in pending) { StartModule(m); }
+        }
+
+        private static string Describe(List<ModuleRuntime> modules)
+        {
+            return string.Join(",", modules.Select(r => r.Id + (r.Module.Running ? "" : "(off: " + (r.Module.FailureReason ?? "stopped") + ")")).ToArray());
+        }
+
+        private static bool SamePath(string a, string b) { return a != null && b != null && string.Equals(a, b, StringComparison.OrdinalIgnoreCase); }
 
         private ModuleRuntime Find(string id) { return runtimes.FirstOrDefault(r => string.Equals(r.Id, id, StringComparison.OrdinalIgnoreCase)); }
 
@@ -423,6 +616,7 @@ namespace LibertyFramework.Engine
                 catch (Exception error) { RuntimeLog.Error("engine_ui_update_failed error=" + error); }
                 SetPhase(PhaseCommands);
                 Commands.PumpFileChannel();
+                if (hotReloadActive) { PollHotReload(now); }
                 Entities.Flush(false);
                 CostMeter.Add("engine.frame", frameStart);
                 if (unchecked(now - lastReportMs) >= 30000)
@@ -455,10 +649,14 @@ namespace LibertyFramework.Engine
             started = true;
             try { Episode = (Episode)(int)Game.CurrentEpisode; }
             catch (Exception error) { RuntimeLog.Error("engine_episode_unknown error=" + error.Message); }
-            if (Memory.Resolve() && Config.CoreEnabled) { core.Initialize(Memory.Scanner, Memory.Addresses); }
+            if (Memory.Resolve() && Config.CoreEnabled && core.Initialize(Memory.Scanner, Memory.Addresses) && Config.ExactDamage)
+            {
+                core.InstallDamageHook(Memory.Addresses);
+            }
             else if (!Config.CoreEnabled) { RuntimeLog.Info("engine_core_disabled_by_config"); }
             RegisterPhases();
             builder = new WorldBuilder(core, World, Events, Config);
+            builder.Episode = Episode;
             Entities.RecoverOrphans();
             RuntimeLog.Info("engine_started episode=" + Episode + " game=" + SafeVersion());
             foreach (ModuleRuntime m in runtimes) { StartModule(m); }

@@ -10,11 +10,12 @@
 #endif
 #define LC_API LC_EXTERN __declspec(dllexport)
 
-#define LC_ABI_VERSION 2
+#define LC_ABI_VERSION 3
 #define LC_MAX_PEDS 128
 #define LC_MAX_VEHICLES 64
 #define LC_MAX_EVENTS 256
 #define LC_MAX_BULLETS 32
+#define LC_MAX_DAMAGES 32
 
 // Script natives the core calls directly. The host resolves each hash to its handler (lc_native_hash) and passes
 // the handlers to lc_init; a 0 handler or a failed verification leaves the dependent snapshot fields invalid.
@@ -114,6 +115,23 @@ typedef struct lc_bullet
     float to_x, to_y, to_z;
 } lc_bullet;
 
+// ABI 3: a damage the game applied to a ped this frame, observed in its damage-response routine (ADR-0007).
+typedef struct lc_damage
+{
+    int32_t victim;       // ped handle
+    int32_t attacker;     // ped or vehicle handle, 0 if none/other
+    int32_t attacker_kind;// 0 none/other, 1 ped, 2 vehicle
+    int32_t weapon;       // weapon type (0-20 weapons, 21-44 episodic, 49+ special: car, explosion, fall...)
+    int32_t component;    // body component
+    int32_t bone;         // bone tag or -1
+    float amount;         // damage the game computed
+    float health_lost;
+    float armour_lost;
+    uint32_t flags;       // LC_DAMAGE_*
+} lc_damage;
+
+#define LC_DAMAGE_KILLED 0x1u
+
 typedef struct lc_player
 {
     int32_t index;
@@ -203,6 +221,8 @@ typedef struct lc_snapshot
     lc_vehicle vehicles[LC_MAX_VEHICLES];
     int32_t bullet_count;
     lc_bullet bullets[LC_MAX_BULLETS];
+    int32_t damage_count;
+    lc_damage damages[LC_MAX_DAMAGES];
     int32_t event_count;
     int32_t events_dropped;
     lc_event events[LC_MAX_EVENTS];
@@ -213,6 +233,7 @@ typedef struct lc_snapshot
 #define LC_VALID_PEDS 0x4u
 #define LC_VALID_VEHICLES 0x8u
 #define LC_VALID_BULLETS 0x10u
+#define LC_VALID_DAMAGE 0x20u
 
 typedef struct lc_frame_input
 {
@@ -258,3 +279,9 @@ typedef struct lc_fault
 
 // number 0 = latest; n = fault number n (1-based) while it is among the last 16.
 LC_API void lc_faults(lc_fault* out, uint32_t number);
+
+// ABI 3: hooks (ADR-0007). Installs the exact-damage observer on the damage-response routine; both addresses come from
+// the host's signature scan. 1 = installed (or already installed), 0 = refused (bytes differ / already hooked).
+LC_API int32_t lc_damage_hook_install(uint32_t function, uint32_t component_to_bone);
+// Writes one line per hook (name, target, state); returns the number of hooks.
+LC_API int32_t lc_hooks_report(char* buffer, int32_t size);

@@ -36,6 +36,8 @@ namespace Liberty.Autopilot
             Register("heading", "heading <degrees>", a => { Liberty.Peds.SetHeading(Liberty.Player.Ped, Args.Float(a, 0)); return "heading " + Args.F(Args.Float(a, 0)); });
             Register("spawn", "spawn <count> [distance m] [weapon id] - NPC subjects facing the player", Spawn);
             Register("spawncar", "spawncar <model> [distance m] - a vehicle in front of the player", SpawnCar);
+            Register("spawnprop", "spawnprop <model> [distance m] [height above ground m] - a frozen prop in front of the player (content tests)", SpawnProp);
+            Register("at-trunk","at-trunk [distance behind m] - stand behind the last spawned car, facing its trunk", AtTrunk);
             Register("clear", "delete spawned subjects and vehicles", Clear);
             Register("peds", "list peds in the engine snapshot", Peds);
             Register("vehicles", "list vehicles in the engine snapshot", Vehicles);
@@ -51,6 +53,7 @@ namespace Liberty.Autopilot
             Register("menu-test", "open a sample list menu (screenshots)", MenuTest);
             Register("radial-test", "open a sample radial menu (screenshots)", a => { OpenRadial(); return "radial open"; });
             Register("menu-close", "close the menus this module opened", a => { int n = menus.Count; foreach (IMenu m in menus) { m.Close(); } menus.Clear(); return "closed " + n; });
+            Register("fight", "fight <subject> <subject> - two subjects attack each other (exact damage events)", Fight);
             Register("fire", "fire <subject|all> [ms] - armed subjects shoot at a point beside them (bullet events)", Fire);
             Liberty.Log.Info(this, "autopilot_ready sdk=" + SdkVersion.Text + " engine=" + Liberty.EngineVersion + " episode=" + Liberty.Episode);
         }
@@ -139,13 +142,50 @@ namespace Liberty.Autopilot
             return "spawning " + model;
         }
 
+        private readonly List<PropRef> props = new List<PropRef>();
+
+        // A compiled asset in front of the player, frozen and without collision so it stays where the camera expects it.
+        private string SpawnProp(string[] args)
+        {
+            if (args.Length == 0) { return "spawnprop <model>"; }
+            ModelRef model = args[0];
+            if (!Liberty.Streaming.IsValidModel(model)) { return "model " + args[0] + " is not in the game's model index"; }
+            // InFront returns a point 1 m above the ground; height is measured from the ground.
+            Vec3 at = InFront(Args.Float(args, 1, 2.5f), 0) + new Vec3(0, 0, Args.Float(args, 2, 0f) - 1f);
+            Liberty.Props.Spawn(this, model, at, prop =>
+            {
+                if (prop.IsNone) { Liberty.Log.Error(this, "autopilot_prop_failed model=" + args[0]); return; }
+                Liberty.Props.SetFrozen(prop, true);
+                Liberty.Props.SetCollision(prop, false);
+                Liberty.Props.SetPosition(prop, at);
+                props.Add(prop);
+                Liberty.Log.Info(this, "autopilot_prop handle=" + prop.Handle + " model=" + args[0] + " at=" + at);
+            });
+            return "spawning prop " + args[0];
+        }
+
+        // Behind the car on its long axis (vehicle space: Y forward), facing it, on the ground.
+        private string AtTrunk(string[] args)
+        {
+            cars.RemoveAll(c => !Liberty.Vehicles.Exists(c));
+            if (cars.Count == 0) { return "no spawned car; use spawncar first"; }
+            VehicleRef car = cars[cars.Count - 1];
+            Vec3 spot = Liberty.Vehicles.GetOffsetPosition(car, new Vec3(0, -Args.Float(args, 0, 3.0f), 0));
+            float ground = Liberty.WorldControl.GroundZ(new Vec3(spot.X, spot.Y, spot.Z + 2f));
+            if (ground != 0) { spot.Z = ground + 1f; }
+            Liberty.Player.Teleport(spot, Liberty.Vehicles.GetHeading(car));
+            return "at trunk of " + car.Handle + " " + spot;
+        }
+
         private string Clear(string[] args)
         {
             foreach (PedRef ped in subjects) { Liberty.Peds.Delete(ped); }
             foreach (VehicleRef car in cars) { Liberty.Vehicles.Delete(car); }
-            int n = subjects.Count + cars.Count;
+            foreach (PropRef prop in props) { Liberty.Props.Delete(prop); }
+            int n = subjects.Count + cars.Count + props.Count;
             subjects.Clear();
             cars.Clear();
+            props.Clear();
             return "cleared " + n;
         }
 
@@ -192,9 +232,16 @@ namespace Liberty.Autopilot
                 args = args.Skip(2).ToArray();
             }
             float pedHeading = Liberty.Peds.GetHeading(ped);
+            Vec3 target = Liberty.Peds.GetPosition(ped);
+            if (args.Length > 0 && args[0] == "prop")
+            {
+                props.RemoveAll(p => !Liberty.Props.Exists(p));
+                if (props.Count == 0) { return "no spawned prop"; }
+                target = Liberty.Props.GetPosition(props[props.Count - 1]);
+                args = args.Skip(1).ToArray();
+            }
             double angle = (pedHeading + Args.Float(args, 0, 0f)) * Math.PI / 180.0;
             float distance = Args.Float(args, 1, 2.5f), height = Args.Float(args, 2, 0.6f);
-            Vec3 target = Liberty.Peds.GetPosition(ped);
             Vec3 position = target + new Vec3((float)(-Math.Sin(angle) * distance), (float)(Math.Cos(angle) * distance), height);
             CameraOff();
             camera = Liberty.Cameras.Create(this);
@@ -254,6 +301,17 @@ namespace Liberty.Autopilot
             radial.CenterLines = s => new[] { "SEGMENT", "Slot " + s, "Radial menus come from Liberty.Ui", "A Pick   B Close" };
             radial.OnAccept = s => "picked " + s;
             menus.Add(Liberty.Ui.OpenRadial(this, radial));
+        }
+
+        private string Fight(string[] args)
+        {
+            List<PedRef> a = Targets(args.Length > 0 ? args[0] : "0"), b = Targets(args.Length > 1 ? args[1] : "1");
+            if (a.Count == 0 || b.Count == 0) { return "need two subjects"; }
+            Liberty.Peds.SetBlockEvents(a[0], false);
+            Liberty.Peds.SetBlockEvents(b[0], false);
+            Liberty.Tasks.Attack(a[0], b[0]);
+            Liberty.Tasks.Attack(b[0], a[0]);
+            return "fight " + a[0].Handle + " vs " + b[0].Handle;
         }
 
         private string Fire(string[] args)

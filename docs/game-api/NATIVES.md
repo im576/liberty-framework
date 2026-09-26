@@ -120,3 +120,9 @@ Measured facts:
 - GET_CAR_COORDINATES dereferences the entity matrix (+0x20) without a null check.
 - GET_DRIVER_OF_CAR can fault on pooled vehicles, and a contained fault still corrupted game state, so the core reads the driver pointer from `[vehicle+0xF50]` instead.
 - Core v2 adds the vehicle natives above to the direct set (8/8 verified in game).
+
+- **TASK_SHOOT_AT_COORD** (0x705231A9): `(ped, x, y, z, duration ms, mode)`. Disassembly shows the handler multiplies the duration by 0.001 and passes the mode (SHDN `ShootMode`: 0 aim only, 1 single, 2 single keeping aim, 3 burst, 4 continuous) into the task constructor. Used by `Tasks.ShootAt` instead of SHDN `Ped.ShootAt(Vector3)`: that calls **FIRE_PED_WEAPON**, which never returned and stalled the engine (autopilot bullet-events, 2026-09-25). Do not call FIRE_PED_WEAPON.
+
+## SDK WorldQuery (M3, 2026-09-25)
+
+`Query.*`: GET_WATER_HEIGHT(x, y, z, float*) -> bool; HAS_CHAR_SPOTTED_CHAR(ped, other) (the game's perception check, not geometry); IS_CHAR_ON_SCREEN(ped); CAM_IS_SPHERE_VISIBLE(game cam, x, y, z, radius) with GET_GAME_CAM. Snapshot radius/cone queries make no game calls. GTA IV has no general raycast native; a physics ray test is future engine work.

@@ -48,14 +48,15 @@ namespace LibertyFramework.Arsenal
         private bool discoveryDisabled;
         private bool overflowDeferredLogged;
         private readonly ControllerInput storageInput = new ControllerInput();
-        private readonly GTA.Font storageFont = new GTA.Font(17.0F, FontScaling.Pixel);
         private StorageBin activeStorage;
         private Vehicle nearbyTrunk;
         private SafehouseRule nearbySafehouse;
-        // S-2/S-3: every container opens the weapon wheel; trunks are used with Niko's own trunk animations.
-        private readonly LibertyFramework.Arsenal.Ui.WeaponWheel wheel = new LibertyFramework.Arsenal.Ui.WeaponWheel();
-        private readonly LibertyFramework.Arsenal.Ui.TrunkChoreography trunkAnimation = new LibertyFramework.Arsenal.Ui.TrunkChoreography();
+        // S-2/S-3: every container opens the weapon wheel (Liberty.Ui radial menu); trunks are used with Niko's own trunk
+        // animations (engine choreography).
+        private readonly LibertyFramework.Arsenal.Ui.StorageWheel wheel;
+        private readonly LibertyFramework.Arsenal.Ui.TrunkSequence trunkAnimation;
         private WheelHost wheelHost;
+        private string promptShown;
         private bool storageClosing;
         private bool storageControlLocked;
         private bool previousStorageKey;
@@ -63,8 +64,6 @@ namespace LibertyFramework.Arsenal
         private int lastStateReadTicks, lastReconcileTicks;
         private bool cachedArrested, cachedDead, cachedMission, cachedGated;
         private volatile bool inventoryDirty = true;
-        private Size screenSize;
-        private int lastScreenReadTicks;
         private int lastSafehouseObserveTicks;
         private int lastTemporaryPruneTicks;
         private DateTime lastSnapshotUtc = DateTime.MinValue;
@@ -72,10 +71,10 @@ namespace LibertyFramework.Arsenal
         public ArsenalCore()
         {
             Interval = 30;
-            storageFont.Color = Color.FromArgb(240, 236, 238, 240);
+            wheel = new LibertyFramework.Arsenal.Ui.StorageWheel(this);
+            trunkAnimation = new LibertyFramework.Arsenal.Ui.TrunkSequence(this);
             wheelHost = new WheelHost(this);
             Tick += OnTick;
-            PerFrameDrawing += OnStorageDraw;
             AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
             DevToolsPages.Register("ARSENAL", BuildPage);
             RuntimeLog.Info("arsenal_started");
@@ -122,12 +121,6 @@ namespace LibertyFramework.Arsenal
                 if (config == null) { Initialize(); }
                 if (config == null || Player == null || Player.Character == null) { return; }
                 Ped ped = Player.Character;
-                // Screen size from the window (Engine.Services.ScreenInfo); never Game.Resolution (deadlocks on the tick).
-                if (screenSize.Height == 0 || unchecked(Environment.TickCount - lastScreenReadTicks) >= 1000)
-                {
-                    screenSize = LibertyFramework.Engine.Services.ScreenInfo.Size;
-                    lastScreenReadTicks = Environment.TickCount;
-                }
                 int money = Player.Money;
                 if (previousMoney >= 0 && money < previousMoney) { moneyDecreaseAt = Environment.TickCount; }
                 previousMoney = money;
@@ -617,20 +610,11 @@ namespace LibertyFramework.Arsenal
                 else if (openedTrunk != null)
                 {
                     // Trunk: the wheel only exists while Niko stands at the open lid; closing plays the lid animation first.
-                    bool running = trunkAnimation.Update();
-                    if (!running) { CloseStorage(); }
-                    else if (!storageClosing)
-                    {
-                        if (!wheel.IsOpen && trunkAnimation.WheelReady) { wheel.Open(wheelHost); }
-                        if (wheel.IsOpen && wheel.Update(storageInput) == LibertyFramework.Arsenal.Ui.WeaponWheel.Result.Close)
-                        {
-                            wheel.Close();
-                            trunkAnimation.Close();
-                            storageClosing = true;
-                        }
-                    }
+                    trunkAnimation.Update();
+                    if (!trunkAnimation.Active) { CloseStorage(); }
+                    else if (!storageClosing && !wheel.IsOpen && trunkAnimation.WheelReady) { wheel.Open(wheelHost); }
                 }
-                else if (wheel.Update(storageInput) == LibertyFramework.Arsenal.Ui.WeaponWheel.Result.Close) { CloseStorage(); }
+                // Safehouse: the wheel's own close (B) ends the visit through WheelHost.WheelClosed.
             }
             else if (!gated && !DevToolsMenu.IsOpen && Player.CanControlCharacter &&
                 !Function.Call<bool>("IS_CHAR_IN_ANY_CAR", ped))
@@ -654,7 +638,8 @@ namespace LibertyFramework.Arsenal
                     {
                         CloseTrunk();
                         openedTrunk = nearbyTrunk;
-                        trunkAnimation.Begin(ped, nearbyTrunk);
+                        trunkAnimation.Begin(LibertyFramework.Engine.Handles.Ref(ped), LibertyFramework.Engine.Handles.Ref(nearbyTrunk),
+                            LibertyFramework.Engine.Handles.V(nearbyTrunk.Position), config.TrunkTimings);
                     }
                     else { wheel.Open(wheelHost); }
                     Player.CanControlCharacter = false;
@@ -664,7 +649,18 @@ namespace LibertyFramework.Arsenal
             }
             else { nearbyTrunk = null; nearbySafehouse = null; }
 
+            UpdatePrompt();
             previousStorageKey = openKey;
+        }
+
+        // GTA IV's help box (Liberty.Ui) while a container is in reach and closed.
+        private void UpdatePrompt()
+        {
+            string prompt = activeStorage != null || DevToolsMenu.IsOpen ? null :
+                nearbyTrunk != null ? "Press X / E to use the trunk." : nearbySafehouse != null ? "Press X / E to open the weapon stash." : null;
+            if (prompt == promptShown) { return; }
+            promptShown = prompt;
+            if (prompt != null) { Engine.Ui.ShowHelp(this, prompt, 0); } else { Engine.Ui.ClearHelp(this); }
         }
 
         private void FindNearbyStorage(Ped ped)
@@ -686,7 +682,7 @@ namespace LibertyFramework.Arsenal
         }
 
         // Adapter the weapon wheel sees; every action runs on this script's tick through RunAction.
-        private sealed class WheelHost : LibertyFramework.Arsenal.Ui.WeaponWheel.IHost
+        private sealed class WheelHost : LibertyFramework.Arsenal.Ui.StorageWheel.IHost
         {
             private readonly ArsenalCore core;
             internal WheelHost(ArsenalCore owner) { core = owner; }
@@ -722,6 +718,18 @@ namespace LibertyFramework.Arsenal
                 core.AppendGunsmithItems(items);
                 return items;
             }
+
+            // B on the wheel: a trunk closes with the lid animation first; a stash closes at once.
+            public void WheelClosed()
+            {
+                if (core.activeStorage == null) { return; }
+                if (core.openedTrunk != null && core.trunkAnimation.Active)
+                {
+                    core.trunkAnimation.Close();
+                    core.storageClosing = true;
+                }
+                else { core.CloseStorage(); }
+            }
         }
 
         private string WeaponName(int weaponId)
@@ -747,33 +755,6 @@ namespace LibertyFramework.Arsenal
                 storageControlLocked = false;
             }
             RuntimeLog.Info("arsenal_storage_closed id=" + id);
-        }
-
-        private void OnStorageDraw(object sender, GraphicsEventArgs args)
-        {
-            if (disabled || (activeStorage == null && nearbyTrunk == null && nearbySafehouse == null) || DevToolsMenu.IsOpen) { return; }
-            long started = System.Diagnostics.Stopwatch.GetTimestamp();
-            try
-            {
-                GTA.Graphics graphics = args.Graphics;
-                graphics.Scaling = FontScaling.Pixel;
-                Size screen = screenSize;
-                if (screen.Height <= 0) { return; }
-                if (activeStorage != null) { wheel.Draw(graphics, screen); return; }
-                // GTA IV's own help box: top-left, black glass, off-white text.
-                string label = nearbyTrunk != null ? "Press X / E to use the trunk." : "Press X / E to open the weapon stash.";
-                float scale = screen.Height / 720f;
-                RectangleF box = new RectangleF(34 * scale, 30 * scale, 330 * scale, 40 * scale);
-                graphics.DrawRectangle(box, Color.FromArgb(200, 0, 0, 0));
-                graphics.DrawText(label, new RectangleF(box.X + 12 * scale, box.Y + 10 * scale, box.Width - 24 * scale, box.Height - 14 * scale),
-                    TextAlignment.Left, storageFont);
-            }
-            catch (Exception error)
-            {
-                RuntimeLog.Error("arsenal_storage_draw_failed error=" + error);
-                disabled = true;
-            }
-            finally { LibertyFramework.Core.Performance.Logic.CostMeter.Add("draw.storage", started); }
         }
 
         private List<MenuItem> BuildPage()

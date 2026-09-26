@@ -2,17 +2,19 @@ using System.Runtime.InteropServices;
 
 namespace LibertyFramework.Engine.Core
 {
-    // Field-for-field mirror of native/LibertyCore/include/liberty_core.h (ABI version 2). CoreBridge checks the sizes
+    // Field-for-field mirror of native/LibertyCore/include/liberty_core.h (ABI version 3). CoreBridge checks the sizes
     // against the native lc_snapshot.size before reading anything.
     internal static class CoreAbi
     {
-        internal const uint Version = 2;
+        internal const uint Version = 3;
         internal const int MaxPeds = 128;
         internal const int MaxVehicles = 64;
         internal const int MaxEvents = 256;
         internal const int MaxBullets = 32;
+        internal const int MaxDamages = 32;
 
-        internal const uint ValidWorld = 0x1, ValidPlayer = 0x2, ValidPeds = 0x4, ValidVehicles = 0x8, ValidBullets = 0x10;
+        internal const uint ValidWorld = 0x1, ValidPlayer = 0x2, ValidPeds = 0x4, ValidVehicles = 0x8, ValidBullets = 0x10, ValidDamage = 0x20;
+        internal const uint DamageKilled = 0x1;
         internal const uint PedDead = 0x1, PedInVehicle = 0x2, PedPlayer = 0x4, PedNew = 0x8;
         internal const uint VehicleNew = 0x1, VehiclePlayer = 0x2;
         internal const uint PlayerPlaying = 0x1, PlayerControl = 0x2, PlayerDead = 0x4, PlayerInVehicle = 0x8, PlayerReloading = 0x10;
@@ -139,13 +141,28 @@ namespace LibertyFramework.Engine.Core
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    internal struct LcDamage
+    {
+        internal int Victim;
+        internal int Attacker;
+        internal int AttackerKind;
+        internal int Weapon;
+        internal int Component;
+        internal int Bone;
+        internal float Amount;
+        internal float HealthLost;
+        internal float ArmourLost;
+        internal uint Flags;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
     internal struct LcEvent
     {
         internal int Type;
         internal int A, B, C, D, E;
     }
 
-    // lc_snapshot up to and including ped_count; peds, vehicle_count, vehicles, bullet_count, bullets, event_count, events_dropped and events follow.
+    // lc_snapshot up to and including ped_count; peds, vehicle_count, vehicles, bullet_count, bullets, damage_count, damages, event_count, events_dropped and events follow.
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     internal struct LcSnapshotHead
     {

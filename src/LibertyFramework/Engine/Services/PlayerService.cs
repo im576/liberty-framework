@@ -86,10 +86,17 @@ namespace LibertyFramework.Engine.Services
             if (on)
             {
                 if (!invincible.Add(owner)) { return; }
-                if (invincible.Count == 1) { Function.Call("SET_PLAYER_INVINCIBLE", Index, true); }
-                engine.Ledger.Add(owner, "invincible", 0, () => { if (invincible.Remove(owner) && invincible.Count == 0) { Function.Call("SET_PLAYER_INVINCIBLE", Index, false); } });
+                if (invincible.Count == 1) { Apply(true); }
+                engine.Ledger.Add(owner, "invincible", 0, () => { if (invincible.Remove(owner) && invincible.Count == 0) { Apply(false); } });
             }
             else { engine.Ledger.Release(owner, "invincible", 0); }
+        }
+
+        // SET_PLAYER_INVINCIBLE alone let the player die to NPC gunfire (autopilot exact-damage, 2026-09-25); the ped flag too.
+        private void Apply(bool on)
+        {
+            Function.Call("SET_PLAYER_INVINCIBLE", Index, on);
+            if (!Ped.IsNone) { Function.Call("SET_CHAR_INVINCIBLE", Ped.Handle, on); }
         }
     }
 }

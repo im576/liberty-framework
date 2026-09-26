@@ -1,5 +1,6 @@
 using System;
 using GTA;
+using System.Collections.Generic;
 using GTA.Native;
 using Liberty.Sdk;
 using Liberty.Sdk.Events;
@@ -26,6 +27,11 @@ namespace LibertyFramework.Engine.World
         private int spotCheckCountdown;
         private int flagsPolledMs;
         private bool missionActive, cutscenePlaying, flagsKnown;
+        // Exact damage (ADR-0007): the frame each ped last got an exact record / an exact kill, so the inferred events for
+        // the same damage are not published twice.
+        private readonly Dictionary<int, int> exactDamageFrame = new Dictionary<int, int>();
+        private readonly Dictionary<int, int> exactKillFrame = new Dictionary<int, int>();
+        internal Episode Episode;
 
         internal WorldBuilder(CoreBridge core, WorldState state, EventBus events, EngineConfig config)
         {
@@ -74,6 +80,7 @@ namespace LibertyFramework.Engine.World
         {
             uint parts = CoreAbi.ValidWorld | CoreAbi.ValidPlayer | CoreAbi.ValidPeds | CoreAbi.ValidVehicles;
             if (config.BulletEvents) { parts |= CoreAbi.ValidBullets; }
+            if (config.ExactDamage) { parts |= CoreAbi.ValidDamage; }
             LcSnapshotHead* head = core.Frame(ped.GetHashCode(), config.PedRadiusMeters, config.VehicleRadiusMeters, parts);
             core.ReportFaults();
             if (head == null) { return false; }
@@ -119,6 +126,7 @@ namespace LibertyFramework.Engine.World
                 }
             }
             PublishBullets(head);
+            PublishDamages(head);
             Publish(head);
             return true;
         }
@@ -160,6 +168,85 @@ namespace LibertyFramework.Engine.World
             }
         }
 
+        private void PublishDamages(LcSnapshotHead* head)
+        {
+            int frame = state.Frame;
+            if (frame % 300 == 0) { Forget(exactDamageFrame, frame); Forget(exactKillFrame, frame); }
+            int count = CoreBridge.DamageCount(head);
+            if (count == 0) { return; }
+            LcDamage* list = CoreBridge.Damages(head);
+            LcBullet* bullets = CoreBridge.Bullets(head);
+            int bulletCount = CoreBridge.BulletCount(head);
+            int player = state.HasPlayer ? state.Player.Ped.Handle : 0;
+            for (int i = 0; i < count; i++)
+            {
+                LcDamage d = list[i];
+                if (d.Victim == 0) { continue; }
+                exactDamageFrame[d.Victim] = frame;
+                PedRef attacker = d.AttackerKind == 1 ? new PedRef(d.Attacker) : PedRef.None;
+                VehicleRef attackerVehicle = d.AttackerKind == 2 ? new VehicleRef(d.Attacker) : VehicleRef.None;
+                VehicleState vehicle;
+                // A vehicle's damage belongs to its driver when there is one.
+                if (!attackerVehicle.IsNone && state.TryGetVehicle(attackerVehicle, out vehicle) && !vehicle.Driver.IsNone) { attacker = vehicle.Driver; }
+                DamageType type = DamageTypes.Classify(d.Weapon, d.AttackerKind, Episode);
+                PedState victim;
+                bool inSnapshot = state.TryGetPed(new PedRef(d.Victim), out victim);
+                int after = inSnapshot ? victim.Health : (d.Victim == player && state.HasPlayer ? state.Player.Health : 0);
+                PedDamaged e = new PedDamaged();
+                e.Ped = new PedRef(d.Victim); e.Attacker = attacker; e.AttackerVehicle = attackerVehicle; e.Weapon = d.Weapon; e.Type = type;
+                e.Bone = (Bone)d.Bone; e.Component = d.Component; e.Amount = d.Amount; e.HealthLost = d.HealthLost; e.ArmourLost = d.ArmourLost;
+                e.HealthAfter = after; e.HealthBefore = after + (int)Math.Round(d.HealthLost);
+                e.ByPlayer = player != 0 && attacker.Handle == player; e.Exact = true;
+                // The game marks a ped dead a few frames after the lethal hit, so the blow that takes health to 0 or below (this frame's
+                // snapshot, read after the damage) is the kill; later hits on the body are not.
+                bool lethal = (d.Flags & CoreAbi.DamageKilled) != 0 || ((inSnapshot || d.Victim == player) && after <= 0);
+                e.Killed = lethal && !Recent(exactKillFrame, d.Victim, 600);
+                if (type == DamageType.Bullet && !attacker.IsNone && (inSnapshot || d.Victim == player))
+                {
+                    Vec3 at = inSnapshot ? victim.Position : state.Player.Position;
+                    FindHit(bullets, bulletCount, attacker.Handle, at, ref e);
+                }
+                events.Publish(e);
+                if (!e.Killed) { continue; }
+                exactKillFrame[d.Victim] = frame;
+                events.Publish(new PedDied
+                {
+                    Ped = e.Ped, Killer = attacker, KillerVehicle = attackerVehicle, Weapon = d.Weapon, Bone = e.Bone, ByPlayer = e.ByPlayer,
+                    Exact = true, Type = type
+                });
+            }
+        }
+
+        // The attacker's bullet trace this frame that ended nearest the victim (within 2.5 m of the ped origin).
+        private static void FindHit(LcBullet* bullets, int count, int shooter, Vec3 victim, ref PedDamaged e)
+        {
+            float best = 2.5f * 2.5f;
+            for (int i = 0; i < count; i++)
+            {
+                if (bullets[i].Shooter != shooter) { continue; }
+                Vec3 to = new Vec3(bullets[i].ToX, bullets[i].ToY, bullets[i].ToZ);
+                float d = (to - victim).LengthSquared;
+                if (d > best) { continue; }
+                best = d;
+                e.HasHit = true;
+                e.HitPosition = to;
+                e.HitDirection = (to - new Vec3(bullets[i].FromX, bullets[i].FromY, bullets[i].FromZ)).Normalized;
+            }
+        }
+
+        private static void Forget(Dictionary<int, int> frames, int now)
+        {
+            List<int> old = null;
+            foreach (KeyValuePair<int, int> pair in frames) { if (now - pair.Value > 300) { (old = old ?? new List<int>()).Add(pair.Key); } }
+            if (old != null) { foreach (int key in old) { frames.Remove(key); } }
+        }
+
+        private bool Recent(Dictionary<int, int> frames, int ped, int window)
+        {
+            int at;
+            return frames.TryGetValue(ped, out at) && state.Frame - at <= window;
+        }
+
         private void Publish(LcSnapshotHead* head)
         {
             int count = CoreBridge.EventCount(head);
@@ -175,6 +262,7 @@ namespace LibertyFramework.Engine.World
                     case CoreAbi.EvPedAppeared: events.Publish(new PedAppeared { Ped = new PedRef(e.A) }); break;
                     case CoreAbi.EvPedRemoved: events.Publish(new PedRemoved { Ped = new PedRef(e.A) }); break;
                     case CoreAbi.EvPedDamaged:
+                        if (Recent(exactDamageFrame, e.A, 2)) { break; }
                         events.Publish(new PedDamaged
                         {
                             Ped = new PedRef(e.A), HealthBefore = e.B - 100, HealthAfter = e.C - 100, Bone = (Bone)e.D, ByPlayer = e.E != 0,
@@ -182,6 +270,7 @@ namespace LibertyFramework.Engine.World
                         });
                         break;
                     case CoreAbi.EvPedDied:
+                        if (Recent(exactKillFrame, e.A, 120)) { break; }
                         events.Publish(new PedDied
                         {
                             Ped = new PedRef(e.A), Bone = (Bone)e.D, ByPlayer = e.E != 0, Killer = e.E != 0 ? player : PedRef.None,

@@ -37,6 +37,8 @@ namespace LibertyFramework.Verify
                 CollapseEngineChecks.Run(check);
                 Console.WriteLine("== Atmosphere: weather director and density governor (M-2, E-5)");
                 AtmosphereChecks.Run(args[1], check);
+                Console.WriteLine("== Hot reload file watcher (M5)");
+                HotReloadChecks.Run(check);
             }
             catch (Exception error)
             {

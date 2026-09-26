@@ -11,6 +11,19 @@
   "trunkRearOffsetMeters": 2.0,
   "ownedVehicleMatchMeters": 12.0,
   "fallbackVehicleMatchMeters": 8.0,
+  "trunkTimings": {
+    "turnMilliseconds": 450,
+    "lidOpenAtMilliseconds": 520,
+    "openMinMilliseconds": 700,
+    "openMaxMilliseconds": 2600,
+    "idleMinMilliseconds": 300,
+    "withdrawMinMilliseconds": 500,
+    "withdrawMaxMilliseconds": 2400,
+    "browseStepTimeoutMilliseconds": 3000,
+    "lidCloseAtMilliseconds": 450,
+    "closeMinMilliseconds": 700,
+    "closeMaxMilliseconds": 2400
+  },
   "categories": [
     {"category": 1, "group": "melee", "bodySlot": 5},
     {"category": 2, "group": "sidearm", "bodySlot": 1},

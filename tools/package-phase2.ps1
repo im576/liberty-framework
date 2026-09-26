@@ -134,6 +134,29 @@ if (-not ($datLines | Where-Object { $_.Trim() -ieq 'IDE common:/data/lf_models.
     if (-not $added) { throw 'default.dat has no lf_finishes.ide line to anchor lf_models.ide.' }
     $datLines = $out.ToArray()
 }
+
+# M4: Liberty Content Compiler. Every content/**/asset.json (Blender/glTF sources) is validated, compiled, read back and
+# packed into LibertyContent.img + lf_content.ide; a failed asset fails the package.
+& (Join-Path $PSScriptRoot 'build-content.ps1')
+if ($LASTEXITCODE -ne 0) { throw 'Content compiler build failed.' }
+$contentAssets = @(Get-ChildItem -LiteralPath (Join-Path $repoRoot 'content') -Recurse -Filter 'asset.json' -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
+if ($contentAssets.Count -gt 0) {
+    $contentOut = Join-Path $work 'content'
+    & (Join-Path $repoRoot 'tools\content\bin\LibertyContent.exe') package $game $contentOut 'LibertyContent.img' 'lf_content.ide' @contentAssets
+    if ($LASTEXITCODE -ne 0) { throw 'Content build failed (see the asset reports).' }
+    Stage-File (Join-Path $contentOut 'LibertyContent.img') 'update\LibertyFramework\LibertyContent.img' 'replace'
+    Stage-File (Join-Path $contentOut 'lf_content.ide') 'update\common\data\lf_content.ide' 'replace'
+    if (-not ($datLines | Where-Object { $_.Trim() -ieq 'IDE common:/data/lf_content.ide' })) {
+        $out = New-Object System.Collections.Generic.List[string]
+        $added = $false
+        foreach ($line in $datLines) {
+            $out.Add($line)
+            if (-not $added -and $line.Trim() -ieq 'IDE common:/data/lf_models.ide') { $out.Add('IDE common:/data/lf_content.ide'); $added = $true }
+        }
+        if (-not $added) { throw 'default.dat has no lf_models.ide line to anchor lf_content.ide.' }
+        $datLines = $out.ToArray()
+    }
+}
 $stagedDat = Join-Path $work 'default.dat'
 [IO.File]::WriteAllLines($stagedDat, $datLines, (New-Object Text.ASCIIEncoding))
 Stage-File $stagedDat 'update\common\data\default.dat' 'replace'

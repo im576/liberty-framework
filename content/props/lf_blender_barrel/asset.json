@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "name": "lf_blender_barrel",
+  "type": "prop",
+  "source": "lf_blender_barrel.gltf",
+  "template": {
+    "archive": "pc/models/cdimages/weapons.img",
+    "model": "amb_nailgun"
+  },
+  "textureDictionary": "lf_blender_barrel",
+  "drawDistanceMeters": 150.0
+}

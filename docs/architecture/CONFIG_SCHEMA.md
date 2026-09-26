@@ -1,4 +1,4 @@
-# Configuration contract
+﻿# Configuration contract
 
 All files are JSON read with `DataContractJsonSerializer`; every field is required (a missing field rejects the file). Invalid edits are logged and the last valid config stays active. Runtime copies live in `scripts/LibertyFramework/config/`.
 
@@ -86,6 +86,7 @@ Optional `slings[]` (W-5): `slot` (`LongGun1` or `LongGun2`, unique), `model` (a
 | `loadModAssemblies` | Also load `[Module]` classes from `scripts\LibertyFramework\mods\*.dll` (Liberty SDK mods). |
 | `vehicleRadiusMeters` | Optional (150). Vehicles listed in the snapshot and reported in events (10–500). |
 | `bulletEvents` | Optional (true). Read the game's bullet trace list each frame and publish `BulletFired`. |
+| `exactDamage` | Optional (true). Hook the game's ped damage routine (ADR-0007) so `PedDamaged`/`PedDied` are exact (attacker, weapon, type, bone, amounts, hit point) for every ped. Off = inferred from health changes. |
 | `governorEnabled` | Optional (true). The performance governor throttles modules over budget and computes `Perf.Pressure`. |
 | `moduleBudgetMs` | Optional (2.0). Average ms per update a module may use when its manifest gives no `BudgetMs` (0.1–50). |
 | `throttledIntervalMs` | Optional (100). Update interval the governor gives a module that stays over budget (10–2000). |
@@ -93,12 +94,21 @@ Optional `slings[]` (W-5): `slot` (`LongGun1` or `LongGun2`, unique), `model` (a
 | `lowAddressSpaceMegabytes` | Optional (600). Free 32-bit address space below which pressure rises (100–2000). |
 | `watchdogStallMilliseconds` | Optional (5000). An engine frame running longer than this is logged with the running phase and a minidump (1000–60000). |
 | `adaptiveDensityFloor` | Optional (0 = off). When above 0, the governor lowers ped and vehicle density toward this fraction as `Perf.Pressure` rises (0–1). Off by default because it changes the vanilla population. |
+| `hotReload` | Optional (false). Development: reload a mod assembly in `scripts\LibertyFramework\mods` when its file changes. The change must settle for one poll, and the content hash must differ from the loaded copy. Also switchable at runtime with `lf hotreload on/off`. |
+| `hotReloadPollMs` | Optional (1000). How often the mods folder is checked while hot reload is on (250–10000). |
+| `hotReloadMaxLeakMegabytes` | Optional (32). .NET Framework cannot unload a replaced assembly, so each reload keeps the old copy in the 32-bit address space. Past this total, reloads are refused until the game restarts (1–256). |
 
 Defaults apply when the file is absent or invalid (logged).
 
 `arsenal.json` gains `inventoryRefreshMilliseconds` (500) and `stateRefreshMilliseconds` (200):
 - **Inventory:** re-read on engine weapon, shot, reload and death events, and at least this often.
 - **State flags:** arrest, death, mission, cutscene and fade are read at most this often.
+
+`arsenal.json` `trunkTimings` (required) holds the S-3 trunk choreography timings, in milliseconds:
+
+- **Steps:** `turnMilliseconds` (turn to the trunk), `lidOpenAtMilliseconds` and `lidCloseAtMilliseconds` (when the lid moves within the open and close clips), and `browseStepTimeoutMilliseconds`.
+- **Clip windows:** `openMin/Max`, `idleMin`, `withdrawMin/Max` and `closeMin/Max`. Each step ends when its clip stops after min, or at max.
+- **Ranges:** steps 0–5000; min <= max <= 10000. An invalid block disables Arsenal with a logged error.
 
 ## Build-time: models/sling.json (T-2 / W-5)
 

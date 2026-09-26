@@ -1,0 +1,19 @@
+schema_version = "1.0.0"
+
+id = "liberty_exporter"
+version = "0.1.0"
+name = "Liberty Exporter"
+tagline = "Export GTA IV props through the Liberty Content Compiler"
+maintainer = "Liberty Framework"
+type = "add-on"
+tags = ["Import-Export"]
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+[permissions]
+files = "Writes glTF and asset.json, runs LibertyContent"
+
+[build]
+paths_exclude_pattern = ["__pycache__/", "*.pyc"]

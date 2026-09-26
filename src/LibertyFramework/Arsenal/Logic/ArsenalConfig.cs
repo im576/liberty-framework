@@ -29,6 +29,7 @@ namespace LibertyFramework.Arsenal.Logic
         // this often. 0 or absent = the defaults (500 / 200 ms).
         [DataMember(Name = "inventoryRefreshMilliseconds", IsRequired = false)] internal int InventoryRefreshMilliseconds;
         [DataMember(Name = "stateRefreshMilliseconds", IsRequired = false)] internal int StateRefreshMilliseconds;
+        [DataMember(Name = "trunkTimings", IsRequired = true)] internal TrunkTimings TrunkTimings;
     }
 
 }

@@ -4,6 +4,7 @@
   "pedRadiusMeters": 120,
   "vehicleRadiusMeters": 150,
   "bulletEvents": true,
+  "exactDamage": true,
   "coreSpotCheckFrames": 300,
   "coreSpotCheckToleranceMeters": 0.05,
   "disabledModules": [],
@@ -14,5 +15,8 @@
   "targetFrameMs": 33.3,
   "lowAddressSpaceMegabytes": 600,
   "watchdogStallMilliseconds": 5000,
-  "adaptiveDensityFloor": 0
+  "adaptiveDensityFloor": 0,
+  "hotReload": false,
+  "hotReloadPollMs": 1000,
+  "hotReloadMaxLeakMegabytes": 32
 }

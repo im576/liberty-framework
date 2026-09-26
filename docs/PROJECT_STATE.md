@@ -116,3 +116,23 @@ Keep it short: this is a dashboard, not a diary.
 - **In game (2026-09-25)**: boots with 9/9 modules; 21/21 + 8/8 natives verified; 17 vehicles in the snapshot, zero faults; SDK self-test **34/34 passed** on the installed build (aaeefe9), including the ped-bone position and the degrees-to-radians attach conversion (a 90° request now turns the prop by 90.0°).
 - **Research answer**: `ATTACH_OBJECT_TO_PED/CAR` take rotations in **radians** (90 → 116.6°, measured). The SDK converts from degrees.
 - **Not done yet**: Arsenal wheel/trunk ported onto Liberty.Ui / choreography; Content Compiler (glTF); hooks for exact damage; episode tests; SDK reference docs and IV-SDK parity matrix; full autopilot suite run on this build.
+
+## M2–M4 (Claude, 2026-09-25)
+
+**M1 leftovers:**
+- The Arsenal weapon wheel is now a Liberty.Ui radial menu (`StorageWheel`, with a gunsmith list menu).
+- The trunk sequence is an engine choreography (`TrunkSequence`).
+- Autopilot `trunk-review` passes in game: open, navigate, store, close with the lid animation.
+- `Tasks.ShootAt` uses `TASK_SHOOT_AT_COORD`. SHDN's `Ped.ShootAt` (FIRE_PED_WEAPON) stalled the engine.
+- `god` also sets the ped flag.
+
+**M2, exact damage and hooks (ADR-0007):**
+- Core hook manager, and a detour on the damage routine (0xCA3820).
+- `PedDamaged`/`PedDied` are exact: attacker, weapon, type, bone, amounts, bullet hit point and direction, kill.
+- Verified in game (`exact-damage` passes).
+
+**M3, WorldQuery layer 1:** `Liberty.Query` (snapshot radius and cone queries, ground, water, perception, visibility), with self-test checks. The raycast is still open.
+
+**M4, Liberty Content Compiler v1:** `tools/content`, `content/`, `docs/content/README.md`.
+- Pipeline: glTF import → validation (LCC001–023) → template-based WDR/WTD → read-back → previews and report → LibertyContent.img + lf_content.ide.
+- The test crate renders correctly in game (`asset-review`).

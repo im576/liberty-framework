@@ -28,6 +28,8 @@ namespace LibertyFramework.Engine.Core
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern void lc_set_phase(int index);
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern int lc_get_phase();
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern void lc_faults(out LcFault fault, uint number);
+        [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern int lc_damage_hook_install(uint function, uint componentToBone);
+        [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern int lc_hooks_report(byte[] buffer, int size);
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)] private static extern int lc_write_dump(string reason);
 
         internal bool Available { get; private set; }
@@ -43,7 +45,7 @@ namespace LibertyFramework.Engine.Core
         {
             get
             {
-                return sizeof(LcSnapshotHead) + CoreAbi.MaxPeds * sizeof(LcPed) + 4 + CoreAbi.MaxVehicles * sizeof(LcVehicle) + 4 + CoreAbi.MaxBullets * sizeof(LcBullet) + 8 +
+                return sizeof(LcSnapshotHead) + CoreAbi.MaxPeds * sizeof(LcPed) + 4 + CoreAbi.MaxVehicles * sizeof(LcVehicle) + 4 + CoreAbi.MaxBullets * sizeof(LcBullet) + 4 + CoreAbi.MaxDamages * sizeof(LcDamage) + 8 +
                     CoreAbi.MaxEvents * sizeof(LcEvent);
             }
         }
@@ -129,6 +131,24 @@ namespace LibertyFramework.Engine.Core
 
         internal bool IsVerified(int id) { return verified[id]; }
 
+        // ADR-0007: the exact-damage observer. Only after the core itself is up (the drain runs in lc_frame).
+        internal bool InstallDamageHook(GameAddresses addresses)
+        {
+            if (!Available || addresses == null || !addresses.DamageResolved) { return false; }
+            bool ok = lc_damage_hook_install(addresses.DamageResponseFunction, addresses.ComponentToBoneFunction) != 0;
+            RuntimeLog.Info("engine_damage_hook installed=" + ok + " response=0x" + addresses.DamageResponseFunction.ToString("X8"));
+            return ok;
+        }
+
+        internal string HooksReport()
+        {
+            if (!Loaded) { return "core not loaded"; }
+            byte[] buffer = new byte[2048];
+            int count = lc_hooks_report(buffer, buffer.Length);
+            string text = System.Text.Encoding.ASCII.GetString(buffer).TrimEnd('\0').Trim().Replace("\n", " | ");
+            return count == 0 ? "no hooks" : text;
+        }
+
         internal void RegisterPhase(int index, string name) { if (Loaded) { lc_register_phase(index, name); } }
 
         // Marks what the engine is running, so a crash report names the module (no allocation).
@@ -205,11 +225,17 @@ namespace LibertyFramework.Engine.Core
 
         private static byte* AfterBullets(LcSnapshotHead* head) { return AfterVehicles(head) + 4 + CoreAbi.MaxBullets * sizeof(LcBullet); }
 
-        internal static int EventCount(LcSnapshotHead* head) { return *(int*)AfterBullets(head); }
+        internal static int DamageCount(LcSnapshotHead* head) { return *(int*)AfterBullets(head); }
 
-        internal static int EventsDropped(LcSnapshotHead* head) { return *(int*)(AfterBullets(head) + 4); }
+        internal static LcDamage* Damages(LcSnapshotHead* head) { return (LcDamage*)(AfterBullets(head) + 4); }
 
-        internal static LcEvent* Events(LcSnapshotHead* head) { return (LcEvent*)(AfterBullets(head) + 8); }
+        private static byte* AfterDamages(LcSnapshotHead* head) { return AfterBullets(head) + 4 + CoreAbi.MaxDamages * sizeof(LcDamage); }
+
+        internal static int EventCount(LcSnapshotHead* head) { return *(int*)AfterDamages(head); }
+
+        internal static int EventsDropped(LcSnapshotHead* head) { return *(int*)(AfterDamages(head) + 4); }
+
+        internal static LcEvent* Events(LcSnapshotHead* head) { return (LcEvent*)(AfterDamages(head) + 8); }
 
         internal void Shutdown()
         {

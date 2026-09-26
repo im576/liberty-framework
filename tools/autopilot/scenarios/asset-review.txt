@@ -1,0 +1,36 @@
+﻿# M4 content pipeline: the compiled test crate (content/props/lf_test_crate, glTF written by LCC's sample command) and the
+# Blender-made steel drum (content/props/lf_blender_barrel, Blender -> Liberty Exporter add-on -> LCC) are streamed from
+# LibertyContent.img, spawned and photographed.
+god on
+wanted 0
+goto east_park
+wait 5000
+time 13 0
+weather 1
+spawnprop lf_test_crate 2.5 0
+expect "autopilot_prop handle=\d+ model=lf_test_crate" 15
+wait 1500
+hud off
+cam prop 0 2.2 0.6
+wait 1500
+shot crate_front
+cam prop 90 2.2 0.9
+wait 1500
+shot crate_side
+cam prop 200 1.6 1.4
+wait 1500
+shot crate_top
+cam off
+clear
+spawnprop lf_blender_barrel 2.5 0
+expect "autopilot_prop handle=\d+ model=lf_blender_barrel" 15
+wait 1500
+cam prop 20 2.4 0.8
+wait 1500
+shot barrel_front
+cam prop 150 1.8 1.6
+wait 1500
+shot barrel_top
+cam off
+hud on
+clear

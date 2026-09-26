@@ -19,5 +19,7 @@ namespace Liberty.Sdk
         public Action OnClosed;
         // Fraction of the screen height the wheel spans.
         public float Size = 0.66f;
+        // Lock the player's controls while open (default). Turn off when the module manages control itself.
+        public bool LockPlayerControl = true;
     }
 }

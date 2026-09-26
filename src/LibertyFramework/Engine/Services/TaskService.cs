@@ -35,11 +35,14 @@ namespace LibertyFramework.Engine.Services
 
         public void AimAt(PedRef ped, Vec3 target, int milliseconds) { Function.Call("TASK_AIM_GUN_AT_COORD", ped.Handle, target.X, target.Y, target.Z, milliseconds); }
 
-        // TASK_SHOOT_AT_COORD's last two arguments are undocumented; SHDN's Ped.ShootAt makes the call.
+        // TASK_SHOOT_AT_COORD(ped, x, y, z, duration ms, mode): the handler scales the duration by 0.001 and passes the mode
+        // (SHDN's ShootMode: 0 aim only, 1 single, 2 single keeping aim, 3 burst, 4 continuous) on to the task (disassembly,
+        // 2026-09-25). Not SHDN's Ped.ShootAt: that is FIRE_PED_WEAPON, which never returned and stalled the engine.
+        private const int ShootModeBurst = 3;
+
         public void ShootAt(PedRef ped, Vec3 target, int milliseconds)
         {
-            Ped wrapper = Handles.Ped(ped);
-            if (wrapper != null) { wrapper.ShootAt(Handles.V(target)); }
+            Function.Call("TASK_SHOOT_AT_COORD", ped.Handle, target.X, target.Y, target.Z, milliseconds, ShootModeBurst);
         }
 
         public void HandsUp(PedRef ped, int milliseconds) { Function.Call("TASK_HANDS_UP", ped.Handle, milliseconds); }

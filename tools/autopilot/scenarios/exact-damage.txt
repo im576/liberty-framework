@@ -1,0 +1,19 @@
+# ADR-0007 exact damage: two armed subjects fight; the damage-response hook reports attacker, weapon, type, amounts,
+# bone and the bullet hit point, and the kill.
+events on
+god on
+wanted 0
+goto gun_test_range
+wait 5000
+time 12 0
+hooks
+spawn 2 8 7
+wait 3000
+expect "autopilot_spawned count=2" 15
+fight 0 1
+expect "event PedDamaged handle=\d+ -?\d+->-?\d+ .*exact=True type=Bullet .*attacker=[1-9]" 60
+expect "event PedDamaged .*exact=True .*hit=True" 60
+expect "event PedDied .*exact=True type=Bullet killer=[1-9]" 90
+wait 2000
+hooks
+clear

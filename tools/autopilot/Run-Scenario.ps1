@@ -15,7 +15,7 @@ param(
 #   wait <ms>                    pause on the host
 #   shot <name>                  Steam F12 screenshot -> <name>.png
 #   expect <regex> [seconds]     wait for a log line from this run (default 20 s); fails the step if absent
-#   key <Keys name>              press a key in the game window
+#   key <Keys name> [hold ms]    press a key in the game window (default 80 ms)
 #   anything else                an engine command (see "lf help"), sent through the command channel
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'Autopilot.psm1') -Force 3>$null
@@ -44,7 +44,7 @@ foreach ($raw in Get-Content -LiteralPath $Scenario) {
         switch ($words[0]) {
             'wait' { Start-Sleep -Milliseconds ([int]$words[1]); $steps.Add("wait $($words[1]) ms") }
             'shot' { $file = Save-Screenshot (Join-Path $report ($words[1] + '.png')); $steps.Add("shot $($words[1]) -> $(Split-Path -Leaf $file)") }
-            'key' { Send-GameKey $words[1]; $steps.Add("key $($words[1])") }
+            'key' { $hold = if ($words.Count -gt 2) { [int]$words[2] } else { 80 }; Send-GameKey $words[1] $hold; $steps.Add("key $($words[1]) $hold ms") }
             'expect' {
                 # expect <regex, optionally "quoted" when it contains spaces> [seconds]
                 $parsed = [regex]::Match($line, '^expect\s+(?:"(?<q>[^"]+)"|(?<p>\S+))(?:\s+(?<t>\d+))?$')

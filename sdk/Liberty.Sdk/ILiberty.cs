@@ -7,6 +7,7 @@ namespace Liberty.Sdk
         string EngineVersion { get; }
         Episode Episode { get; }
         IWorldState World { get; }
+        IWorldQuery Query { get; }
         IEventBus Events { get; }
         IScheduler Scheduler { get; }
         IPlayer Player { get; }

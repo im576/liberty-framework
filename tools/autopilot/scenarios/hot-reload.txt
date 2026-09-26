@@ -1,0 +1,25 @@
+# M5 developer loop: restart an engine module and reload a mod assembly while the game keeps running.
+# The autopilot mod reloads itself from scripts\LibertyFramework\mods: the old instance's crate is released, the new
+# instance owns the commands, and the SDK self-test passes on the reloaded code.
+god on
+wanted 0
+goto east_park
+wait 4000
+spawnprop lf_test_crate 2.5 0
+expect "autopilot_prop handle=\d+ model=lf_test_crate" 15
+restart devtools
+expect "engine_module_restarted devtools" 10
+reload autopilot
+expect "engine_module_stopped autopilot released=[1-9]" 15
+expect "engine_module_reloaded assembly=Liberty.Autopilot.dll modules=autopilot reloads=1" 15
+owned autopilot
+expect "line=.owned autopilot. reply=.autopilot: nothing" 10
+modules
+selftest
+expect "selftest_done passed=\d+ failed=0" 120
+reload devtools
+expect "line=.reload devtools. reply=.devtools is built into the engine assembly" 10
+hotreload on
+expect "reply=.hot reload on" 10
+hotreload off
+clear

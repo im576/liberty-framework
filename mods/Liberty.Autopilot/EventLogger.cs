@@ -20,8 +20,11 @@ namespace Liberty.Autopilot
             bus.Subscribe<PedAppeared>(owner, e => Log("PedAppeared handle=" + e.Ped.Handle));
             bus.Subscribe<PedRemoved>(owner, e => Log("PedRemoved handle=" + e.Ped.Handle));
             bus.Subscribe<PedDamaged>(owner, e => Log("PedDamaged handle=" + e.Ped.Handle + " " + e.HealthBefore + "->" + e.HealthAfter +
-                " bone=0x" + ((int)e.Bone).ToString("X") + " by_player=" + e.ByPlayer + " weapon=" + e.Weapon));
-            bus.Subscribe<PedDied>(owner, e => Log("PedDied handle=" + e.Ped.Handle + " bone=0x" + ((int)e.Bone).ToString("X") + " by_player=" + e.ByPlayer));
+                " bone=0x" + ((int)e.Bone).ToString("X") + " by_player=" + e.ByPlayer + " weapon=" + e.Weapon + " exact=" + e.Exact + " type=" + e.Type +
+                " amount=" + e.Amount.ToString("0.0") + " health_lost=" + e.HealthLost.ToString("0.0") + " armour_lost=" + e.ArmourLost.ToString("0.0") +
+                " attacker=" + e.Attacker.Handle + " vehicle=" + e.AttackerVehicle.Handle + " killed=" + e.Killed + " hit=" + e.HasHit + (e.HasHit ? " at=" + e.HitPosition + " dir=" + e.HitDirection : "")));
+            bus.Subscribe<PedDied>(owner, e => Log("PedDied handle=" + e.Ped.Handle + " bone=0x" + ((int)e.Bone).ToString("X") + " by_player=" + e.ByPlayer +
+                " exact=" + e.Exact + " type=" + e.Type + " killer=" + e.Killer.Handle + " weapon=" + e.Weapon));
             bus.Subscribe<PlayerShot>(owner, e => Log("PlayerShot weapon=" + e.Weapon + " clip " + e.ClipBefore + "->" + e.ClipAfter));
             bus.Subscribe<ReloadStarted>(owner, e => Log("ReloadStarted weapon=" + e.Weapon + " clip_before=" + e.ClipBefore));
             bus.Subscribe<ReloadFinished>(owner, e => Log("ReloadFinished weapon=" + e.Weapon + " clip_after=" + e.ClipAfter));

@@ -8,7 +8,7 @@ time 12 0
 spawn 2 8 7
 wait 3000
 expect "autopilot_spawned count=2" 15
-fire all 3000
-expect "event BulletFired shooter=\d+ weapon=7" 15
+fight 0 1
+expect "event BulletFired shooter=[1-9]\d* weapon=\d+" 45
 wait 3000
 clear

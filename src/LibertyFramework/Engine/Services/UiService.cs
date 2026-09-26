@@ -38,10 +38,17 @@ namespace LibertyFramework.Engine.Services
 
         public TextureRef LoadTexture(byte[] png, string cacheKey) { return textures.Add(png, cacheKey); }
 
+        private readonly Dictionary<int, TextureRef> weaponIcons = new Dictionary<int, TextureRef>();
+
+        // Cached per weapon (including misses): menus ask every frame, and the file check must not run per frame.
         public TextureRef WeaponIcon(int weapon)
         {
+            TextureRef icon;
+            if (weaponIcons.TryGetValue(weapon, out icon)) { return icon; }
             string path = Path.Combine(LibertyPaths.Root, Path.Combine("ui", Path.Combine("icons", weapon + ".png")));
-            return File.Exists(path) ? textures.Load(path) : TextureRef.None;
+            icon = File.Exists(path) ? textures.Load(path) : TextureRef.None;
+            weaponIcons[weapon] = icon;
+            return icon;
         }
 
         public void ShowHelp(LibertyModule owner, string text, int durationMs)
@@ -71,19 +78,19 @@ namespace LibertyFramework.Engine.Services
         public IMenu OpenList(LibertyModule owner, ListMenu menu)
         {
             ListMenuView view = new ListMenuView(owner, menu, Closed);
-            return Open(owner, view);
+            return Open(owner, view, menu.LockPlayerControl);
         }
 
         public IMenu OpenRadial(LibertyModule owner, RadialMenu menu)
         {
             RadialMenuView view = new RadialMenuView(owner, menu, textures, Closed);
-            return Open(owner, view);
+            return Open(owner, view, menu.LockPlayerControl);
         }
 
-        private IMenu Open(LibertyModule owner, IMenu view)
+        private IMenu Open(LibertyModule owner, IMenu view, bool lockControl)
         {
             menus.Add(view);
-            engine.Input.CaptureForUi(owner, view);
+            engine.Input.CaptureForUi(owner, view, lockControl);
             engine.Ledger.Add(owner, "menu", view.GetHashCode(), () => view.Close());
             Publish();
             return view;
@@ -125,6 +132,13 @@ namespace LibertyFramework.Engine.Services
             if (menus.Count == 0) { return; }
             IMenu top = menus[menus.Count - 1];
             MenuInput input = MenuInput.Read(engine.Input);
+            // Menu input edges are logged (rare, one line each): the autopilot and playtest reports can see what a menu received.
+            if (input.Up || input.Down || input.Left || input.Right || input.Accept || input.Back || input.X || input.Y || input.PreviousTab || input.NextTab)
+            {
+                LibertyFramework.Core.Logging.RuntimeLog.Info("ui_input menu=" + (top is RadialMenuView ? "radial" : "list") + (input.Up ? " up" : "") + (input.Down ? " down" : "") +
+                    (input.Left ? " left" : "") + (input.Right ? " right" : "") + (input.Accept ? " accept" : "") + (input.Back ? " back" : "") + (input.X ? " x" : "") +
+                    (input.Y ? " y" : "") + (input.PreviousTab ? " lb" : "") + (input.NextTab ? " rb" : ""));
+            }
             ListMenuView list = top as ListMenuView;
             if (list != null) { list.Update(input); return; }
             RadialMenuView radial = top as RadialMenuView;

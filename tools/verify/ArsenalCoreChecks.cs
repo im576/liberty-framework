@@ -19,6 +19,14 @@ namespace LibertyFramework.Verify
             ArsenalConfig config = JsonStore.Load<ArsenalConfig>(Path.Combine(repoRoot, "config/arsenal.json"));
             ArsenalConfigValidator.Validate(config);
             check.True("arsenal config validates", config.LongGunLimit == 2 && config.Categories.Count == 8, "");
+            check.True("arsenal trunk timings come from config", config.TrunkTimings != null && config.TrunkTimings.TurnMilliseconds == 450 &&
+                config.TrunkTimings.CloseMaxMilliseconds == 2400, "");
+            int openMax = config.TrunkTimings.OpenMaxMilliseconds;
+            config.TrunkTimings.OpenMaxMilliseconds = config.TrunkTimings.OpenMinMilliseconds - 1;
+            bool rejected = false;
+            try { ArsenalConfigValidator.Validate(config); } catch (InvalidDataException) { rejected = true; }
+            check.True("arsenal trunk timings with min > max are rejected", rejected, "");
+            config.TrunkTimings.OpenMaxMilliseconds = openMax;
             List<WeaponRecord> weapons = new List<WeaponRecord>();
             weapons.Add(Make(10, WeaponCategory.Shotgun, false));
             weapons.Add(Make(14, WeaponCategory.Rifle, false));

@@ -135,7 +135,37 @@ namespace LibertyFramework.Core.Memory
             result.Run("ped_skeleton", scanner, result.ResolvePedSkeleton);
             result.Run("frame_counter", scanner, result.ResolveFrameCounter);
             result.Run("entity_pools", scanner, result.ResolveEntityPools);
+            result.Run("damage", scanner, result.ResolveDamage);
             return result;
+        }
+
+        // ADR-0007: the ped damage-response routine (thiscall(calculator, CPed*, response*), ret 8) and the component-to-bone
+        // helper. The routine is the only code that stores a real component into [ped+0xA78] (the field
+        // GET_CHAR_LAST_DAMAGE_BONE reads); its prologue is the 8 bytes the core hook displaces.
+        internal const uint HashGetCharLastDamageBone = 0x767E5013;
+        internal uint DamageResponseFunction;
+        internal uint ComponentToBoneFunction;
+        internal bool DamageResolved { get { return DamageResponseFunction != 0 && ComponentToBoneFunction != 0; } }
+
+        private void ResolveDamage(CodeScanner scanner)
+        {
+            IMemory memory = scanner.Memory;
+            List<uint> candidates = scanner.FindPattern("83 EC 0C 53 8B 5C 24 18 57 8A 43 04 8B F9 A8 01 0F 85", true);
+            uint function = 0;
+            foreach (uint candidate in candidates)
+            {
+                // mov eax,[edi+8]; mov [esi+0A78h],eax: the component store (+0x291).
+                if (scanner.ShapeAt(candidate + 0x291, "8B 47 08 89 86 78 0A 00 00")) { Require(function == 0, "damage routine not unique"); function = candidate; }
+            }
+            Require(function != 0, "damage routine signature (candidates=" + candidates.Count + ")");
+            // GET_CHAR_LAST_DAMAGE_BONE handler -> worker: "mov ecx,[eax+0A78h]; test ecx,ecx; jle; push ecx; push eax; call toBone".
+            uint handler = RequireNative(scanner, HashGetCharLastDamageBone, "GET_CHAR_LAST_DAMAGE_BONE");
+            Require(scanner.ShapeAt(handler, "56 8B 74 24 08 8B 46 08 FF 70 04 FF 30 E8"), "GET_CHAR_LAST_DAMAGE_BONE handler shape");
+            uint worker = memory.RelativeTarget(handler + 13);
+            Require(scanner.ShapeAt(worker + 0x1E, "8B 88 78 0A 00 00 85 C9 7E ?? 51 50 E8"), "last damage bone worker shape");
+            DamageResponseFunction = function;
+            ComponentToBoneFunction = memory.RelativeTarget(worker + 0x2A);
+            Report.Add("damage ok response=0x" + function.ToString("X8") + " component_to_bone=0x" + ComponentToBoneFunction.ToString("X8"));
         }
 
         // ADR-0006 core v2: the vehicle and object rage pools, from their DOES_*_EXIST handlers. Handler:

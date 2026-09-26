@@ -9,6 +9,8 @@
 #include "natives.h"
 #include "rage_pool.h"
 #include "safe_call.h"
+#include "damage_hook.h"
+#include "hooks.h"
 
 namespace
 {
@@ -430,6 +432,37 @@ namespace
         }
         g.bullet_side = next;
     }
+    // Exact damages recorded by the damage-response observer since the last frame (ADR-0007): pointers become handles
+    // through the pools; kills are marked with IS_CHAR_DEAD. Records beyond capacity wait for the next frame.
+    lc::damage::Record g_damage_records[LC_MAX_DAMAGES];
+
+    void read_damages()
+    {
+        lc_snapshot& s = g.snapshot;
+        s.damage_count = 0;
+        uint32_t dropped = 0;
+        int n = lc::damage::drain(g_damage_records, LC_MAX_DAMAGES, dropped);
+        for (int i = 0; i < n; i++)
+        {
+            const lc::damage::Record& r = g_damage_records[i];
+            lc_damage& d = s.damages[s.damage_count++];
+            d = lc_damage{};
+            d.victim = g.peds_pool != nullptr ? g.peds_pool->handle_of(r.victim) : 0;
+            if (r.damager != 0 && g.peds_pool != nullptr) { d.attacker = g.peds_pool->handle_of(r.damager); if (d.attacker != 0) { d.attacker_kind = 1; } }
+            if (d.attacker == 0 && r.damager != 0 && g.vehicles_pool != nullptr) { d.attacker = g.vehicles_pool->handle_of(r.damager); if (d.attacker != 0) { d.attacker_kind = 2; } }
+            d.weapon = r.weapon;
+            d.component = r.component;
+            d.bone = r.bone;
+            d.amount = r.amount;
+            d.health_lost = r.health_lost;
+            d.armour_lost = r.armour_lost;
+            if (d.victim != 0 && ready(LC_N_DOES_CHAR_EXIST) && ready(LC_N_IS_CHAR_DEAD) && ped_exists(d.victim) &&
+                g.natives.call1(LC_N_IS_CHAR_DEAD, d.victim) != 0)
+            {
+                d.flags |= LC_DAMAGE_KILLED;
+            }
+        }
+    }
     // Pool occupancy is cheap but not free (a flag byte per slot); refreshed every 30 frames.
     void read_pools()
     {
@@ -519,6 +552,8 @@ LC_API const lc_snapshot* lc_frame(const lc_frame_input* input)
         s.valid |= LC_VALID_BULLETS;
     }
     else { s.bullet_count = 0; }
+    if ((input->enabled & LC_VALID_DAMAGE) && lc::damage::active()) { read_damages(); s.valid |= LC_VALID_DAMAGE; }
+    else { s.damage_count = 0; }
     read_pools();
 
     if (g.book.frame_counter != 0 && engine_frame() != s.engine_frame) { s.parked_violations++; }
@@ -531,6 +566,8 @@ LC_API const lc_snapshot* lc_frame(const lc_frame_input* input)
 LC_API void lc_shutdown(void)
 {
     g.initialised = false;
+    // Hooks never outlive the engine that asked for them (script unload, or the core switched off by a safety check).
+    lc::hooks::remove_all();
     delete g.peds_pool; delete g.vehicles_pool; delete g.objects_pool;
     g.peds_pool = g.vehicles_pool = g.objects_pool = nullptr;
     g.peds.clear();
@@ -551,3 +588,10 @@ LC_API void lc_faults(lc_fault* out, uint32_t number)
     out->data_address = f.data_address;
     out->code = f.code;
 }
+
+LC_API int32_t lc_damage_hook_install(uint32_t function, uint32_t component_to_bone)
+{
+    return lc::damage::install(function, component_to_bone) ? 1 : 0;
+}
+
+LC_API int32_t lc_hooks_report(char* buffer, int32_t size) { return lc::hooks::report(buffer, size); }

@@ -47,6 +47,9 @@ namespace Liberty.Autopilot
                 "frame_ms=" + liberty.Perf.FrameMs.ToString("0.0") + " free_mb=" + (liberty.Perf.AddressSpaceFreeBytes >> 20) + " pressure=" + liberty.Perf.Pressure.ToString("0.00"));
             Info("input", "pad=" + liberty.Input.PadConnected);
             Info("episode", liberty.Episode.ToString());
+            float water;
+            float ground = liberty.Query.GroundZ(liberty.World.Player.Position + new Vec3(0, 0, 2));
+            Check("query-ground", ground != 0 && Math.Abs(ground - liberty.World.Player.Position.Z) < 3f, "ground=" + ground.ToString("0.00") + " water=" + liberty.Query.WaterHeight(liberty.World.Player.Position, out water) + " " + water.ToString("0.00"));
 
             // Capabilities: this module did not declare memory.patch or engine.internal, so both must be refused.
             Check("capability-memory", Refused(() => liberty.Memory.FindNative(0x62E319C6)), "IMemory refused without memory.patch");
@@ -116,6 +119,13 @@ namespace Liberty.Autopilot
                 yield return Wait.FramesCount(3);
                 PedState state;
                 Check("ped-snapshot", liberty.World.TryGetPed(ped, out state), "in_snapshot distance=" + state.Distance.ToString("0.0"));
+                List<PedState> near = new List<PedState>();
+                liberty.Query.PedsInRadius(liberty.World.Player.Position, 10f, p => !p.IsPlayer, near);
+                Check("query-radius", near.Exists(p => p.Ped == ped), "peds_within_10m=" + near.Count);
+                PedState coned;
+                bool inCone = liberty.Query.NearestPedInCone(liberty.World.Player.Position, liberty.Peds.GetPosition(ped) - liberty.World.Player.Position, 20f, 15f, null, out coned);
+                Check("query-cone", inCone && coned.Ped == ped, "found=" + coned.Ped.Handle);
+                Check("query-onscreen", liberty.Query.IsSphereVisible(liberty.Peds.GetPosition(ped), 1f), "on_screen=" + liberty.Query.IsOnScreen(ped));
                 liberty.Tasks.HandsUp(ped, 2000);
                 yield return Wait.Milliseconds(500);
                 liberty.Peds.Delete(ped);

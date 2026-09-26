@@ -99,6 +99,11 @@ namespace LibertyFramework.Engine.Services
                 Directory.CreateDirectory(Outbox);
                 File.WriteAllText(Path.Combine(Outbox, Path.GetFileNameWithoutExtension(file) + ".out"), replies.ToString());
             }
+            catch (IOException error)
+            {
+                // The autopilot may still be writing it: leave it for the next poll (250 ms).
+                RuntimeLog.Info("command_file_busy file=" + Path.GetFileName(file) + " error=" + error.Message);
+            }
             catch (Exception error) { RuntimeLog.Error("command_file_failed file=" + Path.GetFileName(file) + " error=" + error.Message); }
         }
     }
