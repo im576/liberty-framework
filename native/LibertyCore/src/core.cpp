@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <cstring>
 #include <unordered_map>
 #include "liberty_core.h"
@@ -595,7 +596,18 @@ LC_API int32_t lc_damage_hook_install(uint32_t function, uint32_t component_to_b
     return lc::damage::install(function, component_to_bone) ? 1 : 0;
 }
 
-LC_API int32_t lc_hooks_report(char* buffer, int32_t size) { return lc::hooks::report(buffer, size); }
+// One line per hook, then the exact-damage ring's lost records (the ring holds 64 between two engine frames; more are
+// dropped, and the snapshot has no field for it before a new ABI).
+LC_API int32_t lc_hooks_report(char* buffer, int32_t size)
+{
+    int32_t count = lc::hooks::report(buffer, size);
+    if (buffer != nullptr && size > 0)
+    {
+        size_t used = std::strlen(buffer);
+        if (used < static_cast<size_t>(size)) { std::snprintf(buffer + used, static_cast<size_t>(size) - used, "damage_ring dropped=%u\n", lc::damage::dropped()); }
+    }
+    return count;
+}
 
 // ---- raycast (ADR-0008, docs/research/Raycast.md) ----
 namespace

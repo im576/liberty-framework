@@ -32,11 +32,11 @@ Write-Host ("SHA256 " + (Get-FileHash -LiteralPath $output -Algorithm SHA256).Ha
 $testDirectory = Join-Path $core 'tests'
 foreach ($test in Get-ChildItem -LiteralPath $testDirectory -Filter '*.cpp' | Sort-Object Name) {
     $testExe = Join-Path $outputDirectory ($test.BaseName + '.exe')
-    & $compiler -std=c++20 -O2 -Wall -Wextra -Werror -fno-exceptions -fno-rtti -static -o $testExe $test.FullName
+    & $compiler -std=c++20 -O2 -Wall -Wextra -Werror -fno-exceptions -fno-rtti -static "-I$(Join-Path $core 'include')" -o $testExe $test.FullName
     if ($LASTEXITCODE -ne 0) { throw "$($test.Name) failed to build (exit $LASTEXITCODE)" }
     if (-not (Test-LibertyWindows)) {
         $testExe = Join-Path $outputDirectory ($test.BaseName + '.host')
-        & clang++ -m32 -std=c++20 -O2 -Wall -Wextra -Werror -fno-exceptions -fno-rtti -o $testExe $test.FullName
+        & clang++ -m32 -std=c++20 -O2 -Wall -Wextra -Werror -fno-exceptions -fno-rtti "-I$(Join-Path $core 'include')" -o $testExe $test.FullName
         if ($LASTEXITCODE -ne 0) { throw "$($test.Name) failed to build for the host (exit $LASTEXITCODE)" }
     }
     & $testExe

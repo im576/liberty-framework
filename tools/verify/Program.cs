@@ -33,6 +33,7 @@ namespace LibertyFramework.Verify
             WindowsOnly(check, "Dismemberment collapse engine machine code (ADR-0005)", delegate { CollapseEngineChecks.Run(check); });
             Section(check, "Atmosphere: weather director and density governor (M-2, E-5)", delegate { AtmosphereChecks.Run(repo, check); });
             Section(check, "Hot reload file watcher (M5)", delegate { HotReloadChecks.Run(check); });
+            Section(check, "LibertyCore C ABI: liberty_core.h against CoreAbi.cs and CoreBridge", delegate { CoreAbiChecks.Run(repo, check); });
             Section(check, "Engine plumbing: scheduler, events, ledger, commands, manifests (engine audit)", delegate { EnginePlumbingChecks.Run(check); });
             Section(check, "Engine configuration (engine.json, ADR-0008 raycast fields)", delegate { EngineConfigChecks.Run(repo, check); });
 

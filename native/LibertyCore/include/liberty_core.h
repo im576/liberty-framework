@@ -8,7 +8,12 @@
 #else
 #define LC_EXTERN
 #endif
+#ifdef _WIN32
 #define LC_API LC_EXTERN __declspec(dllexport)
+#else
+// Host builds of the unit tests (the cloud container): nothing is exported.
+#define LC_API LC_EXTERN
+#endif
 
 #define LC_ABI_VERSION 5
 #define LC_MAX_PEDS 128

@@ -229,15 +229,15 @@ namespace LibertyFramework.Engine.Core
             catch (AccessViolationException error)
             {
                 RuntimeLog.Error("engine_core_fault_escaped error=" + error.Message + "; core disabled for this session");
-                Available = false;
+                Shutdown();
                 return null;
             }
             if (snapshot == IntPtr.Zero) { return null; }
             LcSnapshotHead* head = (LcSnapshotHead*)snapshot.ToPointer();
             if (head->Size != ExpectedSnapshotBytes)
             {
-                RuntimeLog.Error("engine_core_snapshot_size core=" + head->Size + " engine=" + ExpectedSnapshotBytes);
-                Available = false;
+                RuntimeLog.Error("engine_core_snapshot_size core=" + head->Size + " engine=" + ExpectedSnapshotBytes + "; core disabled for this session");
+                Shutdown();
                 return null;
             }
             return head;
@@ -293,11 +293,19 @@ namespace LibertyFramework.Engine.Core
 
         internal static LcEvent* Events(LcSnapshotHead* head) { return (LcEvent*)(AfterDamages(head) + 8); }
 
+        // Switches the core off: at script unload, and whenever a safety check turns it off mid-session. Hooks (the exact
+        // damage detour) must never outlive the engine that installed them, so lc_shutdown runs once whether or not the core
+        // was still Available (it is harmless after a failed lc_init).
         internal void Shutdown()
         {
-            if (!Available) { return; }
-            try { lc_shutdown(); } catch (Exception error) { RuntimeLog.Error("engine_core_shutdown_failed error=" + error.Message); }
             Available = false;
+            raycastInstalled = false;
+            if (!Loaded || shutDown) { return; }
+            shutDown = true;
+            try { lc_shutdown(); RuntimeLog.Info("engine_core_shutdown hooks removed"); }
+            catch (Exception error) { RuntimeLog.Error("engine_core_shutdown_failed error=" + error.Message); }
         }
+
+        private bool shutDown;
     }
 }

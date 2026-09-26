@@ -82,5 +82,7 @@ namespace lc
             dropped = g_dropped;
             return n;
         }
+
+        uint32_t dropped() { return g_dropped; }
     }
 }

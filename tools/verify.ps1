@@ -60,10 +60,13 @@ $sources = @(
     (Join-Path $src 'Engine\Scheduling\Scheduler.cs')
     (Join-Path $src 'Engine\ResourceLedger.cs')
     (Join-Path $src 'Engine\Services\CommandRegistry.cs')
+    # The core's C ABI mirror and snapshot accessors, checked against native/LibertyCore/include/liberty_core.h.
+    (Join-Path $src 'Engine\Core\CoreAbi.cs')
+    (Join-Path $src 'Engine\Core\CoreBridge.cs')
     # Any folder named Logic holds ScriptHookDotNet-free code that the verifier can test (T-020/T-021 onward).
     (Get-ChildItem -LiteralPath $src -Recurse -Directory -Filter 'Logic' | ForEach-Object { (Get-ChildItem -LiteralPath $_.FullName -Filter '*.cs').FullName })
 )
-Invoke-LibertyManaged $compiler /nologo /target:exe /platform:x86 /langversion:7.3 /warn:4 "/out:$output" "/reference:$sdkDll" /reference:System.Runtime.Serialization.dll /reference:System.Xml.dll /reference:System.Drawing.dll /reference:System.Core.dll $sources
+Invoke-LibertyManaged $compiler /nologo /target:exe /platform:x86 /unsafe /langversion:7.3 /warn:4 "/out:$output" "/reference:$sdkDll" /reference:System.Runtime.Serialization.dll /reference:System.Xml.dll /reference:System.Drawing.dll /reference:System.Core.dll $sources
 if ($LASTEXITCODE -ne 0) { throw "Verifier build failed with exit code $LASTEXITCODE" }
 Invoke-LibertyManaged $output $exe $repoRoot
 if ($LASTEXITCODE -ne 0) { throw "Offline verification failed (exit $LASTEXITCODE)" }

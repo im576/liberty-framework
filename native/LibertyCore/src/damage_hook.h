@@ -26,5 +26,7 @@ namespace lc
         bool active();
         // Copies up to capacity pending records (oldest first); returns the count. dropped = records lost to a full ring.
         int drain(Record* out, int capacity, uint32_t& dropped);
+        // Records lost to a full ring this session.
+        uint32_t dropped();
     }
 }
