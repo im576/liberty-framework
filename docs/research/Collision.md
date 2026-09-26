@@ -30,3 +30,15 @@ Evidence labels: **VERIFIED IN GAME**, **VERIFIED OFFLINE** (from the owner's ga
    and a raycast hit (C5, C6).
 
 Nothing here may be implemented from memory of other tools (AGENTS.md rules 4 and 7).
+
+## Authoring side (2026-09-26, T-030)
+
+Artists can already tag collision in Blender: mesh, box, sphere and capsule, with an optional surface name. The
+compiler imports these into its IR, `ContentCollision` ([README](../content/README.md#collision-authoring)). That set
+is an authoring choice, not a claim about the game (C3 stays PLAUSIBLE / UNKNOWN).
+
+When step 3 establishes the bounds classes:
+- the collision writer maps each authored shape onto one of them;
+- it lists the shapes it emits in `CompilerCapabilities.CollisionShapes`.
+
+Until then the validator refuses collision (LCC032). Surface names are kept as authored; their game meaning is UNKNOWN.

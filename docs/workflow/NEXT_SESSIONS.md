@@ -17,8 +17,8 @@ RAN-PASS / RAN-FAIL / NOT RUN (reason) / NEEDS LOCAL VERIFY. Stop and report ins
 |---|---|---|---|
 | 1 | Cloud loop, integration of raycast (T-027) and native textures (T-028) | DONE (T-029) | none |
 | 2 | Engine audit and hardening | DONE (PR into `develop`; [report](../reports/2026-09-26-engine-audit.md)) | none |
-| 3 | Blender and compiler authoring side: materials, LODs, collision and world metadata | IN PROGRESS (`claude/confident-hopper-16pan1`) | session 2 merged |
-| 4 | Multi-geometry and LOD drawable writer | queued | session 3; `PROBE-drawables` results strongly preferred |
+| 3 | Blender and compiler authoring side: materials, LODs, collision and world metadata | DONE ([T-030](../tasks/T-030-lcc-authoring-side.md), PR into `develop`) | session 2 merged |
+| 4 | Multi-geometry and LOD drawable writer | NEXT | session 3 merged; `PROBE-drawables` results strongly preferred |
 | 5 | Collision: research, then writer | queued | `PROBE-collision` results (research may start before) |
 | 6 | Static world objects (IDE, placement, packaging) | queued | session 5 |
 | 7+ | SDK features for the mod pack | queued | session D |
@@ -72,6 +72,15 @@ world object. Blender tests for each (they run in the cloud with `--no-game`). N
 
 ## Session 4: multi-geometry and LOD drawable writer
 
+Starting point from session 3 (T-030):
+- The IR's `ContentLod.Groups` are the geometries: one per material, in material-index order, as `report.json` `structure.lods`
+  lists them.
+- Turning the feature on is `CompilerCapabilities` (`maxMaterialsPerLod`, `compiledLodLevels`, `lodDistances`, and new
+  shaders). Keep the add-on's `checks.CAPABILITIES` equal: its tests compare the two.
+- `tests/content/fixtures/lf_fx_multimat`, `lf_fx_multigeo` and `lf_fx_lods` are the inputs. `lf_fx_lods` colours each
+  LOD (green, yellow, orange, red) for the LOD-switch scenario. Update their `expect.json` (and `tests/fixtures.py`) as
+  the refusals turn into builds.
+
 Extend `DrawableBuilder` to several geometries, several shaders and LOD slots 1-3, from `docs/research/ModelFormat.md`
 and the `PROBE-drawables` report. Prove it offline by extending the round trip to the game's own multi-geometry and
 multi-LOD drawables (queued as a `pc-offline` check: rebuild them byte-identical, the method the single-geometry
@@ -84,12 +93,16 @@ the local run passes.
 
 Follow [Collision.md](../research/Collision.md): read the `PROBE-collision` inventory, pick the resource a static prop
 uses, write a decoding probe for that class, round-trip the game's own files, then write the collision writer and a
-scenario proving player collision, vehicle collision, and a raycast hit on the authored object.
+scenario proving player collision, vehicle collision, and a raycast hit on the authored object. The authored shapes
+(`ContentCollision`: mesh, box, sphere, capsule, surface) and `tests/content/fixtures/lf_fx_collision` are ready (T-030);
+the writer lists what it emits in `CompilerCapabilities.CollisionShapes`.
 
 ## Session 6: static world objects
 
 Blender -> export -> compile (geometry, materials, textures, LODs, collision) -> package -> IDE / placement -> spawn or
-place -> scenario. Not a map editor; custom environment props that work.
+place -> scenario. Not a map editor; custom environment props that work. `type: "object"` assets
+(`content/objects/<name>`) and `tests/content/fixtures/lf_fx_world` are authored and validated already (T-030); v1
+refuses them with LCC033 until this session adds `object` to `CompilerCapabilities.AssetTypes`.
 
 ## Session D: mod pack design
 
