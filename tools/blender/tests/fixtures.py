@@ -41,6 +41,9 @@ def clear_scene():
     settings.draw_distance = 120.0
     settings.audio_material = ""
     settings.use_lod_distances = False
+    settings.drawable_writer = 'template'
+    settings.structure_template_archive = "*"
+    settings.structure_template_model = "auto"
 
 
 def texture(name, size=256, packed=True):

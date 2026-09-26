@@ -1,7 +1,7 @@
 # Checks an asset in Blender before export. The rules mirror LibertyContent's validator (tools/content/AssetValidator.cs,
 # codes LCC001-LCC037). They add what only Blender can see: unit scale, modifiers, armatures, missing image files and
 # material node setups the glTF exporter cannot translate. LibertyContent runs its own validation after export and stays
-# the authority. Codes (LBX001-LBX032) are stable so reports and tests can refer to them.
+# the authority. Codes (LBX001-LBX033) are stable so reports and tests can refer to them.
 #
 # Errors are authoring mistakes and stop the export. What the current compiler cannot write yet (more materials per LOD,
 # other shaders, collision, world objects: CAPABILITIES) is a warning: the asset is exported as authored, and
@@ -42,6 +42,24 @@ CAPABILITIES = {
     "collisionShapes": [],
     "lodDistances": False,
 }
+# The opt-in structure writer's limits (drawableWriter "structure", NEEDS-PLAYTEST): `LibertyContent capabilities --writer
+# structure`. The structure template decides how many materials really fit; the compiler says why one does not.
+STRUCTURE_CAPABILITIES = {
+    "version": "v2-structure",
+    "maxMaterialsPerLod": 16,
+    "compiledLodLevels": 4,
+    "lodSlots": 4,
+    "maxVerticesPerGeometry": 65535,
+    "shaders": ["gta_default"],
+    "assetTypes": ["prop"],
+    "collisionShapes": [],
+    "lodDistances": True,
+}
+
+
+def capabilities_for(settings):
+    """The limits of the drawable writer the asset settings choose."""
+    return STRUCTURE_CAPABILITIES if getattr(settings, "drawable_writer", 'template') == 'structure' else CAPABILITIES
 
 # Format limits (AssetValidator.cs), not tuning values.
 MAX_VERTICES_PER_GEOMETRY = CAPABILITIES["maxVerticesPerGeometry"]
@@ -214,6 +232,10 @@ def run(context, settings):
     if abs(unit - 1.0) > 1e-6:
         add("warning", "LBX004", "scene unit scale is %g; glTF writes Blender units as metres (set Unit Scale to 1)" % unit)
 
+    caps = capabilities_for(settings)
+    if settings.drawable_writer == 'structure' and settings.texture_mode != 'native':
+        add("error", "LBX033", "the structure writer writes one texture per material into a new dictionary: set Texture mode to Native (LCC038)")
+
     depsgraph = context.evaluated_depsgraph_get()
     low = np.full(3, np.inf)
     high = np.full(3, -np.inf)
@@ -260,9 +282,9 @@ def run(context, settings):
 
     for material in sorted(materials, key=lambda m: m.name):
         shader = str(material.get(SHADER_PROPERTY, "gta_default"))
-        if shader not in CAPABILITIES["shaders"]:
+        if shader not in caps["shaders"]:
             add("warning", "LBX019", "material %s asks for shader '%s'; compiler %s writes %s, so LibertyContent will refuse to build it (LCC019)" %
-                (material.name, shader, CAPABILITIES["version"], ", ".join(CAPABILITIES["shaders"])))
+                (material.name, shader, caps["version"], ", ".join(caps["shaders"])))
         image, problem = base_color_image(material)
         if problem:
             add("warning", "LBX011", "material %s: %s; the texture is filled with the base colour" % (material.name, problem))
@@ -277,11 +299,11 @@ def run(context, settings):
             else:
                 add("warning", "LBX020", "material %s uses alpha; template mode writes opaque DXT1 (native mode keeps alpha)" % material.name)
 
-    limit = CAPABILITIES["maxMaterialsPerLod"]
+    limit = caps["maxMaterialsPerLod"]
     for lod, used in sorted(materials_per_lod.items()):
         if len(used) > limit:
             add("warning", "LBX009", "LOD %d uses %d materials (%d geometries); compiler %s writes %d per LOD, so LibertyContent will refuse to build it "
-                                     "(LCC016). Merge materials or bake an atlas to build now" % (lod, len(used), len(used), CAPABILITIES["version"], limit))
+                                     "(LCC016). Merge materials or bake an atlas to build now" % (lod, len(used), len(used), caps["version"], limit))
     if triangles_per_lod and 0 not in triangles_per_lod:
         add("error", "LBX017", "no LOD 0 mesh")
     for lod in range(1, MAX_LOD + 1):
@@ -291,8 +313,8 @@ def run(context, settings):
     if levels and levels != list(range(len(levels))):
         add("warning", "LBX031", "LOD levels %s have a gap (use 0, 1, 2... in order)" % levels)
 
-    shapes = _collision_checks(context, depsgraph, collision, low, high, add)
-    _asset_checks(settings, levels, shapes, add)
+    shapes = _collision_checks(context, depsgraph, collision, low, high, add, caps)
+    _asset_checks(settings, levels, shapes, add, caps)
 
     if np.all(np.isfinite(low)):
         size = high - low
@@ -311,7 +333,7 @@ def run(context, settings):
     return _sorted(issues)
 
 
-def _collision_checks(context, depsgraph, objects, low, high, add):
+def _collision_checks(context, depsgraph, objects, low, high, add, caps):
     """LBX023-LBX028 for collision objects; returns the shapes found (valid or not)."""
     shapes = []
     for obj in objects:
@@ -343,19 +365,19 @@ def _collision_checks(context, depsgraph, objects, low, high, add):
                 add("warning", "LBX027", "%s: collision lies outside the model's bounds" % obj.name)
         finally:
             evaluated.to_mesh_clear()
-    unsupported = sorted(set(s for s in shapes if s in COLLISION_SHAPES and s not in CAPABILITIES["collisionShapes"]))
+    unsupported = sorted(set(s for s in shapes if s in COLLISION_SHAPES and s not in caps["collisionShapes"]))
     if unsupported:
         add("warning", "LBX028", "%d collision shape(s) (%s): compiler %s writes %s, so LibertyContent will refuse to build the asset (LCC032)" %
-            (len(shapes), ", ".join(unsupported), CAPABILITIES["version"],
-             ("only " + ", ".join(CAPABILITIES["collisionShapes"])) if CAPABILITIES["collisionShapes"] else "no collision yet"))
+            (len(shapes), ", ".join(unsupported), caps["version"],
+             ("only " + ", ".join(caps["collisionShapes"])) if caps["collisionShapes"] else "no collision yet"))
     return shapes
 
 
-def _asset_checks(settings, levels, shapes, add):
+def _asset_checks(settings, levels, shapes, add, caps):
     """Asset type (LBX029), world objects without collision (LBX032) and LOD distances (LBX030)."""
-    if settings.asset_type not in CAPABILITIES["assetTypes"]:
+    if settings.asset_type not in caps["assetTypes"]:
         add("warning", "LBX029", "type '%s': compiler %s builds %s, so LibertyContent will refuse to build it (LCC033)" %
-            (settings.asset_type, CAPABILITIES["version"], ", ".join(CAPABILITIES["assetTypes"])))
+            (settings.asset_type, caps["version"], ", ".join(caps["assetTypes"])))
     if settings.asset_type == 'object' and not shapes:
         add("warning", "LBX032", "world object without collision: the player and vehicles would pass through it (tag collision objects)")
     if not settings.use_lod_distances or not levels:

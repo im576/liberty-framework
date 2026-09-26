@@ -35,6 +35,11 @@ class LIBERTY_PT_asset(_LibertyPanel, bpy.types.Panel):
         column.prop(settings, "template_model", text="Model")
         layout.prop(settings, "texture_dictionary")
         layout.prop(settings, "texture_mode")
+        layout.prop(settings, "drawable_writer")
+        if settings.drawable_writer == 'structure':
+            column = layout.column(align=True)
+            column.prop(settings, "structure_template_archive", text="Structure template")
+            column.prop(settings, "structure_template_model", text="Model")
         layout.prop(settings, "draw_distance")
         layout.prop(settings, "audio_material")
         layout.prop(settings, "use_lod_distances")
@@ -66,8 +71,9 @@ class LIBERTY_PT_object(_LibertyPanel, bpy.types.Panel):
             known = shape in checks.COLLISION_SHAPES
             layout.label(text="%s: collision %s%s" % (obj.name, shape, (", surface " + str(surface)) if surface else ""),
                          icon='MOD_PHYSICS' if known else 'ERROR')
-            if shape not in checks.CAPABILITIES["collisionShapes"]:
-                layout.label(text="Compiler %s writes no %s collision yet (LCC032)" % (checks.CAPABILITIES["version"], shape), icon='INFO')
+            caps = checks.capabilities_for(context.scene.liberty_asset)
+            if shape not in caps["collisionShapes"]:
+                layout.label(text="Compiler %s writes no %s collision yet (LCC032)" % (caps["version"], shape), icon='INFO')
         row = layout.row(align=True)
         row.operator_menu_enum("liberty.set_collision", "shape", text="Collision", icon='MOD_PHYSICS')
         if shape is not None:
@@ -84,6 +90,7 @@ class LIBERTY_PT_materials(_LibertyPanel, bpy.types.Panel):
         if obj is None or obj.type != 'MESH' or not obj.material_slots:
             layout.label(text="The active object has no materials")
             return
+        caps = checks.capabilities_for(context.scene.liberty_asset)
         if checks.collision_of(obj) is not None:
             layout.label(text="Collision objects are never drawn; materials are ignored", icon='INFO')
         for index, slot in enumerate(obj.material_slots):
@@ -94,7 +101,7 @@ class LIBERTY_PT_materials(_LibertyPanel, bpy.types.Panel):
                 continue
             shader = str(material.get(checks.SHADER_PROPERTY, "gta_default"))
             row = box.row()
-            row.label(text="%s: %s" % (material.name, shader), icon='MATERIAL' if shader in checks.CAPABILITIES["shaders"] else 'ERROR')
+            row.label(text="%s: %s" % (material.name, shader), icon='MATERIAL' if shader in caps["shaders"] else 'ERROR')
             if index == obj.active_material_index:
                 row.operator("liberty.set_shader", text="", icon='GREASEPENCIL')
             image, problem = checks.base_color_image(material)
@@ -105,8 +112,8 @@ class LIBERTY_PT_materials(_LibertyPanel, bpy.types.Panel):
             else:
                 box.label(text="No texture: the base colour fills it", icon='INFO')
         used = len([s for s in obj.material_slots if s.material is not None])
-        if used > checks.CAPABILITIES["maxMaterialsPerLod"]:
-            layout.label(text="Compiler %s writes %d material per LOD (LCC016)" % (checks.CAPABILITIES["version"], checks.CAPABILITIES["maxMaterialsPerLod"]), icon='INFO')
+        if used > caps["maxMaterialsPerLod"]:
+            layout.label(text="Compiler %s writes %d material(s) per LOD (LCC016)" % (caps["version"], caps["maxMaterialsPerLod"]), icon='INFO')
 
 
 class LIBERTY_PT_build(_LibertyPanel, bpy.types.Panel):

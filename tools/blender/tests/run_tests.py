@@ -86,7 +86,7 @@ def main():
         shutil.rmtree(OUTPUT)
     os.makedirs(OUTPUT)
     addon_utils.enable("liberty_exporter", default_set=True, handle_error=None)
-    from liberty_exporter import checks, lcc, state  # noqa: E402
+    from liberty_exporter import checks, exporter, lcc, state  # noqa: E402
     prefs = bpy.context.preferences.addons["liberty_exporter"].preferences
     prefs.content_root = CONTENT
     prefs.compiler_path = COMPILER
@@ -123,10 +123,10 @@ def main():
     node_extras = {n["name"]: n.get("extras", {}) for n in document["nodes"]}
     expect(node_extras.get("lf_bt_barrel_far", {}).get("liberty_lod") == 2, "liberty_lod exported as node extras", node_extras)
     scene_extras = document["scenes"][0].get("extras", {})
-    expect(scene_extras.get("liberty_exporter") == "0.3.0" and "liberty_exporter" not in scene.keys(), "scene tags exported and removed again", scene_extras)
+    expect(scene_extras.get("liberty_exporter") == exporter.EXPORTER_VERSION and "liberty_exporter" not in scene.keys(), "scene tags exported and removed again", scene_extras)
     expect(any(i.get("uri", "").endswith(".png") for i in document.get("images", [])), "texture written as PNG", document.get("images"))
     built = {} if NO_GAME else report("lf_bt_barrel")
-    expect_built(lambda: built["lods"] == 3 and built["metadata"].get("liberty_exporter") == "0.3.0", "report: 3 LODs, exporter metadata", lambda: built)
+    expect_built(lambda: built["lods"] == 3 and built["metadata"].get("liberty_exporter") == exporter.EXPORTER_VERSION, "report: 3 LODs, exporter metadata", lambda: built)
     expect_built(lambda: os.path.isfile(result.preview) and os.path.isfile(result.texture), "previews written", lambda: result.preview)
     expect_built(lambda: not any(i["code"] == "LCC017" for i in built["issues"]), "LOD triangle order accepted")
 
@@ -257,7 +257,7 @@ def main():
     if NO_GAME:
         expect(result.status == "exported", "collection export validated", result.log[-400:])
     expect_built(lambda: result.status == "ok" and built.get("lods") == 2, "collection export builds with 2 LODs", lambda: "%s %s" % (result.status, built.get("lods")))
-    expect_built(lambda: built.get("metadata", {}).get("liberty_exporter") == "0.3.0" and "liberty_exporter" not in collection.keys(), "collection export carries exporter metadata", lambda: built.get("metadata"))
+    expect_built(lambda: built.get("metadata", {}).get("liberty_exporter") == exporter.EXPORTER_VERSION and "liberty_exporter" not in collection.keys(), "collection export carries exporter metadata", lambda: built.get("metadata"))
 
     # 7. The authoring fixtures (tests/fixtures.py; committed under tests/content/fixtures): export each, then check what
     #    LibertyContent made of it against the fixture's expectations. v1 refuses all but lf_fx_lods on purpose.
@@ -368,9 +368,35 @@ def main():
     found = [i for i in checks.run(bpy.context, settings) if i.code == "LBX019"]
     expect(found and found[0].severity == "warning" and "LCC019" in found[0].message, "shader outside the capabilities: LBX019 warning naming LCC019", found)
 
-    # 11. The add-on's copy of the compiler's capabilities is current.
+    # 11. The add-on's copies of the compiler's capabilities are current (default writer and structure writer).
     reported = lcc.capabilities(COMPILER, 120)
     expect(reported == checks.CAPABILITIES, "checks.CAPABILITIES equals LibertyContent capabilities", "%s != %s" % (reported, checks.CAPABILITIES))
+    code, text = lcc.run(COMPILER, ["capabilities", "--writer", "structure"], 120)
+    reported = json.loads(text) if code == 0 else None
+    expect(reported == checks.STRUCTURE_CAPABILITIES, "checks.STRUCTURE_CAPABILITIES equals capabilities --writer structure", "%s != %s" % (reported, checks.STRUCTURE_CAPABILITIES))
+
+    # 12. The structure writer opt-in: two materials in LOD 0 are within its limits, asset.json carries the writer and
+    #     its template, and LibertyContent validates the export with the structure capabilities (building needs the game).
+    clear_scene()
+    two = [box("lf_bt_struct_a", (0, 0, 0), (0.5, 0.5, 0.5), material("s_red")), box("lf_bt_struct_b", (0.5, 0, 0), (1, 0.5, 0.5), material("s_blue")),
+           cylinder("lf_bt_struct_lod1", 6, 0.4, 0.5, material("s_red"))]
+    select(*two)
+    settings.asset_name = "lf_bt_struct"
+    settings.drawable_writer = 'structure'
+    expect("LBX033" in codes(checks.run(bpy.context, settings)), "structure writer with template textures: LBX033")
+    settings.texture_mode = 'native'
+    found = checks.run(bpy.context, settings)
+    expect(not checks.has_errors(found) and "LBX009" not in codes(found), "structure writer: two materials in LOD 0 are no warning", codes(found))
+    outcome = call(bpy.ops.liberty.export)
+    result = state.get(scene)
+    manifest = json.load(open(os.path.join(CONTENT, "props", "lf_bt_struct", "asset.json"), encoding="utf-8"))
+    expect(manifest.get("drawableWriter") == "structure" and manifest.get("structureTemplate") == {"archive": "*", "model": "auto"} and manifest.get("textureMode") == "native",
+           "asset.json: drawableWriter, structureTemplate, textureMode", manifest)
+    validation = report("lf_bt_struct") if os.path.isfile(os.path.join(BUILD, "lf_bt_struct", "report.json")) else {}
+    expect(outcome == {'FINISHED'} and result.status == "exported" and validation.get("capabilities", {}).get("version") == "v2-structure",
+           "LibertyContent validates it with the structure capabilities", "%s %s %s" % (outcome, result.status, validation.get("capabilities")))
+    settings.drawable_writer = 'template'
+    settings.texture_mode = 'template'
 
     print("RESULT passed=%d failed=%d%s" % (results["passed"], results["failed"], (" notrun=%d" % results["notrun"]) if results["notrun"] else ""))
     if results["failed"]:

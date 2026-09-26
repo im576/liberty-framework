@@ -10,7 +10,7 @@ import bpy
 
 from . import checks
 
-EXPORTER_VERSION = "0.3.0"
+EXPORTER_VERSION = "0.4.0"
 KIND_FOLDERS = {"prop": "props", "object": "objects"}
 
 
@@ -41,6 +41,9 @@ def manifest_data(settings, lod_count):
     # Only written when it differs from the compiler's default, so template-mode manifests stay as they were.
     if settings.texture_mode != 'template':
         data["textureMode"] = settings.texture_mode
+    if settings.drawable_writer != 'template':
+        data["drawableWriter"] = settings.drawable_writer
+        data["structureTemplate"] = {"archive": settings.structure_template_archive, "model": settings.structure_template_model}
     if settings.use_lod_distances and lod_count > 0:
         data["lodDistancesMeters"] = [round(float(d), 3) for d in settings.lod_distances[:lod_count]]
     return data

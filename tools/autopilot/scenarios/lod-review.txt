@@ -1,0 +1,33 @@
+# Structure writer LODs (T-031): lf_lod_post is one drawable with four LODs, 48, 24, 12 and 6 sides, each sampling its own
+# texture quadrant: LOD 0 green with one dark band, LOD 1 yellow with two, LOD 2 orange with three, LOD 3 red with four.
+# asset.json writes the LOD distances 12, 25, 50 and 100 m into drawable +0x50 (draw distance 150 m). The camera stops
+# between them (6, 18, 38, 75 m), then beyond the last (130 m), so each shot shows which LOD the game draws there.
+# Whether the game switches by these distances, by its own, or not at all is what this scenario finds out.
+god on
+wanted 0
+goto east_park
+wait 5000
+time 13 0
+weather 1
+spawnprop lf_lod_post 4 0
+expect "autopilot_prop handle=\d+ model=lf_lod_post" 15
+wait 1500
+hud off
+cam prop 0 6 1.5
+wait 2500
+shot lod_6m
+cam prop 0 18 2.5
+wait 2500
+shot lod_18m
+cam prop 0 38 4
+wait 2500
+shot lod_38m
+cam prop 0 75 6
+wait 2500
+shot lod_75m
+cam prop 0 130 9
+wait 2500
+shot lod_130m
+cam off
+hud on
+clear
