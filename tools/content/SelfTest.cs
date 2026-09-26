@@ -77,6 +77,7 @@ namespace LibertyFramework.Content
                 Group("structure round trip", StructureSelfTest.RoundTrip),
                 Group("structure bounds records", StructureSelfTest.BoundsRecords),
                 Group("structure trimming", StructureSelfTest.Trimming),
+                Group("structure compiler", StructureSelfTest.Compiler),
                 Group("sample asset", Sample),
                 Group("probes", Probes),
             };

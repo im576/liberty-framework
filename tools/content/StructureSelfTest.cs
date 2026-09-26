@@ -152,6 +152,76 @@ namespace LibertyFramework.Content
             t.Check(message != null && message.Contains("shader"), "dropping a shader a kept geometry uses is refused", message);
         }
 
+        // A game folder holding synthetic drawables in one unencrypted IMG (no IMG key: the probes' test setup).
+        private static string FakeGame(params KeyValuePair<string, RscResource>[] drawables)
+        {
+            string game = Path.Combine(Path.GetTempPath(), "liberty-structure-" + Guid.NewGuid().ToString("N").Substring(0, 8));
+            Directory.CreateDirectory(Path.Combine(game, "pc", "models", "cdimages"));
+            File.WriteAllBytes(Path.Combine(game, "GTAIV.exe"), new byte[64]);
+            ImgArchive.Write(Path.Combine(game, "pc", "models", "cdimages", "test.img"), drawables.Select(d => new KeyValuePair<string, byte[]>(d.Key, d.Value.Serialize())).ToList());
+            return game;
+        }
+
+        private static AssetManifest StructureManifest(string template, string textureMode, string lodDistances)
+        {
+            return SelfTest.ParseManifest("{\"schemaVersion\":1,\"name\":\"lf_struct\",\"type\":\"prop\",\"source\":\"x.gltf\",\"template\":{\"archive\":\"pc/models/cdimages/test.img\",\"model\":\"aaa_single\"}," +
+                "\"textureDictionary\":\"lf_struct\",\"drawDistanceMeters\":100,\"textureMode\":\"" + textureMode + "\",\"drawableWriter\":\"structure\"," +
+                "\"structureTemplate\":{\"archive\":\"pc/models/cdimages/test.img\",\"model\":\"" + template + "\"}" + (lodDistances != null ? ",\"lodDistancesMeters\":[" + lodDistances + "]" : "") + "}");
+        }
+
+        internal static void Compiler(SelfTest.Runner t, string output)
+        {
+            SyntheticDrawable.Spec single = new SyntheticDrawable.Spec();
+            single.Lods.Add(new List<List<Mesh>> { new List<Mesh> { SyntheticDrawable.Prism(6, 0.3f, 1, 0, 0) } });
+            string game = FakeGame(new KeyValuePair<string, RscResource>("aaa_single.wdr", SyntheticDrawable.Build(single)),
+                new KeyValuePair<string, RscResource>("bbb_lods.wdr", SyntheticDrawable.Build(FourLods())));
+            try
+            {
+                // LOD 0: two materials; LOD 1: the first material again.
+                ContentAsset asset = SelfTest.Asset(SelfTest.Box("a", 0, 0, 1), SelfTest.Box("b", 0, 1, 0.5f), SelfTest.Box("c", 1, 0, 0.6f));
+                AssetManifest manifest = StructureManifest("auto", "native", "20,50");
+                t.Check(CompilerCapabilities.For(manifest) == CompilerCapabilities.Structure && CompilerCapabilities.For(StructureManifest("auto", "native", null)).CompiledLodLevels == 4,
+                    "structure manifests validate against the structure capabilities");
+                t.Check(AssetValidator.Validate(asset, manifest, CompilerCapabilities.For(manifest)).All(i => i.Severity != "error" && i.Code != "LCC025" && i.Code != "LCC037"),
+                    "two materials and two LODs are valid for the structure writer (no LCC016, LCC025, LCC037)");
+                t.Check(AssetValidator.Validate(asset, StructureManifest("auto", "template", null), CompilerCapabilities.Structure).Any(i => i.Code == "LCC038"), "structure writer without native textures: LCC038");
+
+                PropCompiler.Result result = PropCompiler.Compile(game, manifest, asset);
+                t.Check(result.DrawableWriter == "structure" && result.TemplateUsed == "pc/models/cdimages/test.img/bbb_lods", "auto picks the first drawable that fits (not the single-LOD one)", result.TemplateUsed);
+                t.Check(result.Parts.Select(p => p.Lod + ":" + p.Material + ":" + p.TextureName).SequenceEqual(new[] { "0:0:lf_struct", "0:1:lf_struct_1", "1:0:lf_struct" }), "parts: LOD, material, texture",
+                    string.Join(" ", result.Parts.Select(p => p.Lod + ":" + p.Material + ":" + p.TextureName).ToArray()));
+                t.Check(result.Textures.Count == 2 && result.Textures.All(x => x.Format == "DXT1"), "one native texture per material");
+                List<string> problems = Readback.Verify(result);
+                t.Check(problems.Count == 0, "the structure build reads back", string.Join("; ", problems.ToArray()));
+                DrawableFile back = new DrawableFile(RscResource.Parse(result.Drawable));
+                t.Check(back.Models.Select(m => m.Lod).SequenceEqual(new[] { 0, 1 }) && back.Shaders.Count == 2, "LODs 2-3 and the second models dropped; two shaders kept");
+                t.Check(back.View.F32(back.Root + 0x50) == 20f && back.View.F32(back.Root + 0x54) == 50f, "LOD distances written");
+                t.Check(result.Notes.Any(n => n.Contains("builtin dictionary prototype")), "no template dictionary: builtin prototype, noted");
+
+                string report = Program.ReportJson(manifest, asset, AssetValidator.Validate(asset, manifest, CompilerCapabilities.For(manifest)), result, problems, "ok");
+                Dictionary<string, object> parsed = (Dictionary<string, object>)new System.Web.Script.Serialization.JavaScriptSerializer().DeserializeObject(report);
+                Dictionary<string, object> compiled = (Dictionary<string, object>)parsed["compiled"];
+                t.Check((string)compiled["drawableWriter"] == "structure" && Convert.ToInt32(compiled["lodCount"]) == 2 && ((System.Collections.IList)compiled["geometries"]).Count == 3 &&
+                    ((System.Collections.IList)compiled["textures"]).Count == 2 && (string)((Dictionary<string, object>)parsed["capabilities"])["version"] == "v2-structure", "report.json: writer, LOD count, geometries, textures, capabilities");
+                if (output != null) { File.WriteAllText(Path.Combine(output, "structure_report.json"), report); File.WriteAllBytes(Path.Combine(output, "structure.wdr"), result.Drawable); }
+
+                string refused;
+                try { PropCompiler.Compile(game, StructureManifest("aaa_single", "native", null), asset); refused = null; }
+                catch (InvalidDataException error) { refused = error.Message; }
+                t.Check(refused != null && refused.Contains("does not fit") && refused.Contains("LOD 0 has 1 geometries, the asset needs 2"), "an explicit template that does not fit is an error naming why", refused);
+
+                ContentAsset crowded = SelfTest.Asset(SelfTest.Box("a", 0, 0, 1), SelfTest.Box("b", 0, 1, 0.5f));
+                crowded.Materials.Add(new ContentMaterial { Name = "third" });
+                crowded.Meshes.Add(SelfTest.Box("c", 0, 2, 0.4f));
+                string fallback;
+                t.Check(StructureCompiler.Compile(game, manifest, crowded, out fallback) == null && fallback != null && fallback.Contains("no drawable"), "auto with no fitting template: no result, the reason for a fallback", fallback);
+                try { PropCompiler.Compile(game, manifest, crowded); refused = null; }
+                catch (InvalidDataException error) { refused = error.Message; }
+                t.Check(refused != null && refused.Contains("v1 cannot write") && refused.Contains("LCC016"), "no template and v1 cannot build it either: a clear error, not a silent LOD 0", refused);
+            }
+            finally { try { Directory.Delete(game, true); } catch (IOException) { } }
+        }
+
         internal static bool SameMesh(Mesh a, Mesh b)
         {
             if (a.Vertices.Count != b.Vertices.Count || !a.Indices.SequenceEqual(b.Indices)) { return false; }

@@ -47,7 +47,7 @@ namespace LibertyFramework.Content
             Dictionary<string, object> expect = (Dictionary<string, object>)json.DeserializeObject(File.ReadAllText(expectPath));
             AssetManifest manifest = AssetManifest.Load(manifestPath);
             ContentAsset asset = GltfImporter.Import(manifest.SourcePath);
-            List<AssetValidator.Issue> issues = AssetValidator.Validate(asset, manifest, CompilerCapabilities.Current);
+            List<AssetValidator.Issue> issues = AssetValidator.Validate(asset, manifest, CompilerCapabilities.For(manifest));
             string status = AssetValidator.HasErrors(issues) ? Program.StatusInvalid : Program.StatusValid;
             Dictionary<string, object> report = (Dictionary<string, object>)json.DeserializeObject(Program.ReportJson(manifest, asset, issues, null, new List<string>(), status));
 

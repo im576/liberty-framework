@@ -245,13 +245,17 @@ namespace LibertyFramework.Content
         // A sphere or capsule whose fitted extents differ by more than this fraction gets LCC029.
         private const float NonUniformTolerance = 0.01f;
 
-        // Asset type (LCC033, LCC034) and LOD distances (LCC035-LCC037).
+        // Asset type (LCC033, LCC034), LOD distances (LCC035-LCC037) and the structure writer's texture mode (LCC038).
         private static void ValidateManifest(ContentAsset asset, AssetManifest manifest, CompilerCapabilities capabilities, List<Issue> issues)
         {
             if (Array.IndexOf(capabilities.AssetTypes, manifest.Type) < 0)
             {
                 Add(issues, "error", "LCC033", "type '" + manifest.Type + "': compiler " + capabilities.Version + " builds " + string.Join(", ", capabilities.AssetTypes) +
                     (manifest.Type == AssetManifest.TypeObject ? " (world objects need the collision and placement writers)" : ""));
+            }
+            if (manifest.DrawableWriter == AssetManifest.WriterStructure && manifest.TextureMode != AssetManifest.TextureModeNative)
+            {
+                Add(issues, "error", "LCC038", "drawableWriter structure writes one texture per material into a dictionary written from scratch: set textureMode native");
             }
             if (manifest.Type == AssetManifest.TypeObject && asset.Collisions.Count == 0)
             {

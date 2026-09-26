@@ -14,7 +14,7 @@ namespace LibertyFramework.Content
     // back, with previews and a machine-readable report for agents. Commands:
     //   sample <dir> <name>                              write the original test crate as glTF (no Blender needed)
     //   validate <asset.json> [--report <report.json>]   import + validate, print issues (exit 2 on errors), optional report
-    //   capabilities                                     what this compiler writes, as JSON (the Blender add-on's limits)
+    //   capabilities [--writer structure]                what this compiler writes, as JSON (the Blender add-on's limits)
     //   fixtures <dir>                                   validate every <dir>/<name>/asset.json against its expect.json
     //   roundtrip --game <game> [--out <json>] [img...]  rebuild the game's drawables with the structure writer and compare
     //   build <game> <asset.json> <out>                  validate, compile, read back, preview, report
@@ -32,6 +32,7 @@ namespace LibertyFramework.Content
                 if (args.Length == 2 && args[0] == "validate") { return Validate(args[1], null); }
                 if (args.Length == 4 && args[0] == "validate" && args[2] == "--report") { return Validate(args[1], args[3]); }
                 if (args.Length == 1 && args[0] == "capabilities") { Console.WriteLine(CompilerCapabilities.Current.ToJson()); return 0; }
+                if (args.Length == 3 && args[0] == "capabilities" && args[1] == "--writer" && args[2] == AssetManifest.WriterStructure) { Console.WriteLine(CompilerCapabilities.Structure.ToJson()); return 0; }
                 if (args.Length == 2 && args[0] == "fixtures") { return FixtureCheck.Run(args[1]); }
                 if (args.Length >= 4 && args[0] == "build") { string ignored; return Build(args[1], args[2], args[3], out ignored); }
                 if (args.Length >= 6 && args[0] == "package") { return Package(args[1], args[2], args[3], args[4], args.Skip(5).ToArray()); }
@@ -58,7 +59,7 @@ namespace LibertyFramework.Content
         {
             AssetManifest manifest = AssetManifest.Load(manifestPath);
             ContentAsset asset = GltfImporter.Import(manifest.SourcePath);
-            List<AssetValidator.Issue> issues = AssetValidator.Validate(asset, manifest, CompilerCapabilities.Current);
+            List<AssetValidator.Issue> issues = AssetValidator.Validate(asset, manifest, CompilerCapabilities.For(manifest));
             foreach (AssetValidator.Issue issue in issues) { Console.WriteLine(issue); }
             bool failed = AssetValidator.HasErrors(issues);
             if (reportPath != null)
@@ -80,7 +81,7 @@ namespace LibertyFramework.Content
             string folder = Path.Combine(output, manifest.Name);
             Directory.CreateDirectory(folder);
             ContentAsset asset = GltfImporter.Import(manifest.SourcePath);
-            List<AssetValidator.Issue> issues = AssetValidator.Validate(asset, manifest, CompilerCapabilities.Current);
+            List<AssetValidator.Issue> issues = AssetValidator.Validate(asset, manifest, CompilerCapabilities.For(manifest));
             foreach (AssetValidator.Issue issue in issues) { Console.WriteLine("  " + issue); }
             List<string> readback = new List<string>();
             PropCompiler.Result compiled = null;
@@ -104,11 +105,12 @@ namespace LibertyFramework.Content
 
         private static void WritePreviews(string folder, AssetManifest manifest, PropCompiler.Result compiled)
         {
-            // The preview is drawn from the geometry read back out of the compiled .wdr, i.e. what the game will load.
+            // The preview is drawn from the geometry read back out of the compiled .wdr, i.e. what the game will load: the
+            // highest LOD's geometries.
             DrawableFile drawable = new DrawableFile(RscResource.Parse(compiled.Drawable));
-            Mesh back = drawable.ReadMesh(drawable.Models[0].Geometries[0]);
-            MeshPreview.Save(new List<Mesh> { back }, Path.Combine(folder, manifest.Name + "_preview.png"), manifest.Name + " (read back from .wdr)",
-                new List<Color> { Color.FromArgb(170, 140, 100) });
+            List<Mesh> back = drawable.Models.Where(m => m.Lod == drawable.Models[0].Lod).SelectMany(m => m.Geometries).Select(drawable.ReadMesh).ToList();
+            MeshPreview.Save(back, Path.Combine(folder, manifest.Name + "_preview.png"), manifest.Name + " (read back from .wdr)",
+                back.Select(m => Color.FromArgb(170, 140, 100)).ToList());
             // The texture's top level decoded back out of the compiled .wtd (alpha kept for DXT5).
             RscResource dictionary = RscResource.Parse(compiled.Dictionary);
             TextureDictionary.Texture texture = TextureDictionary.Parse(dictionary).Textures.First(t => t.Name == compiled.TextureName);
@@ -133,7 +135,7 @@ namespace LibertyFramework.Content
             json.Append("  \"type\": ").Append(Quote(manifest.Type)).Append(",\n");
             json.Append("  \"source\": ").Append(Quote(asset.SourcePath)).Append(",\n");
             json.Append("  \"template\": ").Append(Quote(manifest.Template.Archive + "/" + manifest.Template.Model)).Append(",\n");
-            json.Append("  \"capabilities\": ").Append(CompilerCapabilities.Current.ToJson()).Append(",\n");
+            json.Append("  \"capabilities\": ").Append(CompilerCapabilities.For(manifest).ToJson()).Append(",\n");
             json.Append("  \"metadata\": {").Append(string.Join(", ", asset.Metadata.OrderBy(p => p.Key).Select(p => Quote(p.Key) + ": " + Quote(p.Value)).ToArray())).Append("},\n");
             json.Append("  \"meshes\": ").Append(asset.Meshes.Count).Append(", \"materials\": ").Append(asset.Materials.Count).Append(", \"lods\": ").Append(asset.MaxLod + 1).Append(",\n");
             json.Append("  \"structure\": ").Append(StructureJson(manifest, asset)).Append(",\n");
@@ -144,6 +146,8 @@ namespace LibertyFramework.Content
                     .Append("], \"textureMode\": ").Append(Quote(compiled.TextureMode)).Append(", \"textureFormat\": ").Append(Quote(compiled.TextureFormat))
                     .Append(", \"textureLevels\": ").Append(compiled.TextureLevels).Append(TextureQualityJson(compiled.TextureQuality))
                     .Append(", \"flippedWinding\": ").Append(compiled.FlippedWinding ? "true" : "false").Append(", \"drawableBytes\": ").Append(compiled.Drawable.Length)
+                    .Append(",\n    \"drawableWriter\": ").Append(Quote(compiled.DrawableWriter)).Append(", \"templateUsed\": ").Append(Quote(compiled.TemplateUsed))
+                    .Append(StructureCompiledJson(compiled))
                     .Append(", \"dictionaryBytes\": ").Append(compiled.Dictionary.Length).Append(",\n    \"notes\": [").Append(string.Join(", ", compiled.Notes.Select(Quote).ToArray())).Append("] },\n");
             }
             json.Append("  \"issues\": [\n");
@@ -187,6 +191,19 @@ namespace LibertyFramework.Content
             string distances = manifest.LodDistancesMeters == null ? "null" : "[" + string.Join(", ", manifest.LodDistancesMeters.Select(Metres).ToArray()) + "]";
             return "{\n    \"lods\": [\n      " + string.Join(",\n      ", lods.ToArray()) + " ],\n    \"lodDistancesMeters\": " + distances +
                 ",\n    \"collision\": [" + (collision.Count == 0 ? "" : "\n      " + string.Join(",\n      ", collision.ToArray()) + " ") + "]\n  }";
+        }
+
+        // Structure writer: ", lodCount, geometries [...], textures [...], lodDistancesWritten" (empty for v1 builds).
+        private static string StructureCompiledJson(PropCompiler.Result compiled)
+        {
+            if (compiled.DrawableWriter != AssetManifest.WriterStructure) { return ""; }
+            string geometries = string.Join(", ", compiled.Parts.Select(p => "{ \"lod\": " + p.Lod + ", \"material\": " + p.Material + ", \"texture\": " + Quote(p.TextureName) +
+                ", \"vertices\": " + p.Mesh.Vertices.Count + ", \"triangles\": " + p.Mesh.Indices.Count / 3 + " }").ToArray());
+            string textures = string.Join(", ", compiled.Textures.Select((t, k) => "{ \"name\": " + Quote(t.Name) + ", \"size\": [" + t.Width + ", " + t.Height + "], \"format\": " + Quote(t.Format) +
+                ", \"levels\": " + t.Levels.Count + (k < compiled.TextureQualities.Count && compiled.TextureQualities[k] != null ? ", \"psnrRgbDb\": " + Number(compiled.TextureQualities[k].PsnrRgbDb) : "") + " }").ToArray());
+            string distances = compiled.LodDistancesWritten == null ? "null" : "[" + string.Join(", ", compiled.LodDistancesWritten.Select(d => float.IsNaN(d) ? "null" : Metres(d)).ToArray()) + "]";
+            return ", \"lodCount\": " + compiled.Parts.Select(p => p.Lod).Distinct().Count() + ",\n    \"geometries\": [" + geometries + "],\n    \"textures\": [" + textures +
+                "],\n    \"lodDistancesWritten\": " + distances;
         }
 
         private static string Metres(float value) { return value.ToString("0.#####", CultureInfo.InvariantCulture); }

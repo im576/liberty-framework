@@ -31,6 +31,14 @@ namespace LibertyFramework.Content
         // Optional: the distance up to which each LOD is drawn, one entry per LOD level from LOD 0, ascending, the last at
         // most drawDistanceMeters. Authoring intent for the LOD writer; the validator checks it against the asset's LODs.
         [DataMember(Name = "lodDistancesMeters", IsRequired = false)] internal float[] LodDistancesMeters;
+        // "template" (default): v1, the template's single geometry patched (proven in game). "structure" (NEEDS-PLAYTEST):
+        // DrawableStructureBuilder over structureTemplate, writing every LOD and one geometry per material
+        // (CompilerCapabilities.Structure). Needs textureMode native.
+        [DataMember(Name = "drawableWriter", IsRequired = false)] internal string DrawableWriter;
+        // The structure writer's template: a drawable with enough LOD slots, geometries and gta_default shaders. model
+        // "auto" takes the first suitable drawable (by name) in archive, and archive "*" searches every IMG of the game.
+        // Absent: the template above.
+        [DataMember(Name = "structureTemplate", IsRequired = false)] internal TemplateRef StructureTemplate;
 
         internal const string TextureModeTemplate = "template";
         internal const string TextureModeNative = "native";
@@ -40,6 +48,10 @@ namespace LibertyFramework.Content
         internal const string TypeObject = "object";
         internal static readonly string[] Types = { TypeProp, TypeObject };
         internal const float MaxDrawDistanceMeters = 1500;
+        internal const string WriterTemplate = "template";
+        internal const string WriterStructure = "structure";
+        internal const string AutoTemplate = "auto";
+        internal const string AnyArchive = "*";
 
         internal string Directory;
 
@@ -76,8 +88,20 @@ namespace LibertyFramework.Content
             {
                 throw new InvalidDataException(path + ": textureMode '" + manifest.TextureMode + "' must be '" + TextureModeTemplate + "' or '" + TextureModeNative + "'");
             }
+            if (string.IsNullOrEmpty(manifest.DrawableWriter)) { manifest.DrawableWriter = WriterTemplate; }
+            if (manifest.DrawableWriter != WriterTemplate && manifest.DrawableWriter != WriterStructure)
+            {
+                throw new InvalidDataException(path + ": drawableWriter '" + manifest.DrawableWriter + "' must be '" + WriterTemplate + "' or '" + WriterStructure + "'");
+            }
+            if (manifest.StructureTemplate != null && (string.IsNullOrEmpty(manifest.StructureTemplate.Archive) || string.IsNullOrEmpty(manifest.StructureTemplate.Model)))
+            {
+                throw new InvalidDataException(path + ": structureTemplate needs archive and model");
+            }
             return manifest;
         }
+
+        // The structure writer's template reference (structureTemplate, else template).
+        internal TemplateRef StructureTemplateOrDefault { get { return StructureTemplate ?? Template; } }
 
         internal string SourcePath { get { return Path.Combine(Directory, Source); } }
     }
