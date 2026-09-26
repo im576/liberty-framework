@@ -33,7 +33,7 @@ public sealed class MyModule : LibertyModule
 ```
 
 - **Build:** `tools/build.ps1` builds every folder under `mods/` into `mods/<Name>/bin/<Name>.dll`, referencing only the SDK. Warnings are errors.
-- **Install:** `tools/package-phase2.ps1` + `tools/install-phase2.ps1` put it in `scripts\LibertyFramework\mods\`. They require `loadModAssemblies: true` in `engine.json`, which is the default.
+- **Install:** `tools/package-phase2.ps1` + `tools/install-phase2.ps1` put it in `scripts\LibertyFramework\mods\`. They require `loadModAssemblies: true` in `engine.json`. The shipped `config/engine.json` sets it; the built-in defaults (used when `engine.json` is missing or rejected, logged as `engine_config_rejected`) do not load mods.
 - **Test:**
   - In the game console: `lf hello`.
   - Autopilot: add a scenario under `tools/autopilot/scenarios/`.
@@ -48,7 +48,9 @@ public sealed class MyModule : LibertyModule
 | `OnStop()` | module stopped or failed | the engine releases your resources afterwards anyway |
 | `OnUnload()` | script domain unloading (reload/exit) | game functions are unavailable; managed state only |
 
-- An exception from any of your code stops **only your module**. The engine logs it, publishes `ModuleFailed`, and releases everything you owned. It also stops modules that `Requires` yours.
+- An exception from any of your code stops **only your module**: `OnUpdate`, handlers, coroutines and `Wait.Until` conditions, menu callbacks, config reloads, commands and `OnDraw` (logged once, stopped on the next tick). The engine logs it, publishes `ModuleFailed`, and releases everything you owned. It also stops modules that `Requires` yours.
+- A command handler that throws `ArgumentException` or `FormatException` (a missing or malformed argument) answers with the error and your usage text; your module keeps running. A command name belongs to the first module that registers it; a second registration is refused and logged (`command_refused`).
+- Pass your module (`this`) wherever a service asks for an `owner`; `null` is refused, because nothing could release what it creates. Capabilities are checked against that owner and against the module whose code is running. Mods are full-trust .NET code: capabilities are a guardrail against mistakes, not a sandbox.
 - **Ownership:** everything a service creates for you is released when you stop, unless you hand it back with `Release`. That covers:
   - peds, vehicles, props, cameras, FX, sounds, blips
   - streaming requests, menus, input capture, control locks
@@ -163,8 +165,8 @@ bool sees = Liberty.Query.HasLineOfSight(guard, Liberty.Player.Ped);    // head 
 |---|---|
 | **Peds** | |
 | `PedAppeared` / `PedRemoved` | `Ped` |
-| `PedDamaged` | `Ped`, `Attacker`, `Weapon`, `Bone`, `HealthBefore/After`, `ByPlayer`, `Exact` |
-| `PedDied` | `Ped`, `Killer`, `Weapon`, `Bone`, `ByPlayer` |
+| `PedDamaged` | `Ped`, `Attacker`, `Weapon`, `Bone`, `HealthBefore/After`, `ByPlayer`, `Exact`; exact only: `AttackerVehicle`, `Type`, `Amount`, `HealthLost`, `ArmourLost`, `Killed`, `Component`, `HasHit`/`HitPosition`/`HitDirection` |
+| `PedDied` | `Ped`, `Killer`, `Weapon`, `Bone`, `ByPlayer`, `Exact`, `Type`, `KillerVehicle` |
 | **Player** | |
 | `PlayerShot` | `Weapon`, `ClipBefore`, `ClipAfter` |
 | `ReloadStarted` / `ReloadFinished` | `Ped`, `Weapon`, clip |
@@ -182,7 +184,10 @@ bool sees = Liberty.Query.HasLineOfSight(guard, Liberty.Player.Ped);    // head 
 | **Engine** | |
 | `ModuleFailed` | `ModuleId`, `Error` |
 
-`PedDamaged.Exact` is false until the engine's damage hook lands (ADR-0007). Until then attacker, weapon and bone come
+`PedDamaged.Exact` / `PedDied.Exact` are true when the event comes from the engine's damage hook (ADR-0007, verified in
+game by the `exact-damage` scenario): attacker (a vehicle's driver for vehicle damage), weapon, damage type, bone,
+amounts, the bullet's hit point and direction, and the kill. When the hook is off (`engine.json` `exactDamage`, or it
+was refused), the events come from the snapshot (health changes) with `Exact` false, and attacker, weapon and bone come
 from the game's last-damage records.
 
 ## 6. Deployment facts

@@ -29,6 +29,10 @@ $sdkDll = Join-Path $binDirectory 'Liberty.Sdk.dll'
 $sdkSources = @(Get-ChildItem -LiteralPath $sdkRoot -Recurse -Filter '*.cs' | Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } | Sort-Object FullName | ForEach-Object { $_.FullName })
 Invoke-LibertyManaged $compiler /nologo /target:library /platform:anycpu /langversion:7.3 /warn:4 /warnaserror+ /nowarn:1591 "/out:$sdkDll" /reference:System.Core.dll $sdkSources
 if ($LASTEXITCODE -ne 0) { throw "Liberty.Sdk (verifier copy) failed to compile (exit $LASTEXITCODE)" }
+# The SDK examples the docs show (docs/sdk/examples) must compile against the current SDK, warnings as errors.
+$examples = @(Get-ChildItem -LiteralPath (Join-Path $repoRoot 'docs\sdk\examples') -Filter '*.cs' | Sort-Object Name | ForEach-Object { $_.FullName })
+Invoke-LibertyManaged $compiler /nologo /target:library /platform:anycpu /langversion:7.3 /warn:4 /warnaserror+ "/out:$(Join-Path $binDirectory 'SdkExamples.dll')" "/reference:$sdkDll" /reference:System.Core.dll $examples
+if ($LASTEXITCODE -ne 0) { throw "SDK examples (docs/sdk/examples) failed to compile against the current SDK (exit $LASTEXITCODE)" }
 
 # Only sources without ScriptHookDotNet dependencies may be listed here.
 $sources = @(
