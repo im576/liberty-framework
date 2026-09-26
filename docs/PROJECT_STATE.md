@@ -5,6 +5,10 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
+**Engine audit and hardening (2026-09-26, Claude, session 2 of [NEXT_SESSIONS](workflow/NEXT_SESSIONS.md)): offline checks pass; in-game checks queued.** [Report](reports/2026-09-26-engine-audit.md).
+- **Fixed:** a throwing `Wait.Until` condition or an unowned coroutine stopped every module for the session; an event handler's failure skipped the next module's handler; null owners left control locks, HUD, clock and memory patches unreleasable; menus could stay open with controls locked; overlapping memory patches left a stale patch; hooks outlived a core switched off mid-session; a faulted native kept being called for the rest of its frame; a double exact `PedDied` 5–10 s after a kill; the autopilot's log reads and Steam screenshot folder.
+- **New offline checks:** the core's C ABI against `CoreAbi.cs`, engine plumbing (scheduler, events, ledger, commands), native-name coverage, SDK examples compiled; the verifier now builds with the same Roslyn C# 7.3 as the build. New in-game checks: `T027-raycast-objects` (model chosen by `PROBE-collision`), self-test `vehicle-driver`.
+
 **Owner remote: cloud development loop (2026-09-26, Claude, [T-029](tasks/T-029-cloud-local-loop.md)): NEEDS-PLAYTEST.**
 - **How work goes now:** cloud sessions build on `develop`; the owner's PC runs `tools/verify-local.ps1` and pushes results to `verification-results`; a review session processes them ([workflow](workflow/CLOUD_LOCAL_LOOP.md), [next sessions](workflow/NEXT_SESSIONS.md)).
 - **Queue:** 44 checks in `tests/local/checks.json` cover every NEEDS-PLAYTEST task (T-007 to T-028) plus SDK regressions and two research probes; [plan](testing/LOCAL_VERIFICATION_PLAN.md). First step at the PC: `verify-local.ps1 -Smoke`.
@@ -128,7 +132,7 @@ Keep it short: this is a dashboard, not a diary.
 - **Crash found and fixed**: `GET_DRIVER_OF_CAR` faulted on some pooled vehicles and corrupted game state; the core now reads the driver from `[vehicle+0xF50]`. `GET_CAR_COORDINATES` dereferences the entity matrix unchecked, so vehicles without one (+0x20) are skipped.
 - **In game (2026-09-25)**: boots with 9/9 modules; 21/21 + 8/8 natives verified; 17 vehicles in the snapshot, zero faults; SDK self-test **34/34 passed** on the installed build (aaeefe9), including the ped-bone position and the degrees-to-radians attach conversion (a 90° request now turns the prop by 90.0°).
 - **Research answer**: `ATTACH_OBJECT_TO_PED/CAR` take rotations in **radians** (90 → 116.6°, measured). The SDK converts from degrees.
-- **Not done yet**: Arsenal wheel/trunk ported onto Liberty.Ui / choreography; Content Compiler (glTF); hooks for exact damage; episode tests; SDK reference docs and IV-SDK parity matrix; full autopilot suite run on this build.
+- **Not done yet (as of this entry; M1–M5 below did all but the episode tests)**: Arsenal wheel/trunk ported onto Liberty.Ui / choreography; Content Compiler (glTF); hooks for exact damage; episode tests; SDK reference docs and IV-SDK parity matrix; full autopilot suite run on this build.
 
 ## M2–M4 (Claude, 2026-09-25)
 

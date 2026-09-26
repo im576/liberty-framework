@@ -105,9 +105,9 @@ The core calls these natives directly through their CE handlers, once per frame,
 
 `DOES_CHAR_EXIST`, `IS_CHAR_DEAD`, `GET_CHAR_HEALTH`, `GET_CHAR_ARMOUR`, `GET_CHAR_COORDINATES`, `GET_CHAR_HEADING`, `GET_CHAR_MODEL`, `IS_CHAR_IN_ANY_CAR`, `GET_CAR_CHAR_IS_USING`, `GET_CURRENT_CHAR_WEAPON`, `GET_AMMO_IN_CLIP`, `GET_CHAR_LAST_DAMAGE_BONE`, `HAS_CHAR_BEEN_DAMAGED_BY_CHAR`, `GET_PLAYER_ID`, `IS_PLAYER_PLAYING`, `IS_PLAYER_CONTROL_ON`, `IS_PAUSE_MENU_ACTIVE`, `IS_SCREEN_FADED_OUT`, `GET_GAME_TIMER`, `GET_HOURS_OF_DAY`, `GET_MINUTES_OF_DAY`, `GET_CURRENT_WEATHER`.
 
-In game (2026-09-25): 22/22 handlers resolved and 21/21 verified; `GET_CAR_CHAR_IS_USING` is checked the first time the player is in a vehicle. The core costs about 10–40 µs per frame.
+In game (2026-09-25): 22/22 handlers resolved and 21/21 verified; `GET_CAR_CHAR_IS_USING` is checked the first time the player is in a vehicle. The core costs about 10â€“40 Âµs per frame.
 
-The autopilot test module (Testing/AutopilotModule) also calls these through ScriptHookDotNet: `SET_TIME_OF_DAY`, `FORCE_WEATHER_NOW`, `DISPLAY_HUD`, `DISPLAY_RADAR`, `CLEAR_WANTED_LEVEL`, `REQUEST_COLLISION_AT_POSN` and `LOAD_SCENE`.
+The autopilot test module (then `Testing/AutopilotModule`; now the SDK-only mod `mods/Liberty.Autopilot`, which calls no native directly) also called these through ScriptHookDotNet: `SET_TIME_OF_DAY`, `FORCE_WEATHER_NOW`, `DISPLAY_HUD`, `DISPLAY_RADAR`, `CLEAR_WANTED_LEVEL`, `REQUEST_COLLISION_AT_POSN` and `LOAD_SCENE`.
 
 ## SDK 1.0 services (Claude, 2026-09-25)
 

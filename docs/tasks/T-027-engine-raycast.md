@@ -14,9 +14,9 @@ address, SEH-contained, off after a fault, engine tick only).
 ## What was built (2026-09-26, Claude)
 
 - **Core ABI 5** (`native/LibertyCore`): `lc_raycast` with an `accept` mask, up to 4 ignored entities, pass-through
-  walk (`src/ray_walk.h`), the verified hit→entity link `[instance+0x0C]`, the game's `bool` return read from `al`
+  walk (`native/LibertyCore/src/ray_walk.h`), the verified hit→entity link `[instance+0x0C]`, the game's `bool` return read from `al`
   only, counters (`lc_raycast_stats`), fault → raycasts off for the session. Unit test
-  `tests/ray_walk_test.cpp` (13 cases), built and run by `tools/build-core.ps1`.
+  `native/LibertyCore/tests/ray_walk_test.cpp` (13 cases), built and run by `tools/build-core.ps1`.
 - **SDK 1.1:** `IWorldQuery.RaycastAvailable`, `Raycast(from, to, RayMask[, RayIgnore])` → `RayHit`,
   `HasLineOfSight(from, to, blockers, ignore)`, `HasLineOfSight(viewer, target)`; types `RayMask`, `RayHit`,
   `RayIgnore`, `RayStatus`, `RayEntityKind`.

@@ -16,8 +16,8 @@ RAN-PASS / RAN-FAIL / NOT RUN (reason) / NEEDS LOCAL VERIFY. Stop and report ins
 | # | Session | Status | Needs first |
 |---|---|---|---|
 | 1 | Cloud loop, integration of raycast (T-027) and native textures (T-028) | DONE (T-029) | none |
-| 2 | Engine audit and hardening | NEXT | none |
-| 3 | Blender and compiler authoring side: materials, LODs, collision and world metadata | queued | session 2 merged |
+| 2 | Engine audit and hardening | DONE (PR into `develop`; [report](../reports/2026-09-26-engine-audit.md)) | none |
+| 3 | Blender and compiler authoring side: materials, LODs, collision and world metadata | NEXT | session 2 merged |
 | 4 | Multi-geometry and LOD drawable writer | queued | session 3; `PROBE-drawables` results strongly preferred |
 | 5 | Collision: research, then writer | queued | `PROBE-collision` results (research may start before) |
 | 6 | Static world objects (IDE, placement, packaging) | queued | session 5 |

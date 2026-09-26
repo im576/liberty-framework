@@ -73,7 +73,7 @@ still scans the whole result and the first 0x100 bytes behind word 0 and reports
   tick only. Any fault switches raycasts off for the session (`engine_raycast_disabled`, fault reported as
   `in=raycast line test`).
 - **Filtering by walking:** the game returns only the first hit and ignores one entity. The core's walk
-  (`ray_walk.h`, unit-tested in `tests/ray_walk_test.cpp`) passes through hits the caller does not want: the next test
+  (`ray_walk.h`, unit-tested in `native/LibertyCore/tests/ray_walk_test.cpp`) passes through hits the caller does not want: the next test
   starts `raycastPassStepMeters` beyond the hit with that entity ignored by the game. Up to `raycastMaxPasses`
   passes; beyond that the query is `Inconclusive`. Up to four caller-ignored entities (the first goes to the game).
 - **SDK 1.1:** `Query.Raycast(from, to, RayMask, RayIgnore)` → `RayHit`, `Query.HasLineOfSight(from, to, blockers,

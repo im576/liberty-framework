@@ -192,7 +192,7 @@
       },
       "reference": "docs/research/Collision.md",
       "pass": "exit code 0 and a JSON report; the review session reads it",
-      "proves": "Which collision-related resources the game ships (by extension and resource type), in which archives, how many, their resource versions and top-level sizes. Input for collision research (Session 5).",
+      "proves": "Which collision-related resources the game ships (by extension and resource type), in which archives, how many, their resource versions and top-level sizes. Input for collision research (Session 5) Also propCandidates: models shipped as a drawable with a same-named bounds resource, which the raycast-objects scenario spawns.",
       "unproven": "The bound structures' field meanings; those need their own probes once the inventory is known.",
       "status": "QUEUED",
       "addedIn": "claude/friendly-euler-m7hn4e (Session 1 seed)"
@@ -264,7 +264,7 @@
       "run": {
         "scenario": "sdk-selftest"
       },
-      "proves": "Every Liberty.Sdk service works in game on the new core ABI 5, including the ten raycast/line-of-sight checks.",
+      "proves": "Every Liberty.Sdk service works in game on the new core ABI 5, including the ten raycast/line-of-sight checks. Since the engine audit also: the snapshot driver read from [vehicle+0xF50] (check vehicle-driver), capability refusal, and commands after the ownership and capability changes.",
       "pass": "autopilot PASS: 'selftest_done passed=N failed=0'",
       "status": "QUEUED",
       "addedIn": "claude/friendly-euler-m7hn4e (Session 1 seed)"
