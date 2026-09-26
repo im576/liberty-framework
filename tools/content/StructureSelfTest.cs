@@ -222,6 +222,44 @@ namespace LibertyFramework.Content
             finally { try { Directory.Delete(game, true); } catch (IOException) { } }
         }
 
+        // The two PC commands end to end on a synthetic game: `roundtrip` (both buffer orders found, report written) and the
+        // structure facts `probe drawables` adds (eligibility, sphere records, buffer order, template shapes).
+        internal static void Commands(SelfTest.Runner t, string output)
+        {
+            SyntheticDrawable.Spec verticesFirst = TwoLods();
+            verticesFirst.Order = DrawableStructureBuilder.GraphicsOrder.VerticesFirst;
+            SyntheticDrawable.Spec single = new SyntheticDrawable.Spec();
+            single.Lods.Add(new List<List<Mesh>> { new List<Mesh> { SyntheticDrawable.Prism(6, 0.3f, 1, 0, 0) } });
+            string game = FakeGame(new KeyValuePair<string, RscResource>("bbb_lods.wdr", SyntheticDrawable.Build(FourLods())),
+                new KeyValuePair<string, RscResource>("ccc_vf.wdr", SyntheticDrawable.Build(verticesFirst)),
+                new KeyValuePair<string, RscResource>("ddd_single.wdr", SyntheticDrawable.Build(single)));
+            try
+            {
+                string roundtrip = Path.Combine(game, "roundtrip.json"), probe = Path.Combine(game, "drawables.json");
+                t.Check(DrawableRoundTrip.Run(new[] { "--game", game, "--out", roundtrip }) == 0, "roundtrip exits 0 when every eligible drawable is identical");
+                System.Web.Script.Serialization.JavaScriptSerializer json = new System.Web.Script.Serialization.JavaScriptSerializer();
+                Dictionary<string, object> r = json.Deserialize<Dictionary<string, object>>(File.ReadAllText(roundtrip));
+                Dictionary<string, object> orders = (Dictionary<string, object>)r["identicalByOrder"];
+                t.Check(Convert.ToInt32(r["eligible"]) == 3 && Convert.ToInt32(r["multiGeometry"]) == 2 && Convert.ToInt32(r["failed"]) == 0, "roundtrip report: 3 eligible, 2 multi-geometry, none failed");
+                t.Check(Convert.ToInt32(orders["Interleaved"]) == 1 && Convert.ToInt32(orders["VerticesFirst"]) == 1 && Convert.ToInt32(orders["both (one buffer pair)"]) == 1,
+                    "roundtrip report: each order found once, the single-geometry file under both", string.Join(",", orders.Select(p => p.Key + "=" + p.Value).ToArray()));
+                t.Check(DrawableRoundTrip.Run(new[] { "--game", game, "pc/models/cdimages/missing.img" }) == 1, "an archive that cannot be read proves nothing: exit 1");
+
+                t.Check(Probe.Run(new[] { "drawables", "--game", game, "--out", probe }) == 0, "probe drawables exits 0");
+                Dictionary<string, object> d = json.Deserialize<Dictionary<string, object>>(File.ReadAllText(probe));
+                Dictionary<string, object> templates = (Dictionary<string, object>)d["structureTemplates"];
+                t.Check(templates.ContainsKey("slots 0123, geometries 2/2/2/2, shaders gta_default") &&
+                    ((System.Collections.ArrayList)templates["slots 0123, geometries 2/2/2/2, shaders gta_default"]).Contains("pc/models/cdimages/test.img/bbb_lods"),
+                    "probe lists the four-LOD drawable as a structure template by shape", string.Join(" | ", templates.Keys.ToArray()));
+                Dictionary<string, object> order = (Dictionary<string, object>)d["graphicsOrderMultiGeometry"];
+                t.Check(Convert.ToInt32(order["Interleaved"]) == 1 && Convert.ToInt32(order["VerticesFirst"]) == 1, "probe classifies each file's buffer order");
+                Dictionary<string, object> records = (Dictionary<string, object>)d["boundsRecordsMultiGeometry"];
+                t.Check(records.Keys.SequenceEqual(new[] { "geometries + 1" }), "probe measures the sphere records of multi-geometry models", string.Join(",", records.Keys.ToArray()));
+                t.Check(Convert.ToInt32(((Dictionary<string, object>)d["structureWriterEligibility"])["eligible"]) == 3, "probe counts drawables the structure writer can use");
+            }
+            finally { try { Directory.Delete(game, true); } catch (IOException) { } }
+        }
+
         internal static bool SameMesh(Mesh a, Mesh b)
         {
             if (a.Vertices.Count != b.Vertices.Count || !a.Indices.SequenceEqual(b.Indices)) { return false; }

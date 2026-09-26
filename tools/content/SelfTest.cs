@@ -78,6 +78,7 @@ namespace LibertyFramework.Content
                 Group("structure bounds records", StructureSelfTest.BoundsRecords),
                 Group("structure trimming", StructureSelfTest.Trimming),
                 Group("structure compiler", StructureSelfTest.Compiler),
+                Group("structure commands", StructureSelfTest.Commands),
                 Group("sample asset", Sample),
                 Group("probes", Probes),
             };
