@@ -2,11 +2,11 @@ using System.Runtime.InteropServices;
 
 namespace LibertyFramework.Engine.Core
 {
-    // Field-for-field mirror of native/LibertyCore/include/liberty_core.h (ABI version 4). CoreBridge checks the sizes
+    // Field-for-field mirror of native/LibertyCore/include/liberty_core.h (ABI version 5). CoreBridge checks the sizes
     // against the native lc_snapshot.size before reading anything.
     internal static class CoreAbi
     {
-        internal const uint Version = 4;
+        internal const uint Version = 5;
         internal const int MaxPeds = 128;
         internal const int MaxVehicles = 64;
         internal const int MaxEvents = 256;
@@ -140,27 +140,61 @@ namespace LibertyFramework.Engine.Core
         internal float ToX, ToY, ToZ;
     }
 
+    // Raycast (ABI 5, ADR-0008). Blittable: passed by reference without marshalling copies.
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    internal struct LcRay
+    internal unsafe struct LcRay
     {
+        internal const int MaxIgnore = 4;
+        internal const uint AcceptWorld = 0x1, AcceptPeds = 0x2, AcceptVehicles = 0x4, AcceptObjects = 0x8, AcceptAll = 0xF;
+        internal const uint IncludeAll = 0xFFFFFFFFu;
+        internal const uint FlagResearch = 0x1;
+        internal const int Clear = 0, Hit = 1, Unavailable = -1, Inconclusive = -2;
+        internal const int EntityNone = 0, EntityPed = 1, EntityVehicle = 2, EntityObject = 3;
+
+        internal uint Size;
+        internal uint HitSize;
         internal float StartX, StartY, StartZ;
         internal float EndX, EndY, EndZ;
         internal uint IncludeFlags;
         internal int Mode;
-        internal int IgnoreHandle;
-        internal int IgnoreKind;
+        internal uint Accept;
+        internal int MaxPasses;
+        internal float PassStep;
+        internal int IgnoreCount;
+        internal fixed int IgnoreKind[MaxIgnore];
+        internal fixed int IgnoreHandle[MaxIgnore];
+        internal uint Flags;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    internal struct LcRayHit
+    internal unsafe struct LcRayHit
     {
+        internal const int RawWords = 24;
         internal float X, Y, Z;
         internal float NormalX, NormalY, NormalZ;
+        internal float Distance;
         internal int EntityKind;
         internal int EntityHandle;
         internal int Link;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 24)] internal uint[] Raw;
+        internal int Tests;
+        internal int Passes;
+        internal fixed uint Raw[RawWords];
     }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    internal struct LcRayStats
+    {
+        internal uint Queries;
+        internal uint Tests;
+        internal uint Hits;
+        internal uint Clears;
+        internal uint Passes;
+        internal uint Inconclusive;
+        internal uint Faults;
+        internal uint FaultNumber;
+        internal int Installed;
+    }
+
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     internal struct LcDamage
     {

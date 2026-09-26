@@ -21,6 +21,7 @@ $sources = @(
     (Join-Path $src 'Core\Memory\GameAddresses.cs')
     (Join-Path $src 'Core\Config\JsonStore.cs')
     (Join-Path $src 'Engine\ModuleReloader.cs')
+    (Join-Path $src 'Engine\EngineConfig.cs')
     (Join-Path $src 'Core\Math3\Vec3.cs')
     (Join-Path $src 'GameApi\WeaponInfoXml.cs')
     (Join-Path $src 'DevTools\Teleport\LocationFile.cs')

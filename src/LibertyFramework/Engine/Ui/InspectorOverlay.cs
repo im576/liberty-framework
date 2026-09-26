@@ -47,12 +47,14 @@ namespace LibertyFramework.Engine.Ui
             lastRefreshMs = nowMs;
             MemoryProbe.Sample memory = engine.Watchdog.Memory;
             LcPools pools = engine.World.Pools;
+            LcRayStats rays = engine.Core.RaycastStats();
             string[] header =
             {
                 "Liberty engine " + LibertyEngine.Version + "  sdk " + SdkVersion.Text + "  frame " + engine.Frame + "  episode " + engine.Episode +
                     "  core " + (engine.UsingCore ? "on" : "off"),
                 "frame " + engine.Perf.FrameMs.ToString("0.0") + " ms  p95 " + engine.Perf.FrameP95Ms.ToString("0.0") + " ms  pressure " +
-                    engine.Perf.Pressure.ToString("0.00") + "  core " + engine.World.CoreMicroseconds.ToString("0") + " us",
+                    engine.Perf.Pressure.ToString("0.00") + "  core " + engine.World.CoreMicroseconds.ToString("0") + " us  rays " +
+                    (engine.Query.RaycastAvailable ? rays.Queries + " (" + rays.Tests + " tests)" : "off"),
                 "address free " + (memory.AddressSpaceFreeBytes >> 20) + " MB (largest " + (memory.LargestFreeBlockBytes >> 20) + ")  managed " +
                     (engine.Perf.ManagedHeapBytes >> 20) + " MB  private " + (memory.PrivateBytes >> 20) + " MB",
                 "peds " + engine.World.Peds.Count + "/" + pools.PedsUsed + "  vehicles " + engine.World.Vehicles.Count + "/" + pools.VehiclesUsed +

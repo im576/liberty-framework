@@ -51,6 +51,17 @@ namespace Liberty.Autopilot
             float ground = liberty.Query.GroundZ(liberty.World.Player.Position + new Vec3(0, 0, 2));
             Check("query-ground", ground != 0 && Math.Abs(ground - liberty.World.Player.Position.Z) < 3f, "ground=" + ground.ToString("0.00") + " water=" + liberty.Query.WaterHeight(liberty.World.Player.Position, out water) + " " + water.ToString("0.00"));
 
+            // SDK 1.1 raycast (ADR-0008): the ground below, open air above.
+            RayIgnore self = RayIgnore.Of(player);
+            Check("raycast-available", liberty.Query.RaycastAvailable, null);
+            Vec3 chest = liberty.World.Player.Position;
+            RayHit down = liberty.Query.Raycast(chest + new Vec3(0, 0, 0.5f), chest - new Vec3(0, 0, 10f), RayMask.All, self);
+            Check("raycast-ground", down.IsHit && down.Kind == RayEntityKind.World && Math.Abs(down.Position.Z - ground) < 0.5f && down.Normal.Z > 0.7f,
+                down + " normal=" + down.Normal + " ground_z=" + ground.ToString("0.00"));
+            RayHit up = liberty.Query.Raycast(chest + new Vec3(0, 0, 1f), chest + new Vec3(0, 0, 3f), RayMask.All, self);
+            Check("raycast-clear", up.Status == RayStatus.Clear, up.ToString());
+            Check("raycast-invalid", Throws<ArgumentException>(() => liberty.Query.Raycast(chest, chest, RayMask.All)), "from == to is refused");
+
             // Capabilities: this module did not declare memory.patch or engine.internal, so both must be refused.
             Check("capability-memory", Refused(() => liberty.Memory.FindNative(0x62E319C6)), "IMemory refused without memory.patch");
             Check("capability-natives", Refused(() => liberty.Natives.CallInt(owner, "GET_PLAYER_ID")), "INatives refused without engine.internal");
@@ -126,6 +137,16 @@ namespace Liberty.Autopilot
                 bool inCone = liberty.Query.NearestPedInCone(liberty.World.Player.Position, liberty.Peds.GetPosition(ped) - liberty.World.Player.Position, 20f, 15f, null, out coned);
                 Check("query-cone", inCone && coned.Ped == ped, "found=" + coned.Ped.Handle);
                 Check("query-onscreen", liberty.Query.IsSphereVisible(liberty.Peds.GetPosition(ped), 1f), "on_screen=" + liberty.Query.IsOnScreen(ped));
+
+                // Raycast to the ped: it stops the ray; with peds left out of the mask the ray passes through it.
+                Vec3 from = liberty.World.Player.Position, to = liberty.Peds.GetPosition(ped);
+                RayHit atPed = liberty.Query.Raycast(from, to + (to - from).Normalized * 2f, RayMask.All, RayIgnore.Of(player));
+                Check("raycast-ped", atPed.IsHit && atPed.Kind == RayEntityKind.Ped && atPed.Ped == ped, atPed.ToString());
+                RayHit pastPed = liberty.Query.Raycast(from, to, RayMask.World | RayMask.Vehicles | RayMask.Objects, RayIgnore.Of(player));
+                Check("raycast-pass-through", pastPed.Status == RayStatus.Clear && pastPed.PassedThrough >= 1, pastPed + " passed=" + pastPed.PassedThrough + " tests=" + pastPed.Tests);
+                RayHit ignored = liberty.Query.Raycast(from, to, RayMask.All, RayIgnore.Of(player).And(ped));
+                Check("raycast-ignore", ignored.Status == RayStatus.Clear, ignored.ToString());
+                Check("line-of-sight-ped", liberty.Query.HasLineOfSight(player, ped) && liberty.Query.HasLineOfSight(ped, player), null);
                 liberty.Tasks.HandsUp(ped, 2000);
                 yield return Wait.Milliseconds(500);
                 liberty.Peds.Delete(ped);
@@ -146,6 +167,16 @@ namespace Liberty.Autopilot
                 Check("vehicle-engine", liberty.Vehicles.GetEngineHealth(car) > 0, "engine=" + liberty.Vehicles.GetEngineHealth(car) + " body=" + liberty.Vehicles.GetHealth(car));
                 Vec3 nose = liberty.Vehicles.GetOffsetPosition(car, new Vec3(0, 2, 0));
                 Check("vehicle-offset", nose.DistanceTo(liberty.Vehicles.GetPosition(car)) > 1.5f, "nose=" + nose);
+
+                // Raycast across the car (vehicle space X = its right): it stops a ray at door height, and blocks a line of
+                // sight unless vehicles are left out of the blockers.
+                yield return Wait.FramesCount(3);
+                Vec3 left = liberty.Vehicles.GetOffsetPosition(car, new Vec3(-3f, 0, 0)), right = liberty.Vehicles.GetOffsetPosition(car, new Vec3(3f, 0, 0));
+                RayHit atCar = liberty.Query.Raycast(left, right, RayMask.All, RayIgnore.Of(player));
+                Check("raycast-vehicle", atCar.IsHit && atCar.Kind == RayEntityKind.Vehicle && atCar.Vehicle == car, atCar + " normal=" + atCar.Normal);
+                bool blocked = !liberty.Query.HasLineOfSight(left, right, RayMask.World | RayMask.Vehicles, RayIgnore.Of(player));
+                RayHit throughCar = liberty.Query.Raycast(left, right, RayMask.World, RayIgnore.Of(player));
+                Check("line-of-sight-vehicle", blocked && throughCar.Status == RayStatus.Clear, "blocked=" + blocked + " world_only=" + throughCar + " passed=" + throughCar.PassedThrough);
                 liberty.Vehicles.OpenDoor(car, VehicleDoor.Trunk);
                 yield return Wait.Milliseconds(600);
                 liberty.Vehicles.CloseDoor(car, VehicleDoor.Trunk);
@@ -230,7 +261,14 @@ namespace Liberty.Autopilot
         private void OnVehicleAppeared(VehicleAppeared e) { if (e.Vehicle == watchedCar) { vehicleAppeared = true; } }
         private void OnVehicleRemoved(VehicleRemoved e) { if (e.Vehicle == watchedCar) { vehicleRemoved = true; } }
 
-        private bool Refused(Action action)
+        private bool Throws<T>(Action action) where T : Exception
+        {
+            try { action(); return false; }
+            catch (T) { return true; }
+            catch (Exception error) { liberty.Log.Error(owner, "selftest unexpected " + error.GetType().Name + ": " + error.Message); return false; }
+        }
+
+                private bool Refused(Action action)
         {
             try { action(); return false; }
             catch (UnauthorizedAccessException) { return true; }
