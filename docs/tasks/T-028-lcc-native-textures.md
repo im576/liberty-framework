@@ -71,7 +71,7 @@ Steps 1–2 are read only and safe while GTA IV runs. Step 3 needs the game clos
    `./tools/package-phase2.ps1 -GameDirectory '<GTAIV folder>' -ScriptHookDotNetReference '<ScriptHookDotNet.asi>'`
    (it runs the self-test, then builds all four content assets), then
    `./tools/install-phase2.ps1 -GameDirectory '<GTAIV folder>'`.
-   In `staging/phase2/_work/content/lf_native_crate/report.json` expect `"status": "ok"`, `"textureMode": "native"`,
+   In `staging/phase2-reports/content/lf_native_crate/report.json` expect `"status": "ok"`, `"textureMode": "native"`,
    `"textureFormat": "DXT1"`, `"textureLevels": 7`; for `lf_alpha_panel` expect `"textureFormat": "DXT5"`,
    `"textureLevels": 6` and a `textureQuality` with `psnrAlphaDb`. Also open `lf_alpha_panel_texture.png` in that folder:
    a dark frame, a red diagonal and a checker of translucent blue/white cells.

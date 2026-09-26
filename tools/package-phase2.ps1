@@ -163,6 +163,18 @@ $stagedDat = Join-Path $work 'default.dat'
 [IO.File]::WriteAllLines($stagedDat, $datLines, (New-Object Text.ASCIIEncoding))
 Stage-File $stagedDat 'update\common\data\default.dat' 'replace'
 
+# Keep the content compiler's reports and previews (JSON and PNG of this repository's own assets; never the compiled
+# .wdr/.wtd, which are built on game templates) for review and for tools/verify-local.ps1: _work is deleted below.
+$reports = Join-Path $repoRoot 'staging\phase2-reports'
+if (Test-Path -LiteralPath $reports) { Remove-Item -LiteralPath $reports -Recurse -Force }
+if (Test-Path -LiteralPath (Join-Path $work 'content')) {
+    foreach ($report in Get-ChildItem -LiteralPath (Join-Path $work 'content') -Recurse -File | Where-Object { $_.Extension -in '.json', '.png' }) {
+        $relative = $report.FullName.Substring((Join-Path $work 'content').Length).TrimStart('\', '/')
+        $target = Join-Path (Join-Path $reports 'content') $relative
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $target) | Out-Null
+        Copy-Item -LiteralPath $report.FullName -Destination $target
+    }
+}
 Remove-Item -LiteralPath $work -Recurse -Force
 
 $manifest = [ordered]@{
