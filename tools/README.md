@@ -1,5 +1,23 @@
 # Build and deployment tooling
 
+## Cloud build container (Claude Code on the web)
+
+Cloud sessions have no game and no Windows, but they build and test everything that needs neither.
+
+- **Setup:** `.claude/hooks/session-start.sh` runs `tools/cloud/setup.sh` at session start. It installs mono, PowerShell 7,
+  the pinned Roslyn and llvm-mingw, the hash-pinned ScriptHookDotNet compile reference (outside the repository, never
+  committed) and Blender 5.2.2 as the `bpy` Python module, then writes `tools/toolchains.local.json`. Idempotent; a step
+  it cannot finish is listed in `/opt/liberty-toolchains/setup-status.txt` and never fails the session.
+- **Tests:** `tools/cloud/test-all.sh` runs every offline check and prints a PASS / FAIL / NOT-RUN table:
+  C# build, native core and its unit tests, content compiler and self-test, `verify.ps1 -NoGame`, Blender manifest
+  validation, Blender headless tests with `--no-game`, the PowerShell unit tests and the local check queue.
+- **Differences from the PC, on purpose:** .NET programs run under Mono; native unit tests run as 32-bit host programs
+  (`clang++ -m32`) because the game-target `.exe` cannot run; `verify.ps1 -NoGame` reports the sections that read
+  `GTAIV.exe` or game archives, and the section that executes x86 hook code, as NOT-RUN; the Blender tests export and
+  validate instead of building (builds need the game's template archives). Everything NOT-RUN here is covered on the
+  PC by `tools/verify-local.ps1` (see `docs/workflow/CLOUD_LOCAL_LOOP.md`).
+
+
 ## Performance capture (T-026)
 
 With GTA IV running and a save loaded, open **PowerShell as Administrator** and run `./tools/capture-performance.ps1 -Label baseline-street -Seconds 120` from the repository root. The script uses the portable PresentMon CLI staged at `D:\GTAIV-Reborn-Tools\downloads\PresentMon-2.6.0-x64.exe` and writes a timestamped CSV under `D:\GTAIV-Reborn-Tools\captures`. Use `-PresentMonPath` and `-OutputDirectory` to override those locations. See [T-026](../docs/tasks/T-026-performance-visual-baseline.md) for the complete test sequence.
