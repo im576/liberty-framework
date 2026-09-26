@@ -463,8 +463,8 @@ function Invoke-VerifyLocal([hashtable] $Options) {
     $checks = @(Select-Checks $queue $Options.Only $Options.Kinds ([bool]$Options.Smoke) ([bool]$Options.IncludePassedManual))
     if ($checks.Count -eq 0) { throw 'no checks selected' }
 
-    $commit = (& git -C $repo rev-parse --short HEAD 2>$null)
-    $branch = (& git -C $repo rev-parse --abbrev-ref HEAD 2>$null)
+    $commit = Invoke-Command { $ErrorActionPreference = 'Continue'; & git -C $repo rev-parse --short HEAD 2>$null }
+    $branch = Invoke-Command { $ErrorActionPreference = 'Continue'; & git -C $repo rev-parse --abbrev-ref HEAD 2>$null }
     $runId = (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + $commit
     $results = if ($Options.Resume) { (Resolve-Path -LiteralPath $Options.Resume).Path } else { Join-Path $Options.ResultsRoot $runId }
     New-Item -ItemType Directory -Force -Path $results | Out-Null

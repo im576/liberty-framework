@@ -18,6 +18,16 @@ Cloud sessions have no game and no Windows, but they build and test everything t
   PC by `tools/verify-local.ps1` (see `docs/workflow/CLOUD_LOCAL_LOOP.md`).
 
 
+## Local verification on the PC (`tools/verify-local.ps1`, T-029)
+
+With GTA IV closed, on branch `develop`: `./tools/verify-local.ps1 -Smoke -GameDirectory '<GTAIV folder>'` the first
+time, then `./tools/verify-local.ps1`. It runs every check in `tests/local/checks.json` (builds, the full verifier,
+probes, package and install with a backup, autopilot scenarios, then the manual checks it asks you about), keeps or
+restores the install, and pushes the results to the `verification-results` branch. Settings are remembered in the
+git-ignored `tools/verify-local.settings.json`; results stay in `results-local/`. Options, order and the review
+procedure: [CLOUD_LOCAL_LOOP.md](../docs/workflow/CLOUD_LOCAL_LOOP.md). The plan for the owner:
+[LOCAL_VERIFICATION_PLAN.md](../docs/testing/LOCAL_VERIFICATION_PLAN.md).
+
 ## Performance capture (T-026)
 
 With GTA IV running and a save loaded, open **PowerShell as Administrator** and run `./tools/capture-performance.ps1 -Label baseline-street -Seconds 120` from the repository root. The script uses the portable PresentMon CLI staged at `D:\GTAIV-Reborn-Tools\downloads\PresentMon-2.6.0-x64.exe` and writes a timestamped CSV under `D:\GTAIV-Reborn-Tools\captures`. Use `-PresentMonPath` and `-OutputDirectory` to override those locations. See [T-026](../docs/tasks/T-026-performance-visual-baseline.md) for the complete test sequence.

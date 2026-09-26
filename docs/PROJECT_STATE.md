@@ -5,6 +5,13 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
+**Owner remote: cloud development loop (2026-09-26, Claude, [T-029](tasks/T-029-cloud-local-loop.md)): NEEDS-PLAYTEST.**
+- **How work goes now:** cloud sessions build on `develop`; the owner's PC runs `tools/verify-local.ps1` and pushes results to `verification-results`; a review session processes them ([workflow](workflow/CLOUD_LOCAL_LOOP.md), [next sessions](workflow/NEXT_SESSIONS.md)).
+- **Queue:** 44 checks in `tests/local/checks.json` cover every NEEDS-PLAYTEST task (T-007 to T-028) plus SDK regressions and two research probes; [plan](testing/LOCAL_VERIFICATION_PLAN.md). First step at the PC: `verify-local.ps1 -Smoke`.
+- **Cloud offline results (session 1):** C# build (SDK, engine, mods), native core + 13 unit tests, content self-test 178/178, verifier 144 passed / 7 NOT-RUN (need game files or Windows), Blender manifest + 19 tests passed / 9 NOT-RUN (builds need the game), 88 PowerShell tests, queue valid.
+- **Integrated:** raycast/LOS (T-027) and native textures (renumbered T-028) merged; both still NEEDS-PLAYTEST.
+- **Fixed on the way:** autopilot false passes (suite matched "PASS" anywhere; stale and command-echo `expect` matches; crash on the last step passed), the verifier's single try/catch hiding later sections, `package-phase2.ps1` deleting the content reports the T-028 steps read.
+
 **Engine raycast / line of sight, SDK 1.1 (2026-09-26, Claude, [T-027](tasks/T-027-engine-raycast.md), [ADR-0008](architecture/decisions/ADR-0008-engine-raycast.md)):**
 - **Research** ([Raycast.md](research/Raycast.md)): the game's line test `0xA536B0` on the physics world; the spike verified ground and ped hits and the hit-entity link `[instance+0x0C]`.
 - **Built:** core ABI 5 (`lc_raycast` with kind filtering by pass-through, 4 ignored entities, fault → off; unit test 13/13), SDK 1.1 `Query.Raycast` / `HasLineOfSight` (points and peds), `engine.json` raycast fields, `lf ray`/`raystats`, self-test checks, scenario `raycast`.

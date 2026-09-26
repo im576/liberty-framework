@@ -37,7 +37,16 @@ Those projects are GPL-3.0 and are not copied (AGENTS.md rule 7). This table tra
 | **M3 WorldQuery** | snapshot queries (radius/cone of peds and vehicles), ground/water, perception and visibility; engine raycast/line of sight | layer 1 done (`Liberty.Query`, self-test); layer 2 raycast built (ADR-0008, SDK 1.1: `Raycast`, `HasLineOfSight`; ground and peds verified by the spike), autopilot `raycast` + self-test pending on the installed build (T-027) |
 | **M4 Content pipeline 1** | glTF → IR → validators → WDR/WTD (single page) → IMG; read-back verification; preview renders; Blender add-on v0; autopilot asset scenario | **Done 2026-09-25** (`docs/content/README.md`): the glTF test crate compiles, reads back identical, spawns and renders correctly in game (`asset-review`) |
 | **M5 Developer loop** | per-module hot reload (dev), visual inspector | **Done 2026-09-26**: `hot-reload` scenario (the autopilot reloads itself and its self-test passes 38/38), `inspector-review` |
-| **M6 Content pipeline 2+** | skinned meshes, LODs, collision bounds, multi-page resources, WDD/WFT, animations | per-format scenarios |
+| **M6 Content pipeline 2** | native texture dictionaries (T-028, built), then multiple materials/geometries, real LOD0-LOD3, collision, static world objects | per-format round trips against the game's own files, plus scenarios |
+| **Later (deferred)** | skinned meshes (WDD), fragments (WFT), vehicles, animations (WAD), audio | not started; never block mod work |
+
+## Development plan while the owner is remote (from 2026-09-26)
+
+Cloud sessions build; the owner's PC verifies with `tools/verify-local.ps1` ([workflow](../workflow/CLOUD_LOCAL_LOOP.md)).
+Order and prerequisites: [NEXT_SESSIONS.md](../workflow/NEXT_SESSIONS.md). In short: engine audit -> content authoring side
+-> multi-geometry/LOD writer -> collision -> static world objects -> SDK features the mod pack design asks for.
+Completed foundation: M1, M2, M4, M5; M3 layer 1. Built, awaiting local verification: raycast/LOS (T-027), native
+textures (T-028), the verification loop itself (T-029).
 
 ## SDK 1.0 freeze criteria
 

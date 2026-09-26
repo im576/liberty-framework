@@ -126,3 +126,17 @@ otherwise 8 MB pages with no texture straddling a page.
 **Rotation convention of `ATTACH_OBJECT_TO_PED` (through SHDN `AttachToPed`):** unknown. SHDN forwards the values to native code; the units (degrees or radians) and the Euler order are not visible.
 
 The straps avoid the question by attaching with zero offset and zero rotation. The holster controller logs `holster_frame` once per placement: the prop's origin and axes in the bone's frame, from `GetOffsetPosition` and the engine's `CopyBoneMatrix`. The next playtest log settles the convention. After that, the weapon placements can be computed offline against Niko's body.
+
+## Open questions for the multi-geometry / LOD writer (queued: `PROBE-drawables`)
+The reader walks all four LOD slots and every model's geometries, but the builder and the round-trip self-test only
+cover drawables with one model, one geometry and one shader. Before a writer emits more, `PROBE-drawables`
+(`LibertyContent probe drawables`) reports, across every model archive of the owner's game:
+- how many drawables use several geometries, several shaders, and LOD slots 1-3, and whether the reader parses them all;
+- whether geometries map to shaders one to one, whether each has its own vertex buffer, and whether their vertex and
+  index data sit back to back in geometry order;
+- the LOD distances (+0x50) for used and unused slots, and the RSC sizes and flag layouts involved (multi-page resources);
+- up to 25 sample drawables with per-geometry counts, layouts and data offsets (numbers and names only).
+
+The per-model bounding spheres at model +0x0C are one per geometry or one per model plus one: not established, and the
+probe does not guess. The writer session decides from the probe report which of these to reproduce and extends the
+round-trip self-test to multi-geometry and multi-LOD drawables, which is the proof that the writer is right.

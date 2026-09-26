@@ -1,6 +1,8 @@
 # Task queue for agents
 
-**Current assignment:** Phase 1 (T-010) plus the Arsenal run (T-011, T-013, T-014, T-016, T-017, T-020, T-021) is installed in the game and awaits one owner playtest ([checklist](../testing/PHASE1_PLAYTEST.md)). T-000–T-003 are DONE; T-007's carbine/shotgun IDs 59/60 were confirmed by the owner (logs show both selected). The project owner alone marks a tested card `DONE`.
+**Owner remote (from 2026-09-26):** development continues in cloud sessions; every check that needs the game is queued in `tests/local/checks.json` and run by `tools/verify-local.ps1` when the PC is available ([workflow](../workflow/CLOUD_LOCAL_LOOP.md), [plan](../testing/LOCAL_VERIFICATION_PLAN.md), [next sessions](../workflow/NEXT_SESSIONS.md)).
+
+**Current assignment (before the owner went remote):** Phase 1 (T-010) plus the Arsenal run (T-011, T-013, T-014, T-016, T-017, T-020, T-021) is installed in the game and awaits one owner playtest ([checklist](../testing/PHASE1_PLAYTEST.md)). T-000–T-003 are DONE; T-007's carbine/shotgun IDs 59/60 were confirmed by the owner (logs show both selected). The project owner alone marks a tested card `DONE`.
 
 Statuses: `READY` = agent can start; `NEEDS-PLAYTEST` = agent implementation awaits human test; `BLOCKED` = named dependency missing; `DONE` = human verified. Track each task's scope and evidence separately, and update [PROJECT_STATE.md](../PROJECT_STATE.md).
 
@@ -31,6 +33,7 @@ Batch compatible offline work and combine human checks into one gameplay session
 | T-026 | [Performance and visual baseline](T-026-performance-visual-baseline.md) | current installed stack | NEEDS-PLAYTEST (capture setup ready; owner frame traces pending) |
 | T-027 | [Engine raycast and line of sight (SDK 1.1)](T-027-engine-raycast.md) | ADR-0006 core, raycast spike 13ff3c2 | NEEDS-PLAYTEST (autopilot `raycast` + `sdk-selftest` on the installed build) |
 | T-028 | [Content compiler v2: native texture dictionaries](T-028-lcc-native-textures.md) | M4 content compiler v1 | NEEDS-PLAYTEST |
+| T-029 | [Cloud development loop and local verification](T-029-cloud-local-loop.md) | none | NEEDS-PLAYTEST (first `verify-local.ps1 -Smoke` run) |
 
 **Arsenal run (2026-09-24):** two Codex agents work in separate worktrees/branches (`arsenal/core` = Agent A, `arsenal/feel` = Agent B) against the shared contracts in `src/LibertyFramework/Arsenal/Contracts`; the orchestrator merges, reviews, packages and installs. T-012 (DevTools completeness) is deferred by the owner.
 

@@ -40,6 +40,9 @@ param(
 # for the next cloud session. Workflow: docs/workflow/CLOUD_LOCAL_LOOP.md. Plan: docs/testing/LOCAL_VERIFICATION_PLAN.md.
 $ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
+# git reports progress and failures on stderr; with 'Stop', Windows PowerShell 5.1 would turn that into a terminating
+# error even when it is redirected. Output is returned; stderr is dropped; $LASTEXITCODE tells the result.
+function Invoke-Git { $ErrorActionPreference = 'Continue'; & git @args 2>$null }
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'local') 'VerifyLocal.psm1') -Force
 if (-not $QueuePath) { $QueuePath = Join-Path (Join-Path $repo 'tests') (Join-Path 'local' 'checks.json') }
 
@@ -87,9 +90,9 @@ if (-not $ScriptHookDotNetReference) { $ScriptHookDotNetReference = Join-Path $G
 if (-not (Test-Path -LiteralPath $ScriptHookDotNetReference)) { $problems += "ScriptHookDotNet reference not found: $ScriptHookDotNetReference" }
 if (-not (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'toolchains.local.json'))) { $problems += 'toolchains missing: run ./tools/get-toolchains.ps1 -Directory <folder outside the repository>' }
 if ($Blender -and -not (Test-Path -LiteralPath $Blender)) { $problems += "Blender not found: $Blender (fix or remove it in tools/verify-local.settings.json)" }
-$current = (& git -C $repo rev-parse --abbrev-ref HEAD)
+$current = (Invoke-Git -C $repo rev-parse --abbrev-ref HEAD)
 if ($current -ne $Branch -and -not $AnyBranch) { $problems += "on branch '$current', expected '$Branch' (git checkout $Branch; git pull; or pass -AnyBranch)" }
-$dirty = @(& git -C $repo status --porcelain --untracked-files=no)
+$dirty = @(Invoke-Git -C $repo status --porcelain --untracked-files=no)
 if ($dirty.Count -gt 0) { $problems += "the working tree has uncommitted changes (git status); commit or stash them first" }
 foreach ($drive in @((Split-Path -Qualifier $repo), (Split-Path -Qualifier (Resolve-Path -LiteralPath $GameDirectory).Path)) | Select-Object -Unique) {
     $free = (Get-PSDrive -Name $drive.TrimEnd(':') -ErrorAction SilentlyContinue).Free
@@ -100,8 +103,8 @@ if ($problems.Count -gt 0) {
     $problems | ForEach-Object { Write-Host "  - $_" }
     exit 1
 }
-& git -C $repo fetch -q origin $Branch 2>$null
-$behind = (& git -C $repo rev-list --count "HEAD..origin/$Branch" 2>$null)
+Invoke-Git -C $repo fetch -q origin $Branch | Out-Null
+$behind = (Invoke-Git -C $repo rev-list --count "HEAD..origin/$Branch")
 if ($behind -and [int]$behind -gt 0) { Write-Host "Note: $Branch is $behind commit(s) behind origin/$Branch. Stop with Ctrl+C and run 'git pull' to test the newest code." }
 
 $saved = [ordered]@{ gameDirectory = $GameDirectory; blender = $Blender; lvsDirectory = $LvsDirectory }

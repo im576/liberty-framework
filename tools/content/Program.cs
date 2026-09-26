@@ -32,6 +32,7 @@ namespace LibertyFramework.Content
                 if (args.Length >= 3 && args[0] == "templates") { return Templates(args[1], args[2]); }
                 if (args.Length >= 1 && args[0] == "selftest") { return SelfTest.Run(args.Skip(1).ToArray()); }
                 if (args.Length >= 2 && args[0] == "wtdcheck") { return TextureDictionaryCheck.Run(args.Skip(1).ToArray()); }
+                if (args.Length >= 1 && args[0] == "probe") { return Probe.Run(args.Skip(1).ToArray()); }
                 Console.WriteLine("usage: LibertyContent sample <dir> <name> | validate <asset.json> | build <game> <asset.json> <out> |");
                 Console.WriteLine("       package <game> <out> <img> <ide> <asset.json...> | templates <game> <archive> |");
                 Console.WriteLine("       selftest [--out <dir>] | wtdcheck [--game <dir>] <file.wtd|folder|archive.img...>");

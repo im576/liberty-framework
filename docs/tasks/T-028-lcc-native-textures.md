@@ -60,7 +60,7 @@ No gameplay code, native or memory access changes. Vanilla is untouched: the new
 Steps 1–2 are read only and safe while GTA IV runs. Step 3 needs the game closed.
 
 1. **Build and self-test.** From the repository root: `./tools/build-content.ps1`, then
-   `./tools/content/bin/LibertyContent.exe selftest`. Expect `selftest: ok passed=168 failed=0`.
+   `./tools/content/bin/LibertyContent.exe selftest`. Expect `selftest: ok passed=N failed=0` (178 checks since Session 1 added the probe tests).
 2. **Compare the writer with the game's dictionaries.** Run
    `./tools/content/bin/LibertyContent.exe wtdcheck --game '<GTAIV folder>' pc/models/cdimages/weapons.img`.
    Archive paths are relative to the game folder. To include loose dictionaries, also pass the full path of a folder of

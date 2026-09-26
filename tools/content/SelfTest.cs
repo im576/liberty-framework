@@ -68,6 +68,7 @@ namespace LibertyFramework.Content
                 Group("validator", Validator),
                 Group("manifest", Manifest),
                 Group("sample asset", Sample),
+                Group("probes", Probes),
             };
             foreach (KeyValuePair<string, Action<Runner, string>> group in groups)
             {
@@ -80,6 +81,52 @@ namespace LibertyFramework.Content
             foreach (string failure in runner.Failures) { Console.WriteLine("  FAIL " + failure); }
             Console.WriteLine("selftest: " + (runner.Failures.Count == 0 ? "ok" : "FAILED") + " passed=" + runner.Passed + " failed=" + runner.Failures.Count);
             return runner.Failures.Count == 0 ? 0 : 1;
+        }
+
+        // The research probes on a fake game folder: an unencrypted IMG with a bounds-like resource, a corrupt drawable and
+        // a texture, this project's own archive (skipped) and an RPF (counted, not opened). Real drawables need the game's
+        // files, so the drawable statistics themselves are proven on the PC (check PROBE-drawables).
+        private static void Probes(Runner t, string output)
+        {
+            string game = Path.Combine(Path.GetTempPath(), "liberty-probe-" + Guid.NewGuid().ToString("N").Substring(0, 8));
+            try
+            {
+                Directory.CreateDirectory(Path.Combine(game, "pc", "models", "cdimages"));
+                Directory.CreateDirectory(Path.Combine(game, "update", "LibertyFramework"));
+                File.WriteAllBytes(Path.Combine(game, "GTAIV.exe"), new byte[64]);
+                byte[] body = new byte[256];
+                BitConverter.GetBytes(0x00ABCDEFu).CopyTo(body, 0);
+                RscResource bounds = new RscResource();
+                bounds.Type = 32;
+                bounds.Flags = 1;
+                bounds.Body = body;
+                List<KeyValuePair<string, byte[]>> files = new List<KeyValuePair<string, byte[]>>
+                {
+                    new KeyValuePair<string, byte[]>("test_bounds.wbn", bounds.Serialize()),
+                    new KeyValuePair<string, byte[]>("broken.wdr", new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 }),
+                    new KeyValuePair<string, byte[]>("plain.wtd", new byte[] { 9, 9, 9, 9 }),
+                };
+                ImgArchive.Write(Path.Combine(game, "pc", "models", "cdimages", "test.img"), files);
+                ImgArchive.Write(Path.Combine(game, "update", "LibertyFramework", "LibertyContent.img"), files);
+                File.WriteAllBytes(Path.Combine(game, "pc", "sounds.rpf"), new byte[16]);
+                string drawables = Path.Combine(game, "drawables.json"), collision = Path.Combine(game, "collision.json");
+                t.Check(Probe.Run(new[] { "drawables", "--game", game, "--out", drawables }) == 0, "drawables probe exits 0");
+                t.Check(Probe.Run(new[] { "collision", "--game", game, "--out", collision }) == 0, "collision probe exits 0");
+                t.Check(Probe.Run(new[] { "drawables", "--game", Path.Combine(game, "missing"), "--out", drawables }) == 1, "missing GTAIV.exe fails");
+                t.Check(Probe.Run(new[] { "nothing", "--game", game, "--out", drawables }) == 2, "unknown probe is a usage error");
+                System.Web.Script.Serialization.JavaScriptSerializer json = new System.Web.Script.Serialization.JavaScriptSerializer();
+                Dictionary<string, object> d = json.Deserialize<Dictionary<string, object>>(File.ReadAllText(drawables));
+                Dictionary<string, object> c = json.Deserialize<Dictionary<string, object>>(File.ReadAllText(collision));
+                t.Check(Convert.ToInt32(d["drawables"]) == 1 && Convert.ToInt32(d["failed"]) == 1, "a corrupt drawable is counted as failed, not skipped", d["drawables"] + "/" + d["failed"]);
+                t.Check(((Dictionary<string, object>)d["archives"]).ContainsKey("pc/models/cdimages/test.img"), "the game archive is scanned");
+                string skipped = string.Join(";", ((System.Collections.ArrayList)d["skipped"]).Cast<object>().Select(o => o.ToString()).ToArray());
+                t.Check(skipped.Contains("update/LibertyFramework/LibertyContent.img") && skipped.Contains("pc/sounds.rpf"), "own archives and RPFs are listed as skipped", skipped);
+                Dictionary<string, object> headers = (Dictionary<string, object>)c["collisionHeaders"];
+                t.Check(headers.Keys.Any(k => k.StartsWith(".wbn rsc type 32")), "bounds resource header summarised", string.Join(",", headers.Keys.ToArray()));
+                t.Check(((Dictionary<string, object>)c["collisionRootWords"]).ContainsKey(".wbn root word 0x00ABCDEF"), "root word recorded");
+                t.Check(d.ContainsKey("rule") && c.ContainsKey("rule"), "reports state the structure-only rule");
+            }
+            finally { try { Directory.Delete(game, true); } catch (IOException) { } }
         }
 
         private static KeyValuePair<string, Action<Runner, string>> Group(string name, Action<Runner, string> body)

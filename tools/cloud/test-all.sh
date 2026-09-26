@@ -13,6 +13,8 @@ TOOLCHAINS="${LIBERTY_TOOLCHAINS:-/opt/liberty-toolchains}"
 RECORD="$REPO/tools/toolchains.local.json"
 mkdir -p "$LOGS"
 cd "$REPO" || exit 1
+# PowerShell 7 colours its errors; plain text keeps the logs and the summary readable.
+export NO_COLOR=1
 
 declare -a NAMES STATUSES DETAILS
 record() { NAMES+=("$1"); STATUSES+=("$2"); DETAILS+=("$3"); printf '%-8s %s  %s\n' "$2" "$1" "$3"; }
@@ -25,7 +27,7 @@ run() {
     "$@" >"$logfile" 2>&1
     local code=$?
     local summary
-    summary="$(grep -E "$pattern" "$logfile" | tail -1 | tr -s ' ' | cut -c1-120)"
+    summary="$(sed 's/\x1b\[[0-9;]*m//g' "$logfile" | grep -E "$pattern" | tail -1 | tr -s ' ' | cut -c1-120)"
     if [ $code -eq 0 ]; then record "$name" PASS "$summary"; else record "$name" FAIL "exit $code; ${summary:-see $logfile}"; fi
     return $code
 }
@@ -43,7 +45,7 @@ BLENDER_PY="$(toolchain blenderPython)"
 
 # 1. C#: SDK, engine, SDK mods (warnings are errors).
 if have && [ -f "$SHDN" ]; then
-    run "C# build (SDK, engine, mods)" build.log '^Built|failed' pwsh -NoProfile -File tools/build.ps1 -ScriptHookDotNetReference "$SHDN"
+    run "C# build (SDK, engine, mods)" build.log 'error CS|^Built|failed' pwsh -NoProfile -File tools/build.ps1 -ScriptHookDotNetReference "$SHDN"
     csharp=$?
 else
     record "C# build (SDK, engine, mods)" NOT-RUN "toolchain missing (mono/pwsh/roslyn/ScriptHookDotNet reference)"; csharp=1
