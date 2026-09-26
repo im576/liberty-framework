@@ -13,10 +13,22 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 if ($NoGame) { $exe = '--no-game' }
 elseif ($GameDirectory) { $exe = Join-Path (Resolve-Path -LiteralPath $GameDirectory).Path 'GTAIV.exe' }
 else { throw 'Pass -GameDirectory <GTAIV folder>, or -NoGame for the repository-only checks' }
-# Windows uses the framework's own compiler, as before; elsewhere the Roslyn toolchain under Mono.
-$compiler = if (Test-LibertyWindows) { Join-Path $env:WINDIR 'Microsoft.NET\Framework\v4.0.30319\csc.exe' } else { Join-Path (Get-LibertyToolchain 'roslyn') 'csc.exe' }
-$output = Join-Path $repoRoot 'tools\verify\bin\OfflineVerify.exe'
+# The pinned Roslyn (C# 7.3) on every platform, the same compiler and language level as tools/build.ps1: one toolchain
+# for the repository, so code the build accepts is code the verifier accepts.
+$compiler = Join-Path (Get-LibertyToolchain 'roslyn') 'csc.exe'
+if (-not (Test-Path -LiteralPath $compiler)) { throw "C# compiler not found: $compiler (run tools/get-toolchains.ps1)" }
+$binDirectory = Join-Path $repoRoot 'tools\verify\bin'
+$output = Join-Path $binDirectory 'OfflineVerify.exe'
 $src = Join-Path $repoRoot 'src\LibertyFramework'
+New-Item -ItemType Directory -Force -Path $binDirectory | Out-Null
+
+# The verifier's own copy of the SDK (engine logic under test is compiled against it; the SDK lets OfflineVerify see its
+# internals, as it does the engine). Built here so the verifier never depends on an earlier tools/build.ps1 run.
+$sdkRoot = Join-Path $repoRoot 'sdk\Liberty.Sdk'
+$sdkDll = Join-Path $binDirectory 'Liberty.Sdk.dll'
+$sdkSources = @(Get-ChildItem -LiteralPath $sdkRoot -Recurse -Filter '*.cs' | Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } | Sort-Object FullName | ForEach-Object { $_.FullName })
+Invoke-LibertyManaged $compiler /nologo /target:library /platform:anycpu /langversion:7.3 /warn:4 /warnaserror+ /nowarn:1591 "/out:$sdkDll" /reference:System.Core.dll $sdkSources
+if ($LASTEXITCODE -ne 0) { throw "Liberty.Sdk (verifier copy) failed to compile (exit $LASTEXITCODE)" }
 
 # Only sources without ScriptHookDotNet dependencies may be listed here.
 $sources = @(
@@ -42,13 +54,16 @@ $sources = @(
     (Join-Path $src 'CombatEffects\CombatEffectsConfig.cs')
     (Join-Path $src 'GameApi\SkeletonCollapseEngine.cs')
     (Join-Path $src 'GameApi\DirectNatives.cs')
+    # Engine plumbing without ScriptHookDotNet: event bus, scheduler, resource ledger, command registry (engine audit).
+    (Join-Path $src 'Core\Config\LibertyPaths.cs')
+    (Join-Path $src 'Engine\Events\EventBus.cs')
+    (Join-Path $src 'Engine\Scheduling\Scheduler.cs')
+    (Join-Path $src 'Engine\ResourceLedger.cs')
+    (Join-Path $src 'Engine\Services\CommandRegistry.cs')
     # Any folder named Logic holds ScriptHookDotNet-free code that the verifier can test (T-020/T-021 onward).
     (Get-ChildItem -LiteralPath $src -Recurse -Directory -Filter 'Logic' | ForEach-Object { (Get-ChildItem -LiteralPath $_.FullName -Filter '*.cs').FullName })
 )
-New-Item -ItemType Directory -Force -Path (Split-Path -Parent $output) | Out-Null
-# The framework compiler is C# 5; pin the same language level elsewhere so a cloud build cannot accept newer syntax.
-$language = @(if (-not (Test-LibertyWindows)) { '/langversion:5' })
-Invoke-LibertyManaged $compiler /nologo /target:exe /platform:x86 /warn:4 @language "/out:$output" /reference:System.Runtime.Serialization.dll /reference:System.Xml.dll /reference:System.Drawing.dll /reference:System.Core.dll $sources
+Invoke-LibertyManaged $compiler /nologo /target:exe /platform:x86 /langversion:7.3 /warn:4 "/out:$output" "/reference:$sdkDll" /reference:System.Runtime.Serialization.dll /reference:System.Xml.dll /reference:System.Drawing.dll /reference:System.Core.dll $sources
 if ($LASTEXITCODE -ne 0) { throw "Verifier build failed with exit code $LASTEXITCODE" }
 Invoke-LibertyManaged $output $exe $repoRoot
 if ($LASTEXITCODE -ne 0) { throw "Offline verification failed (exit $LASTEXITCODE)" }

@@ -27,6 +27,7 @@ namespace LibertyFramework.Engine.Services
 
         public void FreezeTime(LibertyModule owner, bool frozen)
         {
+            engine.RequireOwner(owner);
             if (frozen)
             {
                 if (!clockFreezers.Add(owner)) { return; }
@@ -43,6 +44,7 @@ namespace LibertyFramework.Engine.Services
 
         public void ForceWeather(LibertyModule owner, int weather)
         {
+            engine.RequireOwner(owner);
             if (weatherOwner != null && weatherOwner != owner) { engine.Ledger.Forget(weatherOwner, "weather", 0); }
             Function.Call("FORCE_WEATHER_NOW", weather);
             Function.Call("FORCE_WEATHER", weather);
@@ -57,6 +59,7 @@ namespace LibertyFramework.Engine.Services
 
         public void SetDensity(LibertyModule owner, float peds, float vehicles)
         {
+            engine.RequireOwner(owner);
             if (!density.ContainsKey(owner)) { engine.Ledger.Add(owner, "density", 0, () => { density.Remove(owner); lastApplyMs = 0; }); }
             density[owner] = new[] { Math.Max(0f, peds), Math.Max(0f, vehicles) };
             lastApplyMs = 0;

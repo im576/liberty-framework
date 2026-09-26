@@ -21,6 +21,7 @@ namespace LibertyFramework.Verify
             check.NoGame = exe == "--no-game";
 
             Game(check, "Engine address resolution", delegate { AddressChecks.Run(exe, check); });
+            Section(check, "Native names used by the DLL are listed (repository)", delegate { NativeChecks.RunListed(repo, check); });
             Game(check, "Native names used by the DLL", delegate { NativeChecks.Run(exe, repo, check); });
             Game(check, "Core native table (ADR-0006)", delegate { EngineChecks.Run(exe, repo, check); });
             Section(check, "Gunplay logic and configuration", delegate { LogicChecks.Run(repo, check); });
@@ -32,6 +33,7 @@ namespace LibertyFramework.Verify
             WindowsOnly(check, "Dismemberment collapse engine machine code (ADR-0005)", delegate { CollapseEngineChecks.Run(check); });
             Section(check, "Atmosphere: weather director and density governor (M-2, E-5)", delegate { AtmosphereChecks.Run(repo, check); });
             Section(check, "Hot reload file watcher (M5)", delegate { HotReloadChecks.Run(check); });
+            Section(check, "Engine plumbing: scheduler, events, ledger, commands, manifests (engine audit)", delegate { EnginePlumbingChecks.Run(check); });
             Section(check, "Engine configuration (engine.json, ADR-0008 raycast fields)", delegate { EngineConfigChecks.Run(repo, check); });
 
             Console.WriteLine("RESULT passed=" + check.Passed + " failed=" + check.Failed + (check.NotRun > 0 ? " notrun=" + check.NotRun : ""));

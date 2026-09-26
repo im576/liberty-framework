@@ -53,6 +53,7 @@ namespace LibertyFramework.Engine.Services
 
         public void ShowHelp(LibertyModule owner, string text, int durationMs)
         {
+            engine.RequireOwner(owner);
             lock (gate) { help = new TimedText { Text = text, Owner = owner, UntilMs = durationMs > 0 ? Environment.TickCount + durationMs : int.MaxValue }; }
         }
 
@@ -89,6 +90,7 @@ namespace LibertyFramework.Engine.Services
 
         private IMenu Open(LibertyModule owner, IMenu view, bool lockControl)
         {
+            engine.RequireOwner(owner);
             menus.Add(view);
             engine.Input.CaptureForUi(owner, view, lockControl);
             engine.Ledger.Add(owner, "menu", view.GetHashCode(), () => view.Close());
@@ -112,6 +114,7 @@ namespace LibertyFramework.Engine.Services
         // DISPLAY_HUD / DISPLAY_RADAR persist until changed; the HUD returns when the last hiding module stops.
         public void SetHudVisible(LibertyModule owner, bool visible)
         {
+            engine.RequireOwner(owner);
             if (!visible)
             {
                 if (!hudHiders.Add(owner)) { return; }
@@ -139,10 +142,13 @@ namespace LibertyFramework.Engine.Services
                     (input.Left ? " left" : "") + (input.Right ? " right" : "") + (input.Accept ? " accept" : "") + (input.Back ? " back" : "") + (input.X ? " x" : "") +
                     (input.Y ? " y" : "") + (input.PreviousTab ? " lb" : "") + (input.NextTab ? " rb" : ""));
             }
+            // Menu callbacks (items, labels, select, adjust, close) are the owner's code: they run as that module, and one
+            // that throws stops the module. Its menus then close through the ledger, so a broken menu can never stay open
+            // with the player's controls locked.
             ListMenuView list = top as ListMenuView;
-            if (list != null) { list.Update(input); return; }
+            if (list != null) { engine.RunAs(list.Owner, () => list.Update(input)); return; }
             RadialMenuView radial = top as RadialMenuView;
-            if (radial != null) { radial.Update(input); }
+            if (radial != null) { engine.RunAs(radial.Owner, () => radial.Update(input)); }
         }
 
         // Draw pass: modules' canvases first, then menus, help, notifications and subtitles on top.

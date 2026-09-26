@@ -22,6 +22,7 @@ namespace LibertyFramework.Engine.Services
 
         public void Spawn(LibertyModule owner, ModelRef model, Vec3 position, Action<PropRef> onReady)
         {
+            engine.RequireOwner(owner);
             engine.Scheduler.Start(owner, "spawn-prop", SpawnRoutine(owner, model, position, onReady));
         }
 
@@ -41,6 +42,7 @@ namespace LibertyFramework.Engine.Services
 
         public PropRef TryCreate(LibertyModule owner, ModelRef model, Vec3 position)
         {
+            engine.RequireOwner(owner);
             if (!engine.Streaming.RequestModel(owner, model)) { return PropRef.None; }
             GTA.Object created = GTA.World.CreateObject(new Model(model.Hash), Handles.V(position));
             if (created == null || !created.Exists()) { return PropRef.None; }

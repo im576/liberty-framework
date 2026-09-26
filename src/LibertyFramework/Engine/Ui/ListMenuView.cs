@@ -36,6 +36,7 @@ namespace LibertyFramework.Engine.Ui
         }
 
         internal LibertyModule Owner { get; private set; }
+        private bool labelFailureLogged;
         public bool IsOpen { get; private set; }
         public int Selected { get; set; }
 
@@ -75,7 +76,12 @@ namespace LibertyFramework.Engine.Ui
             for (int i = 0; i < count; i++)
             {
                 try { s.Labels[i] = items[i].Label != null ? items[i].Label() : ""; }
-                catch (Exception error) { s.Labels[i] = "?"; RuntimeLog.Error("[" + Owner.Id + "] ui_label_failed error=" + error.Message); }
+                catch (Exception error)
+                {
+                    // Tolerated (the row shows "?"), and logged once per menu: this runs every frame.
+                    s.Labels[i] = "?";
+                    if (!labelFailureLogged) { labelFailureLogged = true; RuntimeLog.Error("[" + Owner.Id + "] ui_label_failed row=" + i + " error=" + error); }
+                }
                 s.Enabled[i] = items[i].Enabled == null || items[i].Enabled();
             }
             s.Selected = Selected;

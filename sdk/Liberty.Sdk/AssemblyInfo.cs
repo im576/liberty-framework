@@ -8,3 +8,5 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyFileVersion("1.1.0.0")]
 // Only the engine may drive module lifecycles and install itself as the host.
 [assembly: InternalsVisibleTo("LibertyFramework.net")]
+// The offline verifier (tools/verify) tests engine plumbing (event bus, scheduler, ledger, commands) against the SDK.
+[assembly: InternalsVisibleTo("OfflineVerify")]

@@ -26,18 +26,21 @@ namespace LibertyFramework.Engine.Services
 
         public FxRef Start(LibertyModule owner, string effect, Vec3 position, Vec3 rotation, float scale)
         {
+            engine.RequireOwner(owner);
             if (string.IsNullOrEmpty(effect) || scale <= 0) { return FxRef.None; }
             return Own(owner, Function.Call<int>("START_PTFX", effect, position.X, position.Y, position.Z, rotation.X, rotation.Y, rotation.Z, scale));
         }
 
         public FxRef StartOnPed(LibertyModule owner, string effect, PedRef ped, Bone bone, Vec3 offset, float scale)
         {
+            engine.RequireOwner(owner);
             if (string.IsNullOrEmpty(effect) || scale <= 0) { return FxRef.None; }
             return Own(owner, Function.Call<int>("START_PTFX_ON_PED_BONE", effect, ped.Handle, offset.X, offset.Y, offset.Z, 0f, 0f, 0f, (int)bone, scale));
         }
 
         public FxRef StartOnVehicle(LibertyModule owner, string effect, VehicleRef vehicle, Vec3 offset, float scale)
         {
+            engine.RequireOwner(owner);
             if (string.IsNullOrEmpty(effect) || scale <= 0) { return FxRef.None; }
             return Own(owner, Function.Call<int>("START_PTFX_ON_VEH", effect, vehicle.Handle, offset.X, offset.Y, offset.Z, 0f, 0f, 0f, scale));
         }

@@ -19,6 +19,7 @@ namespace LibertyFramework.Engine.Services
 
         public CameraRef Create(LibertyModule owner)
         {
+            engine.RequireOwner(owner);
             Camera camera = new Camera();
             int handle = camera.GetHashCode();
             if (handle == 0) { RuntimeLog.Error("[" + owner.Id + "] camera_create_failed"); return CameraRef.None; }

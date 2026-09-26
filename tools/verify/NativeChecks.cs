@@ -22,14 +22,7 @@ namespace LibertyFramework.Verify
                 string[] parts = line.Split(',');
                 known[parts[0]] = uint.Parse(parts[1].Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             }
-            SortedSet<string> names = new SortedSet<string>();
-            foreach (string file in Directory.GetFiles(Path.Combine(repoRoot, Path.Combine("src", "LibertyFramework")), "*.cs", SearchOption.AllDirectories))
-            {
-                foreach (Match match in Regex.Matches(File.ReadAllText(file), "(?:Function\\.Call(?:<[^>]+>)?|NativeCall\\.\\w+)\\(\"([A-Z0-9_]+)\""))
-                {
-                    names.Add(match.Groups[1].Value);
-                }
-            }
+            SortedSet<string> names = ReferencedNames(repoRoot);
             check.True("natives referenced by the DLL found", names.Count >= 15, "count=" + names.Count);
             foreach (string name in names)
             {
@@ -61,6 +54,44 @@ namespace LibertyFramework.Verify
                 check.True("ScriptHook.dll maps " + name + " to its CE hash", HasPair(table, nameHash, ceHash),
                     "name_hash=0x" + nameHash.ToString("X8") + " ce_hash=0x" + ceHash.ToString("X8"));
             }
+        }
+
+        // Native names the DLL calls: literal first arguments of Function.Call / NativeCall.*, plus every name literal in a
+        // "string native = ...;" declaration (a name chosen at run time, e.g. TASK_PLAY_ANIM or its _UPPER_BODY variant).
+        internal static SortedSet<string> ReferencedNames(string repoRoot)
+        {
+            SortedSet<string> names = new SortedSet<string>();
+            foreach (string file in Directory.GetFiles(Path.Combine(repoRoot, Path.Combine("src", "LibertyFramework")), "*.cs", SearchOption.AllDirectories))
+            {
+                string text = File.ReadAllText(file);
+                foreach (Match match in Regex.Matches(text, "(?:Function\\.Call(?:<[^>]+>)?|NativeCall\\.\\w+)\\(\"([A-Z0-9_]+)\""))
+                {
+                    names.Add(match.Groups[1].Value);
+                }
+                foreach (Match declaration in Regex.Matches(text, "string native\\s*=([^;]+);"))
+                {
+                    foreach (Match literal in Regex.Matches(declaration.Groups[1].Value, "\"([A-Z0-9_]+)\"")) { names.Add(literal.Groups[1].Value); }
+                }
+            }
+            return names;
+        }
+
+        // Repository only (runs in the cloud): every referenced name has a CE hash in native-hashes.csv. Whether GTAIV.exe
+        // registers that hash is the game section's job.
+        internal static void RunListed(string repoRoot, Checker check)
+        {
+            HashSet<string> known = new HashSet<string>();
+            foreach (string line in File.ReadAllLines(Path.Combine(repoRoot, Path.Combine("docs", Path.Combine("game-api", "native-hashes.csv")))))
+            {
+                if (line.StartsWith("#") || line.Trim().Length == 0) { continue; }
+                known.Add(line.Split(',')[0]);
+            }
+            SortedSet<string> names = ReferencedNames(repoRoot);
+            check.True("native names found in the DLL sources", names.Count >= 15, "count=" + names.Count);
+            List<string> missing = new List<string>();
+            foreach (string name in names) { if (!known.Contains(name)) { missing.Add(name); } }
+            check.True("every native the DLL calls is listed in native-hashes.csv", missing.Count == 0, missing.Count == 0 ? names.Count + " names" : string.Join(",", missing.ToArray()));
+            check.True("the run-time-chosen animation natives are seen by the scan", names.Contains("TASK_PLAY_ANIM_UPPER_BODY") && names.Contains("TASK_PLAY_ANIM_SECONDARY"), "");
         }
 
         private static uint NameHash(string name)

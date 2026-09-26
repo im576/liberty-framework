@@ -150,7 +150,7 @@ namespace Liberty.Autopilot
         private string SpawnProp(string[] args)
         {
             if (args.Length == 0) { return "spawnprop <model>"; }
-            ModelRef model = args[0];
+            ModelRef model = Args.Word(args, 0);
             if (!Liberty.Streaming.IsValidModel(model)) { return "model " + args[0] + " is not in the game's model index"; }
             // InFront returns a point 1 m above the ground; height is measured from the ground.
             Vec3 at = InFront(Args.Float(args, 1, 2.5f), 0) + new Vec3(0, 0, Args.Float(args, 2, 0f) - 1f);
@@ -228,7 +228,7 @@ namespace Liberty.Autopilot
             PedRef ped = Liberty.Player.Ped;
             if (args.Length > 0 && args[0] == "ped")
             {
-                List<PedRef> subject = Targets(args[1]);
+                List<PedRef> subject = Targets(Args.Word(args, 1));
                 if (subject.Count == 0) { return "no subject " + args[1]; }
                 ped = subject[0];
                 args = args.Skip(2).ToArray();

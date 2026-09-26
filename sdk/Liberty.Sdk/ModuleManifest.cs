@@ -6,19 +6,25 @@ namespace Liberty.Sdk
         public string Id { get; internal set; }
         public string Version { get; internal set; }
         public int Order { get; internal set; }
-        public string[] Requires { get; internal set; }
-        public string[] Capabilities { get; internal set; }
+        // Copies: the manifest is readable by every module (IModules.List), and the engine's capability checks read these,
+        // so a caller must not be able to rewrite the arrays in place.
+        public string[] Requires { get { return (string[])requires.Clone(); } internal set { requires = Copy(value); } }
+        public string[] Capabilities { get { return (string[])capabilities.Clone(); } internal set { capabilities = Copy(value); } }
         public string SdkVersion { get; internal set; }
         public string Description { get; internal set; }
         public float BudgetMs { get; internal set; }
         public string Assembly { get; internal set; }
 
+        private string[] requires = new string[0];
+        private string[] capabilities = new string[0];
+
         public bool Has(string capability)
         {
-            if (Capabilities == null) { return false; }
-            foreach (string c in Capabilities) { if (c == capability) { return true; } }
+            foreach (string c in capabilities) { if (c == capability) { return true; } }
             return false;
         }
+
+        private static string[] Copy(string[] value) { return value != null ? (string[])value.Clone() : new string[0]; }
 
         public static ModuleManifest From(ModuleAttribute attribute, string assembly)
         {

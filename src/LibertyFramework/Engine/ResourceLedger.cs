@@ -22,9 +22,11 @@ namespace LibertyFramework.Engine
 
         public int Count { get { return entries.Count; } }
 
+        // An entry without an owner could never be released (nothing stops a null module), so it is refused. Services
+        // check the owner before they change anything (LibertyEngine.RequireOwner); this is the backstop.
         public void Add(LibertyModule owner, string kind, long key, Action release)
         {
-            if (owner == null) { return; }
+            if (owner == null) { throw new ArgumentNullException("owner", "a " + kind + " needs an owning module"); }
             Entry e = new Entry();
             e.Owner = owner; e.Kind = kind; e.Key = key; e.Release = release;
             entries.Add(e);

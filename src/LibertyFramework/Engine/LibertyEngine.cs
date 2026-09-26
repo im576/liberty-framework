@@ -74,6 +74,9 @@ namespace LibertyFramework.Engine
         internal LibertyModule CurrentModule { get; private set; }
 
         private readonly List<ModuleRuntime> runtimes = new List<ModuleRuntime>();
+        // What the draw pass iterates: runtimes can grow on the tick (hot reload) while the render thread draws, so the
+        // draw pass reads a copy published after every change instead of the list itself.
+        private volatile ModuleRuntime[] drawRuntimes = new ModuleRuntime[0];
         private readonly Dictionary<Assembly, string> assemblyPaths = new Dictionary<Assembly, string>();
         private readonly ModuleReloader reloader = new ModuleReloader(LibertyPaths.ModsDirectory);
         private bool hotReloadActive;
@@ -99,7 +102,7 @@ namespace LibertyFramework.Engine
             Events.Enter = m => CurrentModule = m;
             Events.Current = () => CurrentModule;
             Scheduler = new Scheduler(Fail);
-            Commands = new CommandRegistry();
+            Commands = new CommandRegistry(Fail);
             Commands.Enter = m => CurrentModule = m;
             Commands.Current = () => CurrentModule;
             Entities = new EntityService();
@@ -281,6 +284,7 @@ namespace LibertyFramework.Engine
             ModuleRuntime runtime = new ModuleRuntime(module, FirstModulePhase + runtimes.Count, manifest.Has(Capabilities.EngineInternal), source);
             runtime.BudgetMs = manifest.BudgetMs > 0 ? manifest.BudgetMs : Config.ModuleBudgetMs;
             runtimes.Add(runtime);
+            drawRuntimes = runtimes.ToArray();
             if (started)
             {
                 phaseNames[runtime.Phase] = "module." + runtime.Id;
@@ -328,23 +332,23 @@ namespace LibertyFramework.Engine
 
         private void RegisterCommands()
         {
-            Commands.Register(null, "engine", "engine status", args => Status());
-            Commands.Register(null, "modules", "list modules: state, average/max ms, interval, throttles", args => ModulesReport());
-            Commands.Register(null, "perf", "frame time, pressure and memory", args => PerfReport());
-            Commands.Register(null, "costs", "named cost samples since the last call (resets them)", args => CostMeter.ReportAndReset());
-            Commands.Register(null, "pools", "game pool occupancy (peds, vehicles, objects)", args => PoolsReport());
-            Commands.Register(null, "natives", "raw native calls made through the SDK, per module", args => Natives.Report());
-            Commands.Register(null, "hooks", "code hooks the core installed (ADR-0007)", args => core.HooksReport());
-            Commands.Register(null, "owned", "owned <module> - resources a module holds", args => OwnedReport(args));
-            Commands.Register(null, "stop", "stop <module> - stop a module and release everything it owns", args => StopCommand(args));
-            Commands.Register(null, "restart", "restart <module> - stop it (and its dependents), then start fresh instances", args => RestartCommand(args));
-            Commands.Register(null, "reload", "reload <module> - load its mod assembly again and swap every module in it (dev)", args => ReloadCommand(args));
-            Commands.Register(null, "hotreload", "hotreload [on|off] - reload mod assemblies when their file changes (dev)", args => HotReloadCommand(args));
-            Commands.Register(null, "ray", "ray down|up|forward [m] [height m] [mask: all|world,peds,vehicles,objects] - Query.Raycast from the player", args => RayCommand(args));
-            Commands.Register(null, "raystats", "raycast counters (queries, line tests, hits, passes, faults)", args => RayStatsCommand());
-            Commands.Register(null, "raydebug", "raydebug down|up|forward [m] [flags hex] [mode] [height m] - raw first hit of one game line test (research)", args => RayDebugCommand(args));
-            Commands.Register(null, "raybits", "raybits down|up|forward [m] [mode] [height m] - which include bits (0-31) hit, and what (research)", args => RayBitsCommand(args));
-            Commands.Register(null, "inspector", "inspector [on|off] - on-screen engine and module inspector (dev)", args => InspectorCommand(args));
+            Commands.RegisterEngine("engine", "engine status", args => Status());
+            Commands.RegisterEngine("modules", "list modules: state, average/max ms, interval, throttles", args => ModulesReport());
+            Commands.RegisterEngine("perf", "frame time, pressure and memory", args => PerfReport());
+            Commands.RegisterEngine("costs", "named cost samples since the last call (resets them)", args => CostMeter.ReportAndReset());
+            Commands.RegisterEngine("pools", "game pool occupancy (peds, vehicles, objects)", args => PoolsReport());
+            Commands.RegisterEngine("natives", "raw native calls made through the SDK, per module", args => Natives.Report());
+            Commands.RegisterEngine("hooks", "code hooks the core installed (ADR-0007)", args => core.HooksReport());
+            Commands.RegisterEngine("owned", "owned <module> - resources a module holds", args => OwnedReport(args));
+            Commands.RegisterEngine("stop", "stop <module> - stop a module and release everything it owns", args => StopCommand(args));
+            Commands.RegisterEngine("restart", "restart <module> - stop it (and its dependents), then start fresh instances", args => RestartCommand(args));
+            Commands.RegisterEngine("reload", "reload <module> - load its mod assembly again and swap every module in it (dev)", args => ReloadCommand(args));
+            Commands.RegisterEngine("hotreload", "hotreload [on|off] - reload mod assemblies when their file changes (dev)", args => HotReloadCommand(args));
+            Commands.RegisterEngine("ray", "ray down|up|forward [m] [height m] [mask: all|world,peds,vehicles,objects] - Query.Raycast from the player", args => RayCommand(args));
+            Commands.RegisterEngine("raystats", "raycast counters (queries, line tests, hits, passes, faults)", args => RayStatsCommand());
+            Commands.RegisterEngine("raydebug", "raydebug down|up|forward [m] [flags hex] [mode] [height m] - raw first hit of one game line test (research)", args => RayDebugCommand(args));
+            Commands.RegisterEngine("raybits", "raybits down|up|forward [m] [mode] [height m] - which include bits (0-31) hit, and what (research)", args => RayBitsCommand(args));
+            Commands.RegisterEngine("inspector", "inspector [on|off] - on-screen engine and module inspector (dev)", args => InspectorCommand(args));
         }
 
         public string Status()
@@ -400,7 +404,7 @@ namespace LibertyFramework.Engine
             StopModule(m, "restarting", false);
             List<ModuleRuntime> restart = new List<ModuleRuntime> { m };
             restart.AddRange(runtimes.Where(r => r != m && wasRunning.Contains(r) && !r.Module.Running));
-            foreach (ModuleRuntime r in restart) { r.Replace(Instantiate(r.Manifest, r.Module.GetType())); }
+            restart.RemoveAll(r => !TryReplace(r));
             StartInOrder(restart);
             string result = Describe(restart);
             RuntimeLog.Info("engine_module_restarted " + result);
@@ -617,8 +621,7 @@ namespace LibertyFramework.Engine
             foreach (ModuleRuntime m in old.Where(r => !restart.Contains(r))) { m.Module.FailureReason = "not in the reloaded assembly"; }
             foreach (ModuleRuntime m in runtimes.Where(r => wasRunning.Contains(r) && !r.Module.Running && !old.Contains(r)).ToList())
             {
-                m.Replace(Instantiate(m.Manifest, m.Module.GetType()));
-                restart.Add(m);
+                if (TryReplace(m)) { restart.Add(m); }
             }
             StartInOrder(restart);
             string result = Describe(restart);
@@ -636,6 +639,20 @@ namespace LibertyFramework.Engine
             {
                 RuntimeLog.Error("engine_hot_reload_failed error=" + error);
                 hotReloadActive = false;
+            }
+        }
+
+        // A fresh instance of the same type takes over the slot. A constructor that throws leaves the old (stopped) instance
+        // in place with the reason, and the others still restart.
+        private bool TryReplace(ModuleRuntime m)
+        {
+            try { m.Replace(Instantiate(m.Manifest, m.Module.GetType())); return true; }
+            catch (Exception error)
+            {
+                Exception cause = error.InnerException ?? error;
+                m.Module.FailureReason = "construct failed: " + cause.Message;
+                RuntimeLog.Error("engine_module_construct_failed " + m.Id + " error=" + cause);
+                return false;
             }
         }
 
@@ -675,13 +692,31 @@ namespace LibertyFramework.Engine
 
         // ---- capability checks ----
 
+        // Every service call that creates or changes something a module owns names that module. Null is refused before
+        // anything changes: the ledger cannot release what nobody owns (a control lock, a hidden HUD or a memory patch
+        // would outlive every module). Engine code never passes null.
+        internal void RequireOwner(LibertyModule owner)
+        {
+            if (owner == null) { throw new ArgumentNullException("owner", "pass the calling module (this) as owner"); }
+        }
+
         // Throws inside the calling module (which stops it) when it did not declare the capability. EngineInternal
-        // implies every capability. Engine code (owner null) is always allowed.
+        // implies every capability. Both the owner passed in and the module whose code is running (when module code is
+        // running) must hold it, so a module cannot borrow another module's manifest by passing that module as owner.
+        // Mods are full-trust .NET code: this is a guardrail against mistakes, not a sandbox.
         internal void RequireCapability(LibertyModule owner, string capability)
         {
-            if (owner == null || owner.Manifest == null) { return; }
-            if (owner.Manifest.Has(capability) || owner.Manifest.Has(Capabilities.EngineInternal)) { return; }
-            throw new UnauthorizedAccessException("module " + owner.Id + " must declare capability '" + capability + "'");
+            RequireOwner(owner);
+            Allow(owner, capability);
+            LibertyModule caller = CurrentModule;
+            if (caller != null && caller != owner) { Allow(caller, capability); }
+        }
+
+        private static void Allow(LibertyModule module, string capability)
+        {
+            ModuleManifest manifest = module.Manifest;
+            if (manifest != null && (manifest.Has(capability) || manifest.Has(Capabilities.EngineInternal))) { return; }
+            throw new UnauthorizedAccessException("module " + module.Id + " must declare capability '" + capability + "'");
         }
 
         // ---- frame ----
@@ -721,10 +756,14 @@ namespace LibertyFramework.Engine
 
                 try { Input.Poll(); }
                 catch (Exception error) { RuntimeLog.Error("engine_input_failed error=" + error.Message); }
-                ModuleConfig.Poll(Fail);
+                try { ModuleConfig.Poll(RunAs); }
+                catch (Exception error) { RuntimeLog.Error("engine_config_poll_failed error=" + error); }
                 SetPhase(PhaseScheduler);
                 mark = Stopwatch.GetTimestamp();
-                Scheduler.Run(m => CurrentModule = m);
+                // Module errors are routed to Fail inside Run; this keeps an engine bug there from skipping the module updates.
+                try { Scheduler.Run(m => CurrentModule = m); }
+                catch (Exception error) { RuntimeLog.Error("engine_scheduler_failed error=" + error); }
+                finally { CurrentModule = null; }
                 CostMeter.Add("engine.scheduler", mark);
                 UpdateGovernor();
 
@@ -734,6 +773,13 @@ namespace LibertyFramework.Engine
                     ModuleRuntime m = runtimes[i];
                     LibertyModule module = m.Module;
                     if (!module.Running) { continue; }
+                    Exception drawFailure = m.DrawFailure;
+                    if (drawFailure != null)
+                    {
+                        m.DrawFailure = null;
+                        Fail(module, new InvalidOperationException("draw failed: " + drawFailure.Message, drawFailure));
+                        continue;
+                    }
                     if (module.Interval > 0 && unchecked(now - m.LastTickMs) < module.Interval) { continue; }
                     m.LastTickMs = now;
                     SetPhase(m.Phase);
@@ -842,12 +888,12 @@ namespace LibertyFramework.Engine
             drawing = true;
             try
             {
-                foreach (ModuleRuntime m in runtimes)
+                foreach (ModuleRuntime m in drawRuntimes)
                 {
                     Module legacy = m.Module as Module;
-                    if (legacy == null || !legacy.Running) { continue; }
+                    if (legacy == null || !legacy.Running || m.DrawFailure != null) { continue; }
                     try { legacy.RenderLegacy(args); }
-                    catch (Exception error) { RuntimeLog.Error("engine_draw_failed " + m.Id + " error=" + error); }
+                    catch (Exception error) { DrawFailed(m, error); }
                 }
                 Ui.Draw(args, DrawModules);
             }
@@ -857,18 +903,37 @@ namespace LibertyFramework.Engine
 
         private void DrawModules(ICanvas canvas)
         {
-            foreach (ModuleRuntime m in runtimes)
+            foreach (ModuleRuntime m in drawRuntimes)
             {
-                if (!m.Module.Running) { continue; }
+                LibertyModule module = m.Module;
+                if (!module.Running || m.DrawFailure != null) { continue; }
                 canvas.Opacity = 1f;
-                try { m.Module.OnDraw(canvas); }
-                catch (Exception error) { RuntimeLog.Error("engine_canvas_failed " + m.Id + " error=" + error); }
+                try { module.OnDraw(canvas); }
+                catch (Exception error) { DrawFailed(m, error); }
             }
             canvas.Opacity = 1f;
             inspector.Draw(canvas);
         }
 
+        private static void DrawFailed(ModuleRuntime m, Exception error)
+        {
+            if (m.DrawFailure != null) { return; }
+            m.DrawFailure = error;
+            RuntimeLog.Error("engine_draw_failed " + m.Id + " error=" + error);
+        }
+
         // ---- stopping ----
+
+        // Runs module code outside the module's own update (a menu callback, a config reload) as that module: capability
+        // checks and implicit ownership see it, and an exception stops that module alone. False when it threw.
+        internal bool RunAs(LibertyModule module, Action action)
+        {
+            LibertyModule previous = CurrentModule;
+            CurrentModule = module;
+            try { action(); return true; }
+            catch (Exception error) { Fail(module, error); return false; }
+            finally { CurrentModule = previous; }
+        }
 
         internal void Fail(LibertyModule module, Exception error)
         {
