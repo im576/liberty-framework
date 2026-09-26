@@ -77,6 +77,13 @@ Installed files: `scripts/LibertyFramework.net.dll`, `scripts/LibertyFramework/c
   - It launches through Steam and retries the known early startup crash (MTLX.DLL), cleaning up the Rockstar helpers left behind.
   - Screenshots use Steam's F12 capture, because GDI capture is black under Vulkan.
 - **Scenarios:** `./tools/autopilot/Run-Scenario.ps1 -GameDirectory <GTAIV> -Scenario tools/autopilot/scenarios/<name>.txt -OutputDirectory <runs folder>` runs a scenario. Scenario lines are engine commands (`lf help` lists them) plus `wait`, `shot`, `expect` and `key`. Each run writes a `report.md` with every step, screenshots and the run's log.
+- **Results you can trust:** each run also writes `result.json`, and its last output line is `AUTOPILOT_RESULT <path>`.
+  Statuses: PASS, NEEDS-REVIEW (passed, but `[ERROR]` log lines appeared), FAIL, CRASH (the game exited, even after the
+  last step), ERROR (no launch, nothing executed). `expect` only accepts log lines written after the latest command was
+  sent (a line count, not a clock), and never a command's own log line unless the pattern needs its reply. A refused
+  command, a missing screenshot or an unparseable `expect` fails the step. `Run-Suite.ps1` reads each `result.json`,
+  continues after a broken scenario, and exits 1 unless everything passed. The decisions live in
+  `tools/autopilot/AutopilotLogic.psm1` and are tested in the cloud against a simulated game (`tools/tests`).
 
 ## Model pipeline (T-2)
 
