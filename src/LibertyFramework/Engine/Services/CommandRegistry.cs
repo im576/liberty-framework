@@ -36,6 +36,13 @@ namespace LibertyFramework.Engine.Services
         {
             Entry entry = new Entry();
             entry.Owner = owner; entry.Usage = usage; entry.Handler = handler;
+            Entry previous;
+            if (commands.TryGetValue(name, out previous) && previous.Owner != owner)
+            {
+                // Last registration wins (unchanged behaviour); logged because the earlier owner silently loses the command.
+                RuntimeLog.Error("command_replaced name=" + name + " was=" + (previous.Owner != null ? previous.Owner.Id : "engine") +
+                    " now=" + (owner != null ? owner.Id : "engine"));
+            }
             commands[name] = entry;
         }
 
@@ -67,6 +74,7 @@ namespace LibertyFramework.Engine.Services
                 {
                     reply = "error " + error.Message;
                     if (entry.Owner != null) { LibertyEngine.Current.Fail(entry.Owner, error); }
+                    else { RuntimeLog.Error("command_failed name=" + words[0] + " error=" + error); }
                 }
                 finally { Enter(previous); }
             }

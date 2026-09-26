@@ -592,10 +592,14 @@ namespace LibertyFramework.Engine
 
                 try { Input.Poll(); }
                 catch (Exception error) { RuntimeLog.Error("engine_input_failed error=" + error.Message); }
-                ModuleConfig.Poll(Fail);
+                try { ModuleConfig.Poll(Fail); }
+                catch (Exception error) { RuntimeLog.Error("engine_config_poll_failed error=" + error); }
                 SetPhase(PhaseScheduler);
                 mark = Stopwatch.GetTimestamp();
-                Scheduler.Run(m => CurrentModule = m);
+                // Module errors are routed to Fail inside Run; this only keeps an engine bug from skipping the module updates.
+                try { Scheduler.Run(m => CurrentModule = m); }
+                catch (Exception error) { RuntimeLog.Error("engine_scheduler_failed error=" + error); }
+                finally { CurrentModule = null; }
                 CostMeter.Add("engine.scheduler", mark);
                 UpdateGovernor();
 

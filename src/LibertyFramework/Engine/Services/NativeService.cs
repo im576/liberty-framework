@@ -60,6 +60,8 @@ namespace LibertyFramework.Engine.Services
 
         private void Prepare(LibertyModule owner, string name, object[] args, out Parameter[] parameters, out NativeOut[] outs, out Pointer[] pointers)
         {
+            // Null would pass RequireCapability as "engine code" and then fail on owner.Id with a NullReferenceException.
+            if (owner == null) { throw new ArgumentNullException("owner"); }
             engine.RequireCapability(owner, Capabilities.EngineInternal);
             string key = owner.Id + ":" + name;
             int n;

@@ -64,6 +64,9 @@ namespace LibertyFramework.Engine.Services
 
         public bool Patch(LibertyModule owner, uint address, byte[] bytes)
         {
+            // A null owner passes RequireCapability (it means "engine code") and the ledger ignores it, so the patch would be
+            // written, never restored, and the log line below would throw after the write. Refuse before touching memory.
+            if (owner == null) { throw new ArgumentNullException("owner"); }
             engine.RequireCapability(owner, Capabilities.MemoryPatch);
             if (bytes == null || bytes.Length == 0 || !Resolved().Live.IsReadable(address, bytes.Length)) { return false; }
             byte[] original = engine.Memory.Live.Read(address, bytes.Length);

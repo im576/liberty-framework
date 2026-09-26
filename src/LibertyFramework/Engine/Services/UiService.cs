@@ -89,6 +89,8 @@ namespace LibertyFramework.Engine.Services
 
         private IMenu Open(LibertyModule owner, IMenu view, bool lockControl)
         {
+            // Unowned menus would never be closed by the ledger (and their error logs dereference the owner).
+            if (owner == null) { throw new ArgumentNullException("owner"); }
             menus.Add(view);
             engine.Input.CaptureForUi(owner, view, lockControl);
             engine.Ledger.Add(owner, "menu", view.GetHashCode(), () => view.Close());
@@ -112,6 +114,8 @@ namespace LibertyFramework.Engine.Services
         // DISPLAY_HUD / DISPLAY_RADAR persist until changed; the HUD returns when the last hiding module stops.
         public void SetHudVisible(LibertyModule owner, bool visible)
         {
+            // The ledger ignores a null owner: the HUD would stay hidden for the session.
+            if (owner == null) { throw new ArgumentNullException("owner"); }
             if (!visible)
             {
                 if (!hudHiders.Add(owner)) { return; }

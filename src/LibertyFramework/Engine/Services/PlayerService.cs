@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using GTA.Native;
 using Liberty.Sdk;
@@ -50,6 +51,8 @@ namespace LibertyFramework.Engine.Services
 
         public void LockControl(LibertyModule owner)
         {
+            // The ledger ignores a null owner, so the lock could never be released: refuse it.
+            if (owner == null) { throw new ArgumentNullException("owner"); }
             engine.RequireCapability(owner, Capabilities.PlayerControl);
             if (!lockers.Add(owner)) { return; }
             if (lockers.Count == 1) { Function.Call("SET_PLAYER_CONTROL", Index, false); }
@@ -83,6 +86,7 @@ namespace LibertyFramework.Engine.Services
 
         public void SetInvincible(LibertyModule owner, bool on)
         {
+            if (owner == null) { throw new ArgumentNullException("owner"); }
             if (on)
             {
                 if (!invincible.Add(owner)) { return; }

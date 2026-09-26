@@ -60,6 +60,7 @@ namespace LibertyFramework.Engine.Services
 
         public bool Capture(LibertyModule owner)
         {
+            if (owner == null) { throw new System.ArgumentNullException("owner"); }
             engine.RequireCapability(owner, Capabilities.InputCapture);
             if (capturer == owner) { return true; }
             if (capturer != null) { return false; }

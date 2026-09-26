@@ -27,6 +27,8 @@ namespace LibertyFramework.Engine.Services
 
         public void FreezeTime(LibertyModule owner, bool frozen)
         {
+            // Overrides are undone through the ledger, which ignores a null owner: refuse unowned overrides.
+            if (owner == null) { throw new ArgumentNullException("owner"); }
             if (frozen)
             {
                 if (!clockFreezers.Add(owner)) { return; }
@@ -43,6 +45,7 @@ namespace LibertyFramework.Engine.Services
 
         public void ForceWeather(LibertyModule owner, int weather)
         {
+            if (owner == null) { throw new ArgumentNullException("owner"); }
             if (weatherOwner != null && weatherOwner != owner) { engine.Ledger.Forget(weatherOwner, "weather", 0); }
             Function.Call("FORCE_WEATHER_NOW", weather);
             Function.Call("FORCE_WEATHER", weather);
