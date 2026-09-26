@@ -16,6 +16,7 @@ namespace LibertyFramework.Content
     //   validate <asset.json> [--report <report.json>]   import + validate, print issues (exit 2 on errors), optional report
     //   capabilities                                     what this compiler writes, as JSON (the Blender add-on's limits)
     //   fixtures <dir>                                   validate every <dir>/<name>/asset.json against its expect.json
+    //   roundtrip --game <game> [--out <json>] [img...]  rebuild the game's drawables with the structure writer and compare
     //   build <game> <asset.json> <out>                  validate, compile, read back, preview, report
     //   package <game> <out> <img> <ide> <asset.json...> build every asset, then one IMG and its IDE
     //   templates <game> <archive>                       list drawables usable as prop templates
@@ -38,10 +39,12 @@ namespace LibertyFramework.Content
                 if (args.Length >= 1 && args[0] == "selftest") { return SelfTest.Run(args.Skip(1).ToArray()); }
                 if (args.Length >= 2 && args[0] == "wtdcheck") { return TextureDictionaryCheck.Run(args.Skip(1).ToArray()); }
                 if (args.Length >= 1 && args[0] == "probe") { return Probe.Run(args.Skip(1).ToArray()); }
+                if (args.Length >= 1 && args[0] == "roundtrip") { return DrawableRoundTrip.Run(args.Skip(1).ToArray()); }
                 Console.WriteLine("usage: LibertyContent sample <dir> <name> | validate <asset.json> [--report <file>] | capabilities | fixtures <dir> |");
                 Console.WriteLine("       build <game> <asset.json> <out> |");
                 Console.WriteLine("       package <game> <out> <img> <ide> <asset.json...> | templates <game> <archive> |");
-                Console.WriteLine("       selftest [--out <dir>] | wtdcheck [--game <dir>] <file.wtd|folder|archive.img...>");
+                Console.WriteLine("       selftest [--out <dir>] | wtdcheck [--game <dir>] <file.wtd|folder|archive.img...> |");
+                Console.WriteLine("       probe drawables|collision --game <dir> --out <json> | roundtrip --game <dir> [--out <json>] [archive.img...]");
                 return 1;
             }
             catch (Exception error)

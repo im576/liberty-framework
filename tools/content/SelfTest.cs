@@ -74,6 +74,9 @@ namespace LibertyFramework.Content
                 Group("world object rules", AuthoringSelfTest.WorldObjectRules),
                 Group("report structure", AuthoringSelfTest.ReportStructure),
                 Group("fixture matching", AuthoringSelfTest.FixtureMatching),
+                Group("structure round trip", StructureSelfTest.RoundTrip),
+                Group("structure bounds records", StructureSelfTest.BoundsRecords),
+                Group("structure trimming", StructureSelfTest.Trimming),
                 Group("sample asset", Sample),
                 Group("probes", Probes),
             };

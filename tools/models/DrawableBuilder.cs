@@ -79,7 +79,7 @@ namespace LibertyFramework.Models
             return result;
         }
 
-        private static void WriteVertices(byte[] body, int graphicsStart, Mesh mesh, VertexLayout layout)
+        internal static void WriteVertices(byte[] body, int graphicsStart, Mesh mesh, VertexLayout layout)
         {
             int position = layout.OffsetOf(0), normal = layout.OffsetOf(3), colour = layout.OffsetOf(4), uv = layout.OffsetOf(6);
             for (int i = 0; i < mesh.Vertices.Count; i++)
@@ -95,7 +95,7 @@ namespace LibertyFramework.Models
         }
 
         // Rewrites the name in place when it fits the template's slot, otherwise in the system segment's unused tail.
-        private static void RenameTexture(byte[] body, ResourceView view, uint nameSlot, string name)
+        internal static void RenameTexture(byte[] body, ResourceView view, uint nameSlot, string name)
         {
             byte[] text = Encoding.ASCII.GetBytes(name + "\0");
             uint current = BitConverter.ToUInt32(body, view.Offset(nameSlot, 4));
