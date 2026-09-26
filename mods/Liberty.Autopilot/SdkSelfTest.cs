@@ -188,6 +188,27 @@ namespace Liberty.Autopilot
                 bool listed = liberty.World.TryGetVehicle(car, out vs);
                 if (liberty.World.HasVehicles) { Check("vehicle-snapshot", listed && vehicleAppeared, "listed=" + listed + " appeared_event=" + vehicleAppeared); }
                 else { Info("vehicle-snapshot", "core vehicle list not active (vehicle natives not verified yet)"); }
+
+                // The snapshot's driver is read by the core from [vehicle+0xF50] (MEMORY.md; from the GET_DRIVER_OF_CAR worker,
+                // no native call) and Vehicles.GetDriver returns it: a ped told to drive the car must show up as its driver.
+                if (liberty.World.HasVehicles)
+                {
+                    PedRef driver = PedRef.None;
+                    bool driverDone = false;
+                    liberty.Peds.SpawnRandom(owner, liberty.Vehicles.GetOffsetPosition(car, new Vec3(-2.5f, 0, 0)), liberty.World.Player.Heading, p => { driver = p; driverDone = true; });
+                    yield return Wait.Until(() => driverDone, 7000);
+                    if (!driver.IsNone)
+                    {
+                        liberty.Tasks.EnterVehicle(driver, car, -1);
+                        yield return Wait.Until(() => { VehicleState d; return liberty.World.TryGetVehicle(car, out d) && d.Driver == driver; }, 15000);
+                        VehicleState seated;
+                        bool inSnapshot = liberty.World.TryGetVehicle(car, out seated);
+                        Check("vehicle-driver", inSnapshot && seated.Driver == driver && liberty.Vehicles.GetDriver(car) == driver,
+                            "ped=" + driver.Handle + " snapshot_driver=" + (inSnapshot ? seated.Driver.Handle : -1) + " get_driver=" + liberty.Vehicles.GetDriver(car).Handle);
+                        liberty.Peds.Delete(driver);
+                    }
+                    else { Check("vehicle-driver", false, "the driver ped did not spawn"); }
+                }
                 liberty.Vehicles.Delete(car);
                 Check("vehicle-delete", !liberty.Vehicles.Exists(car), null);
                 if (liberty.World.HasVehicles)
