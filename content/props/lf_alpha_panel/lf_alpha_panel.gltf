@@ -1,0 +1,131 @@
+{
+ "asset": {
+  "version": "2.0",
+  "generator": "Liberty Framework content/props/lf_alpha_panel/source/make_lf_alpha_panel.py"
+ },
+ "scene": 0,
+ "scenes": [
+  {
+   "name": "Scene",
+   "nodes": [
+    0
+   ],
+   "extras": {
+    "liberty_asset": "lf_alpha_panel"
+   }
+  }
+ ],
+ "nodes": [
+  {
+   "name": "lf_alpha_panel_lod0",
+   "mesh": 0
+  }
+ ],
+ "meshes": [
+  {
+   "name": "lf_alpha_panel",
+   "primitives": [
+    {
+     "attributes": {
+      "POSITION": 0,
+      "NORMAL": 1,
+      "TEXCOORD_0": 2
+     },
+     "indices": 3,
+     "material": 0
+    }
+   ]
+  }
+ ],
+ "materials": [
+  {
+   "name": "alpha_panel",
+   "alphaMode": "BLEND",
+   "pbrMetallicRoughness": {
+    "baseColorTexture": {
+     "index": 0
+    },
+    "metallicFactor": 0,
+    "roughnessFactor": 0.5
+   },
+   "extras": {
+    "liberty_shader": "gta_default"
+   }
+  }
+ ],
+ "textures": [
+  {
+   "source": 0
+  }
+ ],
+ "images": [
+  {
+   "uri": "lf_alpha_panel_basecolor.png",
+   "name": "lf_alpha_panel_basecolor"
+  }
+ ],
+ "accessors": [
+  {
+   "bufferView": 0,
+   "componentType": 5126,
+   "count": 24,
+   "type": "VEC3",
+   "min": [
+    -0.4,
+    0.0,
+    -0.02
+   ],
+   "max": [
+    0.4,
+    0.8,
+    0.02
+   ]
+  },
+  {
+   "bufferView": 1,
+   "componentType": 5126,
+   "count": 24,
+   "type": "VEC3"
+  },
+  {
+   "bufferView": 2,
+   "componentType": 5126,
+   "count": 24,
+   "type": "VEC2"
+  },
+  {
+   "bufferView": 3,
+   "componentType": 5123,
+   "count": 36,
+   "type": "SCALAR"
+  }
+ ],
+ "bufferViews": [
+  {
+   "buffer": 0,
+   "byteOffset": 0,
+   "byteLength": 288
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 288,
+   "byteLength": 288
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 576,
+   "byteLength": 192
+  },
+  {
+   "buffer": 0,
+   "byteOffset": 768,
+   "byteLength": 72
+  }
+ ],
+ "buffers": [
+  {
+   "uri": "lf_alpha_panel.bin",
+   "byteLength": 840
+  }
+ ]
+}

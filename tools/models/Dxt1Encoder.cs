@@ -29,7 +29,9 @@ namespace LibertyFramework.Models
             return output;
         }
 
-        private static void EncodeBlock(double[][] block, byte[] output, int at)
+        // Also the colour half of a DXT3/DXT5 block (Dxt5Encoder): those always decode in 4-colour mode, and this
+        // encoder only ever writes 4-colour blocks (c0 > c1).
+        internal static void EncodeBlock(double[][] block, byte[] output, int at)
         {
             double[] mean = new double[3];
             foreach (double[] p in block) { for (int c = 0; c < 3; c++) { mean[c] += p[c] / 16; } }

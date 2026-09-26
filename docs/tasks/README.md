@@ -30,6 +30,7 @@ Batch compatible offline work and combine human checks into one gameplay session
 | T-025 | [Physical weapons and gunsmith](T-025-physical-weapons.md) | T-020 | NEEDS-PLAYTEST |
 | T-026 | [Performance and visual baseline](T-026-performance-visual-baseline.md) | current installed stack | NEEDS-PLAYTEST (capture setup ready; owner frame traces pending) |
 | T-027 | [Engine raycast and line of sight (SDK 1.1)](T-027-engine-raycast.md) | ADR-0006 core, raycast spike 13ff3c2 | NEEDS-PLAYTEST (autopilot `raycast` + `sdk-selftest` on the installed build) |
+| T-028 | [Content compiler v2: native texture dictionaries](T-028-lcc-native-textures.md) | M4 content compiler v1 | NEEDS-PLAYTEST |
 
 **Arsenal run (2026-09-24):** two Codex agents work in separate worktrees/branches (`arsenal/core` = Agent A, `arsenal/feel` = Agent B) against the shared contracts in `src/LibertyFramework/Arsenal/Contracts`; the orchestrator merges, reviews, packages and installs. T-012 (DevTools completeness) is deferred by the owner.
 

@@ -40,6 +40,36 @@ The first strap build used Rockstar's placement: 12 pages of 2 KB, with the 21 K
 
 The same mesh with the whole graphics segment in **one** 32 KB page (flags count 1, shift 7) rendered correctly from all sides (autopilot run `sling-review`). The builder therefore writes generated models as a single page. The multi-page placement stays only for the round-trip self-test against Rockstar's files. Why their multi-page buffers work is still open.
 
+## Texture dictionary (.wtd)
+
+**Status (2026-09-26):** the reader's offsets were verified against `w_glock.wtd` (finish pipeline). The writer
+(`tools/content/TextureDictionaryWriter.cs`, [T-028](../tasks/T-028-lcc-native-textures.md)) reproduces the rules below.
+They were matched against `coronas.wtd`, `hud.wtd` and `amb_nailgun.wtd` while it was written. A systematic comparison
+over the game's archives (`LibertyContent wtdcheck`) and the in-game load are still open.
+
+RSC05 type 8. Pointers as for drawables (`0x5…` system, `0x6…` graphics).
+
+| Structure | Offsets |
+|---|---|
+| Dictionary header (0x20) | +0x00 vtable slot (varies between files; fixed up at load), +0x04 block map pointer (+0x20 in every file read), +0x10 hash array pointer, +0x14 u16 count, +0x16 u16 capacity, +0x18 texture pointer array, +0x1C u16 count, +0x1E u16 capacity. +0x08 and +0x0C are copied, not understood |
+| Block map (0x210 at +0x20) | a zero word, then 0xCD fill in every file read |
+| Texture record (0x50) | +0x00 vtable slot, +0x14 name pointer, +0x1C u16 width, +0x1E u16 height, +0x20 format FourCC (`DXT1`/`DXT3`/`DXT5`) or a D3DFORMAT code (21, 22, 50 in HD packs), +0x24 u16 row stride, +0x27 u8 mip levels, +0x48 pixel data pointer (graphics). +0x40 is written as 0 by the writer; `wtdcheck` counts the game's values. The rest is copied |
+| Name | `pack:/<name>.dds`, NUL-terminated |
+
+**Rules the writer relies on:**
+- **Name hash:** Jenkins one-at-a-time over the lower-case name without `pack:/` and `.dds` (`TextureNameHash`).
+- **Order:** the hash array is ascending and the texture pointer array follows the same order.
+- **Row stride (+0x24):** one row of 4×4 blocks divided by 4: 128 for a 256-wide DXT1, 256 for a 256-wide DXT5.
+- **Mip levels:** a full chain stops at the level whose smaller side is 4 pixels (256×256: 7, 128×128: 6, 64×64: 5), or a
+  single level. The levels are stored back to back, largest first.
+- **Flags:** bits 30–31 are set in every file read (meaning unknown; copied).
+- **Texture data alignment:** at least 128 bytes in the files read (`coronas.wtd` puts `imp_car` at 0x5580). The writer
+  uses 256.
+
+**Writer choices, not yet confirmed in game:** records at +0x230, then names, hash array and pointer array (16-byte
+aligned, unused bytes 0xCD); one graphics page when the data fits 8 MB (the choice that fixed generated drawables),
+otherwise 8 MB pages with no texture straddling a page.
+
 ## RPF2 archives (`playerped.rpf`)
 - **Header:** magic `RPF2`, TOC size, entry count, an unused word, then an encrypted flag.
 - **TOC:** located at 0x800 and AES-encrypted with the IMG key.

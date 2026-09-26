@@ -1,0 +1,43 @@
+# LCC v2 native texture dictionaries (T-028): props whose .wtd was written from scratch by TextureDictionaryWriter.
+# lf_native_crate (DXT1, 256x256, 7 levels) stands next to lf_test_crate (the proven template-mode build of the same
+# crate), so the two should look the same. lf_alpha_panel (DXT5, 128x128, 6 levels) stands in front of a crate so its
+# translucent checker cells show whether gta_default draws DXT5 alpha. Its texture covers every face, so it reads the same
+# from both sides. "cam prop 180" looks from the player towards the props (crate behind the panel); angle 0 would put
+# the crate between the camera and the panel, so the rear shot is taken at 40 degrees.
+god on
+wanted 0
+goto east_park
+wait 5000
+time 13 0
+weather 1
+spawnprop lf_test_crate 3.2 0
+expect "autopilot_prop handle=\d+ model=lf_test_crate" 15
+spawnprop lf_native_crate 2.2 0
+expect "autopilot_prop handle=\d+ model=lf_native_crate" 15
+wait 1500
+hud off
+cam prop 0 2.4 0.7
+wait 1500
+shot native_crate_front
+cam prop 120 1.8 1.2
+wait 1500
+shot native_crate_side
+cam off
+clear
+spawnprop lf_test_crate 3.6 0
+expect "autopilot_prop handle=\d+ model=lf_test_crate" 15
+spawnprop lf_alpha_panel 2.5 0
+expect "autopilot_prop handle=\d+ model=lf_alpha_panel" 15
+wait 1500
+cam prop 180 1.6 0.5
+wait 1500
+shot alpha_panel_front
+cam prop 150 1.4 0.9
+wait 1500
+shot alpha_panel_angle
+cam prop 40 1.6 0.8
+wait 1500
+shot alpha_panel_back
+cam off
+hud on
+clear

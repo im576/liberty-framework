@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace LibertyFramework.Content
 {
@@ -17,11 +18,11 @@ namespace LibertyFramework.Content
         }
 
         internal static readonly string[] SupportedShaders = { "gta_default" };
-        internal const int MaxVerticesPerGeometry = 65535;
+        internal const int MaxVerticesPerGeometry = CompilerCapabilities.MaxVerticesPerGeometry;
         internal const float MinExtentMeters = 0.02f, MaxExtentMeters = 200f;
-        internal const int MaxTextureSize = 2048;
+        internal const int MaxTextureSize = TextureEncoder.MaxSizePixels;
 
-        internal static List<Issue> Validate(ContentAsset asset, int maxMaterialsPerLod)
+        internal static List<Issue> Validate(ContentAsset asset, CompilerCapabilities capabilities)
         {
             List<Issue> issues = new List<Issue>();
             if (asset.Meshes.Count == 0) { Add(issues, "error", "LCC001", "no triangle meshes in " + asset.SourcePath); return issues; }
@@ -32,18 +33,13 @@ namespace LibertyFramework.Content
             if (asset.HasSkin) { Add(issues, "warning", "LCC015", "skin (joints/weights) present: this compiler version writes static props; the skin is ignored"); }
 
             float minX = float.MaxValue, minY = float.MaxValue, minZ = float.MaxValue, maxX = float.MinValue, maxY = float.MinValue, maxZ = float.MinValue;
-            Dictionary<int, int> trianglesPerLod = new Dictionary<int, int>();
-            Dictionary<int, HashSet<int>> materialsPerLod = new Dictionary<int, HashSet<int>>();
             foreach (ContentMesh mesh in asset.Meshes)
             {
                 if (mesh.Indices.Count < 3) { Add(issues, "error", "LCC001", "mesh " + mesh.Name + " has no triangles"); continue; }
-                if (mesh.Vertices.Count > MaxVerticesPerGeometry) { Add(issues, "error", "LCC004", "mesh " + mesh.Name + " has " + mesh.Vertices.Count + " vertices (16-bit indices allow " + MaxVerticesPerGeometry + "); split it"); }
                 if (!mesh.HadNormals) { Add(issues, "warning", "LCC003", "mesh " + mesh.Name + " has no normals; smooth normals will be generated"); }
                 ContentMaterial material = mesh.Material >= 0 && mesh.Material < asset.Materials.Count ? asset.Materials[mesh.Material] : null;
                 if (material != null && material.Image >= 0 && !mesh.HadUvs) { Add(issues, "error", "LCC005", "mesh " + mesh.Name + " is textured but has no UVs"); }
                 if (material == null) { Add(issues, "warning", "LCC010", "mesh " + mesh.Name + " has no material; the default white material is used"); }
-                if (!materialsPerLod.ContainsKey(mesh.Lod)) { materialsPerLod[mesh.Lod] = new HashSet<int>(); }
-                materialsPerLod[mesh.Lod].Add(mesh.Material);
                 int degenerate = 0, bad = 0;
                 for (int i = 0; i + 2 < mesh.Indices.Count; i += 3)
                 {
@@ -64,9 +60,6 @@ namespace LibertyFramework.Content
                 }
                 if (nonFinite > 0) { Add(issues, "error", "LCC008", "mesh " + mesh.Name + " has " + nonFinite + " vertices with NaN/infinite values"); }
                 if (unnormalised > 0) { Add(issues, "warning", "LCC009", "mesh " + mesh.Name + " has " + unnormalised + " non-unit normals (renormalised)"); }
-                int triangles;
-                trianglesPerLod.TryGetValue(mesh.Lod, out triangles);
-                trianglesPerLod[mesh.Lod] = triangles + mesh.Indices.Count / 3;
             }
 
             if (minX <= maxX)
@@ -77,7 +70,7 @@ namespace LibertyFramework.Content
                     Add(issues, "warning", "LCC011", "largest extent is " + F(extent) + " m (expected " + MinExtentMeters + "-" + MaxExtentMeters +
                         " m): check the Blender unit scale and that transforms are applied");
                 }
-                float cx = (minX + maxX) / 2, cy = (minY + maxY) / 2, cz = (minZ + maxZ) / 2;
+                float cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
                 float offset = (float)Math.Sqrt(cx * cx + cy * cy);
                 if (offset > Math.Max(0.5f, extent)) { Add(issues, "warning", "LCC012", "the model's centre is " + F(offset) + " m from the origin in X/Y; the pivot (spawn point) is the origin"); }
                 if (maxZ - minZ < 0.25f * Math.Max(maxX - minX, maxY - minY) && Math.Abs(minZ) > extent)
@@ -87,28 +80,12 @@ namespace LibertyFramework.Content
                 Add(issues, "info", "LCC014", "bounds (" + F(minX) + ", " + F(minY) + ", " + F(minZ) + ") .. (" + F(maxX) + ", " + F(maxY) + ", " + F(maxZ) + ")");
             }
 
-            foreach (KeyValuePair<int, HashSet<int>> pair in materialsPerLod)
-            {
-                if (pair.Value.Count > maxMaterialsPerLod)
-                {
-                    Add(issues, "error", "LCC016", "LOD " + pair.Key + " uses " + pair.Value.Count + " materials; this compiler version writes " + maxMaterialsPerLod +
-                        " material per LOD (merge materials or bake an atlas)");
-                }
-            }
-            for (int lod = 1; lod <= 3; lod++)
-            {
-                int current, previous;
-                if (trianglesPerLod.TryGetValue(lod, out current) && trianglesPerLod.TryGetValue(lod - 1, out previous) && current >= previous)
-                {
-                    Add(issues, "warning", "LCC017", "LOD " + lod + " has " + current + " triangles, not fewer than LOD " + (lod - 1) + " (" + previous + ")");
-                }
-            }
-            if (!trianglesPerLod.ContainsKey(0)) { Add(issues, "error", "LCC018", "no LOD 0 mesh"); }
+            ValidateLods(asset, capabilities, issues);
 
             foreach (ContentMaterial material in asset.Materials)
             {
                 if (Array.IndexOf(SupportedShaders, material.Shader) < 0) { Add(issues, "error", "LCC019", "material " + material.Name + " asks for shader '" + material.Shader + "' (supported: " + string.Join(", ", SupportedShaders) + ")"); }
-                if (material.AlphaMode != "OPAQUE") { Add(issues, "warning", "LCC020", "material " + material.Name + " uses alpha mode " + material.AlphaMode + "; gta_default with DXT1 is opaque (1-bit alpha at most)"); }
+                if (material.AlphaMode != "OPAQUE") { Add(issues, "warning", "LCC020", "material " + material.Name + " uses alpha mode " + material.AlphaMode + "; textureMode template writes opaque DXT1, textureMode native writes DXT5 with alpha (whether gta_default draws it translucent is unverified in game)"); }
                 if (material.Image >= 0 && material.Image < asset.Images.Count && asset.Images[material.Image] != null)
                 {
                     System.Drawing.Bitmap image = asset.Images[material.Image];
@@ -118,6 +95,58 @@ namespace LibertyFramework.Content
                 else if (material.Image >= 0) { Add(issues, "error", "LCC023", "material " + material.Name + " references an image that could not be decoded"); }
             }
             return issues;
+        }
+
+        // LOD levels and their material groups (one group = one future geometry): LCC004, LCC016-018, LCC024, LCC025.
+        private static void ValidateLods(ContentAsset asset, CompilerCapabilities capabilities, List<Issue> issues)
+        {
+            Dictionary<int, int> trianglesPerLod = new Dictionary<int, int>();
+            foreach (ContentLod lod in asset.BuildLods())
+            {
+                // Meshes without triangles were reported as LCC001 and are left out of the counts.
+                int triangles = lod.TriangleCount;
+                if (triangles == 0) { continue; }
+                trianglesPerLod[lod.Level] = triangles;
+                if (lod.Level < 0 || lod.Level >= CompilerCapabilities.DrawableLodSlots)
+                {
+                    Add(issues, "error", "LCC024", "LOD " + lod.Level + " is outside 0-" + (CompilerCapabilities.DrawableLodSlots - 1) + " (a drawable has " + CompilerCapabilities.DrawableLodSlots + " LOD slots)");
+                    continue;
+                }
+                int materials = lod.Groups.Count(g => g.TriangleCount > 0);
+                if (materials > capabilities.MaxMaterialsPerLod)
+                {
+                    Add(issues, "error", "LCC016", "LOD " + lod.Level + " uses " + materials + " materials; compiler " + capabilities.Version + " writes " + capabilities.MaxMaterialsPerLod +
+                        " material" + (capabilities.MaxMaterialsPerLod == 1 ? "" : "s") + " per LOD (merge materials or bake an atlas)");
+                }
+                foreach (ContentMaterialGroup group in lod.Groups)
+                {
+                    // v1 merges the whole LOD into one geometry; with one material per LOD that is exactly this group.
+                    if (group.VertexCount > MaxVerticesPerGeometry)
+                    {
+                        Add(issues, "error", "LCC004", "LOD " + lod.Level + " material " + MaterialName(asset, group.Material) + " has " + group.VertexCount + " vertices in one geometry (16-bit indices allow " +
+                            MaxVerticesPerGeometry + "); reduce or split it");
+                    }
+                }
+                if (lod.Level >= capabilities.CompiledLodLevels)
+                {
+                    Add(issues, "info", "LCC025", "LOD " + lod.Level + " (" + triangles + " triangles, " + materials + " material" + (materials == 1 ? "" : "s") + ") is validated but not compiled by compiler " +
+                        capabilities.Version + " (compiles LOD 0" + (capabilities.CompiledLodLevels > 1 ? "-" + (capabilities.CompiledLodLevels - 1) : "") + ")");
+                }
+            }
+            for (int lod = 1; lod < CompilerCapabilities.DrawableLodSlots; lod++)
+            {
+                int current, previous;
+                if (trianglesPerLod.TryGetValue(lod, out current) && trianglesPerLod.TryGetValue(lod - 1, out previous) && current >= previous)
+                {
+                    Add(issues, "warning", "LCC017", "LOD " + lod + " has " + current + " triangles, not fewer than LOD " + (lod - 1) + " (" + previous + ")");
+                }
+            }
+            if (!trianglesPerLod.ContainsKey(0)) { Add(issues, "error", "LCC018", "no LOD 0 mesh"); }
+        }
+
+        private static string MaterialName(ContentAsset asset, int material)
+        {
+            return material >= 0 && material < asset.Materials.Count ? "'" + asset.Materials[material].Name + "'" : "(none)";
         }
 
         internal static bool HasErrors(List<Issue> issues) { return issues.Exists(i => i.Severity == "error"); }

@@ -148,6 +148,10 @@ Keep it short: this is a dashboard, not a diary.
 - 23 headless tests plus extension validation pass on Blender 5.2.2.
 - `content/props/lf_blender_barrel` is made in Blender and renders correctly in game (`asset-review` passes).
 
+**LCC v2, native texture dictionaries (T-028, 2026-09-26): NEEDS-PLAYTEST.**
+- `"textureMode": "native"` writes the `.wtd` from scratch (source size, full mips, DXT1/DXT5 alpha); DXT5 encoder and DXT decoder; byte-exact read-back with PSNR in `report.json`; validator IR/capabilities (LCC024/025); `selftest` (168 offline checks, run by `package-phase2.ps1`) and `wtdcheck`; Blender add-on 0.2.0 Texture mode.
+- Offline only: builds with Roslyn C# 7.3 (warnings as errors) and the self-test passes, both on Linux/Mono. Pending: `wtdcheck` on the game archives, and the `native-texture-review` scenario (`lf_native_crate`, `lf_alpha_panel`).
+
 **M5 developer loop:**
 - Hot reload: `lf reload <module>` swaps a mod assembly in the running game, and `lf restart <module>` restarts one.
 - `hotreload on` watches the mods folder (`engine.json` `hotReload`, off by default; leak cap `hotReloadMaxLeakMegabytes`).

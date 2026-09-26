@@ -192,10 +192,10 @@ def main():
     node_extras = {n["name"]: n.get("extras", {}) for n in document["nodes"]}
     expect(node_extras.get("lf_bt_barrel_far", {}).get("liberty_lod") == 2, "liberty_lod exported as node extras", node_extras)
     scene_extras = document["scenes"][0].get("extras", {})
-    expect(scene_extras.get("liberty_exporter") == "0.1.0" and "liberty_exporter" not in scene.keys(), "scene tags exported and removed again", scene_extras)
+    expect(scene_extras.get("liberty_exporter") == "0.2.0" and "liberty_exporter" not in scene.keys(), "scene tags exported and removed again", scene_extras)
     expect(any(i.get("uri", "").endswith(".png") for i in document.get("images", [])), "texture written as PNG", document.get("images"))
     built = report("lf_bt_barrel")
-    expect(built["lods"] == 3 and built["metadata"].get("liberty_exporter") == "0.1.0", "report: 3 LODs, exporter metadata", built)
+    expect(built["lods"] == 3 and built["metadata"].get("liberty_exporter") == "0.2.0", "report: 3 LODs, exporter metadata", built)
     expect(os.path.isfile(result.preview) and os.path.isfile(result.texture), "previews written", result.preview)
     expect(not any(i["code"] == "LCC017" for i in built["issues"]), "LOD triangle order accepted")
 
@@ -222,6 +222,22 @@ def main():
     built = report("lf_bt_array") if os.path.isfile(os.path.join(BUILD, "lf_bt_array", "report.json")) else {}
     expect(result.status == "ok" and built.get("compiled", {}).get("triangles") == 24, "modifiers applied (24 triangles)", built.get("compiled"))
     obj.modifiers.remove(modifier)
+
+    # 3b. Native texture mode: asset.json carries it; the dictionary is written from scratch at the source size (128x128,
+    # full mip chain to 4 px = 6 levels, opaque -> DXT1) and read back byte for byte with a PSNR measurement.
+    clear_scene()
+    obj = box("lf_bt_native", (-0.25, -0.25, 0.0), (0.25, 0.25, 0.5), material("native", texture("native_basecolor", 128)))
+    select(obj)
+    settings.asset_name = "lf_bt_native"
+    settings.texture_mode = 'native'
+    call(bpy.ops.liberty.build)
+    settings.texture_mode = 'template'
+    result = state.get(scene)
+    manifest = json.load(open(os.path.join(CONTENT, "props", "lf_bt_native", "asset.json"), encoding="utf-8"))
+    compiled = report("lf_bt_native").get("compiled", {}) if os.path.isfile(os.path.join(BUILD, "lf_bt_native", "report.json")) else {}
+    expect(result.status == "ok" and manifest.get("textureMode") == "native", "native texture mode builds", "%s %s" % (result.status, result.log[-400:]))
+    expect(compiled.get("textureMode") == "native" and compiled.get("textureFormat") == "DXT1" and compiled.get("textureSize") == [128, 128] and
+           compiled.get("textureLevels") == 6 and compiled.get("textureQuality", {}).get("psnrRgbDb", 0) >= 30, "native texture: 128x128 DXT1, 6 levels, PSNR >= 30 dB", compiled)
 
     # 4. Two materials in LOD 0: rejected in Blender, nothing written.
     clear_scene()
@@ -294,7 +310,7 @@ def main():
     result = state.get(scene)
     built = report("lf_bt_coll") if os.path.isfile(os.path.join(BUILD, "lf_bt_coll", "report.json")) else {}
     expect(result.status == "ok" and built.get("lods") == 2, "collection export builds with 2 LODs", "%s %s" % (result.status, built.get("lods")))
-    expect(built.get("metadata", {}).get("liberty_exporter") == "0.1.0" and "liberty_exporter" not in collection.keys(), "collection export carries exporter metadata", built.get("metadata"))
+    expect(built.get("metadata", {}).get("liberty_exporter") == "0.2.0" and "liberty_exporter" not in collection.keys(), "collection export carries exporter metadata", built.get("metadata"))
 
     print("RESULT passed=%d failed=%d" % (results["passed"], results["failed"]))
     if results["failed"]:

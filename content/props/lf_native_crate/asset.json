@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "name": "lf_native_crate",
+  "type": "prop",
+  "source": "lf_native_crate.gltf",
+  "template": { "archive": "pc/models/cdimages/weapons.img", "model": "amb_nailgun" },
+  "textureDictionary": "lf_native_crate",
+  "drawDistanceMeters": 120,
+  "textureMode": "native"
+}
