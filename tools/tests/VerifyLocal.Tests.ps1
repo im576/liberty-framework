@@ -70,6 +70,8 @@ $checks = @(
     (New-Check 'T-output-mismatch' 'pc-offline' @{ tool = 'content-selftest' }),
     (New-Check 'T-blender' 'pc-offline' @{ tool = 'blender-tests' }),
     (New-Check 'T-probe' 'probe' @{ tool = 'probe'; probe = 'drawables' }),
+    (New-Check 'T-roundtrip' 'pc-offline' @{ tool = 'drawable-roundtrip' }),
+    (New-Check 'T-roundtrip-fails' 'pc-offline' @{ tool = 'drawable-roundtrip'; archives = @('x.img') }),
     (New-Check 'T-probe-noreport' 'probe' @{ tool = 'probe'; probe = 'collision' }),
     (New-Check 'LOOP-package-install' 'pc-offline' @{ tool = 'package-install' }),
     (New-Check 'T-report-good' 'pc-offline' @{ tool = 'content-report'; asset = 'good_asset'; expect = @{ status = 'ok'; 'compiled.textureFormat' = 'DXT1' } }),
@@ -92,6 +94,8 @@ $sim = @{
         'T-hangs' = @{ exit = 0; sleepSeconds = 30; timeoutSeconds = 2 }
         'T-output-mismatch' = @{ exit = 0; output = 'selftest: ok passed=5 failed=2'; pass = 'selftest: ok passed=\d+ failed=0' }
         'T-probe-noreport' = @{ exit = 0; writesReport = $false }
+        'T-roundtrip' = @{ exit = 0; output = 'roundtrip: ok drawables=9 eligible=4 multi=2 identical=4 failed=0'; pass = 'roundtrip: ok' }
+        'T-roundtrip-fails' = @{ exit = 1; output = 'roundtrip: FAILED drawables=9 eligible=4 multi=2 identical=3 failed=1'; pass = 'roundtrip: ok' }
     }
     manual = @{ 'T-manual-pass' = 'p' }
 }
@@ -113,6 +117,9 @@ Test-That 'run: exit 0 with output not matching the pass pattern is FAIL' ($stat
 Test-That 'run: Blender not configured is NOT-RUN' ($status['T-blender'] -eq 'NOT-RUN')
 Test-That 'run: a probe with a report needs review, never auto-PASS' ($status['T-probe'] -eq 'NEEDS-REVIEW')
 Test-That 'run: a probe without a report is FAIL' ($status['T-probe-noreport'] -eq 'FAIL')
+Test-That 'run: a drawable round trip that passes is PASS, with its report as evidence' ($status['T-roundtrip'] -eq 'PASS' -and
+    (@($summary.checks | Where-Object { $_.id -eq 'T-roundtrip' })[0].evidence -contains 'T-roundtrip.json')) (@($summary.checks | Where-Object { $_.id -eq 'T-roundtrip' })[0] | ConvertTo-Json -Compress)
+Test-That 'run: a drawable round trip with a failed file is FAIL' ($status['T-roundtrip-fails'] -eq 'FAIL')
 Test-That 'run: package-install PASS' ($status['LOOP-package-install'] -eq 'PASS')
 Test-That 'run: content report with matching fields is PASS' ($status['T-report-good'] -eq 'PASS')
 Test-That 'run: content report with a wrong field is FAIL' ($status['T-report-bad'] -eq 'FAIL')

@@ -1,7 +1,7 @@
 # Per-scene asset settings: everything asset.json needs. Stored as registered properties (saved in the .blend).
 
 import bpy
-from bpy.props import EnumProperty, FloatProperty, PointerProperty, StringProperty
+from bpy.props import BoolProperty, EnumProperty, FloatProperty, FloatVectorProperty, PointerProperty, StringProperty
 
 
 class LibertyAssetSettings(bpy.types.PropertyGroup):
@@ -9,7 +9,10 @@ class LibertyAssetSettings(bpy.types.PropertyGroup):
         name="Name", maxlen=23,
         description="Model name in game (1-23 letters, digits or _); also the asset folder name")
     asset_type: EnumProperty(
-        name="Type", items=[('prop', "Prop", "Static prop spawned by scripts (compiler v1)")], default='prop')
+        name="Type", default='prop',
+        items=[('prop', "Prop", "Static prop spawned by scripts (compiler v1)"),
+               ('object', "World object", "Static world object placed in the map, with collision. Authored and checked now; "
+                                          "LibertyContent builds it once the collision and placement writers exist")])
     collection: PointerProperty(
         name="Collection", type=bpy.types.Collection,
         description="Objects to export (with nested collections). Empty: the selected objects")
@@ -24,6 +27,17 @@ class LibertyAssetSettings(bpy.types.PropertyGroup):
         items=[('template', "Template", "The template's texture dictionary with its pixels replaced: template size, DXT1, opaque (proven in game)"),
                ('native', "Native", "Dictionary written from scratch: source size (power of two, 4-2048), full mip chain, "
                                     "DXT5 when the material has alpha, else DXT1 (needs playtest)")])
+    drawable_writer: EnumProperty(
+        name="Drawable writer", default='template',
+        items=[('template', "Template", "Compiler v1: LOD 0, one material, the template's single geometry patched (proven in game)"),
+               ('structure', "Structure", "Every LOD and one geometry per material, written into a game drawable of the same or larger "
+                                          "structure (needs Native texture mode; needs playtest)")])
+    structure_template_archive: StringProperty(
+        name="Structure template archive", default="*",
+        description="Archive holding the structure template; * searches every IMG of the game")
+    structure_template_model: StringProperty(
+        name="Structure template model", default="auto",
+        description="Drawable whose structure (LOD slots, geometries, shaders) the structure writer fills; auto takes the first that fits")
     texture_dictionary: StringProperty(
         name="Texture dictionary", maxlen=23, description="WTD name. Empty: the asset name")
     draw_distance: FloatProperty(
@@ -31,6 +45,13 @@ class LibertyAssetSettings(bpy.types.PropertyGroup):
         description="IDE draw distance in metres (not affected by the scene unit scale)")
     audio_material: StringProperty(
         name="Audio material", description="Optional IDE amat entry (collision sound)")
+    use_lod_distances: BoolProperty(
+        name="LOD distances", default=False,
+        description="Write lodDistancesMeters: how far each LOD is drawn. Checked now; written into the drawable by the LOD writer")
+    lod_distances: FloatVectorProperty(
+        name="LOD distances (m)", size=4, default=(30.0, 60.0, 120.0, 240.0), min=0.0, max=1500.0,
+        description="Distance up to which LOD 0, 1, 2 and 3 are drawn, in metres (ascending; the last at most the draw distance). "
+                    "Only the entries for the LODs the asset has are written")
 
 
 def register():

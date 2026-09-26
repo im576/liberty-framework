@@ -14,6 +14,8 @@ namespace LibertyFramework.Content
     // colour texture is resampled to the template texture's size and written, with its mip chain, into a copy of the
     // template's texture dictionary. Multiple materials, LOD levels and collision need the structure writer (roadmap M6).
     //
+    // drawableWriter "structure" (asset.json; NEEDS-PLAYTEST) hands the asset to StructureCompiler instead.
+    //
     // textureMode "native" (asset.json; NEEDS-PLAYTEST): the drawable is built exactly as above (same template texture
     // name), but the dictionary is written from scratch by TextureDictionaryWriter: the source texture at its own size
     // (nearest power of two, 4-2048), full mip chain, DXT5 when the material is not opaque and has alpha, else DXT1. The
@@ -40,14 +42,57 @@ namespace LibertyFramework.Content
             internal TextureQuality TextureQuality;
             internal bool FlippedWinding;
             internal readonly List<string> Notes = new List<string>();
+            // Which drawable writer made the .wdr: "template" (v1), "structure", or "template (fallback)".
+            internal string DrawableWriter = AssetManifest.WriterTemplate;
+            // archive/model of the drawable whose structure was used.
+            internal string TemplateUsed;
+            // Structure writer: each geometry written (LOD, material, mesh, texture name), every texture, and the LOD
+            // distances written into the drawable (null: the template's kept).
+            internal readonly List<Part> Parts = new List<Part>();
+            internal readonly List<NativeTexture> Textures = new List<NativeTexture>();
+            internal readonly List<RgbaImage> TextureSources = new List<RgbaImage>();
+            internal readonly List<TextureQuality> TextureQualities = new List<TextureQuality>();
+            internal float[] LodDistancesWritten;
+        }
+
+        internal sealed class Part
+        {
+            internal int Lod;
+            internal int Material;
+            internal Mesh Mesh;
+            internal string TextureName;
         }
 
         internal static Result Compile(string game, AssetManifest manifest, ContentAsset asset)
         {
+            string fallback = null;
+            if (manifest.DrawableWriter == AssetManifest.WriterStructure)
+            {
+                Result structured = StructureCompiler.Compile(game, manifest, asset, out fallback);
+                if (structured != null) { return structured; }
+                // Only an "auto" search that found nothing gets here: the asset is built with v1 when v1 can write it.
+                List<AssetValidator.Issue> v1 = AssetValidator.Validate(asset, CompilerCapabilities.Current);
+                if (AssetValidator.HasErrors(v1))
+                {
+                    throw new InvalidDataException(fallback + ", and compiler v1 cannot write this asset (" + string.Join("; ", v1.Where(i => i.Severity == "error").Select(i => i.Code).ToArray()) + ")");
+                }
+            }
+            Result v1Result = CompileTemplate(game, manifest, asset);
+            if (fallback != null)
+            {
+                v1Result.DrawableWriter = AssetManifest.WriterTemplate + " (fallback)";
+                v1Result.Notes.Add(fallback + "; built with the template writer: LOD 0 only");
+            }
+            return v1Result;
+        }
+
+        private static Result CompileTemplate(string game, AssetManifest manifest, ContentAsset asset)
+        {
             ArchiveSource archive = ArchiveSource.Open(game, manifest.Template.Archive);
             DrawableFile template = new DrawableFile(RscResource.Parse(archive.Extract(manifest.Template.Model + ".wdr"), true));
             Result result = new Result();
-            result.Mesh = BuildMesh(asset, result);
+            result.TemplateUsed = manifest.Template.Archive + "/" + manifest.Template.Model;
+            result.Mesh = MergeMeshes(asset.Lod(0), result.Notes);
             // Match the template's winding (front faces as the game draws them), measured on its own geometry.
             Mesh reference = template.ReadMesh(template.Models[0].Geometries[0]);
             if (Math.Sign(WindingScore(reference)) != Math.Sign(WindingScore(result.Mesh)) && WindingScore(result.Mesh) != 0)
@@ -94,7 +139,12 @@ namespace LibertyFramework.Content
         // when the material is not opaque and a pixel is translucent, else DXT1.
         internal static RgbaImage NativeSourcePixels(ContentAsset asset, List<string> notes, out string format)
         {
-            ContentMaterial material = Lod0Material(asset);
+            return MaterialPixels(asset, Lod0Material(asset), notes, out format);
+        }
+
+        // One material's texture as native mode writes it (see NativeSourcePixels); null material: the default white one.
+        internal static RgbaImage MaterialPixels(ContentAsset asset, ContentMaterial material, List<string> notes, out string format)
+        {
             Bitmap image = material != null && material.Image >= 0 && material.Image < asset.Images.Count ? asset.Images[material.Image] : null;
             float[] tint = material != null ? material.BaseColour : new float[] { 1, 1, 1, 1 };
             RgbaImage pixels;
@@ -128,12 +178,12 @@ namespace LibertyFramework.Content
             return asset.Lod(0).Select(m => m.Material >= 0 && m.Material < asset.Materials.Count ? asset.Materials[m.Material] : null).FirstOrDefault(m => m != null);
         }
 
-        // LOD 0 meshes merged into one; degenerate triangles dropped; normals generated when the source had none.
-        private static Mesh BuildMesh(ContentAsset asset, Result result)
+        // Meshes merged into one; degenerate triangles dropped; normals generated when the source had none.
+        internal static Mesh MergeMeshes(IEnumerable<ContentMesh> parts, List<string> notes)
         {
             Mesh mesh = new Mesh();
             bool anyMissingNormals = false;
-            foreach (ContentMesh part in asset.Lod(0))
+            foreach (ContentMesh part in parts)
             {
                 int start = mesh.Vertices.Count;
                 foreach (ContentVertex v in part.Vertices)
@@ -152,7 +202,7 @@ namespace LibertyFramework.Content
                     mesh.Indices.Add(start + a); mesh.Indices.Add(start + b); mesh.Indices.Add(start + c);
                 }
             }
-            if (anyMissingNormals) { MeshNormals.Recompute(mesh); result.Notes.Add("normals generated"); }
+            if (anyMissingNormals) { MeshNormals.Recompute(mesh); notes.Add("normals generated"); }
             mesh.Validate();
             return mesh;
         }

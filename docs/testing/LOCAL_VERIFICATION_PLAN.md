@@ -14,9 +14,9 @@
 
 | Kind | Pending | Runs |
 |---|---|---|
-| pc-offline | 8 | automatically (builds and tests that need Windows or the game's files) |
+| pc-offline | 10 | automatically (builds and tests that need Windows or the game's files) |
 | probe | 2 | automatically (read-only questions about the game's files; structure only) |
-| scenario | 18 | automatically (autopilot drives the game; about 2-4 minutes each) |
+| scenario | 19 | automatically (autopilot drives the game; about 2-4 minutes each) |
 | manual | 17 | you play and judge; about 160 minutes in total, grouped below |
 
 Statuses: QUEUED (never run on the current code), PASS, FAIL, ERROR, CRASH, NOT-RUN, NEEDS-REVIEW (a person or the review session must judge screenshots or log errors).
@@ -187,7 +187,7 @@ Nothing to set up.
 |---|---|---|---|---|
 | `LOOP-build` | LOOP | pc-offline | exit code 0; build.ps1 and build-core.ps1 report no errors and ray_walk_test passes as a Windows .exe | QUEUED |
 | `LOOP-verify` | LOOP | pc-offline | exit code 0 and 'RESULT passed=N failed=0' with no NOT-RUN | QUEUED |
-| `LOOP-content-selftest` | T-028 | pc-offline | exit code 0 and 'selftest: ok passed=N failed=0' | QUEUED |
+| `LOOP-content-selftest` | T-028 | pc-offline | exit code 0 (self-test, then fixtures) and 'selftest: ok passed=N failed=0'; the log also shows 'fixtures: ok passed=5 failed=0' | QUEUED |
 | `T028-wtdcheck` | T-028 | pc-offline | exit code 0 and 'failed=0'; rebuilt equals identical (the review session reads the whole output) | QUEUED |
 | `LOOP-blender-tests` | T-028 | pc-offline | exit code 0 and 'Blender add-on tests passed' (needs Blender 4.2+ configured; otherwise NOT-RUN) | QUEUED |
 | `LOOP-package-install` | LOOP | pc-offline | package-phase2.ps1 and install-phase2.ps1 exit 0; every installed file hash-verified; backup folder recorded | QUEUED |
@@ -200,6 +200,9 @@ Nothing to set up.
 | `T027-raycast-spike` | T-027 | scenario | autopilot PASS (spawns succeed); the review session reads the raydebug/raybits lines for the vehicle | QUEUED |
 | `SDK-selftest` | T-027 | scenario | autopilot PASS: 'selftest_done passed=N failed=0' | QUEUED |
 | `T028-native-texture-review` | T-028 | scenario | autopilot PASS and the screenshots judged as described | QUEUED |
+| `T031-drawable-roundtrip` | T-031 | pc-offline | exit code 0 and 'roundtrip: ok ... failed=0' (every eligible drawable identical under one buffer order); the JSON report is kept | QUEUED |
+| `T031-lod-post-report` | T-031 | pc-offline | report.json fields match: status ok, drawableWriter structure (not 'template (fallback)'), four LODs | QUEUED |
+| `T031-lod-review` | T-031 | scenario | autopilot PASS and the screenshots judged as described | QUEUED |
 | `SDK-asset-review` | M4 | scenario | autopilot PASS and the screenshots judged | QUEUED |
 | `SDK-engine-events` | ADR-0006 | scenario | autopilot PASS | QUEUED |
 | `SDK-bullet-events` | ADR-0006 | scenario | autopilot PASS | QUEUED |
@@ -218,19 +221,22 @@ Nothing to set up.
 
 - `LOOP-build`: The Windows toolchain builds the same sources the cloud built; the native unit tests pass on the game's target (i686 Windows).
 - `LOOP-verify`: Every verifier section, including the 7 the cloud reports NOT-RUN: address resolution against GTAIV.exe, native names and CE hashes, the core native table, vehicle extras, gore particles in gta_core.wpfl, WeaponInfo.xml accuracies and the collapse engine's x86 hook code.
-- `LOOP-content-selftest`: The content compiler behaves the same on .NET Framework as under Mono in the cloud (codecs, writer, validator).
+- `LOOP-content-selftest`: The content compiler behaves the same on .NET Framework as under Mono in the cloud (codecs, writer, validator), and reads the Blender-made authoring fixtures (tests/content/fixtures: materials, LODs, collision, world object) into the same structure and codes.
 - `T028-wtdcheck`: The from-scratch WTD writer reproduces Rockstar's dictionaries byte for byte apart from placement. **Still unproven:** That the game loads and draws a native dictionary (T028-native-texture-review).
-- `LOOP-blender-tests`: The 9 build expectations the cloud reports NOT-RUN: template and native builds from Blender, LOD counts, previews, modifiers, collection export.
+- `LOOP-blender-tests`: The 9 build expectations the cloud reports NOT-RUN (template and native builds from Blender, LOD counts, previews, modifiers, collection export), and on the owner's Blender the authoring cases: the five fixtures exported and refused or built as expected (lf_fx_lods builds 'ok'), collision tags as glTF extras, the add-on's checks and operators, and checks.CAPABILITIES equal to 'LibertyContent capabilities'.
 - `LOOP-package-install`: The develop build packages against the owner's game (content assets compiled on game templates) and installs cleanly. Every scenario check depends on it.
 - `T028-native-crate-report`: The native writer's output for a real asset built against the game's template passes read-back.
 - `T028-alpha-panel-report`: DXT5 with alpha is written and read back for a real asset.
-- `PROBE-drawables`: Across the game's model archives: how many drawables use several geometries, several shaders and LOD slots 1-3, how their buffers, shader mappings, bounds and LOD distances are laid out, and whether the reader parses them all. Input for the multi-geometry/LOD writer (Session 4). **Still unproven:** Anything about how the game renders them; this is file structure only.
+- `PROBE-drawables`: Across the game's model archives: how many drawables use several geometries, several shaders and LOD slots 1-3, how their buffers, shader mappings, bounds and LOD distances are laid out, and whether the reader parses them all. Input for the multi-geometry/LOD writer (Session 4); and for the structure writer (T-031): which drawables it can use, their sphere-record layout and buffer order, and structure templates by shape. **Still unproven:** Anything about how the game renders them; this is file structure only.
 - `PROBE-collision`: Which collision-related resources the game ships (by extension and resource type), in which archives, how many, their resource versions and top-level sizes. Input for collision research (Session 5) Also propCandidates: models shipped as a drawable with a same-named bounds resource, which the raycast-objects scenario spawns. **Still unproven:** The bound structures' field meanings; those need their own probes once the inventory is known.
 - `T027-raycast`: SDK 1.1 Query.Raycast / HasLineOfSight against world, a vehicle and a ped through the real game line test; filtering and ignore semantics; no faults. **Still unproven:** Objects (props with collision) are not tested in game yet (RayMask.Objects); research questions R1-R6 in docs/research/Raycast.md.
 - `T027-raycast-objects`: RayMask.Objects in game: a script-created vanilla prop is hit as kind Object with its own handle (all kinds, and objects only), and a query that leaves objects out passes through it; the raycast link [result+0x0C] resolves objects through the object pool. **Still unproven:** Only the probe's first candidate is tested; a FAIL on the first rayto may mean that model has no collision in game (the review session then tries the next candidate from the probe report) rather than a raycast fault. Authored (LCC) props need collision first (Session 5). Runs after `PROBE-collision` in the same run.
 - `T027-raycast-spike`: Raw line-test results per include bit for ground, sky, a vehicle and a ped: evidence for Raycast.md open questions. **Still unproven:** Research only; interpretation happens in the review session.
 - `SDK-selftest`: Every Liberty.Sdk service works in game on the new core ABI 5, including the ten raycast/line-of-sight checks. Since the engine audit also: the snapshot driver read from [vehicle+0xF50] (check vehicle-driver), capability refusal, and commands after the ownership and capability changes.
 - `T028-native-texture-review`: The game loads dictionaries written from scratch and draws DXT1; how gta_default treats DXT5 alpha. **Still unproven:** Alpha behaviour is an observation (translucent, cut-out or ignored); any of the three is a valid answer.
+- `T031-drawable-roundtrip`: For every drawable of the game the structure writer can use (layout 0x59 everywhere, own buffers, measurable sphere records): per-geometry patching of several geometries, shaders and LOD models reproduces Rockstar's files; the report says which buffer order (Interleaved or VerticesFirst) and which sphere-record layout the files use. **Still unproven:** Trimming (dropped geometries, models, LOD slots and shaders) and renamed textures have no counterpart in the game's files; the lod-review scenario tests a trimmed build in game.
+- `T031-lod-post-report`: The "*"/"auto" search found a structure template with four LOD slots in the owner's game, and the four-LOD drawable read back; templateUsed names it. **Still unproven:** That the game loads and switches the LODs (T031-lod-review).
+- `T031-lod-review`: The game loads a drawable written by the structure writer (several LOD models, trimmed template, renamed texture, one graphics page) and which LOD it draws at each distance. **Still unproven:** Which distances the switches happen at is an observation: by drawable +0x50 (12/25/50/100 m), by the game's own rules, or no switching; each is a useful answer. If T031-lod-post-report shows a fallback, every shot is LOD 0.
 - `SDK-asset-review`: The template-mode content pipeline still produces textured, upright, lit props after the T-028 merge.
 - `SDK-engine-events`: Core v2 snapshot events still fire on the new core ABI.
 - `SDK-bullet-events`: The bullet trace list still produces BulletFired events.

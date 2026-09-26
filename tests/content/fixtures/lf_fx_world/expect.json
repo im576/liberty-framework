@@ -1,0 +1,80 @@
+{
+  "status": "invalid",
+  "errors": [
+    "LCC032",
+    "LCC033"
+  ],
+  "codes": [
+    "LCC025",
+    "LCC026",
+    "LCC037"
+  ],
+  "report": {
+    "type": "object",
+    "lods": 2,
+    "structure": {
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 60,
+          "geometries": [
+            {
+              "material": "fx_stone",
+              "meshes": 5,
+              "triangles": 60
+            }
+          ]
+        },
+        {
+          "level": 1,
+          "triangles": 12,
+          "geometries": [
+            {
+              "material": "fx_stone",
+              "meshes": 1,
+              "triangles": 12
+            }
+          ]
+        }
+      ],
+      "lodDistancesMeters": [
+        60,
+        150
+      ],
+      "collision": [
+        {
+          "name": "lf_fx_world_col",
+          "shape": "box",
+          "surface": "stone",
+          "centre": [
+            0,
+            0,
+            0.55
+          ],
+          "halfExtents": [
+            1.05,
+            0.2,
+            0.55
+          ],
+          "axes": [
+            [
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              1
+            ]
+          ]
+        }
+      ]
+    }
+  }
+}

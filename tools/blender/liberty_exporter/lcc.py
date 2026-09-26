@@ -49,6 +49,14 @@ def issues(output):
     return found
 
 
+def capabilities(compiler, timeout_seconds):
+    """What the compiler writes (`LibertyContent capabilities`), as a dict; checks.CAPABILITIES is the add-on's copy."""
+    code, text = run(compiler, ["capabilities"], timeout_seconds)
+    if code != 0:
+        raise RuntimeError("LibertyContent capabilities failed (%d): %s" % (code, text.strip()))
+    return json.loads(text)
+
+
 def read_report(path):
     if not os.path.isfile(path):
         return None

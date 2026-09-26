@@ -1,0 +1,68 @@
+{
+  "status": "valid",
+  "errors": [],
+  "codes": [
+    "LCC025",
+    "LCC026",
+    "LCC037"
+  ],
+  "report": {
+    "type": "prop",
+    "lods": 4,
+    "structure": {
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 188,
+          "geometries": [
+            {
+              "material": "fx_lod0",
+              "meshes": 1,
+              "triangles": 188
+            }
+          ]
+        },
+        {
+          "level": 1,
+          "triangles": 92,
+          "geometries": [
+            {
+              "material": "fx_lod1",
+              "meshes": 1,
+              "triangles": 92
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "triangles": 44,
+          "geometries": [
+            {
+              "material": "fx_lod2",
+              "meshes": 1,
+              "triangles": 44
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "triangles": 20,
+          "geometries": [
+            {
+              "material": "fx_lod3",
+              "meshes": 1,
+              "triangles": 20
+            }
+          ]
+        }
+      ],
+      "lodDistancesMeters": [
+        25.0,
+        50.0,
+        100.0,
+        200.0
+      ],
+      "collision": []
+    }
+  }
+}

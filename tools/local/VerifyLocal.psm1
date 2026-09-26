@@ -165,7 +165,9 @@ function Get-ToolCommand($Context, $Check) {
         }
         'verify' { return @{ File = $ps; Arguments = (Get-ScriptArguments (Join-Path $tools 'verify.ps1')) + @('-GameDirectory', $Context.Game); Timeout = 900; Pass = 'RESULT passed=\d+ failed=0(?! notrun)' } }
         'content-selftest' {
-            $command = "& '$(Join-Path $tools 'build-content.ps1')'; if (`$LASTEXITCODE) { exit `$LASTEXITCODE }; & '$content' selftest; exit `$LASTEXITCODE"
+            # The self-test, then the authoring fixtures (tests/content/fixtures) checked against their expect.json.
+            $fixtures = Join-Parts $repo 'tests' 'content' 'fixtures'
+            $command = "& '$(Join-Path $tools 'build-content.ps1')'; if (`$LASTEXITCODE) { exit `$LASTEXITCODE }; & '$content' selftest; if (`$LASTEXITCODE) { exit `$LASTEXITCODE }; & '$content' fixtures '$fixtures'; exit `$LASTEXITCODE"
             return @{ File = $ps; Arguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', $command); Timeout = 900; Pass = 'selftest: ok passed=\d+ failed=0' }
         }
         'wtdcheck' { return @{ File = $content; Arguments = @('wtdcheck', '--game', $Context.Game) + @($Check.run.archives); Timeout = 1800; Pass = 'failed=0' } }
@@ -175,6 +177,11 @@ function Get-ToolCommand($Context, $Check) {
         'probe' {
             $out = Join-Path $Context.Results ($Check.id + '.json')
             return @{ File = $content; Arguments = @('probe', [string]$Check.run.probe, '--game', $Context.Game, '--out', $out); Timeout = 2400; Pass = ''; Output = $out }
+        }
+        'drawable-roundtrip' {
+            # Every IMG of the game unless the check names archives; the JSON report is kept as evidence.
+            $out = Join-Path $Context.Results ($Check.id + '.json')
+            return @{ File = $content; Arguments = @('roundtrip', '--game', $Context.Game, '--out', $out) + @($Check.run.archives | Where-Object { $_ }); Timeout = 3600; Pass = 'roundtrip: ok'; Output = $out }
         }
     }
     throw "no command for tool '$($Check.run.tool)'"
@@ -201,6 +208,7 @@ function Invoke-ToolCheck($Context, $Check) {
     $run = Invoke-ChildProcess $command.File $command.Arguments $command.Timeout $log $Context.Repo
     $result = Get-ToolStatus $run $command.Pass
     $result.Evidence = @((Split-Path -Leaf $log))
+    if ($Check.kind -ne 'probe' -and $command.Output -and (Test-Path -LiteralPath $command.Output)) { $result.Evidence += (Split-Path -Leaf $command.Output) }
     if ($Check.kind -eq 'probe') {
         $out = $command.Output
         if ($result.Status -eq 'PASS' -and -not (Test-Path -LiteralPath $out)) { return New-Result 'FAIL' 'the probe wrote no report' @((Split-Path -Leaf $log)) }
@@ -447,7 +455,7 @@ function Get-SimulatedToolCommand($Context, $Check) {
     $timeout = [int](Get-SimProperty $tool 'timeoutSeconds' 60)
     $command = "Write-Output '$($output.Replace("'", "''"))'; Start-Sleep -Seconds $sleep; exit $exit"
     $result = @{ File = (Get-PowerShellPath); Arguments = @('-NoProfile', '-Command', $command); Timeout = $timeout; Pass = [string](Get-SimProperty $tool 'pass' '') }
-    if ($Check.kind -eq 'probe') {
+    if ($Check.kind -eq 'probe' -or $Check.run.tool -eq 'drawable-roundtrip') {
         $out = Join-Path $Context.Results ($Check.id + '.json')
         if (Get-SimProperty $tool 'writesReport' $true) { $result.Arguments = @('-NoProfile', '-Command', "Set-Content -LiteralPath '$out' -Value '{""probe"":""simulated""}'; $command") }
         $result.Output = $out

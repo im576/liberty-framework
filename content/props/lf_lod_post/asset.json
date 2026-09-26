@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "name": "lf_lod_post",
+  "type": "prop",
+  "source": "lf_lod_post.gltf",
+  "template": {
+    "archive": "pc/models/cdimages/weapons.img",
+    "model": "amb_nailgun"
+  },
+  "textureDictionary": "lf_lod_post",
+  "drawDistanceMeters": 150.0,
+  "textureMode": "native",
+  "drawableWriter": "structure",
+  "structureTemplate": {
+    "archive": "*",
+    "model": "auto"
+  },
+  "lodDistancesMeters": [
+    12.0,
+    25.0,
+    50.0,
+    100.0
+  ]
+}

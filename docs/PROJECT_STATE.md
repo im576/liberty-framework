@@ -5,6 +5,14 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
+**Content compiler structure writer (2026-09-26, Claude, session 4, [T-031](tasks/T-031-structure-writer.md)): offline checks pass; NEEDS-PLAYTEST, opt-in.**
+- **Built:** `drawableWriter: "structure"` writes every LOD and one geometry per material into a game drawable of the same or larger structure. It trims the rest and never synthesises structures (their sizes are not established). The default stays v1. `LibertyContent roundtrip` tests the writer against the game's own drawables. Test post `lf_lod_post` (4 LODs, colour per LOD), scenario `lod-review`, and the probe now lists structure templates.
+- **Evidence:** content self-test 308/308 (synthetic drawables, mutations caught), offline dry build of `lf_lod_post` ok, Blender 83 passed / 9 NOT-RUN, PowerShell 109. Queued: `T031-drawable-roundtrip`, `T031-lod-post-report`, `T031-lod-review`, `PROBE-drawables`.
+
+**Content compiler authoring side (2026-09-26, Claude, session 3 of [NEXT_SESSIONS](workflow/NEXT_SESSIONS.md), [T-030](tasks/T-030-lcc-authoring-side.md)): offline checks pass; NEEDS-PLAYTEST on the PC.**
+- **Built:** Blender add-on 0.3.0 and the compiler IR/validator carry collision (mesh/box/sphere/capsule, surfaces), per-material geometries, LOD distances and world objects (`type: object`). `CompilerCapabilities` refuses what v1 cannot write with named errors, and `report.json` shows the structure. Five Blender-made fixtures live in `tests/content/fixtures`. No new writer output.
+- **Evidence:** content self-test 248/248, fixtures 5/5, Blender tests 78 passed / 9 NOT-RUN (need the game). Also fixed: glTF `matrix` node transforms were ignored.
+
 **Engine audit and hardening (2026-09-26, Claude, session 2 of [NEXT_SESSIONS](workflow/NEXT_SESSIONS.md)): offline checks pass; in-game checks queued.** [Report](reports/2026-09-26-engine-audit.md).
 - **Fixed:** a throwing `Wait.Until` condition or an unowned coroutine stopped every module for the session; an event handler's failure skipped the next module's handler; null owners left control locks, HUD, clock and memory patches unreleasable; menus could stay open with controls locked; overlapping memory patches left a stale patch; hooks outlived a core switched off mid-session; a faulted native kept being called for the rest of its frame; a double exact `PedDied` 5–10 s after a kill; the autopilot's log reads and Steam screenshot folder.
 - **New offline checks:** the core's C ABI against `CoreAbi.cs`, engine plumbing (scheduler, events, ledger, commands), native-name coverage, SDK examples compiled; the verifier now builds with the same Roslyn C# 7.3 as the build. New in-game checks: `T027-raycast-objects` (model chosen by `PROBE-collision`), self-test `vehicle-driver`.

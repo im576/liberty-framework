@@ -34,6 +34,8 @@ Batch compatible offline work and combine human checks into one gameplay session
 | T-027 | [Engine raycast and line of sight (SDK 1.1)](T-027-engine-raycast.md) | ADR-0006 core, raycast spike 13ff3c2 | NEEDS-PLAYTEST (autopilot `raycast` + `sdk-selftest` on the installed build) |
 | T-028 | [Content compiler v2: native texture dictionaries](T-028-lcc-native-textures.md) | M4 content compiler v1 | NEEDS-PLAYTEST |
 | T-029 | [Cloud development loop and local verification](T-029-cloud-local-loop.md) | none | NEEDS-PLAYTEST (first `verify-local.ps1 -Smoke` run) |
+| T-030 | [Content compiler authoring side: materials, LODs, collision, world objects](T-030-lcc-authoring-side.md) | T-028 | NEEDS-PLAYTEST (`LOOP-content-selftest`, `LOOP-blender-tests` on the PC; nothing in game) |
+| T-031 | [Content compiler structure writer: several geometries, shaders and LODs](T-031-structure-writer.md) | T-030, T-028 | NEEDS-PLAYTEST (`T031-drawable-roundtrip`, `T031-lod-post-report`, `T031-lod-review`, `PROBE-drawables`) |
 
 **Arsenal run (2026-09-24):** two Codex agents work in separate worktrees/branches (`arsenal/core` = Agent A, `arsenal/feel` = Agent B) against the shared contracts in `src/LibertyFramework/Arsenal/Contracts`; the orchestrator merges, reviews, packages and installs. T-012 (DevTools completeness) is deferred by the owner.
 

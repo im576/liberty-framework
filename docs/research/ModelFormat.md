@@ -140,3 +140,24 @@ cover drawables with one model, one geometry and one shader. Before a writer emi
 The per-model bounding spheres at model +0x0C are one per geometry or one per model plus one: not established, and the
 probe does not guess. The writer session decides from the probe report which of these to reproduce and extends the
 round-trip self-test to multi-geometry and multi-LOD drawables, which is the proof that the writer is right.
+
+## Structure writer (T-031, 2026-09-26): what it relies on, and how each point is proven
+
+`DrawableStructureBuilder` ([T-031](../tasks/T-031-structure-writer.md)) writes several geometries, shaders and LOD
+models without synthesising any structure. It fills a game drawable of the same or larger structure. Each fact it relies
+on is labelled here.
+
+| Fact | Label | How |
+|---|---|---|
+| Field offsets above (geometry counts and buffers, collections, LOD slots +0x40, shader mapping +0x10, texture name slots) | VERIFIED OFFLINE | reader over the game's archives; single-geometry round trip |
+| A LOD slot pointer of 0 means an unused slot; a collection's u16 count bounds what is read | VERIFIED OFFLINE | files with unused slots parse; the reader relies on both |
+| That the game accepts shortened collections and cleared slots in a file that had them | UNKNOWN | `T031-lod-review` (a trimmed template in game) |
+| Drawable +0x50 holds one float per LOD slot | PLAUSIBLE (the field list above); values per slot: `PROBE-drawables` `lodDistances` | whether the game switches by them: `T031-lod-review` |
+| Buffer order of several geometries: `Interleaved` or `VerticesFirst` | UNKNOWN, both implemented | `T031-drawable-roundtrip` reports which reproduces the files; `PROBE-drawables` `graphicsOrderMultiGeometry` |
+| Sphere records at model +0x0C: n+1, n or 1 | measured per file: a record counts only if it encloses its geometry | round trip (`boundsRecords`) and probe (`boundsRecordsMultiGeometry`) |
+| Multi-geometry drawables round-trip byte for byte | UNKNOWN until the PC run | `T031-drawable-roundtrip` |
+| One graphics page draws correctly with several geometries | PLAUSIBLE (proven for one geometry) | `T031-lod-review` |
+
+Generated drawables write the whole model's sphere into every record, which is conservative whatever a record stands
+for, and a box enclosing every LOD. The round trip writes each geometry's own sphere so that it can compare with the
+game's files.

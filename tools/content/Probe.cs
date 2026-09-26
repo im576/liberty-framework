@@ -120,6 +120,10 @@ namespace LibertyFramework.Content
             Dictionary<string, int> sharedBuffers = new Dictionary<string, int>(), lodDistances = new Dictionary<string, int>();
             Dictionary<string, int> systemSizes = new Dictionary<string, int>(), graphicsSizes = new Dictionary<string, int>();
             Dictionary<string, int> flagPages = new Dictionary<string, int>(), presets = new Dictionary<string, int>();
+            // Structure writer (T-031): which drawables it can use, how their sphere records and buffers are laid out, and
+            // which could serve as structure templates.
+            Dictionary<string, int> structureEligibility = new Dictionary<string, int>(), boundsRecords = new Dictionary<string, int>(), graphicsOrder = new Dictionary<string, int>();
+            Dictionary<string, List<string>> structureTemplates = new Dictionary<string, List<string>>();
             List<object> samples = new List<object>();
             List<string> failureExamples = new List<string>();
             int total = 0, parsed = 0, withSkeleton = 0, withBones = 0, multiGeometry = 0, multiLod = 0;
@@ -176,6 +180,7 @@ namespace LibertyFramework.Content
                                 Count(sharedBuffers, model.Geometries.Select(g => g.VertexBuffer).Distinct().Count() == model.Geometries.Count ? "one vertex buffer per geometry" : "vertex buffers shared");
                             }
                             if (anyMulti) { multiGeometry++; }
+                            StructureFacts(relative, entry.Name, file, structureEligibility, boundsRecords, graphicsOrder, structureTemplates);
                             if ((anyMulti || used.Length > 1) && samples.Count < Samples) { samples.Add(Sample(relative, entry.Name, resource, file)); }
                         }
                         catch (Exception error)
@@ -192,7 +197,7 @@ namespace LibertyFramework.Content
             }
             return new Dictionary<string, object>
             {
-                { "question", "How do the game's drawables use several geometries, several shaders and LOD slots 1-3, and does the reader parse them all?" },
+                { "question", "How do the game's drawables use several geometries, several shaders and LOD slots 1-3, does the reader parse them all, and which can the structure writer use as templates?" },
                 { "drawables", total }, { "parsed", parsed }, { "failed", total - parsed },
                 { "multiGeometryDrawables", multiGeometry }, { "multiLodDrawables", multiLod },
                 { "withSkeleton", withSkeleton }, { "geometriesWithBones", withBones },
@@ -203,10 +208,48 @@ namespace LibertyFramework.Content
                 { "multiGeometryIndexData", Sorted(indexOrder) }, { "multiGeometryVertexBuffers", Sorted(sharedBuffers) },
                 { "lodDistances", Sorted(lodDistances).Take(60).ToDictionary(p => p.Key, p => p.Value) },
                 { "systemSizes", Sorted(systemSizes) }, { "graphicsSizes", Sorted(graphicsSizes) }, { "rscFlagSizes", Sorted(flagPages).Take(40).ToDictionary(p => p.Key, p => p.Value) },
+                { "structureWriterEligibility", Sorted(structureEligibility) }, { "boundsRecordsMultiGeometry", Sorted(boundsRecords) },
+                { "graphicsOrderMultiGeometry", Sorted(graphicsOrder) },
+                { "structureTemplates", structureTemplates.OrderBy(p => p.Key, StringComparer.Ordinal).Take(MaxTemplateKinds).ToDictionary(p => p.Key, p => (object)p.Value) },
                 { "failures", Sorted(failures) }, { "failureExamples", failureExamples },
                 { "entryExtensions", Sorted(extensions) }, { "archives", archivesReport }, { "skipped", skipped },
                 { "samples", samples }
             };
+        }
+
+        private const int MaxTemplateKinds = 60, MaxTemplatesPerKind = 5;
+
+        // What the structure writer (DrawableStructureBuilder) makes of one drawable: eligible or why not; for models with
+        // several geometries, how many sphere records sit at model +0x0C relative to the geometry count (measured: each record
+        // must enclose its geometry); the order of all buffers in the graphics segment; and, when the drawable could be a
+        // structure template (eligible, no skeleton, no embedded textures, one texture per shader), its shape.
+        private static void StructureFacts(string archive, string name, DrawableFile file, Dictionary<string, int> eligibility, Dictionary<string, int> bounds,
+            Dictionary<string, int> order, Dictionary<string, List<string>> templates)
+        {
+            string reason = DrawableStructureBuilder.Unsupported(file);
+            Count(eligibility, reason ?? "eligible");
+            List<DrawableGeometry> all = DrawableStructureBuilder.Geometries(file).ToList();
+            if (all.Count > 1)
+            {
+                List<Tuple<uint, string>> buffers = all.SelectMany((g, i) => new[] { Tuple.Create(g.VertexData, "v" + i), Tuple.Create(g.IndexData, "i" + i) }).OrderBy(b => b.Item1).ToList();
+                string sequence = string.Join(",", buffers.Select(b => b.Item2).ToArray());
+                string interleaved = string.Join(",", Enumerable.Range(0, all.Count).SelectMany(i => new[] { "v" + i, "i" + i }).ToArray());
+                string verticesFirst = string.Join(",", Enumerable.Range(0, all.Count).Select(i => "v" + i).Concat(Enumerable.Range(0, all.Count).Select(i => "i" + i)).ToArray());
+                Count(order, sequence == interleaved ? "Interleaved" : sequence == verticesFirst ? "VerticesFirst" : "other");
+            }
+            if (reason != null) { return; }
+            foreach (DrawableModel model in file.Models.Where(m => m.Geometries.Count > 1 && m.Bounds != 0))
+            {
+                int records = DrawableStructureBuilder.BoundsRecords(file, model), n = model.Geometries.Count;
+                Count(bounds, records == n + 1 ? "geometries + 1" : records == n ? "one per geometry" : records == 1 ? "one" : "none fits");
+            }
+            if (file.Skeleton != 0 || file.EmbeddedTextures != 0 || file.Shaders.Any(sh => sh.TextureNameSlots.Count != 1)) { return; }
+            string shape = "slots " + string.Join("", Enumerable.Range(0, 4).Select(l => file.Models.Any(m => m.Lod == l) ? l.ToString(CultureInfo.InvariantCulture) : "-").ToArray()) +
+                ", geometries " + string.Join("/", Enumerable.Range(0, 4).Where(l => file.Models.Any(m => m.Lod == l)).Select(l => file.Models.First(m => m.Lod == l).Geometries.Count.ToString(CultureInfo.InvariantCulture)).ToArray()) +
+                ", shaders " + string.Join("+", file.Shaders.Select(sh => sh.Name).Distinct().OrderBy(x => x, StringComparer.Ordinal).ToArray());
+            List<string> names;
+            if (!templates.TryGetValue(shape, out names)) { names = new List<string>(); templates[shape] = names; }
+            if (names.Count < MaxTemplatesPerKind) { names.Add(archive + "/" + Path.GetFileNameWithoutExtension(name)); }
         }
 
         // How a model's geometries place their data in the graphics segment, in geometry order.

@@ -13,15 +13,16 @@ namespace LibertyFramework.Content
     // `selftest`: offline tests of the compiler's parts that need no game files. DXT1/DXT3/DXT5 codecs, the texture name
     // hash, the mip chain, the from-scratch texture dictionary writer (read back with the same parser that reads the game's
     // dictionaries, its own output re-captured and rebuilt as `wtdcheck` does with game files, single and multi-page
-    // placement), the native read-back check, the validator's LOD/material rules, manifests, and the sample asset's glTF
-    // import. `--out <dir>` also writes source/decoded PNGs of the test textures and the test dictionaries. Exit 0 = all pass.
+    // placement), the native read-back check, the validator's LOD/material rules, manifests, the authoring side
+    // (AuthoringSelfTest: collision import, structure and world-object rules, capabilities, report), and the sample
+    // asset's glTF import. `--out <dir>` also writes source/decoded PNGs of the test textures and the test dictionaries. Exit 0 = all pass.
     internal static class SelfTest
     {
         // Quality floors for the synthetic test images (smooth gradients): reference DXT encoders score 35+ dB on them.
         private const double MinimumGradientPsnrDb = 30;
         private const int MaxRampAlphaError = 20;
 
-        private sealed class Runner
+        internal sealed class Runner
         {
             internal int Passed;
             internal readonly List<string> Failures = new List<string>();
@@ -67,6 +68,17 @@ namespace LibertyFramework.Content
                 Group("native source", NativeSource),
                 Group("validator", Validator),
                 Group("manifest", Manifest),
+                Group("capabilities", AuthoringSelfTest.Capabilities),
+                Group("collision import", AuthoringSelfTest.CollisionImport),
+                Group("structure rules", AuthoringSelfTest.StructureRules),
+                Group("world object rules", AuthoringSelfTest.WorldObjectRules),
+                Group("report structure", AuthoringSelfTest.ReportStructure),
+                Group("fixture matching", AuthoringSelfTest.FixtureMatching),
+                Group("structure round trip", StructureSelfTest.RoundTrip),
+                Group("structure bounds records", StructureSelfTest.BoundsRecords),
+                Group("structure trimming", StructureSelfTest.Trimming),
+                Group("structure compiler", StructureSelfTest.Compiler),
+                Group("structure commands", StructureSelfTest.Commands),
                 Group("sample asset", Sample),
                 Group("probes", Probes),
             };
@@ -573,7 +585,7 @@ namespace LibertyFramework.Content
 
         // --- validator ---
 
-        private static ContentMesh Box(string name, int lod, int material, float size)
+        internal static ContentMesh Box(string name, int lod, int material, float size)
         {
             ContentMesh mesh = new ContentMesh { Name = name, Lod = lod, Material = material, HadNormals = true, HadUvs = true };
             float[][] corners = { new[] { 0f, 0f, 0f }, new[] { size, 0f, 0f }, new[] { size, size, 0f }, new[] { 0f, size, 0f }, new[] { 0f, 0f, size }, new[] { size, 0f, size }, new[] { size, size, size }, new[] { 0f, size, size } };
@@ -587,7 +599,7 @@ namespace LibertyFramework.Content
             return mesh;
         }
 
-        private static ContentAsset Asset(params ContentMesh[] meshes)
+        internal static ContentAsset Asset(params ContentMesh[] meshes)
         {
             ContentAsset asset = new ContentAsset { Name = "selftest", SourcePath = "selftest.gltf" };
             asset.Materials.Add(new ContentMaterial { Name = "first" });
@@ -596,7 +608,7 @@ namespace LibertyFramework.Content
             return asset;
         }
 
-        private static List<string> Codes(ContentAsset asset, CompilerCapabilities capabilities, string severity)
+        internal static List<string> Codes(ContentAsset asset, CompilerCapabilities capabilities, string severity)
         {
             return AssetValidator.Validate(asset, capabilities).Where(i => severity == null || i.Severity == severity).Select(i => i.Code).ToList();
         }
@@ -638,7 +650,7 @@ namespace LibertyFramework.Content
             t.Check(built[0].TriangleCount == 36 && built[0].VertexCount == 24, "LOD totals", built[0].TriangleCount + " " + built[0].VertexCount);
         }
 
-        private static AssetManifest ParseManifest(string json)
+        internal static AssetManifest ParseManifest(string json)
         {
             using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(json))) { return AssetManifest.Parse(stream, "test.json"); }
         }
@@ -652,6 +664,13 @@ namespace LibertyFramework.Content
             t.Throws<InvalidDataException>(() => ParseManifest(head.Replace("\"schemaVersion\":1", "\"schemaVersion\":2") + "}"), "schemaVersion 2 is refused");
             t.Throws<InvalidDataException>(() => ParseManifest(head.Replace("\"name\":\"lf_test\"", "\"name\":\"" + new string('n', 24) + "\"") + "}"), "names over 23 characters are refused");
             t.Throws<InvalidDataException>(() => ParseManifest(head.Replace("\"drawDistanceMeters\":100", "\"drawDistanceMeters\":0") + "}"), "draw distance 0 is refused");
+            t.Check(ParseManifest(head.Replace("\"type\":\"prop\"", "\"type\":\"object\"") + "}").Type == AssetManifest.TypeObject, "type object parses (the capabilities decide whether it builds)");
+            t.Throws<InvalidDataException>(() => ParseManifest(head.Replace("\"type\":\"prop\"", "\"type\":\"vehicle\"") + "}"), "unknown type is refused");
+            t.Check(ParseManifest(head + ",\"lodDistancesMeters\":[20,40.5]}").LodDistancesMeters.SequenceEqual(new[] { 20f, 40.5f }), "lodDistancesMeters parses");
+            t.Check(ParseManifest(head + "}").LodDistancesMeters == null, "lodDistancesMeters is optional");
+            t.Throws<InvalidDataException>(() => ParseManifest(head + ",\"lodDistancesMeters\":[1,2,3,4,5]}"), "five LOD distances are refused (four LOD slots)");
+            t.Throws<InvalidDataException>(() => ParseManifest(head + ",\"lodDistancesMeters\":[]}"), "an empty lodDistancesMeters is refused");
+            t.Throws<InvalidDataException>(() => ParseManifest(head + ",\"lodDistancesMeters\":[0]}"), "a zero LOD distance is refused");
         }
 
         private static void Sample(Runner t, string output)

@@ -26,12 +26,13 @@ STATUSES = ("QUEUED", "PASS", "FAIL", "ERROR", "CRASH", "NOT-RUN", "NEEDS-REVIEW
 TOOLS = {
     "build": "tools/build.ps1 + tools/build-core.ps1 (engine, SDK, mods, native core and its unit tests)",
     "verify": "tools/verify.ps1 -GameDirectory <game> (every section, including GTAIV.exe and game archives)",
-    "content-selftest": "tools/build-content.ps1 + LibertyContent selftest",
+    "content-selftest": "tools/build-content.ps1 + LibertyContent selftest + LibertyContent fixtures tests/content/fixtures",
     "wtdcheck": "LibertyContent wtdcheck --game <game> <archives...>",
     "blender-tests": "tools/blender/run-tests.ps1 -GameDirectory <game> -Blender <blender.exe>",
     "package-install": "tools/package-phase2.ps1, then tools/install-phase2.ps1 (backup kept for rollback)",
     "content-report": "reads staging/phase2-reports/content/<asset>/report.json and checks fields",
     "probe": "LibertyContent probe <name> --game <game> --out <results>/<id>.json (structure only, never asset data)",
+    "drawable-roundtrip": "LibertyContent roundtrip --game <game> --out <results>/<id>.json [archives...] (every IMG when none)",
 }
 REQUIRED = ("id", "task", "title", "kind", "run", "pass", "proves", "status")
 ID = re.compile(r"^[A-Z0-9]+(-[A-Za-z0-9]+)+$")

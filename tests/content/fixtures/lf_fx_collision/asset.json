@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "name": "lf_fx_collision",
+  "type": "prop",
+  "source": "lf_fx_collision.gltf",
+  "template": {
+    "archive": "pc/models/cdimages/weapons.img",
+    "model": "amb_nailgun"
+  },
+  "textureDictionary": "lf_fx_collision",
+  "drawDistanceMeters": 120.0
+}

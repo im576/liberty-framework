@@ -10,6 +10,8 @@ namespace LibertyFramework.Content
         internal string Name;
         internal string SourcePath;
         internal readonly List<ContentMesh> Meshes = new List<ContentMesh>();
+        // Collision shapes (nodes tagged liberty_collision or named *_col): never drawn, not part of any LOD.
+        internal readonly List<ContentCollision> Collisions = new List<ContentCollision>();
         internal readonly List<ContentMaterial> Materials = new List<ContentMaterial>();
         internal readonly List<Bitmap> Images = new List<Bitmap>();
         internal readonly List<string> ImageNames = new List<string>();
