@@ -79,6 +79,7 @@ namespace LibertyFramework.Content
                 Group("structure trimming", StructureSelfTest.Trimming),
                 Group("structure compiler", StructureSelfTest.Compiler),
                 Group("structure commands", StructureSelfTest.Commands),
+                Group("writer choice", StructureSelfTest.WriterChoice),
                 Group("sample asset", Sample),
                 Group("probes", Probes),
             };

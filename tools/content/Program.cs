@@ -51,6 +51,8 @@ namespace LibertyFramework.Content
             catch (Exception error)
             {
                 Console.WriteLine("ERROR " + error.GetType().Name + ": " + error.Message);
+                // LIBERTY_DEBUG=1 prints where it came from.
+                if (Environment.GetEnvironmentVariable("LIBERTY_DEBUG") == "1") { Console.WriteLine(error.StackTrace); }
                 return 3;
             }
         }
@@ -59,6 +61,7 @@ namespace LibertyFramework.Content
         {
             AssetManifest manifest = AssetManifest.Load(manifestPath);
             ContentAsset asset = GltfImporter.Import(manifest.SourcePath);
+            manifest.ResolveWriter(asset);
             List<AssetValidator.Issue> issues = AssetValidator.Validate(asset, manifest, CompilerCapabilities.For(manifest));
             foreach (AssetValidator.Issue issue in issues) { Console.WriteLine(issue); }
             bool failed = AssetValidator.HasErrors(issues);
@@ -81,6 +84,7 @@ namespace LibertyFramework.Content
             string folder = Path.Combine(output, manifest.Name);
             Directory.CreateDirectory(folder);
             ContentAsset asset = GltfImporter.Import(manifest.SourcePath);
+            manifest.ResolveWriter(asset);
             List<AssetValidator.Issue> issues = AssetValidator.Validate(asset, manifest, CompilerCapabilities.For(manifest));
             foreach (AssetValidator.Issue issue in issues) { Console.WriteLine("  " + issue); }
             List<string> readback = new List<string>();
@@ -133,6 +137,8 @@ namespace LibertyFramework.Content
             json.Append("  \"asset\": ").Append(Quote(manifest.Name)).Append(",\n");
             json.Append("  \"status\": ").Append(Quote(status)).Append(",\n");
             json.Append("  \"type\": ").Append(Quote(manifest.Type)).Append(",\n");
+            json.Append("  \"writer\": { \"drawable\": ").Append(Quote(manifest.DrawableWriter)).Append(", \"reason\": ").Append(Quote(manifest.WriterReason))
+                .Append(", \"textureMode\": ").Append(Quote(manifest.TextureMode)).Append(" },\n");
             json.Append("  \"source\": ").Append(Quote(asset.SourcePath)).Append(",\n");
             json.Append("  \"template\": ").Append(Quote(manifest.Template.Archive + "/" + manifest.Template.Model)).Append(",\n");
             json.Append("  \"capabilities\": ").Append(CompilerCapabilities.For(manifest).ToJson()).Append(",\n");

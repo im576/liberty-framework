@@ -57,9 +57,11 @@ STRUCTURE_CAPABILITIES = {
 }
 
 
-def capabilities_for(settings):
-    """The limits of the drawable writer the asset settings choose."""
-    return STRUCTURE_CAPABILITIES if getattr(settings, "drawable_writer", 'template') == 'structure' else CAPABILITIES
+def capabilities_for(settings, crowded=False):
+    """The limits of the drawable writer the settings choose; crowded: a LOD has several materials, which makes the
+    automatic writer (the default) choose the structure writer, as the compiler's ResolveWriter does."""
+    writer = getattr(settings, "drawable_writer", 'auto')
+    return STRUCTURE_CAPABILITIES if writer == 'structure' or (writer == 'auto' and crowded) else CAPABILITIES
 
 # Format limits (AssetValidator.cs), not tuning values.
 MAX_VERTICES_PER_GEOMETRY = CAPABILITIES["maxVerticesPerGeometry"]
@@ -232,10 +234,6 @@ def run(context, settings):
     if abs(unit - 1.0) > 1e-6:
         add("warning", "LBX004", "scene unit scale is %g; glTF writes Blender units as metres (set Unit Scale to 1)" % unit)
 
-    caps = capabilities_for(settings)
-    if settings.drawable_writer == 'structure' and settings.texture_mode != 'native':
-        add("error", "LBX033", "the structure writer writes one texture per material into a new dictionary: set Texture mode to Native (LCC038)")
-
     depsgraph = context.evaluated_depsgraph_get()
     low = np.full(3, np.inf)
     high = np.full(3, -np.inf)
@@ -279,6 +277,12 @@ def run(context, settings):
                 add("error", "LBX014", "%s is textured but has no UV map" % obj.name)
         finally:
             evaluated.to_mesh_clear()
+
+    crowded = any(len([m for m in used if m is not None]) + (1 if None in used else 0) > 1 for used in materials_per_lod.values())
+    caps = capabilities_for(settings, crowded)
+    if caps is STRUCTURE_CAPABILITIES and settings.texture_mode != 'native':
+        add("info", "LBX033", "the %s writer builds this asset with one native texture per material (Texture mode Template is not used)" %
+            ("structure" if settings.drawable_writer == 'structure' else "automatic writer chooses the structure"))
 
     for material in sorted(materials, key=lambda m: m.name):
         shader = str(material.get(SHADER_PROPERTY, "gta_default"))

@@ -172,12 +172,20 @@ def main():
     expect_built(lambda: compiled.get("textureMode") == "native" and compiled.get("textureFormat") == "DXT1" and compiled.get("textureSize") == [128, 128] and
            compiled.get("textureLevels") == 6 and compiled.get("textureQuality", {}).get("psnrRgbDb", 0) >= 30, "native texture: 128x128 DXT1, 6 levels, PSNR >= 30 dB", lambda: compiled)
 
-    # 4. Two materials in LOD 0: authored as it is (a warning in Blender, exported), refused by the compiler (LCC016).
+    # 4. Two materials in LOD 0: the automatic writer takes the structure writer (valid, two geometries, native textures);
+    #    with Drawable writer Template it is authored as it is (a warning in Blender, exported) and refused (LCC016).
     #    An authoring error (a bad name) still writes nothing.
     clear_scene()
     a, b = box("lf_bt_two_a", (0, 0, 0), (0.5, 0.5, 0.5), material("red")), box("lf_bt_two_b", (0.5, 0, 0), (1, 0.5, 0.5), material("blue"))
     select(a, b)
     settings.asset_name = "lf_bt_two"
+    outcome = call(bpy.ops.liberty.export)
+    result = state.get(scene)
+    validation = report("lf_bt_two") if os.path.isfile(os.path.join(BUILD, "lf_bt_two", "report.json")) else {}
+    expect(outcome == {'FINISHED'} and result.status == "exported" and "LBX009" not in codes(result.issues) and "LBX033" in codes(result.issues) and
+           validation.get("writer", {}).get("drawable") == "structure" and validation.get("writer", {}).get("textureMode") == "native",
+           "automatic writer: two materials build with the structure writer and native textures", "%s %s %s" % (outcome, result.status, validation.get("writer")))
+    settings.drawable_writer = 'template'
     outcome = call(bpy.ops.liberty.export)
     result = state.get(scene)
     lbx009 = [i for i in result.issues if i.code == "LBX009"]
@@ -188,6 +196,7 @@ def main():
     validation = report("lf_bt_two") if os.path.isfile(os.path.join(BUILD, "lf_bt_two", "report.json")) else {}
     expect(validation.get("status") == "invalid" and len(validation.get("structure", {}).get("lods", [{}])[0].get("geometries", [])) == 2 and
            result.report.endswith("report.json"), "validation report: invalid, LOD 0 with two geometries", validation.get("structure"))
+    settings.drawable_writer = 'auto'
     settings.asset_name = "lf bt two"
     outcome = call(bpy.ops.liberty.export)
     expect(outcome == {'CANCELLED'} and "LBX002" in codes(state.get(scene).issues) and not os.path.exists(os.path.join(CONTENT, "props", "lf bt two")),
@@ -383,19 +392,20 @@ def main():
     select(*two)
     settings.asset_name = "lf_bt_struct"
     settings.drawable_writer = 'structure'
-    expect("LBX033" in codes(checks.run(bpy.context, settings)), "structure writer with template textures: LBX033")
+    found = checks.run(bpy.context, settings)
+    expect([i.severity for i in found if i.code == "LBX033"] == ["info"], "structure writer with Template texture mode: LBX033 says native textures are used", codes(found))
     settings.texture_mode = 'native'
     found = checks.run(bpy.context, settings)
-    expect(not checks.has_errors(found) and "LBX009" not in codes(found), "structure writer: two materials in LOD 0 are no warning", codes(found))
+    expect(not checks.has_errors(found) and "LBX009" not in codes(found) and "LBX033" not in codes(found), "structure writer: two materials in LOD 0 are no warning", codes(found))
     outcome = call(bpy.ops.liberty.export)
     result = state.get(scene)
     manifest = json.load(open(os.path.join(CONTENT, "props", "lf_bt_struct", "asset.json"), encoding="utf-8"))
-    expect(manifest.get("drawableWriter") == "structure" and manifest.get("structureTemplate") == {"archive": "*", "model": "auto"} and manifest.get("textureMode") == "native",
-           "asset.json: drawableWriter, structureTemplate, textureMode", manifest)
+    expect(manifest.get("drawableWriter") == "structure" and "structureTemplate" not in manifest and manifest.get("textureMode") == "native",
+           "asset.json: drawableWriter and textureMode; the default template search is not written", manifest)
     validation = report("lf_bt_struct") if os.path.isfile(os.path.join(BUILD, "lf_bt_struct", "report.json")) else {}
     expect(outcome == {'FINISHED'} and result.status == "exported" and validation.get("capabilities", {}).get("version") == "v2-structure",
            "LibertyContent validates it with the structure capabilities", "%s %s %s" % (outcome, result.status, validation.get("capabilities")))
-    settings.drawable_writer = 'template'
+    settings.drawable_writer = 'auto'
     settings.texture_mode = 'template'
 
     print("RESULT passed=%d failed=%d%s" % (results["passed"], results["failed"], (" notrun=%d" % results["notrun"]) if results["notrun"] else ""))

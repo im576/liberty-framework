@@ -1,14 +1,15 @@
 {
-  "status": "invalid",
-  "errors": [
-    "LCC016"
-  ],
+  "status": "valid",
+  "errors": [],
   "codes": [
     "LCC026"
   ],
   "report": {
     "type": "prop",
     "meshes": 5,
+    "writer": {
+      "drawable": "structure"
+    },
     "structure": {
       "lods": [
         {

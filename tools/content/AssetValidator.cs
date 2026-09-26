@@ -255,7 +255,7 @@ namespace LibertyFramework.Content
             }
             if (manifest.DrawableWriter == AssetManifest.WriterStructure && manifest.TextureMode != AssetManifest.TextureModeNative)
             {
-                Add(issues, "error", "LCC038", "drawableWriter structure writes one texture per material into a dictionary written from scratch: set textureMode native");
+                Add(issues, "error", "LCC038", "the structure writer writes one texture per material into a dictionary written from scratch: textureMode template cannot be used with it (remove textureMode or set native)");
             }
             if (manifest.Type == AssetManifest.TypeObject && asset.Collisions.Count == 0)
             {
