@@ -21,7 +21,7 @@ Those projects are GPL-3.0 and are not copied (AGENTS.md rule 7). This table tra
 | Version / episode detection | **Done**: game version, episode (IV/TLAD/TBoGT) | `MemoryService.GameVersion`, `ILiberty.Episode` |
 | **Tooling** | | |
 | Debug UI | **Done**: DevTools (engine module), Liberty.Ui list/radial menus, canvas | DevTools, `Engine/Ui` |
-| Inspector | **Partial**: `lf engine/modules/perf/pools/owned/costs/natives` commands; visual inspector planned | M5 |
+| Inspector | **Done**: `lf inspector` on-screen overlay (engine numbers, one row per module), plus the `lf engine/modules/perf/pools/owned/costs/natives/hooks` commands | `Engine/Ui/InspectorOverlay.cs` |
 | Tracing / profiling | **Done** (basic): per-module cost EMA/max, named cost samples, frame p95, memory/address space, governor | `PerfService`, `Governor` |
 | Crash capture | **Done**: minidump + phase (which module) on crash; stall watchdog with minidump | `crash.cpp`, `Watchdog` |
 | Remote control | **Done**: file command channel (autopilot inbox/outbox), console | `CommandRegistry` |
@@ -35,7 +35,7 @@ Those projects are GPL-3.0 and are not copied (AGENTS.md rule 7). This table tra
 | **M2 Hooks + exact damage** | ADR-0007 core hook manager; damage hook: attacker, victim, weapon, damage, armour, bone, hit position/direction, type, kill | **Done 2026-09-25**: autopilot `exact-damage` passes (exact bullet hits with hit points, falls typed Fall, exact kills) |
 | **M3 WorldQuery** | snapshot queries (radius/cone of peds and vehicles), ground/water, perception and visibility; later engine raycast/line of sight | layer 1 done (`Liberty.Query`, self-test); raycast open |
 | **M4 Content pipeline 1** | glTF → IR → validators → WDR/WTD (single page) → IMG; read-back verification; preview renders; Blender add-on v0; autopilot asset scenario | **Done 2026-09-25** (`docs/content/README.md`): the glTF test crate compiles, reads back identical, spawns and renders correctly in game (`asset-review`) |
-| **M5 Developer loop** | per-module hot reload (dev), visual inspector | reload a mod without restarting |
+| **M5 Developer loop** | per-module hot reload (dev), visual inspector | **Done 2026-09-26**: `hot-reload` scenario (the autopilot reloads itself and its self-test passes 38/38), `inspector-review` |
 | **M6 Content pipeline 2+** | skinned meshes, LODs, collision bounds, multi-page resources, WDD/WFT, animations | per-format scenarios |
 
 ## SDK 1.0 freeze criteria

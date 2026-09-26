@@ -60,6 +60,9 @@ namespace LibertyFramework.Engine.Services
             while (ped == null && unchecked(Environment.TickCount - deadline) < 0)
             {
                 ped = GTA.World.CreatePed(Handles.V(position));
+                // Right after a teleport the area's ambient models may not be streamed: SHDN can then hand back a ped
+                // object that does not exist (seen 2026-09-26 at the gun range); retry until the timeout like a null.
+                if (ped != null && !ped.Exists()) { ped = null; }
                 if (ped == null) { yield return Wait.Milliseconds(100); }
             }
             PedRef handle = PedRef.None;

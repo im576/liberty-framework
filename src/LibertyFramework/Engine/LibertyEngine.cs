@@ -79,6 +79,7 @@ namespace LibertyFramework.Engine
         private bool hotReloadActive;
         private int reloadCount;
         private long leakedReloadBytes;
+        private readonly LibertyFramework.Engine.Ui.InspectorOverlay inspector = new LibertyFramework.Engine.Ui.InspectorOverlay();
         private readonly CoreBridge core = new CoreBridge();
         private readonly string[] phaseNames = new string[MaxPhases];
         private volatile int phase = -1;
@@ -336,6 +337,7 @@ namespace LibertyFramework.Engine
             Commands.Register(null, "restart", "restart <module> - stop it (and its dependents), then start fresh instances", args => RestartCommand(args));
             Commands.Register(null, "reload", "reload <module> - load its mod assembly again and swap every module in it (dev)", args => ReloadCommand(args));
             Commands.Register(null, "hotreload", "hotreload [on|off] - reload mod assemblies when their file changes (dev)", args => HotReloadCommand(args));
+            Commands.Register(null, "inspector", "inspector [on|off] - on-screen engine and module inspector (dev)", args => InspectorCommand(args));
         }
 
         public string Status()
@@ -405,6 +407,12 @@ namespace LibertyFramework.Engine
             // Engine modules live in the SHDN-loaded engine assembly: SHDN's ReloadScripts reloads that.
             if (m.SourcePath == null) { return m.Id + " is built into the engine assembly; use restart (or SHDN ReloadScripts for new engine code)"; }
             return ReloadAssembly(m.SourcePath);
+        }
+
+        private string InspectorCommand(string[] args)
+        {
+            inspector.Visible = args.Length > 0 ? args[0] == "on" : !inspector.Visible;
+            return "inspector " + (inspector.Visible ? "on" : "off");
         }
 
         private string HotReloadCommand(string[] args)
@@ -617,6 +625,8 @@ namespace LibertyFramework.Engine
                 SetPhase(PhaseCommands);
                 Commands.PumpFileChannel();
                 if (hotReloadActive) { PollHotReload(now); }
+                try { inspector.Refresh(this, now, reloadCount); }
+                catch (Exception error) { RuntimeLog.Error("engine_inspector_failed error=" + error.Message); inspector.Visible = false; }
                 Entities.Flush(false);
                 CostMeter.Add("engine.frame", frameStart);
                 if (unchecked(now - lastReportMs) >= 30000)
@@ -723,6 +733,8 @@ namespace LibertyFramework.Engine
                 try { m.Module.OnDraw(canvas); }
                 catch (Exception error) { RuntimeLog.Error("engine_canvas_failed " + m.Id + " error=" + error); }
             }
+            canvas.Opacity = 1f;
+            inspector.Draw(canvas);
         }
 
         // ---- stopping ----

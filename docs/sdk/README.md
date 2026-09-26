@@ -167,6 +167,7 @@ from the game's last-damage records.
 | `lf reload <module>` | Loads the module's DLL from `scripts\LibertyFramework\mods` again and swaps every module in it |
 | `lf restart <module>` | Stops the module and its dependents, then starts fresh instances of the same code (engine modules too) |
 | `lf hotreload on/off` | Reloads a mod automatically when its DLL changes (also `hotReload` in `engine.json`; default off) |
+| `lf inspector on/off` | Shows an on-screen panel: frame time, pressure, memory, pools, and one row per module (state, avg/max ms, interval, owned resources, reloads) |
 
 How a reload works:
 1. The old modules stop exactly as they would on failure: `OnStop`, then everything they own is released. Modules

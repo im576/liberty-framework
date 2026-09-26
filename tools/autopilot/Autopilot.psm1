@@ -107,7 +107,8 @@ function Send-GameKey([string] $Key, [int] $HoldMs = 80) {
 function Save-Screenshot([string] $Path) {
     $folders = Get-ChildItem 'C:\Program Files (x86)\Steam\userdata' -Directory -ErrorAction SilentlyContinue | ForEach-Object { Join-Path $_.FullName '760\remote\12210\screenshots' }
     $before = Get-Date
-    if ((Get-GameProcess) -and (Focus-Game)) {
+    # Right after launch the Steam overlay may not take the first F12 yet: try twice before giving up.
+    for ($attempt = 0; $attempt -lt 2 -and (Get-GameProcess) -and (Focus-Game); $attempt++) {
         Send-GameKey F12 120
         $deadline = (Get-Date).AddSeconds(8)
         while ((Get-Date) -lt $deadline) {
@@ -122,7 +123,9 @@ function Save-Screenshot([string] $Path) {
             }
         }
     }
-    return Save-DesktopScreenshot $Path
+    Save-DesktopScreenshot $Path | Out-Null
+    # GDI capture of a Vulkan (DXVK) window is black: fail the step so a useless screenshot never passes silently.
+    throw "no Steam screenshot for $(Split-Path -Leaf $Path) (desktop fallback saved; it is black under Vulkan)"
 }
 
 function Save-DesktopScreenshot([string] $Path) {

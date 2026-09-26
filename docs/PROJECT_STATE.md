@@ -136,3 +136,17 @@ Keep it short: this is a dashboard, not a diary.
 **M4, Liberty Content Compiler v1:** `tools/content`, `content/`, `docs/content/README.md`.
 - Pipeline: glTF import → validation (LCC001–023) → template-based WDR/WTD → read-back → previews and report → LibertyContent.img + lf_content.ide.
 - The test crate renders correctly in game (`asset-review`).
+
+**M4 Blender add-on (2026-09-26):**
+- `tools/blender/liberty_exporter` 0.1.0 (docs/content/BLENDER.md): checks LBX001–022, exports glTF + asset.json, runs LibertyContent validate/build.
+- 23 headless tests plus extension validation pass on Blender 5.2.2.
+- `content/props/lf_blender_barrel` is made in Blender and renders correctly in game (`asset-review` passes).
+
+**M5 developer loop:**
+- Hot reload: `lf reload <module>` swaps a mod assembly in the running game, and `lf restart <module>` restarts one.
+- `hotreload on` watches the mods folder (`engine.json` `hotReload`, off by default; leak cap `hotReloadMaxLeakMegabytes`).
+- The `hot-reload` scenario passes: after the autopilot reloads itself, its crate is released and the self-test passes 38/38.
+- The trunk choreography timings moved to `arsenal.json` `trunkTimings`.
+- Visual inspector: `lf inspector on` (`inspector-review` passes).
+- Full regression suite passes (docs/reports/2026-09-26-sdk-1.0.md).
+- Next: raycast (physics RE), skinned meshes/LODs/collision in LCC, then episodes (TLAD/TBoGT) coverage.

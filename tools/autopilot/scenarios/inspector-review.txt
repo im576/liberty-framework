@@ -1,0 +1,14 @@
+# M5 visual inspector: engine numbers and one row per module on screen (lf inspector).
+god on
+wanted 0
+goto east_park
+wait 4000
+inspector on
+expect "reply=.inspector on" 10
+wait 2000
+shot inspector
+restart devtools
+wait 1500
+shot inspector_after_restart
+inspector off
+clear
