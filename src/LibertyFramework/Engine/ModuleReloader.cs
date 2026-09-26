@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
+using LibertyFramework.Core.Logging;
 
 namespace LibertyFramework.Engine
 {
@@ -76,16 +77,17 @@ namespace LibertyFramework.Engine
                 stamp.WriteUtc = info.LastWriteTimeUtc;
                 return true;
             }
-            catch (IOException) { return false; }
-            catch (UnauthorizedAccessException) { return false; }
+            // Expected while a build replaces the file; the next poll retries. Logged (AGENTS.md rule 8) at info level.
+            catch (IOException error) { RuntimeLog.Info("hot_reload_stat_busy " + Path.GetFileName(path) + " error=" + error.Message); return false; }
+            catch (UnauthorizedAccessException error) { RuntimeLog.Info("hot_reload_stat_denied " + Path.GetFileName(path) + " error=" + error.Message); return false; }
         }
 
         // Null while another process still holds the file for writing (the next settled poll retries).
         private static byte[] TryRead(string path)
         {
             try { return File.ReadAllBytes(path); }
-            catch (IOException) { return null; }
-            catch (UnauthorizedAccessException) { return null; }
+            catch (IOException error) { RuntimeLog.Info("hot_reload_read_busy " + Path.GetFileName(path) + " error=" + error.Message); return null; }
+            catch (UnauthorizedAccessException error) { RuntimeLog.Info("hot_reload_read_denied " + Path.GetFileName(path) + " error=" + error.Message); return null; }
         }
 
         internal static string Hash(byte[] bytes)

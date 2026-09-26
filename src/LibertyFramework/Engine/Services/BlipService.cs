@@ -14,16 +14,22 @@ namespace LibertyFramework.Engine.Services
 
         internal BlipService(LibertyEngine engine) { this.engine = engine; }
 
-        public BlipRef AddForPosition(LibertyModule owner, Vec3 position) { return Own(owner, Blip.AddBlip(Handles.V(position))); }
+        public BlipRef AddForPosition(LibertyModule owner, Vec3 position)
+        {
+            engine.RequireOwner(owner);
+            return Own(owner, Blip.AddBlip(Handles.V(position)));
+        }
 
         public BlipRef AddForPed(LibertyModule owner, PedRef ped)
         {
+            engine.RequireOwner(owner);
             Ped target = Handles.Ped(ped);
             return target != null ? Own(owner, Blip.AddBlip(target)) : BlipRef.None;
         }
 
         public BlipRef AddForVehicle(LibertyModule owner, VehicleRef vehicle)
         {
+            engine.RequireOwner(owner);
             Vehicle target = Handles.Vehicle(vehicle);
             return target != null ? Own(owner, Blip.AddBlip(target)) : BlipRef.None;
         }

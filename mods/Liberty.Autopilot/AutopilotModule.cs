@@ -55,6 +55,8 @@ namespace Liberty.Autopilot
             Register("menu-close", "close the menus this module opened", a => { int n = menus.Count; foreach (IMenu m in menus) { m.Close(); } menus.Clear(); return "closed " + n; });
             Register("fight", "fight <subject> <subject> - two subjects attack each other (exact damage events)", Fight);
             Register("fire", "fire <subject|all> [ms] - armed subjects shoot at a point beside them (bullet events)", Fire);
+            Register("rayto", "rayto <subject index|car|prop> [mask: all|world,peds,vehicles,objects] - Query.Raycast from the player to a spawned target", RayTo);
+            Register("los", "los <subject index> - Query.HasLineOfSight from the player to a subject (and back)", LineOfSight);
             Liberty.Log.Info(this, "autopilot_ready sdk=" + SdkVersion.Text + " engine=" + Liberty.EngineVersion + " episode=" + Liberty.Episode);
         }
 
@@ -148,7 +150,7 @@ namespace Liberty.Autopilot
         private string SpawnProp(string[] args)
         {
             if (args.Length == 0) { return "spawnprop <model>"; }
-            ModelRef model = args[0];
+            ModelRef model = Args.Word(args, 0);
             if (!Liberty.Streaming.IsValidModel(model)) { return "model " + args[0] + " is not in the game's model index"; }
             // InFront returns a point 1 m above the ground; height is measured from the ground.
             Vec3 at = InFront(Args.Float(args, 1, 2.5f), 0) + new Vec3(0, 0, Args.Float(args, 2, 0f) - 1f);
@@ -226,7 +228,7 @@ namespace Liberty.Autopilot
             PedRef ped = Liberty.Player.Ped;
             if (args.Length > 0 && args[0] == "ped")
             {
-                List<PedRef> subject = Targets(args[1]);
+                List<PedRef> subject = Targets(Args.Word(args, 1));
                 if (subject.Count == 0) { return "no subject " + args[1]; }
                 ped = subject[0];
                 args = args.Skip(2).ToArray();
@@ -324,6 +326,77 @@ namespace Liberty.Autopilot
                 Liberty.Tasks.ShootAt(ped, at, ms);
             }
             return "firing " + targets.Count;
+        }
+
+        // ---- SDK 1.1 raycast ----
+
+        private static RayMask ParseMask(string text)
+        {
+            if (string.IsNullOrEmpty(text) || text == "all") { return RayMask.All; }
+            RayMask mask = RayMask.None;
+            foreach (string part in text.Split(','))
+            {
+                if (part == "world") { mask |= RayMask.World; }
+                else if (part == "peds") { mask |= RayMask.Peds; }
+                else if (part == "vehicles") { mask |= RayMask.Vehicles; }
+                else if (part == "objects") { mask |= RayMask.Objects; }
+            }
+            return mask;
+        }
+
+        // From the player's position (about 1 m above the ground) to the target's position, ignoring the player.
+        private string RayTo(string[] args)
+        {
+            string which = args.Length > 0 ? args[0] : "0";
+            RayMask mask = ParseMask(args.Length > 1 ? args[1] : "all");
+            RayEntityKind kind;
+            int handle;
+            Vec3 target;
+            if (which == "car")
+            {
+                cars.RemoveAll(c => !Liberty.Vehicles.Exists(c));
+                if (cars.Count == 0) { return "no spawned car"; }
+                kind = RayEntityKind.Vehicle; handle = cars[cars.Count - 1].Handle; target = Liberty.Vehicles.GetPosition(cars[cars.Count - 1]);
+            }
+            else if (which == "prop")
+            {
+                props.RemoveAll(p => !Liberty.Props.Exists(p));
+                if (props.Count == 0) { return "no spawned prop"; }
+                kind = RayEntityKind.Object; handle = props[props.Count - 1].Handle; target = Liberty.Props.GetPosition(props[props.Count - 1]);
+            }
+            else
+            {
+                int index;
+                if (!int.TryParse(which, out index)) { return "rayto <subject index|car|prop>"; }
+                List<PedRef> subject = Targets(which);
+                if (subject.Count == 0) { return "no subject " + which; }
+                kind = RayEntityKind.Ped; handle = subject[0].Handle; target = Liberty.Peds.GetPosition(subject[0]);
+            }
+            PlayerState self = Liberty.World.Player;
+            if (self.Position.DistanceTo(target) < 0.01f) { return "target is at the player"; }
+            RayHit hit = Liberty.Query.Raycast(self.Position, target, mask, RayIgnore.Of(self.Ped).And(self.Vehicle));
+            bool match = hit.IsHit && hit.Kind == kind && hit.EntityHandle == handle;
+            string line = "autopilot_rayto target=" + which + " handle=" + handle + " mask=" + mask.ToString().Replace(", ", "|") + " status=" + hit.Status +
+                " kind=" + hit.Kind + " hit_handle=" + hit.EntityHandle + " distance=" + Args.F(hit.Distance) + " of=" + Args.F(self.Position.DistanceTo(target)) +
+                " normal=" + hit.Normal + " tests=" + hit.Tests + " passed=" + hit.PassedThrough + " match=" + match;
+            Liberty.Log.Info(this, line);
+            return line;
+        }
+
+        private string LineOfSight(string[] args)
+        {
+            string which = args.Length > 0 ? args[0] : "0";
+            int index;
+            if (!int.TryParse(which, out index)) { return "los <subject index>"; }
+            List<PedRef> subject = Targets(which);
+            if (subject.Count == 0) { return "no subject " + which; }
+            PedRef player = Liberty.Player.Ped;
+            bool sight = Liberty.Query.HasLineOfSight(player, subject[0]);
+            bool back = Liberty.Query.HasLineOfSight(subject[0], player);
+            string line = "autopilot_los subject=" + which + " handle=" + subject[0].Handle + " available=" + Liberty.Query.RaycastAvailable +
+                " sight=" + sight + " back=" + back + " spotted=" + Liberty.Query.HasSpotted(subject[0], player);
+            Liberty.Log.Info(this, line);
+            return line;
         }
     }
 }

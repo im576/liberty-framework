@@ -10,7 +10,7 @@ import bpy
 
 from . import checks
 
-EXPORTER_VERSION = "0.1.0"
+EXPORTER_VERSION = "0.2.0"
 KIND_FOLDERS = {"prop": "props"}
 
 
@@ -37,6 +37,9 @@ def manifest_data(settings):
     }
     if settings.audio_material:
         data["audioMaterial"] = settings.audio_material
+    # Only written when it differs from the compiler's default, so template-mode manifests stay as they were.
+    if settings.texture_mode != 'template':
+        data["textureMode"] = settings.texture_mode
     return data
 
 

@@ -18,5 +18,9 @@
   "adaptiveDensityFloor": 0,
   "hotReload": false,
   "hotReloadPollMs": 1000,
-  "hotReloadMaxLeakMegabytes": 32
+  "hotReloadMaxLeakMegabytes": 32,
+  "raycastEnabled": true,
+  "raycastMaxPasses": 8,
+  "raycastPassStepMeters": 0.05,
+  "raycastMaxLengthMeters": 1000
 }

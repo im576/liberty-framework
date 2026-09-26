@@ -1,4 +1,4 @@
-# Liberty SDK 1.0 — writing mods
+# Liberty SDK 1.1 — writing mods
 
 The Liberty SDK (`Liberty.Sdk.dll`) is the public API of the Liberty engine for GTA IV: The Complete Edition 1.2.0.59.
 A mod is a .NET Framework 4 class library that references **only** `Liberty.Sdk.dll`. It never references
@@ -33,7 +33,7 @@ public sealed class MyModule : LibertyModule
 ```
 
 - **Build:** `tools/build.ps1` builds every folder under `mods/` into `mods/<Name>/bin/<Name>.dll`, referencing only the SDK. Warnings are errors.
-- **Install:** `tools/package-phase2.ps1` + `tools/install-phase2.ps1` put it in `scripts\LibertyFramework\mods\`. They require `loadModAssemblies: true` in `engine.json`, which is the default.
+- **Install:** `tools/package-phase2.ps1` + `tools/install-phase2.ps1` put it in `scripts\LibertyFramework\mods\`. They require `loadModAssemblies: true` in `engine.json`. The shipped `config/engine.json` sets it; the built-in defaults (used when `engine.json` is missing or rejected, logged as `engine_config_rejected`) do not load mods.
 - **Test:**
   - In the game console: `lf hello`.
   - Autopilot: add a scenario under `tools/autopilot/scenarios/`.
@@ -48,7 +48,9 @@ public sealed class MyModule : LibertyModule
 | `OnStop()` | module stopped or failed | the engine releases your resources afterwards anyway |
 | `OnUnload()` | script domain unloading (reload/exit) | game functions are unavailable; managed state only |
 
-- An exception from any of your code stops **only your module**. The engine logs it, publishes `ModuleFailed`, and releases everything you owned. It also stops modules that `Requires` yours.
+- An exception from any of your code stops **only your module**: `OnUpdate`, handlers, coroutines and `Wait.Until` conditions, menu callbacks, config reloads, commands and `OnDraw` (logged once, stopped on the next tick). The engine logs it, publishes `ModuleFailed`, and releases everything you owned. It also stops modules that `Requires` yours.
+- A command handler that throws `ArgumentException` or `FormatException` (a missing or malformed argument) answers with the error and your usage text; your module keeps running. A command name belongs to the first module that registers it; a second registration is refused and logged (`command_refused`).
+- Pass your module (`this`) wherever a service asks for an `owner`; `null` is refused, because nothing could release what it creates. Capabilities are checked against that owner and against the module whose code is running. Mods are full-trust .NET code: capabilities are a guardrail against mistakes, not a sandbox.
 - **Ownership:** everything a service creates for you is released when you stop, unless you hand it back with `Release`. That covers:
   - peds, vehicles, props, cameras, FX, sounds, blips
   - streaming requests, menus, input capture, control locks
@@ -83,6 +85,7 @@ public sealed class MyModule : LibertyModule
 | Service | Highlights |
 |---|---|
 | `World` | per-frame snapshot: `Player`, `Peds`, `Vehicles`, `Info` (time, weather, pause, fade, mission, cutscene), nearest queries |
+| `Query` | snapshot radius/cone queries, ground and water height, perception (`HasSpotted`), on-screen tests; **raycast and line of sight** (SDK 1.1, below) |
 | `Events` | typed events (`Liberty.Sdk.Events`): see §5; your own struct events too |
 | `Scheduler` | coroutines: `yield return Wait.Milliseconds(500)`, `Wait.Until(cond, timeout)`, `Wait.NextFrame()` |
 | `Player` | ped, money, wanted level, control lock, teleport (streams the area first), invincibility |
@@ -127,14 +130,43 @@ Liberty.Animation.Choreography(this, "trunk")
 - Menus capture input and lock player control while open, unless you set `LockPlayerControl = false`.
 - The Arsenal weapon wheel (`Arsenal/Ui/StorageWheel.cs`) is a radial menu with a gunsmith list on top.
 
+### Raycast and line of sight
+
+SDK 1.1 (ADR-0008). The engine calls the game's own physics line test, so rays see exactly the collision the game uses.
+
+```csharp
+PedRef me = Liberty.Player.Ped;
+RayIgnore ignore = RayIgnore.Of(me).And(Liberty.Peds.GetVehicle(me));   // None is skipped
+RayHit hit = Liberty.Query.Raycast(from, to, RayMask.World | RayMask.Vehicles, ignore);
+if (hit.IsHit && hit.Kind == RayEntityKind.Vehicle) { VehicleRef car = hit.Vehicle; /* hit.Position, hit.Normal, hit.Distance */ }
+
+bool clear = Liberty.Query.HasLineOfSight(eye, target, RayMask.World | RayMask.Vehicles | RayMask.Objects, ignore);
+bool sees = Liberty.Query.HasLineOfSight(guard, Liberty.Player.Ped);    // head to head/chest/pelvis
+```
+
+- **`RayMask` says what stops the ray;** everything else is passed through. A line of sight that passers-by should not
+  block uses `World | Vehicles | Objects`. Kinds come from the game's entity pools, so `Objects` means pooled objects
+  (props, including yours); `World` is map geometry and anything else.
+- **`RayStatus`:** `Hit`, `Clear`, `Inconclusive` (more than `raycastMaxPasses` things outside the mask were in the
+  way: treat as blocked) or `Unavailable` (engine core off, game function not found or switched off after a fault,
+  `raycastEnabled` false, or called from `OnDraw`/another thread). `RaycastAvailable` tells you up front.
+- **`RayIgnore`** holds up to four entities (value type, no allocation). Ignore yourself and your vehicle.
+- **`HasLineOfSight(viewer, target)`** is geometry only: world, vehicles and objects block, other peds do not, and both
+  peds' vehicles are ignored. For "has the ped noticed", use `HasSpotted` (the game's perception).
+- **Cost:** one game line test per call, plus one per thing passed through. It runs inside your update and counts
+  against your budget; `lf costs` shows `engine.raycast`.
+- **Limits:** only collision the game has streamed in (near the player) is tested. Rays longer than
+  `raycastMaxLengthMeters` (1000 m), from == to, or non-finite points throw `ArgumentException`.
+- **Console:** `lf ray down|up|forward [m] [height] [mask]` casts from the player; `lf raystats` shows counters.
+
 ## 5. Events
 
 | Event | Fields |
 |---|---|
 | **Peds** | |
 | `PedAppeared` / `PedRemoved` | `Ped` |
-| `PedDamaged` | `Ped`, `Attacker`, `Weapon`, `Bone`, `HealthBefore/After`, `ByPlayer`, `Exact` |
-| `PedDied` | `Ped`, `Killer`, `Weapon`, `Bone`, `ByPlayer` |
+| `PedDamaged` | `Ped`, `Attacker`, `Weapon`, `Bone`, `HealthBefore/After`, `ByPlayer`, `Exact`; exact only: `AttackerVehicle`, `Type`, `Amount`, `HealthLost`, `ArmourLost`, `Killed`, `Component`, `HasHit`/`HitPosition`/`HitDirection` |
+| `PedDied` | `Ped`, `Killer`, `Weapon`, `Bone`, `ByPlayer`, `Exact`, `Type`, `KillerVehicle` |
 | **Player** | |
 | `PlayerShot` | `Weapon`, `ClipBefore`, `ClipAfter` |
 | `ReloadStarted` / `ReloadFinished` | `Ped`, `Weapon`, clip |
@@ -152,7 +184,10 @@ Liberty.Animation.Choreography(this, "trunk")
 | **Engine** | |
 | `ModuleFailed` | `ModuleId`, `Error` |
 
-`PedDamaged.Exact` is false until the engine's damage hook lands (ADR-0007). Until then attacker, weapon and bone come
+`PedDamaged.Exact` / `PedDied.Exact` are true when the event comes from the engine's damage hook (ADR-0007, verified in
+game by the `exact-damage` scenario): attacker (a vehicle's driver for vehicle damage), weapon, damage type, bone,
+amounts, the bullet's hit point and direction, and the kill. When the hook is off (`engine.json` `exactDamage`, or it
+was refused), the events come from the snapshot (health changes) with `Exact` false, and attacker, weapon and bone come
 from the game's last-damage records.
 
 ## 6. Deployment facts
@@ -188,3 +223,4 @@ Keep in mind:
 - **Custom event types:** event types a mod defines are new types after a reload. Other mods subscribed to the old
   types need a restart too.
 - **Versioning:** SDK 1.x keeps binary compatibility for mods built against 1.0. The freeze criteria are in `docs/sdk/ROADMAP.md`.
+- **SDK 1.1** (2026-09-26) added the raycast API to `IWorldQuery` and its types (`RayMask`, `RayHit`, `RayIgnore`, `RayStatus`, `RayEntityKind`). A mod built against 1.1 needs a 1.1 engine; 1.0 mods load unchanged.

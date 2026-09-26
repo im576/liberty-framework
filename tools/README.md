@@ -1,5 +1,33 @@
 # Build and deployment tooling
 
+## Cloud build container (Claude Code on the web)
+
+Cloud sessions have no game and no Windows, but they build and test everything that needs neither.
+
+- **Setup:** `.claude/hooks/session-start.sh` runs `tools/cloud/setup.sh` at session start. It installs mono, PowerShell 7,
+  the pinned Roslyn and llvm-mingw, the hash-pinned ScriptHookDotNet compile reference (outside the repository, never
+  committed) and Blender 5.2.2 as the `bpy` Python module, then writes `tools/toolchains.local.json`. Idempotent; a step
+  it cannot finish is listed in `/opt/liberty-toolchains/setup-status.txt` and never fails the session.
+- **Tests:** `tools/cloud/test-all.sh` runs every offline check and prints a PASS / FAIL / NOT-RUN table:
+  C# build, native core and its unit tests, content compiler and self-test, `verify.ps1 -NoGame`, Blender manifest
+  validation, Blender headless tests with `--no-game`, the PowerShell unit tests and the local check queue.
+- **Differences from the PC, on purpose:** .NET programs run under Mono; native unit tests run as 32-bit host programs
+  (`clang++ -m32`) because the game-target `.exe` cannot run; `verify.ps1 -NoGame` reports the sections that read
+  `GTAIV.exe` or game archives, and the section that executes x86 hook code, as NOT-RUN; the Blender tests export and
+  validate instead of building (builds need the game's template archives). Everything NOT-RUN here is covered on the
+  PC by `tools/verify-local.ps1` (see `docs/workflow/CLOUD_LOCAL_LOOP.md`).
+
+
+## Local verification on the PC (`tools/verify-local.ps1`, T-029)
+
+With GTA IV closed, on branch `develop`: `./tools/verify-local.ps1 -Smoke -GameDirectory '<GTAIV folder>'` the first
+time, then `./tools/verify-local.ps1`. It runs every check in `tests/local/checks.json` (builds, the full verifier,
+probes, package and install with a backup, autopilot scenarios, then the manual checks it asks you about), keeps or
+restores the install, and pushes the results to the `verification-results` branch. Settings are remembered in the
+git-ignored `tools/verify-local.settings.json`; results stay in `results-local/`. Options, order and the review
+procedure: [CLOUD_LOCAL_LOOP.md](../docs/workflow/CLOUD_LOCAL_LOOP.md). The plan for the owner:
+[LOCAL_VERIFICATION_PLAN.md](../docs/testing/LOCAL_VERIFICATION_PLAN.md).
+
 ## Performance capture (T-026)
 
 With GTA IV running and a save loaded, open **PowerShell as Administrator** and run `./tools/capture-performance.ps1 -Label baseline-street -Seconds 120` from the repository root. The script uses the portable PresentMon CLI staged at `D:\GTAIV-Reborn-Tools\downloads\PresentMon-2.6.0-x64.exe` and writes a timestamped CSV under `D:\GTAIV-Reborn-Tools\captures`. Use `-PresentMonPath` and `-OutputDirectory` to override those locations. See [T-026](../docs/tasks/T-026-performance-visual-baseline.md) for the complete test sequence.
@@ -59,6 +87,13 @@ Installed files: `scripts/LibertyFramework.net.dll`, `scripts/LibertyFramework/c
   - It launches through Steam and retries the known early startup crash (MTLX.DLL), cleaning up the Rockstar helpers left behind.
   - Screenshots use Steam's F12 capture, because GDI capture is black under Vulkan.
 - **Scenarios:** `./tools/autopilot/Run-Scenario.ps1 -GameDirectory <GTAIV> -Scenario tools/autopilot/scenarios/<name>.txt -OutputDirectory <runs folder>` runs a scenario. Scenario lines are engine commands (`lf help` lists them) plus `wait`, `shot`, `expect` and `key`. Each run writes a `report.md` with every step, screenshots and the run's log.
+- **Results you can trust:** each run also writes `result.json`, and its last output line is `AUTOPILOT_RESULT <path>`.
+  Statuses: PASS, NEEDS-REVIEW (passed, but `[ERROR]` log lines appeared), FAIL, CRASH (the game exited, even after the
+  last step), ERROR (no launch, nothing executed). `expect` only accepts log lines written after the latest command was
+  sent (a line count, not a clock), and never a command's own log line unless the pattern needs its reply. A refused
+  command, a missing screenshot or an unparseable `expect` fails the step. `Run-Suite.ps1` reads each `result.json`,
+  continues after a broken scenario, and exits 1 unless everything passed. The decisions live in
+  `tools/autopilot/AutopilotLogic.psm1` and are tested in the cloud against a simulated game (`tools/tests`).
 
 ## Model pipeline (T-2)
 

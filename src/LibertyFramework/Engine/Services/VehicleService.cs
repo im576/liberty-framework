@@ -19,6 +19,7 @@ namespace LibertyFramework.Engine.Services
 
         public void Spawn(LibertyModule owner, ModelRef model, Vec3 position, float heading, Action<VehicleRef> onReady)
         {
+            engine.RequireOwner(owner);
             engine.Scheduler.Start(owner, "spawn-vehicle", SpawnRoutine(owner, model, position, heading, onReady));
         }
 
@@ -105,7 +106,15 @@ namespace LibertyFramework.Engine.Services
 
         public ModelRef GetModel(VehicleRef vehicle) { return ModelRef.FromHash(NativeCall.OutInt("GET_CAR_MODEL", vehicle.Handle)); }
 
-        public PedRef GetDriver(VehicleRef vehicle) { return new PedRef(NativeCall.OutInt("GET_DRIVER_OF_CAR", vehicle.Handle)); }
+        // GET_DRIVER_OF_CAR faulted on some pooled vehicles and a contained fault still corrupted game state (NATIVES.md), so
+        // the snapshot's driver (read by the core from the vehicle, no native) is used whenever the vehicle is in it. The
+        // native remains only for vehicles outside the snapshot radius, or a session without the core.
+        public PedRef GetDriver(VehicleRef vehicle)
+        {
+            VehicleState state;
+            if (engine.World.HasVehicles && engine.World.TryGetVehicle(vehicle, out state)) { return state.Driver; }
+            return new PedRef(NativeCall.OutInt("GET_DRIVER_OF_CAR", vehicle.Handle));
+        }
 
         public Vec3 GetOffsetPosition(VehicleRef vehicle, Vec3 local) { return NativeCall.Offset("GET_OFFSET_FROM_CAR_IN_WORLD_COORDS", vehicle.Handle, local); }
 

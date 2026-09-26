@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "name": "lf_alpha_panel",
+  "type": "prop",
+  "source": "lf_alpha_panel.gltf",
+  "template": { "archive": "pc/models/cdimages/weapons.img", "model": "amb_nailgun" },
+  "textureDictionary": "lf_alpha_panel",
+  "drawDistanceMeters": 120,
+  "textureMode": "native"
+}

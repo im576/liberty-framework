@@ -10,7 +10,7 @@ New-Item -ItemType Directory -Force -Path (Split-Path -Parent $output) | Out-Nul
 $sources = @((Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tools\content') -Filter '*.cs').FullName) +
     @((Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tools\models') -Filter '*.cs' | Where-Object Name -ne 'Program.cs').FullName) +
     @((Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tools\finishes') -Filter '*.cs' | Where-Object Name -ne 'Program.cs').FullName)
-& $compiler /nologo /target:exe /platform:x86 /optimize+ /langversion:7.3 /warn:4 /warnaserror+ /nowarn:0649 "/out:$output" `
+Invoke-LibertyManaged $compiler /nologo /target:exe /platform:x86 /optimize+ /langversion:7.3 /warn:4 /warnaserror+ /nowarn:0649 "/out:$output" `
     /reference:System.Runtime.Serialization.dll /reference:System.Drawing.dll /reference:System.Core.dll /reference:System.Web.Extensions.dll $sources
 if ($LASTEXITCODE -ne 0) { throw "LibertyContent build failed with exit code $LASTEXITCODE" }
 Write-Host "Built $output from $($sources.Count) source files"

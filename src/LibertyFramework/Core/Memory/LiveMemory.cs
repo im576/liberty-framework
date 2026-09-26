@@ -60,7 +60,12 @@ namespace LibertyFramework.Core.Memory
                     }
                 }
             }
-            catch (Exception) { imageData.Clear(); } // no fast path; every access is checked
+            catch (Exception error)
+            {
+                // No fast path then: every access is checked (slower, still safe).
+                imageData.Clear();
+                LibertyFramework.Core.Logging.RuntimeLog.Error("memory_image_sections_unavailable error=" + error.Message);
+            }
         }
 
         public uint ModuleBase { get { return moduleBase; } }

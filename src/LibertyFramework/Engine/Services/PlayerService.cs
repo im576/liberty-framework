@@ -83,6 +83,7 @@ namespace LibertyFramework.Engine.Services
 
         public void SetInvincible(LibertyModule owner, bool on)
         {
+            engine.RequireOwner(owner);
             if (on)
             {
                 if (!invincible.Add(owner)) { return; }

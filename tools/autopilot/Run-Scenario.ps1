@@ -5,80 +5,128 @@ param(
     # Where the report folder is created (outside the repository).
     [Parameter(Mandatory = $true)][string] $OutputDirectory,
     # Keep the game running afterwards (default: leave it running for the next scenario).
-    [switch] $StopGameAfter
+    [switch] $StopGameAfter,
+    # The game-side module (default Autopilot.psm1). verify-local.ps1 -Simulate passes a stub with the same functions
+    # (tools/tests/SimulatedGame.psm1) so the runner's decisions are tested without the game.
+    [string] $AutopilotModule = (Join-Path $PSScriptRoot 'Autopilot.psm1'),
+    # Folder with this run's probe reports (<check id>.json), for {probe:<id>:<field>} values (verify-local passes its
+    # results folder).
+    [string] $ProbeDirectory = ''
 )
 
 # Runs one scenario and writes <OutputDirectory>\<scenario>-<time>\report.md with every step, its reply, the
-# screenshots, and the Liberty log lines of the run (errors first).
+# screenshots, and the Liberty log lines of the run (errors first), plus result.json (the machine-readable outcome).
+# The last output line is "AUTOPILOT_RESULT <path to result.json>"; Run-Suite.ps1 and verify-local.ps1 read the status
+# from that file, never from free text. Statuses (tools/autopilot/AutopilotLogic.psm1): PASS, NEEDS-REVIEW (passed, but
+# [ERROR] log lines appeared during the run), FAIL, CRASH, ERROR.
 # Scenario lines:
 #   # comment
 #   wait <ms>                    pause on the host
-#   shot <name>                  Steam F12 screenshot -> <name>.png
-#   expect <regex> [seconds]     wait for a log line from this run (default 20 s); fails the step if absent
+#   shot <name>                  Steam F12 screenshot -> <name>.png (a missing screenshot fails the step)
+#   expect <regex> [seconds]     wait for a log line written after the latest engine command (default 20 s); fails the
+#                                step if absent. The command's own log line only counts when the pattern needs its reply.
 #   key <Keys name> [hold ms]    press a key in the game window (default 80 ms)
-#   anything else                an engine command (see "lf help"), sent through the command channel
+#   anything else                an engine command (see "lf help"), sent through the command channel; a refused
+#                                command (unknown, error, module not running, no reply) fails the step
+# Any line may contain {probe:<check id>:<field>}: a value a probe found earlier in the same run (Resolve-ScenarioLine).
 $ErrorActionPreference = 'Stop'
-Import-Module (Join-Path $PSScriptRoot 'Autopilot.psm1') -Force 3>$null
-Set-AutopilotGame $GameDirectory
+Import-Module (Join-Path $PSScriptRoot 'AutopilotLogic.psm1') -Force 3>$null
 $name = [IO.Path]::GetFileNameWithoutExtension($Scenario)
 $report = Join-Path $OutputDirectory ($name + '-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
 New-Item -ItemType Directory -Force -Path $report | Out-Null
 $steps = New-Object System.Collections.Generic.List[string]
-$failed = 0
-
-if (-not (Get-GameProcess)) {
-    $attempts = Start-GameReady -Attempts 6
-    $steps.Add("launch: engine booted on attempt $attempts")
-    # Let the first frames settle (streaming, the FusionFix dialog the engine acknowledges).
-    Start-Sleep -Seconds 12
-}
+$failedSteps = New-Object System.Collections.Generic.List[string]
+$screenshots = New-Object System.Collections.Generic.List[string]
+$executed = 0
+$runnerError = ''
 $startUtc = [DateTime]::UtcNow
-# expect only accepts log lines written after the most recent engine command.
-$lastCommandUtc = $startUtc
+$runLog = @()
+$gameAlive = $false
 
-foreach ($raw in Get-Content -LiteralPath $Scenario) {
-    $line = $raw.Trim()
-    if ($line.Length -eq 0 -or $line.StartsWith('#')) { continue }
-    $words = $line -split '\s+'
-    try {
-        switch ($words[0]) {
-            'wait' { Start-Sleep -Milliseconds ([int]$words[1]); $steps.Add("wait $($words[1]) ms") }
-            'shot' { $file = Save-Screenshot (Join-Path $report ($words[1] + '.png')); $steps.Add("shot $($words[1]) -> $(Split-Path -Leaf $file)") }
-            'key' { $hold = if ($words.Count -gt 2) { [int]$words[2] } else { 80 }; Send-GameKey $words[1] $hold; $steps.Add("key $($words[1]) $hold ms") }
-            'expect' {
-                # expect <regex, optionally "quoted" when it contains spaces> [seconds]
-                $parsed = [regex]::Match($line, '^expect\s+(?:"(?<q>[^"]+)"|(?<p>\S+))(?:\s+(?<t>\d+))?$')
-                $words = @('expect', $(if ($parsed.Groups['q'].Success) { $parsed.Groups['q'].Value } else { $parsed.Groups['p'].Value }))
-                $timeout = if ($parsed.Groups['t'].Success) { [int]$parsed.Groups['t'].Value } else { 20 }
-                $deadline = (Get-Date).AddSeconds($timeout)
-                $hit = $null
-                while (-not $hit -and (Get-Date) -lt $deadline) {
-                    $since = $lastCommandUtc.AddSeconds(-1).ToString('yyyy-MM-ddTHH:mm:ss')
-                    $hit = Get-SessionLog | Where-Object { [string]::CompareOrdinal($_.Substring(0, [Math]::Min(19, $_.Length)), $since) -ge 0 -and $_ -match $words[1] } | Select-Object -First 1
-                    if (-not $hit) { Start-Sleep -Milliseconds 500 }
+function Add-Failure([string] $text) { $script:failedSteps.Add($text); $script:steps.Add("FAILED: $text") }
+
+try {
+    Import-Module $AutopilotModule -Force 3>$null
+    Set-AutopilotGame $GameDirectory
+    $lines = @(Get-Content -LiteralPath $Scenario)
+    if (-not (Get-GameProcess)) {
+        $attempts = Start-GameReady -Attempts 6
+        $steps.Add("launch: engine booted on attempt $attempts")
+        # Let the first frames settle (streaming, the FusionFix dialog the engine acknowledges).
+        Start-Sleep -Seconds 12
+    }
+    $startUtc = [DateTime]::UtcNow
+    # expect only accepts log lines written after the most recent engine command was sent (a line count, not a clock).
+    $mark = @(Get-SessionLog).Count
+
+    foreach ($raw in $lines) {
+        $line = $raw.Trim()
+        if ($line.Length -eq 0 -or $line.StartsWith('#')) { continue }
+        $executed++
+        try {
+            $line = Resolve-ScenarioLine $line $ProbeDirectory
+            $words = $line -split '\s+'
+            switch ($words[0]) {
+                'wait' { Start-Sleep -Milliseconds ([int]$words[1]); $steps.Add("wait $($words[1]) ms") }
+                'shot' {
+                    $file = Save-Screenshot (Join-Path $report ($words[1] + '.png'))
+                    if (-not (Test-Path -LiteralPath $file) -or (Get-Item -LiteralPath $file).Length -eq 0) { throw "screenshot $($words[1]) was not written" }
+                    $screenshots.Add((Split-Path -Leaf $file))
+                    $steps.Add("shot $($words[1]) -> $(Split-Path -Leaf $file)")
                 }
-                if ($hit) { $steps.Add("expect $($words[1]): OK $hit") } else { $failed++; $steps.Add("expect $($words[1]): FAILED (no line in $timeout s)") }
-            }
-            default {
-                $lastCommandUtc = [DateTime]::UtcNow
-                $reply = Invoke-EngineCommand @($line)
-                $steps.Add(($reply -join ' | '))
-                if (($reply -join ' ') -match '=> (error|unknown command|module .* is not running)') { $failed++ }
+                'key' { $hold = if ($words.Count -gt 2) { [int]$words[2] } else { 80 }; Send-GameKey $words[1] $hold; $steps.Add("key $($words[1]) $hold ms") }
+                'expect' {
+                    $expect = ConvertFrom-ExpectLine $line
+                    if (-not $expect) { Add-Failure "unparseable expect line: $line"; break }
+                    $deadline = (Get-Date).AddSeconds($expect.TimeoutSeconds)
+                    $hit = $null
+                    while (-not $hit -and (Get-Date) -lt $deadline) {
+                        $hit = Find-ExpectedLine @(Get-SessionLog) $mark $expect.Pattern
+                        if (-not $hit) {
+                            if (-not (Get-GameProcess)) { throw 'game exited while waiting' }
+                            Start-Sleep -Milliseconds 500
+                        }
+                    }
+                    if ($hit) { $steps.Add("expect $($expect.Pattern): OK $hit") } else { Add-Failure "expect $($expect.Pattern): no new log line in $($expect.TimeoutSeconds) s" }
+                }
+                default {
+                    $mark = @(Get-SessionLog).Count
+                    $reply = @(Invoke-EngineCommand @($line))
+                    $steps.Add(($reply -join ' | '))
+                    if (Test-CommandFailed $reply) { Add-Failure "command refused: $line => $($reply -join ' | ')" }
+                }
             }
         }
+        catch {
+            Add-Failure "$line => EXCEPTION $($_.Exception.Message)"
+            if (-not (Get-GameProcess)) { $steps.Add('game exited; scenario aborted'); break }
+        }
     }
-    catch { $failed++; $steps.Add("$line => EXCEPTION $($_.Exception.Message)"); if (-not (Get-GameProcess)) { $steps.Add('game exited; scenario aborted'); break } }
 }
+catch { $runnerError = $_.Exception.Message; $steps.Add("RUNNER ERROR: $runnerError") }
 
-$since = $startUtc.ToString('yyyy-MM-ddTHH:mm:ss')
-$runLog = Get-SessionLog | Where-Object { $_.Length -ge 19 -and [string]::CompareOrdinal($_.Substring(0, 19), $since) -ge 0 }
-$errors = $runLog | Where-Object { $_ -match '\[ERROR\]' }
+try {
+    $gameAlive = [bool](Get-GameProcess)
+    $since = $startUtc.ToString('yyyy-MM-ddTHH:mm:ss')
+    $runLog = @(Get-SessionLog | Where-Object { $_.Length -ge 19 -and [string]::CompareOrdinal($_.Substring(0, 19), $since) -ge 0 })
+}
+catch { if (-not $runnerError) { $runnerError = "could not read the game state: $($_.Exception.Message)" } }
+$errors = @($runLog | Where-Object { $_ -match '\[ERROR\]' })
+$status = Get-ScenarioStatus $executed $failedSteps.Count $gameAlive $runnerError
+$status = Get-ReviewStatus $status $errors.Count
+$summary = "$status; steps=$executed failed=$($failedSteps.Count) logErrors=$($errors.Count) gameAlive=$gameAlive"
+
 $lines = New-Object System.Collections.Generic.List[string]
 $lines.Add("# Scenario $name")
 $lines.Add('')
-$lines.Add("- Result: " + $(if ($failed -eq 0) { 'PASS' } else { "FAIL ($failed failed steps)" }))
-$lines.Add("- Game alive at end: " + [bool](Get-GameProcess))
-$lines.Add("- Log errors during run: $(@($errors).Count)")
+$lines.Add("- Result: $status")
+$lines.Add("- Steps: $executed, failed: $($failedSteps.Count)")
+$lines.Add("- Game alive at end: $gameAlive")
+$lines.Add("- Log errors during run: $($errors.Count)")
+if ($runnerError) { $lines.Add("- Runner error: $runnerError") }
+$lines.Add('')
+$lines.Add('## Failed steps')
+foreach ($f in $failedSteps) { $lines.Add("- $f") }
 $lines.Add('')
 $lines.Add('## Steps')
 foreach ($step in $steps) { $lines.Add("- $step") }
@@ -89,5 +137,23 @@ $lines.Add('')
 $lines.Add('## Log')
 foreach ($l in $runLog) { $lines.Add("    $l") }
 [IO.File]::WriteAllLines((Join-Path $report 'report.md'), $lines)
-if ($StopGameAfter) { Stop-Game }
-Write-Host "scenario ${name}: $(if ($failed -eq 0) { 'PASS' } else { "FAIL ($failed)" }); report $report"
+[IO.File]::WriteAllLines((Join-Path $report 'run.log'), [string[]]$runLog)
+
+$result = [ordered]@{
+    scenario = $name
+    status = $status
+    summary = $summary
+    steps = $executed
+    failedSteps = @($failedSteps)
+    screenshots = @($screenshots)
+    logErrors = $errors.Count
+    gameAlive = $gameAlive
+    runnerError = $runnerError
+    startedUtc = $startUtc.ToString('o')
+    finishedUtc = [DateTime]::UtcNow.ToString('o')
+}
+$resultPath = Join-Path $report 'result.json'
+[IO.File]::WriteAllText($resultPath, ($result | ConvertTo-Json -Depth 4), (New-Object Text.UTF8Encoding($false)))
+if ($StopGameAfter) { try { Stop-Game } catch { Write-Host "Stop-Game failed: $($_.Exception.Message)" } }
+Write-Host "scenario ${name}: $summary; report $report"
+Write-Output "AUTOPILOT_RESULT $resultPath"

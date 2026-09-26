@@ -23,21 +23,45 @@ namespace LibertyFramework.Engine.Services
 
         private readonly Dictionary<string, Entry> commands = new Dictionary<string, Entry>(StringComparer.OrdinalIgnoreCase);
         private int lastPollMs;
+        private readonly Action<LibertyModule, Exception> onFailed;
         // The engine's current-module context around each handler (capability checks, implicit ownership).
         internal Action<LibertyModule> Enter = m => { };
         internal Func<LibertyModule> Current = () => null;
         private const int PollIntervalMs = 250;
 
+        internal CommandRegistry(Action<LibertyModule, Exception> onFailed) { this.onFailed = onFailed; }
+
         public static string Inbox { get { return Path.Combine(LibertyPaths.Root, Path.Combine("autopilot", "inbox")); } }
         public static string Outbox { get { return Path.Combine(LibertyPaths.Root, Path.Combine("autopilot", "outbox")); } }
 
-        // owner null = engine command. Handler gets the words after the command name and returns the reply.
+        // The module's handler gets the words after the command name and returns the reply. A name is held by one owner at
+        // a time: a second module (or a module reusing an engine command's name) is refused and logged, so no module can
+        // silently take over another's command. A module's names are freed when it stops (reload and restart re-register).
         public void Register(LibertyModule owner, string name, string usage, Func<string[], string> handler)
         {
+            if (owner == null) { throw new ArgumentNullException("owner", "pass the calling module (this) as owner"); }
+            Add(owner, name, usage, handler);
+        }
+
+        // Engine commands (no owning module).
+        internal void RegisterEngine(string name, string usage, Func<string[], string> handler) { Add(null, name, usage, handler); }
+
+        private void Add(LibertyModule owner, string name, string usage, Func<string[], string> handler)
+        {
+            if (string.IsNullOrEmpty(name) || name.IndexOfAny(new[] { ' ', '\t' }) >= 0) { throw new ArgumentException("command name must be one word", "name"); }
+            if (handler == null) { throw new ArgumentNullException("handler"); }
+            Entry previous;
+            if (commands.TryGetValue(name, out previous) && previous.Owner != owner && (previous.Owner == null || previous.Owner.Running))
+            {
+                RuntimeLog.Error("command_refused name=" + name + " held_by=" + OwnerName(previous.Owner) + " requested_by=" + OwnerName(owner));
+                return;
+            }
             Entry entry = new Entry();
             entry.Owner = owner; entry.Usage = usage; entry.Handler = handler;
             commands[name] = entry;
         }
+
+        private static string OwnerName(LibertyModule owner) { return owner != null ? owner.Id : "engine"; }
 
         internal void RemoveOwner(LibertyModule owner)
         {
@@ -63,10 +87,18 @@ namespace LibertyFramework.Engine.Services
                 LibertyModule previous = Current();
                 Enter(entry.Owner);
                 try { reply = entry.Handler(words.Skip(1).ToArray()) ?? "ok"; }
+                catch (Exception error) when (error is ArgumentException || error is FormatException)
+                {
+                    // Bad input from whoever typed the command (a missing or malformed argument): the reply says so and the
+                    // module keeps running.
+                    reply = "error " + error.Message + " (usage: " + entry.Usage + ")";
+                    RuntimeLog.Error("command_rejected name=" + words[0] + " owner=" + OwnerName(entry.Owner) + " error=" + error.Message);
+                }
                 catch (Exception error)
                 {
                     reply = "error " + error.Message;
-                    if (entry.Owner != null) { LibertyEngine.Current.Fail(entry.Owner, error); }
+                    if (entry.Owner != null) { onFailed(entry.Owner, error); }
+                    else { RuntimeLog.Error("command_failed name=" + words[0] + " error=" + error); }
                 }
                 finally { Enter(previous); }
             }

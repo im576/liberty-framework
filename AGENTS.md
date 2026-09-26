@@ -7,6 +7,9 @@ Read this whole file before doing anything. It is short on purpose.
 
 1. `AGENTS.md` (this file)
 2. `docs/PROJECT_STATE.md` — what is done, what is verified, what is blocked
+   - In a cloud session (Claude Code on the web): also `docs/workflow/CLOUD_LOCAL_LOOP.md` — how work is built in the
+     cloud, queued for the owner's PC and verified there. `tools/cloud/test-all.sh` runs every offline check.
+   - Asked to "do the next session": `docs/workflow/NEXT_SESSIONS.md`.
 3. The task card you were given, in `docs/tasks/` (e.g. `docs/tasks/T-003-devtools-menu.md`)
 4. Only the docs that task card links to. Do not read the whole repo.
 
@@ -75,6 +78,10 @@ Build and deploy commands are in `tools/README.md`. The stack above was verified
 A task is done only when ALL of these are true:
 
 - [ ] Code builds with zero errors (paste the build output summary in your final message).
+- [ ] `tools/cloud/test-all.sh` (cloud) has no FAIL; paste its summary table.
+- [ ] Every behaviour that needs the game or its files has a check in `tests/local/checks.json`, added in the same
+      PR as the code, and the plan is regenerated (`python3 tools/checks/checks.py plan`). See
+      `docs/workflow/CLOUD_LOCAL_LOOP.md`.
 - [ ] New tuning values are in `config/` and documented in `docs/architecture/CONFIG_SCHEMA.md`.
 - [ ] New natives are added to `docs/game-api/NATIVES.md`.
 - [ ] The task card's **"Human test steps"** section is filled in: numbered, exact button presses,
@@ -92,6 +99,9 @@ what information you need. Set status to `BLOCKED`. Stop. Do not keep trying ran
 
 The human reports results using `docs/testing/PLAYTEST_REPORT_TEMPLATE.md`. When a report says
 something broke, first read the log file excerpt in the report before changing code.
+
+Results of `tools/verify-local.ps1` arrive on the `verification-results` branch. Process them as
+`docs/workflow/CLOUD_LOCAL_LOOP.md` describes; the same rule applies: read the logs first.
 
 ## 8. Style
 

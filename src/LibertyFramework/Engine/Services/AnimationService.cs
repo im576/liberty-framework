@@ -86,6 +86,10 @@ namespace LibertyFramework.Engine.Services
 
         public void StopAll(PedRef ped) { Function.Call("CLEAR_CHAR_TASKS", ped.Handle); }
 
-        public IChoreographyBuilder Choreography(LibertyModule owner, string name) { return new Choreography(engine, owner, name); }
+        public IChoreographyBuilder Choreography(LibertyModule owner, string name)
+        {
+            engine.RequireOwner(owner);
+            return new Choreography(engine, owner, name);
+        }
     }
 }

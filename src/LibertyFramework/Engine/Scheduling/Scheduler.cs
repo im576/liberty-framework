@@ -27,6 +27,10 @@ namespace LibertyFramework.Engine.Scheduling
 
         public ICoroutine Start(LibertyModule owner, string name, IEnumerator routine)
         {
+            // Run reads Owner.Running for every coroutine: a null owner would throw there every frame, outside any module's
+            // try, and stop the whole engine. Refused here, where the exception fails only the caller.
+            if (owner == null) { throw new ArgumentNullException("owner"); }
+            if (routine == null) { throw new ArgumentNullException("routine"); }
             Coroutine c = new Coroutine(owner, name, routine);
             running.Add(c);
             return c;
@@ -42,11 +46,16 @@ namespace LibertyFramework.Engine.Scheduling
             {
                 Coroutine c = running[i];
                 if (c.Finished || !c.Owner.Running) { c.Finished = true; continue; }
-                if (c.Current != null && !c.Current.Step(now)) { continue; }
-                if (c.Current != null) { c.LastTimedOut = c.Current.HasTimedOut; }
                 enter(c.Owner);
                 try
                 {
+                    // Step runs module code (a Wait.Until condition), so it belongs inside the try: a throwing condition fails
+                    // its module instead of escaping Run and skipping every module update of every later frame.
+                    if (c.Current != null)
+                    {
+                        if (!c.Current.Step(now)) { continue; }
+                        c.LastTimedOut = c.Current.HasTimedOut;
+                    }
                     if (!c.Routine.MoveNext()) { c.Finished = true; continue; }
                     c.Current = c.Routine.Current as Wait ?? Wait.NextFrame();
                 }

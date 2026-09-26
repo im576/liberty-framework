@@ -34,6 +34,7 @@ class LIBERTY_PT_asset(_LibertyPanel, bpy.types.Panel):
         column.prop(settings, "template_archive", text="Template")
         column.prop(settings, "template_model", text="Model")
         layout.prop(settings, "texture_dictionary")
+        layout.prop(settings, "texture_mode")
         layout.prop(settings, "draw_distance")
         layout.prop(settings, "audio_material")
 

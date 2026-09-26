@@ -190,7 +190,11 @@ def run(context, settings):
         bsdf = principled_of(material)
         alpha = bsdf.inputs.get("Alpha") if bsdf is not None else None
         if alpha is not None and (alpha.is_linked or alpha.default_value < 0.999):
-            add("warning", "LBX020", "material %s uses alpha; gta_default with DXT1 is opaque" % material.name)
+            if settings.texture_mode == 'native':
+                add("warning", "LBX020", "material %s uses alpha; native mode writes DXT5, but whether gta_default draws it translucent "
+                                         "is unverified in game" % material.name)
+            else:
+                add("warning", "LBX020", "material %s uses alpha; template mode writes opaque DXT1 (native mode keeps alpha)" % material.name)
 
     for lod, used in sorted(materials_per_lod.items()):
         if len(used) > MAX_MATERIALS_PER_LOD:

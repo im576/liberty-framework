@@ -2,6 +2,31 @@
 
 Approved by [ADR-0004](../architecture/decisions/ADR-0004-engine-memory.md). No absolute address is stored in code. Every location is resolved at startup by `src/LibertyFramework/Core/Memory/GameAddresses.cs` from a native-registration hash or a unique instruction shape, and the surrounding bytes are checked before use. A failed resolver disables only its own feature and is logged (`engine_resolve ... FAILED`). `tools/verify.ps1` runs the same resolver against `GTAIV.exe` on disk and compares every result with an independent Capstone disassembly (addresses below are at the preferred base 0x400000; the live process is relocated and the resolver reads the relocated immediates).
 
+## Evidence status (engine audit, 2026-09-26)
+
+Labels: **VERIFIED IN GAME** (a scenario, the self-test or the owner saw it work), **VERIFIED OFFLINE** (a repository
+tool proves it against the owner's `GTAIV.exe`: `tools/verify.ps1` resolves the anchor and pins the result),
+**PLAUSIBLE** (read from the disassembly, not pinned or tested), **UNKNOWN**. Every address below is found by a pattern
+or native anchor at run time (ADR-0004); none is a constant in code (the verifier pins them only to catch a resolver
+that drifts). "Fail-safe" says what happens if the claim is wrong.
+
+| Claim | Label | Evidence | Fail-safe if wrong |
+|---|---|---|---|
+| Menu prefs `PREF_AUTO_AIM`, `PREF_RETICULE`; lock-on bit | VERIFIED OFFLINE; owner report of free aim working (2026-09-24) | verifier resolver + Capstone; check `T010-phase1` | resolver fails, feature off |
+| Aim camera pitch/heading `+0x218/+0x21C`, vehicle camera `+0x190/+0x194` | VERIFIED OFFLINE, runtime-validated | resolver; every session compares with `GET_CAM_ROT` before the first write | no kick written (`aimcam_validation_failed`) |
+| `CWeaponInfo` accuracy `+0x34`/`+0x38`, aim settle `ped+0xEA0/+0xEA4` | VERIFIED OFFLINE; owner report of test-weapon spread (2026-09-24) | resolver; values checked against WeaponInfo.xml before writes | test weapons keep vanilla accuracy |
+| hud.dat reticle globals | VERIFIED OFFLINE; owner report (2026-09-24) | resolver | vanilla reticle stays |
+| Bullet trace list (count, array, stride 0x30, owner +0x20) | VERIFIED IN GAME | `bullet-events` passed (full suite 2026-09-26) | no `BulletFired` events |
+| Aim camera settings table `0x103C118` (+0x10 shoulder offset) | VERIFIED OFFLINE | resolver; originals validated at run time | shoulder swap off; in game: check `T015-shoulder-swap` |
+| Ped pool, `CPed::BoneMatrix`, fragInst/crSkeleton hooks (ADR-0005) | VERIFIED IN GAME | owner report 2026-09-24 (limbs removed and persist); `gore-review` passed 2026-09-26 | bytes validated before patching; hook refused |
+| Vehicle and object pool globals | VERIFIED IN GAME | core vehicle list (17 vehicles, zero faults, 2026-09-25); `vehicle-events` passed | pools absent: no vehicle list |
+| Entity matrix `[entity+0x20]` null check | VERIFIED IN GAME | the core's vehicle list ran with zero faults once vehicles without a matrix were skipped (2026-09-25) | vehicle skipped |
+| Vehicle driver `[vehicle+0xF50]` | PLAUSIBLE (was untested) | read from the `GET_DRIVER_OF_CAR` worker; self-test check `vehicle-driver` added by the audit (`SDK-selftest`) | a wrong offset maps to no ped: driver reads as none (read under SEH) |
+| Damage-response routine `0xCA3820` and records (ADR-0007) | VERIFIED IN GAME | `exact-damage` passed (bullet hits, falls, kills) | hook refused, events stay snapshot-based |
+| Line test `0xA536B0`, result layout, `[instance+0x0C]` link for peds | VERIFIED IN GAME for world and peds | `raycast-spike` run 2026-09-26 ([Raycast.md](../research/Raycast.md)) | any fault switches raycasts off |
+| Same link for vehicles and objects | PLAUSIBLE | same code path; checks `T027-raycast`, `SDK-selftest` (`raycast-vehicle`), `T027-raycast-objects` | a mismatch reads as `kind=World` and those checks fail |
+| Include-bit meanings beyond 0x2/0x20/0x40 | UNKNOWN | not relied on (the engine passes every bit and classifies by pool) | none needed |
+
 | Feature | Anchor | Resolved (preferred base) | Evidence from disassembly | Written by LF |
 |---|---|---|---|---|
 | Auto-aim pref | `IS_AUTO_AIMING_ON` (0x366B0444) → `cmp dword [x],0; setne al` | `PREF_AUTO_AIM` = 0x1160C68 (pref id 8) | Menu pref table names id 8 `PREF_AUTO_AIM`; the player targeting code at 0xA2B09E/0xA2B735/0xA75477 tests it | Yes: forced 0 while free aim is on, prior value saved to `state/freeaim_restore.json` and restored |
@@ -50,3 +75,14 @@ Approved by [ADR-0004](../architecture/decisions/ADR-0004-engine-memory.md). No 
 | `CPed` +0x1E4 / +0x1E8 / +0x1EC | last damager / time / weapon | | read by `HAS_CHAR_BEEN_DAMAGED_BY_CHAR` |
 | Calculator | +0 damager, +4 damage (float), +8 component, +0xC weapon | | detour record |
 | Response | +4 flags, +8 health lost, +0xC armour lost | | detour record |
+
+## ADR-0008 raycast (2026-09-26)
+
+| Item | Anchor | 1.2.0.59 | Use |
+|---|---|---|---|
+| Line test function | entity-type switch `8B 41 28 C1 E8 06 83 E0 0F 83 F8 03 75 17 F6 C2 40 74 0A 8B 81 B4 07 00 00 85 C0 75 1F 8B 81 B0 07 00 00` at function+0x5A; prologue `55 8B EC 83 E4 F0 83 EC 20 8B 45 08 8B 4D 10`; world query call shape at +0x96 | 0xA536B0 | called directly by the core on the engine tick (read-only; SEH-guarded; off after a fault) |
+| Physics world global | `mov ecx,[world]` at function+0x96 | 0x12B9C78 | logged and pinned only (the function reads it itself) |
+| Line test result | +0x00 hit physics instance, +0x10 position, +0x20 normal; initialised to zero with +0x4C = 0xFFFF | 0x60 bytes | position, normal, entity |
+| Physics instance → entity | `[instance+0x0C]` | | hit entity, mapped to a handle through the pools (verified for peds 2026-09-26) |
+
+Research and open questions: [Raycast.md](../research/Raycast.md).

@@ -17,6 +17,8 @@ namespace LibertyFramework.Content
     //   build <game> <asset.json> <out>                  validate, compile, read back, preview, report
     //   package <game> <out> <img> <ide> <asset.json...> build every asset, then one IMG and its IDE
     //   templates <game> <archive>                       list drawables usable as prop templates
+    //   selftest [--out <dir>]                           offline tests (DXT codecs, WTD writer round trips, validator); no game
+    //   wtdcheck [--game <dir>] <wtd|folder|img...>      rebuild game dictionaries with the WTD writer and compare (read only)
     internal static class Program
     {
         private static int Main(string[] args)
@@ -28,8 +30,12 @@ namespace LibertyFramework.Content
                 if (args.Length >= 4 && args[0] == "build") { string ignored; return Build(args[1], args[2], args[3], out ignored); }
                 if (args.Length >= 6 && args[0] == "package") { return Package(args[1], args[2], args[3], args[4], args.Skip(5).ToArray()); }
                 if (args.Length >= 3 && args[0] == "templates") { return Templates(args[1], args[2]); }
+                if (args.Length >= 1 && args[0] == "selftest") { return SelfTest.Run(args.Skip(1).ToArray()); }
+                if (args.Length >= 2 && args[0] == "wtdcheck") { return TextureDictionaryCheck.Run(args.Skip(1).ToArray()); }
+                if (args.Length >= 1 && args[0] == "probe") { return Probe.Run(args.Skip(1).ToArray()); }
                 Console.WriteLine("usage: LibertyContent sample <dir> <name> | validate <asset.json> | build <game> <asset.json> <out> |");
-                Console.WriteLine("       package <game> <out> <img> <ide> <asset.json...> | templates <game> <archive>");
+                Console.WriteLine("       package <game> <out> <img> <ide> <asset.json...> | templates <game> <archive> |");
+                Console.WriteLine("       selftest [--out <dir>] | wtdcheck [--game <dir>] <file.wtd|folder|archive.img...>");
                 return 1;
             }
             catch (Exception error)
@@ -43,7 +49,7 @@ namespace LibertyFramework.Content
         {
             AssetManifest manifest = AssetManifest.Load(manifestPath);
             ContentAsset asset = GltfImporter.Import(manifest.SourcePath);
-            List<AssetValidator.Issue> issues = AssetValidator.Validate(asset, 1);
+            List<AssetValidator.Issue> issues = AssetValidator.Validate(asset, CompilerCapabilities.Current);
             foreach (AssetValidator.Issue issue in issues) { Console.WriteLine(issue); }
             Console.WriteLine("validate " + manifest.Name + ": " + (AssetValidator.HasErrors(issues) ? "FAILED" : "ok") + " (" + issues.Count + " issues)");
             return AssetValidator.HasErrors(issues) ? 2 : 0;
@@ -55,7 +61,7 @@ namespace LibertyFramework.Content
             string folder = Path.Combine(output, manifest.Name);
             Directory.CreateDirectory(folder);
             ContentAsset asset = GltfImporter.Import(manifest.SourcePath);
-            List<AssetValidator.Issue> issues = AssetValidator.Validate(asset, 1);
+            List<AssetValidator.Issue> issues = AssetValidator.Validate(asset, CompilerCapabilities.Current);
             foreach (AssetValidator.Issue issue in issues) { Console.WriteLine("  " + issue); }
             List<string> readback = new List<string>();
             PropCompiler.Result compiled = null;
@@ -70,7 +76,8 @@ namespace LibertyFramework.Content
             status = compiled == null ? "invalid" : readback.Count == 0 ? "ok" : "readback-failed";
             WriteReport(folder, manifest, asset, issues, compiled, readback, status);
             Console.WriteLine("build " + manifest.Name + ": " + status + (compiled != null ? " vertices=" + compiled.Mesh.Vertices.Count + " triangles=" +
-                compiled.Mesh.Indices.Count / 3 + " texture=" + compiled.TextureName + " " + compiled.TextureWidth + "x" + compiled.TextureHeight : "") +
+                compiled.Mesh.Indices.Count / 3 + " texture=" + compiled.TextureName + " " + compiled.TextureWidth + "x" + compiled.TextureHeight + " " + compiled.TextureFormat + " levels=" + compiled.TextureLevels +
+                (compiled.TextureQuality != null ? " psnr=" + Number(compiled.TextureQuality.PsnrRgbDb) + "dB" : "") : "") +
                 " report=" + Path.Combine(folder, "report.json"));
             foreach (string problem in readback) { Console.WriteLine("  READBACK " + problem); }
             return status == "ok" ? 0 : 2;
@@ -83,9 +90,11 @@ namespace LibertyFramework.Content
             Mesh back = drawable.ReadMesh(drawable.Models[0].Geometries[0]);
             MeshPreview.Save(new List<Mesh> { back }, Path.Combine(folder, manifest.Name + "_preview.png"), manifest.Name + " (read back from .wdr)",
                 new List<Color> { Color.FromArgb(170, 140, 100) });
+            // The texture's top level decoded back out of the compiled .wtd (alpha kept for DXT5).
             RscResource dictionary = RscResource.Parse(compiled.Dictionary);
             TextureDictionary.Texture texture = TextureDictionary.Parse(dictionary).Textures.First(t => t.Name == compiled.TextureName);
-            DxtPreview.Save(dictionary.Body, texture, Path.Combine(folder, manifest.Name + "_texture.png"));
+            RgbaImage decoded = new RgbaImage(texture.Width, texture.Height, DxtDecoder.Decode(dictionary.Body, texture.DataOffset, texture.Format, texture.Width, texture.Height));
+            using (Bitmap bitmap = decoded.ToBitmap()) { bitmap.Save(Path.Combine(folder, manifest.Name + "_texture.png"), System.Drawing.Imaging.ImageFormat.Png); }
         }
 
         private static void WriteReport(string folder, AssetManifest manifest, ContentAsset asset, List<AssetValidator.Issue> issues,
@@ -102,7 +111,9 @@ namespace LibertyFramework.Content
             {
                 json.Append("  \"compiled\": { \"vertices\": ").Append(compiled.Mesh.Vertices.Count).Append(", \"triangles\": ").Append(compiled.Mesh.Indices.Count / 3)
                     .Append(", \"texture\": ").Append(Quote(compiled.TextureName)).Append(", \"textureSize\": [").Append(compiled.TextureWidth).Append(", ").Append(compiled.TextureHeight)
-                    .Append("], \"flippedWinding\": ").Append(compiled.FlippedWinding ? "true" : "false").Append(", \"drawableBytes\": ").Append(compiled.Drawable.Length)
+                    .Append("], \"textureMode\": ").Append(Quote(compiled.TextureMode)).Append(", \"textureFormat\": ").Append(Quote(compiled.TextureFormat))
+                    .Append(", \"textureLevels\": ").Append(compiled.TextureLevels).Append(TextureQualityJson(compiled.TextureQuality))
+                    .Append(", \"flippedWinding\": ").Append(compiled.FlippedWinding ? "true" : "false").Append(", \"drawableBytes\": ").Append(compiled.Drawable.Length)
                     .Append(", \"dictionaryBytes\": ").Append(compiled.Dictionary.Length).Append(",\n    \"notes\": [").Append(string.Join(", ", compiled.Notes.Select(Quote).ToArray())).Append("] },\n");
             }
             json.Append("  \"issues\": [\n");
@@ -165,6 +176,17 @@ namespace LibertyFramework.Content
             Console.WriteLine("templates found=" + found);
             return 0;
         }
+
+        // ", "textureQuality": {...}" for native-mode builds that were read back, else nothing.
+        private static string TextureQualityJson(TextureQuality quality)
+        {
+            if (quality == null) { return ""; }
+            string json = ", \"textureQuality\": { \"psnrRgbDb\": " + Number(quality.PsnrRgbDb) + ", \"maxErrorRgb\": " + quality.MaxErrorRgb;
+            if (quality.HasAlpha) { json += ", \"psnrAlphaDb\": " + Number(quality.PsnrAlphaDb) + ", \"maxErrorAlpha\": " + quality.MaxErrorAlpha; }
+            return json + " }";
+        }
+
+        private static string Number(double value) { return value.ToString("0.00", CultureInfo.InvariantCulture); }
 
         private static string Quote(string text)
         {

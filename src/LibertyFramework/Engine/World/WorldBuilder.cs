@@ -31,6 +31,9 @@ namespace LibertyFramework.Engine.World
         // the same damage are not published twice.
         private readonly Dictionary<int, int> exactDamageFrame = new Dictionary<int, int>();
         private readonly Dictionary<int, int> exactKillFrame = new Dictionary<int, int>();
+        // A ped killed by an exact hit is not reported killed again for this many frames (later hits on the body). The
+        // bookkeeping keeps entries at least that long; a removed ped's entries go at once (the game reuses handles).
+        private const int KillRepeatFrames = 600;
         internal Episode Episode;
 
         internal WorldBuilder(CoreBridge core, WorldState state, EventBus events, EngineConfig config)
@@ -200,7 +203,7 @@ namespace LibertyFramework.Engine.World
                 // The game marks a ped dead a few frames after the lethal hit, so the blow that takes health to 0 or below (this frame's
                 // snapshot, read after the damage) is the kill; later hits on the body are not.
                 bool lethal = (d.Flags & CoreAbi.DamageKilled) != 0 || ((inSnapshot || d.Victim == player) && after <= 0);
-                e.Killed = lethal && !Recent(exactKillFrame, d.Victim, 600);
+                e.Killed = lethal && !Recent(exactKillFrame, d.Victim, KillRepeatFrames);
                 if (type == DamageType.Bullet && !attacker.IsNone && (inSnapshot || d.Victim == player))
                 {
                     Vec3 at = inSnapshot ? victim.Position : state.Player.Position;
@@ -237,7 +240,7 @@ namespace LibertyFramework.Engine.World
         private static void Forget(Dictionary<int, int> frames, int now)
         {
             List<int> old = null;
-            foreach (KeyValuePair<int, int> pair in frames) { if (now - pair.Value > 300) { (old = old ?? new List<int>()).Add(pair.Key); } }
+            foreach (KeyValuePair<int, int> pair in frames) { if (now - pair.Value > KillRepeatFrames) { (old = old ?? new List<int>()).Add(pair.Key); } }
             if (old != null) { foreach (int key in old) { frames.Remove(key); } }
         }
 
@@ -260,7 +263,11 @@ namespace LibertyFramework.Engine.World
                 switch (e.Type)
                 {
                     case CoreAbi.EvPedAppeared: events.Publish(new PedAppeared { Ped = new PedRef(e.A) }); break;
-                    case CoreAbi.EvPedRemoved: events.Publish(new PedRemoved { Ped = new PedRef(e.A) }); break;
+                    case CoreAbi.EvPedRemoved:
+                        exactDamageFrame.Remove(e.A);
+                        exactKillFrame.Remove(e.A);
+                        events.Publish(new PedRemoved { Ped = new PedRef(e.A) });
+                        break;
                     case CoreAbi.EvPedDamaged:
                         if (Recent(exactDamageFrame, e.A, 2)) { break; }
                         events.Publish(new PedDamaged

@@ -5,6 +5,22 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
+**Engine audit and hardening (2026-09-26, Claude, session 2 of [NEXT_SESSIONS](workflow/NEXT_SESSIONS.md)): offline checks pass; in-game checks queued.** [Report](reports/2026-09-26-engine-audit.md).
+- **Fixed:** a throwing `Wait.Until` condition or an unowned coroutine stopped every module for the session; an event handler's failure skipped the next module's handler; null owners left control locks, HUD, clock and memory patches unreleasable; menus could stay open with controls locked; overlapping memory patches left a stale patch; hooks outlived a core switched off mid-session; a faulted native kept being called for the rest of its frame; a double exact `PedDied` 5–10 s after a kill; the autopilot's log reads and Steam screenshot folder.
+- **New offline checks:** the core's C ABI against `CoreAbi.cs`, engine plumbing (scheduler, events, ledger, commands), native-name coverage, SDK examples compiled; the verifier now builds with the same Roslyn C# 7.3 as the build. New in-game checks: `T027-raycast-objects` (model chosen by `PROBE-collision`), self-test `vehicle-driver`.
+
+**Owner remote: cloud development loop (2026-09-26, Claude, [T-029](tasks/T-029-cloud-local-loop.md)): NEEDS-PLAYTEST.**
+- **How work goes now:** cloud sessions build on `develop`; the owner's PC runs `tools/verify-local.ps1` and pushes results to `verification-results`; a review session processes them ([workflow](workflow/CLOUD_LOCAL_LOOP.md), [next sessions](workflow/NEXT_SESSIONS.md)).
+- **Queue:** 44 checks in `tests/local/checks.json` cover every NEEDS-PLAYTEST task (T-007 to T-028) plus SDK regressions and two research probes; [plan](testing/LOCAL_VERIFICATION_PLAN.md). First step at the PC: `verify-local.ps1 -Smoke`.
+- **Cloud offline results (session 1):** C# build (SDK, engine, mods), native core + 13 unit tests, content self-test 178/178, verifier 144 passed / 7 NOT-RUN (need game files or Windows), Blender manifest + 19 tests passed / 9 NOT-RUN (builds need the game), 88 PowerShell tests, queue valid.
+- **Integrated:** raycast/LOS (T-027) and native textures (renumbered T-028) merged; both still NEEDS-PLAYTEST.
+- **Fixed on the way:** autopilot false passes (suite matched "PASS" anywhere; stale and command-echo `expect` matches; crash on the last step passed), the verifier's single try/catch hiding later sections, `package-phase2.ps1` deleting the content reports the T-028 steps read.
+
+**Engine raycast / line of sight, SDK 1.1 (2026-09-26, Claude, [T-027](tasks/T-027-engine-raycast.md), [ADR-0008](architecture/decisions/ADR-0008-engine-raycast.md)):**
+- **Research** ([Raycast.md](research/Raycast.md)): the game's line test `0xA536B0` on the physics world; the spike verified ground and ped hits and the hit-entity link `[instance+0x0C]`.
+- **Built:** core ABI 5 (`lc_raycast` with kind filtering by pass-through, 4 ignored entities, fault → off; unit test 13/13), SDK 1.1 `Query.Raycast` / `HasLineOfSight` (points and peds), `engine.json` raycast fields, `lf ray`/`raystats`, self-test checks, scenario `raycast`.
+- **Status:** builds clean (Linux container); owner's Windows build + verify and the `raycast`/`sdk-selftest` runs pending. Vehicle hits are the first unverified fact.
+
 **Liberty Engine (ADR-0006, 2026-09-25, Claude):**
 - **Engine:** a native C++ core (world snapshot, events) plus one C# host running every mechanic as a module, with events, coroutines and services. It is verified in game (21/21 natives) and documented in [ENGINE.md](architecture/ENGINE.md).
 - **Autopilot:** Claude launches and tests the game itself (`tools/autopilot`). The engine-events, gore-review, sling-review and perf-baseline scenarios pass.
@@ -58,6 +74,7 @@ Keep it short: this is a dashboard, not a diary.
 - ADR-0002: FusionFix v5.0.1 ExtendedLimits assigned the custom pistol ID 58. It replaced the vanilla pistol in the handgun inventory; a deliberate switch is needed. Unused episodic slots are deferred.
 - ADR-0004: Engine data (aim camera, CWeaponInfo accuracy, menu prefs, hud.dat reticle globals, bullet list) is located by native-hash/instruction-shape resolvers, validated at runtime, never code-patched, and restored on exit. See docs/game-api/MEMORY.md.
 - ADR-0005: Owner-approved exception to ADR-0004 for dismemberment: after-call hooks on the fragInst skeleton rebuilds (0x5F7D70/0x5F6FB0). Bytes validated, flag-gated, restored on unload/exit.
+- ADR-0008: The engine core calls the game's physics line test (0xA536B0) directly for raycasts: resolved by pattern and pinned offline, called only on the engine tick under SEH, read-only, switched off on the first fault.
 - ADR-0003: T-002 implements a JSON sample with live polling and last-valid retention; live log and gameplay checks passed.
 
 ## Verified in-game (by the human tester)
@@ -115,7 +132,7 @@ Keep it short: this is a dashboard, not a diary.
 - **Crash found and fixed**: `GET_DRIVER_OF_CAR` faulted on some pooled vehicles and corrupted game state; the core now reads the driver from `[vehicle+0xF50]`. `GET_CAR_COORDINATES` dereferences the entity matrix unchecked, so vehicles without one (+0x20) are skipped.
 - **In game (2026-09-25)**: boots with 9/9 modules; 21/21 + 8/8 natives verified; 17 vehicles in the snapshot, zero faults; SDK self-test **34/34 passed** on the installed build (aaeefe9), including the ped-bone position and the degrees-to-radians attach conversion (a 90° request now turns the prop by 90.0°).
 - **Research answer**: `ATTACH_OBJECT_TO_PED/CAR` take rotations in **radians** (90 → 116.6°, measured). The SDK converts from degrees.
-- **Not done yet**: Arsenal wheel/trunk ported onto Liberty.Ui / choreography; Content Compiler (glTF); hooks for exact damage; episode tests; SDK reference docs and IV-SDK parity matrix; full autopilot suite run on this build.
+- **Not done yet (as of this entry; M1–M5 below did all but the episode tests)**: Arsenal wheel/trunk ported onto Liberty.Ui / choreography; Content Compiler (glTF); hooks for exact damage; episode tests; SDK reference docs and IV-SDK parity matrix; full autopilot suite run on this build.
 
 ## M2–M4 (Claude, 2026-09-25)
 
@@ -141,6 +158,10 @@ Keep it short: this is a dashboard, not a diary.
 - `tools/blender/liberty_exporter` 0.1.0 (docs/content/BLENDER.md): checks LBX001–022, exports glTF + asset.json, runs LibertyContent validate/build.
 - 23 headless tests plus extension validation pass on Blender 5.2.2.
 - `content/props/lf_blender_barrel` is made in Blender and renders correctly in game (`asset-review` passes).
+
+**LCC v2, native texture dictionaries (T-028, 2026-09-26): NEEDS-PLAYTEST.**
+- `"textureMode": "native"` writes the `.wtd` from scratch (source size, full mips, DXT1/DXT5 alpha); DXT5 encoder and DXT decoder; byte-exact read-back with PSNR in `report.json`; validator IR/capabilities (LCC024/025); `selftest` (168 offline checks, run by `package-phase2.ps1`) and `wtdcheck`; Blender add-on 0.2.0 Texture mode.
+- Offline only: builds with Roslyn C# 7.3 (warnings as errors) and the self-test passes, both on Linux/Mono. Pending: `wtdcheck` on the game archives, and the `native-texture-review` scenario (`lf_native_crate`, `lf_alpha_panel`).
 
 **M5 developer loop:**
 - Hot reload: `lf reload <module>` swaps a mod assembly in the running game, and `lf restart <module>` restarts one.

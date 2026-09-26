@@ -59,6 +59,7 @@ namespace LibertyFramework.Engine.Services
 
         public void Watch<T>(LibertyModule owner, string name, Func<T> defaults, Action<T> validate, Action<T> onChanged) where T : class
         {
+            if (owner == null) { throw new ArgumentNullException("owner"); }
             Watcher watch = new Watcher();
             watch.Owner = owner;
             watch.Path = PathOf(owner, name);
@@ -69,21 +70,21 @@ namespace LibertyFramework.Engine.Services
 
         internal void RemoveOwner(LibertyModule owner) { watches.RemoveAll(w => w.Owner == owner); }
 
-        internal void Poll(Action<LibertyModule, Exception> fail)
+        // runAs runs the reload as its module (LibertyEngine.RunAs): a throwing validate/onChanged stops that module, which
+        // removes its watches, so the loop walks a copy of the list.
+        internal void Poll(Func<LibertyModule, Action, bool> runAs)
         {
             int now = Environment.TickCount;
             if (watches.Count == 0 || unchecked(now - lastPollMs) < 1000) { return; }
             lastPollMs = now;
-            for (int i = 0; i < watches.Count; i++)
+            foreach (Watcher watch in watches.ToArray())
             {
-                Watcher watch = watches[i];
                 if (!watch.Owner.Running) { continue; }
                 DateTime stamp = Stamp(watch.Path);
                 if (stamp == watch.Stamp) { continue; }
                 watch.Stamp = stamp;
                 RuntimeLog.Info("config_changed " + watch.Path);
-                try { watch.Reload(); }
-                catch (Exception error) { fail(watch.Owner, error); }
+                runAs(watch.Owner, watch.Reload);
             }
         }
 

@@ -20,6 +20,7 @@ namespace LibertyFramework.Engine.Services
 
         public void Spawn(LibertyModule owner, ModelRef model, Vec3 position, float heading, Action<PedRef> onReady)
         {
+            engine.RequireOwner(owner);
             engine.Scheduler.Start(owner, "spawn-ped", SpawnRoutine(owner, model, position, heading, onReady));
         }
 
@@ -39,6 +40,7 @@ namespace LibertyFramework.Engine.Services
 
         public PedRef TryCreate(LibertyModule owner, ModelRef model, Vec3 position, float heading)
         {
+            engine.RequireOwner(owner);
             if (!engine.Streaming.RequestModel(owner, model)) { return PedRef.None; }
             Ped ped = GTA.World.CreatePed(new Model(model.Hash), Handles.V(position));
             if (ped == null || !ped.Exists()) { return PedRef.None; }
@@ -50,6 +52,7 @@ namespace LibertyFramework.Engine.Services
 
         public void SpawnRandom(LibertyModule owner, Vec3 position, float heading, Action<PedRef> onReady)
         {
+            engine.RequireOwner(owner);
             engine.Scheduler.Start(owner, "spawn-random-ped", RandomRoutine(owner, position, heading, onReady));
         }
 

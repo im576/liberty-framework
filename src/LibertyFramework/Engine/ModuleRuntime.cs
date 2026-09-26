@@ -1,3 +1,4 @@
+using System;
 using Liberty.Sdk;
 
 namespace LibertyFramework.Engine
@@ -26,6 +27,9 @@ namespace LibertyFramework.Engine
         internal int LastTickMs;
         internal float BudgetMs;
         internal int Reloads;
+        // Set by the draw pass (render thread) when this module's draw threw; the engine tick turns it into Fail. Until
+        // then the module is not drawn, so a broken draw logs once instead of every frame.
+        internal volatile Exception DrawFailure;
 
         // Exponential moving average of update cost (alpha 0.05, about the last 20 updates) and the session maximum.
         internal float AverageMs;
@@ -43,6 +47,7 @@ namespace LibertyFramework.Engine
             Module = module;
             EngineLevel = module.Manifest.Has(Capabilities.EngineInternal);
             Started = false;
+            DrawFailure = null;
             AverageMs = 0; MaxMs = 0; Updates = 0; OverBudgetStreak = 0; UnderBudgetStreak = 0; Throttled = false; IntervalBeforeThrottle = 0;
             Reloads++;
         }

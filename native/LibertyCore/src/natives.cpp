@@ -54,6 +54,11 @@ namespace lc
     int32_t Natives::call(int id, const int32_t* args, int32_t* outs)
     {
         const NativeInfo& info = kNatives[id];
+        if (faulted_[id])
+        {
+            for (int i = 0; i < info.out_args && outs != nullptr; i++) { outs[i] = 0; }
+            return 0;
+        }
         // Returns land in a 16-byte slot: some handlers write a vector-sized result.
         alignas(16) int32_t result[4] = {};
         alignas(16) int32_t out_slots[4] = {};
@@ -66,6 +71,7 @@ namespace lc
         if (!safe_invoke(handlers_[id], &context))
         {
             verified_[id] = false;
+            faulted_[id] = true;
             last_fault_native_ = id;
             fault_natives_[(last_fault().count - 1) % 16] = id;
             last_fault_argument_ = info.in_args > 0 ? args[0] : 0;

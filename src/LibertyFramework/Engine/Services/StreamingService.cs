@@ -23,6 +23,7 @@ namespace LibertyFramework.Engine.Services
 
         public bool RequestModel(LibertyModule owner, ModelRef model)
         {
+            engine.RequireOwner(owner);
             if (!IsValidModel(model)) { return false; }
             HashSet<LibertyModule> holders;
             if (!models.TryGetValue(model.Hash, out holders)) { holders = new HashSet<LibertyModule>(); models[model.Hash] = holders; }
@@ -49,6 +50,7 @@ namespace LibertyFramework.Engine.Services
 
         public bool RequestAnimations(LibertyModule owner, string dictionary)
         {
+            engine.RequireOwner(owner);
             if (string.IsNullOrEmpty(dictionary)) { return false; }
             HashSet<LibertyModule> holders;
             if (!anims.TryGetValue(dictionary, out holders)) { holders = new HashSet<LibertyModule>(); anims[dictionary] = holders; }

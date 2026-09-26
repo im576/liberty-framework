@@ -38,6 +38,7 @@ namespace LibertyFramework.Engine.Ui
         }
 
         internal LibertyModule Owner { get; private set; }
+        private bool segmentFailureLogged;
         public bool IsOpen { get; private set; }
         public int Selected { get; set; }
 
@@ -90,7 +91,11 @@ namespace LibertyFramework.Engine.Ui
                     s.Icons[i] = segment.Icon != null ? segment.Icon() : TextureRef.None;
                     s.Badges[i] = segment.Badge != null ? segment.Badge() : null;
                 }
-                catch (Exception error) { RuntimeLog.Error("[" + Owner.Id + "] ui_segment_failed index=" + i + " error=" + error.Message); }
+                catch (Exception error)
+                {
+                    // Tolerated (the segment shows blank), and logged once per menu: this runs every frame.
+                    if (!segmentFailureLogged) { segmentFailureLogged = true; RuntimeLog.Error("[" + Owner.Id + "] ui_segment_failed index=" + i + " error=" + error); }
+                }
             }
             s.Centre = menu.CenterLines != null ? menu.CenterLines(Selected) : null;
             s.Selected = Selected;

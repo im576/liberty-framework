@@ -6,11 +6,18 @@ Phase 1 goal: three gold test weapons (pistol, carbine, pump shotgun) that use f
 data-driven recoil, and a clean spread crosshair — tuned live from an in-game developer menu —
 while every vanilla weapon stays vanilla for A/B comparison.
 
-> **Status:** Phase 1 (T-010) is built, verified offline against the installed GTAIV.exe, and packaged; it awaits one owner playtest ([checklist](docs/testing/PHASE1_PLAYTEST.md)). See [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md).
+> **Status:** Liberty Engine (a native core plus C# modules) and the Liberty SDK carry Phase 1 and 2 gameplay, a content
+> compiler and the autopilot. Development runs in cloud sessions; the owner's PC verifies with one command
+> ([workflow](docs/workflow/CLOUD_LOCAL_LOOP.md), [what is queued](docs/testing/LOCAL_VERIFICATION_PLAN.md)). See
+> [docs/PROJECT_STATE.md](docs/PROJECT_STATE.md) and [docs/workflow/NEXT_SESSIONS.md](docs/workflow/NEXT_SESSIONS.md).
 
 ## For AI agents
 
-Start at [AGENTS.md](AGENTS.md). Then [docs/tasks/README.md](docs/tasks/README.md).
+Start at [AGENTS.md](AGENTS.md), then [docs/workflow/CLOUD_LOCAL_LOOP.md](docs/workflow/CLOUD_LOCAL_LOOP.md) and [docs/workflow/NEXT_SESSIONS.md](docs/workflow/NEXT_SESSIONS.md). Offline checks: `tools/cloud/test-all.sh`.
+
+## For mod authors
+
+[docs/sdk/README.md](docs/sdk/README.md) (SDK), [docs/architecture/ENGINE.md](docs/architecture/ENGINE.md) (engine), [docs/content/README.md](docs/content/README.md) (models and textures).
 
 ## For the human tester
 
@@ -30,8 +37,13 @@ Start at [AGENTS.md](AGENTS.md). Then [docs/tasks/README.md](docs/tasks/README.m
 | `docs/game-api/` | Registry of natives and memory patterns we use, with CE status |
 | `docs/tasks/` | Small, ordered task cards for agents |
 | `docs/testing/` | Test matrix, playtest report template |
-| `src/` | C# source (LibertyFramework.net.dll) |
+| `src/` | C# engine and built-in modules (LibertyFramework.net.dll) |
+| `sdk/` | Liberty.Sdk, the public API mods build against |
+| `native/` | LibertyCore, the C++ core (world snapshot, hooks, raycast) |
+| `mods/` | SDK-only mods (the autopilot) |
+| `content/` | Source assets for the content compiler (glTF, Blender) |
+| `tests/local/` | The queue of checks that need the owner's PC |
 | `config/` | JSON tuning/config files |
 | `assets/` | Finish definitions (no game assets are committed) |
-| `tools/` | Build/deploy scripts |
+| `tools/` | Build, verify, package, autopilot, content compiler, Blender add-on, cloud and local verification |
 | `third_party/` | Third-party code/binaries + license tracking |

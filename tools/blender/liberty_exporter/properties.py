@@ -18,7 +18,12 @@ class LibertyAssetSettings(bpy.types.PropertyGroup):
         description="Game archive holding the template drawable (list candidates with LibertyContent templates)")
     template_model: StringProperty(
         name="Template model", default="amb_nailgun",
-        description="Single-geometry gta_default drawable whose structure the compiler reuses; its texture size is the output size")
+        description="Single-geometry gta_default drawable whose structure the compiler reuses; in Template texture mode its texture size is the output size")
+    texture_mode: EnumProperty(
+        name="Texture mode", default='template',
+        items=[('template', "Template", "The template's texture dictionary with its pixels replaced: template size, DXT1, opaque (proven in game)"),
+               ('native', "Native", "Dictionary written from scratch: source size (power of two, 4-2048), full mip chain, "
+                                    "DXT5 when the material has alpha, else DXT1 (needs playtest)")])
     texture_dictionary: StringProperty(
         name="Texture dictionary", maxlen=23, description="WTD name. Empty: the asset name")
     draw_distance: FloatProperty(

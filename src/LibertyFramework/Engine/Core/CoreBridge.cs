@@ -22,6 +22,7 @@ namespace LibertyFramework.Engine.Core
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern void lc_set_native_verified(int id, int verified);
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern int lc_raycast_install(uint lineTest);
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern int lc_raycast(ref LcRay ray, ref LcRayHit hit);
+        [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern void lc_raycast_stats(out LcRayStats stats);
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern int lc_call_native(int id, int argc, int[] args, int[] outs);
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern IntPtr lc_frame(ref LcFrameInput input);
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern void lc_shutdown();
@@ -142,23 +143,58 @@ namespace LibertyFramework.Engine.Core
             return ok;
         }
 
-        internal bool RaycastReady { get; private set; }
+        // ADR-0008: the game's line test, called by the core. False when unresolved, the core is off, or a fault switched it off.
+        internal bool RaycastReady { get { return raycastInstalled && Available; } }
+        private bool raycastInstalled;
 
         internal bool InstallRaycast(GameAddresses addresses)
         {
             if (!Available || addresses == null || !addresses.LineTestResolved) { return false; }
-            RaycastReady = lc_raycast_install(addresses.LineTestFunction) != 0;
-            RuntimeLog.Info("engine_raycast installed=" + RaycastReady + " line_test=0x" + addresses.LineTestFunction.ToString("X8"));
+            raycastInstalled = lc_raycast_install(addresses.LineTestFunction) != 0;
+            RuntimeLog.Info("engine_raycast installed=" + RaycastReady + " line_test=0x" + addresses.LineTestFunction.ToString("X8") +
+                " world=0x" + addresses.PhysicsWorldGlobal.ToString("X8"));
             return RaycastReady;
         }
 
-        // 1 hit, 0 no hit, -1 unavailable or contained fault. Engine tick only.
+        // LcRay.Hit, Clear, Inconclusive or Unavailable. The caller fills everything but the sizes. Engine tick only.
+        // A fault that escaped the core's own containment switches raycasts off instead of reaching the game (as in Frame).
+        [System.Runtime.ExceptionServices.HandleProcessCorruptedStateExceptions, System.Security.SecurityCritical]
         internal int Raycast(ref LcRay ray, ref LcRayHit hit)
         {
-            if (!RaycastReady) { return -1; }
-            if (hit.Raw == null) { hit.Raw = new uint[24]; }
-            return lc_raycast(ref ray, ref hit);
+            if (!RaycastReady) { return LcRay.Unavailable; }
+            ray.Size = (uint)sizeof(LcRay);
+            ray.HitSize = (uint)sizeof(LcRayHit);
+            int result;
+            try { result = lc_raycast(ref ray, ref hit); }
+            catch (AccessViolationException error)
+            {
+                raycastInstalled = false;
+                RuntimeLog.Error("engine_raycast_fault_escaped error=" + error.Message + "; raycasts are off for this session");
+                return LcRay.Unavailable;
+            }
+            if (result == LcRay.Unavailable)
+            {
+                LcRayStats stats = RaycastStats();
+                if (stats.Installed == 0)
+                {
+                    // Contained fault in the game's physics query: the core has switched raycasts off for the session.
+                    raycastInstalled = false;
+                    RuntimeLog.Error("engine_raycast_disabled fault_number=" + stats.FaultNumber + " queries=" + stats.Queries + " tests=" + stats.Tests +
+                        " from=(" + ray.StartX.ToString("0.00") + "," + ray.StartY.ToString("0.00") + "," + ray.StartZ.ToString("0.00") + ")" +
+                        " to=(" + ray.EndX.ToString("0.00") + "," + ray.EndY.ToString("0.00") + "," + ray.EndZ.ToString("0.00") + ")" +
+                        " flags=0x" + ray.IncludeFlags.ToString("X") + " mode=" + ray.Mode + "; raycasts are off for this session");
+                }
+            }
+            return result;
         }
+
+        internal LcRayStats RaycastStats()
+        {
+            LcRayStats stats = new LcRayStats();
+            if (Loaded) { lc_raycast_stats(out stats); }
+            return stats;
+        }
+
         internal string HooksReport()
         {
             if (!Loaded) { return "core not loaded"; }
@@ -193,15 +229,15 @@ namespace LibertyFramework.Engine.Core
             catch (AccessViolationException error)
             {
                 RuntimeLog.Error("engine_core_fault_escaped error=" + error.Message + "; core disabled for this session");
-                Available = false;
+                Shutdown();
                 return null;
             }
             if (snapshot == IntPtr.Zero) { return null; }
             LcSnapshotHead* head = (LcSnapshotHead*)snapshot.ToPointer();
             if (head->Size != ExpectedSnapshotBytes)
             {
-                RuntimeLog.Error("engine_core_snapshot_size core=" + head->Size + " engine=" + ExpectedSnapshotBytes);
-                Available = false;
+                RuntimeLog.Error("engine_core_snapshot_size core=" + head->Size + " engine=" + ExpectedSnapshotBytes + "; core disabled for this session");
+                Shutdown();
                 return null;
             }
             return head;
@@ -221,7 +257,8 @@ namespace LibertyFramework.Engine.Core
             {
                 LcFault fault;
                 lc_faults(out fault, number);
-                string what = fault.Native >= 0 && fault.Native < CoreAbi.NativeNames.Length ? CoreAbi.NativeNames[fault.Native] + (fault.Argument != 0 ? " handle=" + fault.Argument : "") : "raw game-memory read";
+                string what = fault.Native >= 0 && fault.Native < CoreAbi.NativeNames.Length ? CoreAbi.NativeNames[fault.Native] + (fault.Argument != 0 ? " handle=" + fault.Argument : "") :
+                    fault.Native == -2 ? "raycast line test" : "raw game-memory read";
                 RuntimeLog.Error("engine_core_fault number=" + number + " in=" + what + " code=0x" + fault.Code.ToString("X8") +
                     " address=0x" + fault.Address.ToString("X8") + " data=0x" + fault.DataAddress.ToString("X8") + "; that native is off for the session");
             }
@@ -256,11 +293,19 @@ namespace LibertyFramework.Engine.Core
 
         internal static LcEvent* Events(LcSnapshotHead* head) { return (LcEvent*)(AfterDamages(head) + 8); }
 
+        // Switches the core off: at script unload, and whenever a safety check turns it off mid-session. Hooks (the exact
+        // damage detour) must never outlive the engine that installed them, so lc_shutdown runs once whether or not the core
+        // was still Available (it is harmless after a failed lc_init).
         internal void Shutdown()
         {
-            if (!Available) { return; }
-            try { lc_shutdown(); } catch (Exception error) { RuntimeLog.Error("engine_core_shutdown_failed error=" + error.Message); }
             Available = false;
+            raycastInstalled = false;
+            if (!Loaded || shutDown) { return; }
+            shutDown = true;
+            try { lc_shutdown(); RuntimeLog.Info("engine_core_shutdown hooks removed"); }
+            catch (Exception error) { RuntimeLog.Error("engine_core_shutdown_failed error=" + error.Message); }
         }
+
+        private bool shutDown;
     }
 }

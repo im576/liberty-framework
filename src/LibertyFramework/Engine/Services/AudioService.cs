@@ -17,6 +17,7 @@ namespace LibertyFramework.Engine.Services
 
         public SoundRef PlayAt(LibertyModule owner, string sound, Vec3 position)
         {
+            engine.RequireOwner(owner);
             int id = NewSound(owner);
             Function.Call("PLAY_SOUND_FROM_POSITION", id, sound, position.X, position.Y, position.Z);
             return new SoundRef(id + 1);
@@ -24,6 +25,7 @@ namespace LibertyFramework.Engine.Services
 
         public SoundRef PlayOnPed(LibertyModule owner, string sound, PedRef ped)
         {
+            engine.RequireOwner(owner);
             int id = NewSound(owner);
             Function.Call("PLAY_SOUND_FROM_PED", id, sound, ped.Handle);
             return new SoundRef(id + 1);
@@ -31,6 +33,7 @@ namespace LibertyFramework.Engine.Services
 
         public SoundRef PlayOnVehicle(LibertyModule owner, string sound, VehicleRef vehicle)
         {
+            engine.RequireOwner(owner);
             int id = NewSound(owner);
             Function.Call("PLAY_SOUND_FROM_VEHICLE", id, sound, vehicle.Handle);
             return new SoundRef(id + 1);
