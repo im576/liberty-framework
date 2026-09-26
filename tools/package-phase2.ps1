@@ -139,6 +139,8 @@ if (-not ($datLines | Where-Object { $_.Trim() -ieq 'IDE common:/data/lf_models.
 # packed into LibertyContent.img + lf_content.ide; a failed asset fails the package.
 & (Join-Path $PSScriptRoot 'build-content.ps1')
 if ($LASTEXITCODE -ne 0) { throw 'Content compiler build failed.' }
+& (Join-Path $repoRoot 'tools\content\bin\LibertyContent.exe') selftest
+if ($LASTEXITCODE -ne 0) { throw 'Content compiler self-test failed.' }
 $contentAssets = @(Get-ChildItem -LiteralPath (Join-Path $repoRoot 'content') -Recurse -Filter 'asset.json' -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
 if ($contentAssets.Count -gt 0) {
     $contentOut = Join-Path $work 'content'

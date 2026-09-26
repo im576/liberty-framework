@@ -1,6 +1,6 @@
 # Authoring in Blender (Liberty Exporter add-on)
 
-Blender models and textures the asset. The Liberty Exporter add-on (`tools/blender/liberty_exporter`, v0.1.0) turns
+Blender models and textures the asset. The Liberty Exporter add-on (`tools/blender/liberty_exporter`, v0.2.0) turns
 the scene into a validated asset folder. LibertyContent (docs/content/README.md) then compiles it for GTA IV.
 
 ```
@@ -17,7 +17,7 @@ Tested with Blender 5.2.2 LTS. The minimum version is 4.2, where extensions star
    ```
    blender --background --factory-startup --command extension build --source-dir tools/blender/liberty_exporter --output-dir staging
    ```
-3. Install `staging/liberty_exporter-0.1.0.zip` in Blender: Edit > Preferences > Get Extensions > ⌄ > Install from Disk.
+3. Install `staging/liberty_exporter-0.2.0.zip` in Blender: Edit > Preferences > Get Extensions > ⌄ > Install from Disk.
 4. In the add-on's preferences, set:
    - **Content folder:** the repository's `content` folder.
    - **GTA IV folder:** the folder with `GTAIV.exe`. Builds read the template drawable from the game archives.
@@ -33,8 +33,11 @@ Tested with Blender 5.2.2 LTS. The minimum version is 4.2, where extensions star
 - **One material per LOD** in compiler v1. The material is a Principled BSDF with an Image Texture linked straight into
   Base Color.
   - Without an image, the base colour fills the texture.
-  - Alpha is ignored: output is DXT1 and opaque.
-  - The texture is resampled to the template's texture size, 256×256 for `amb_nailgun`.
+  - **Texture mode Template** (default, proven in game): alpha is ignored, output is DXT1 and opaque, and the texture is
+    resampled to the template's texture size, 256×256 for `amb_nailgun`.
+  - **Texture mode Native** (NEEDS-PLAYTEST, [T-027](../tasks/T-027-lcc-native-textures.md)): the texture keeps its own
+    size (nearest power of two, 4–2048) with a full mip chain. A material with alpha (Principled BSDF Alpha below 1 or
+    linked) is written as DXT5, otherwise DXT1. How `gta_default` draws alpha in game is still open.
 - **UV map** is required on textured meshes.
 - **LODs:**
   - Name objects `<name>_lod1`, `_lod2` or `_lod3` (a Blender `.001` suffix is fine), or use the panel's LOD buttons,
@@ -55,6 +58,7 @@ Tested with Blender 5.2.2 LTS. The minimum version is 4.2, where extensions star
 | Collection | what to export, nested collections included. Empty exports the selection |
 | Template / Model | `template` |
 | Texture dictionary | `textureDictionary` (empty uses the name) |
+| Texture mode | `textureMode`: Template (default, not written) or Native |
 | Draw distance (m) | `drawDistanceMeters` |
 | Audio material | `audioMaterial` |
 
@@ -93,14 +97,15 @@ export.
 | LBX017 | error | no LOD 0, or LOD outside 0–3 |
 | LBX018 | warning | LOD not lighter than the previous one |
 | LBX019 | error | unsupported `liberty_shader` |
-| LBX020 | warning | material alpha (output is opaque) |
+| LBX020 | warning | material alpha (Template mode: output is opaque; Native mode: DXT5, drawing unverified in game) |
 | LBX021 | info | summary: objects, triangles per LOD, bounds |
 | LBX022 | warning | object with no faces (ignored) |
 
 ## Scripts and tests
 
 - `tools/blender/run-tests.ps1 -GameDirectory <game> -Blender <blender.exe>`:
-  - Blender's extension validation, plus 23 headless tests.
+  - Blender's extension validation, plus 25 headless tests (23 from 0.1.0 and 2 for the native texture build, case 3b;
+    0.2.0 has not been run through the suite yet).
   - The tests cover registration, LOD tags, export files and extras, validate and build against the real game
     archives, and axis/metre round trips.
   - They also cover modifiers baked, rejected assets writing nothing, and every error check, plus collection export

@@ -10,7 +10,7 @@ class Result:
         self.folder = ""   # asset folder the last export wrote
         self.report = ""   # report.json of the last build
         self.preview = ""  # geometry preview read back from the compiled .wdr
-        self.texture = ""  # DXT1 texture decoded back from the compiled .wtd
+        self.texture = ""  # texture decoded back from the compiled .wtd (DXT1, or DXT5 with alpha in native mode)
         self.log = ""      # LibertyContent console output
 
 

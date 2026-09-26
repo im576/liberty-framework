@@ -13,15 +13,31 @@ namespace LibertyFramework.Content
     // the sling straps are built (proven in game). LOD 0 meshes of one material become the geometry; the material's base
     // colour texture is resampled to the template texture's size and written, with its mip chain, into a copy of the
     // template's texture dictionary. Multiple materials, LOD levels and collision need the structure writer (roadmap M6).
+    //
+    // textureMode "native" (asset.json; NEEDS-PLAYTEST): the drawable is built exactly as above (same template texture
+    // name), but the dictionary is written from scratch by TextureDictionaryWriter: the source texture at its own size
+    // (nearest power of two, 4-2048), full mip chain, DXT5 when the material is not opaque and has alpha, else DXT1. The
+    // bytes the writer does not compute are captured from the template's own dictionary.
     internal static class PropCompiler
     {
+        // Size of the texture written when the material has no image (its base colour fills it): one DXT block.
+        internal const int SolidColourTextureSizePixels = 4;
+
         internal sealed class Result
         {
             internal byte[] Drawable;
             internal byte[] Dictionary;
             internal Mesh Mesh;
+            internal string TextureMode = AssetManifest.TextureModeTemplate;
             internal string TextureName;
             internal int TextureWidth, TextureHeight;
+            internal string TextureFormat;
+            internal int TextureLevels;
+            // Native mode only: what was encoded (checked byte for byte on read-back) and the level 0 source pixels.
+            internal NativeTexture EncodedTexture;
+            internal RgbaImage SourceImage;
+            // Set by Readback in native mode.
+            internal TextureQuality TextureQuality;
             internal bool FlippedWinding;
             internal readonly List<string> Notes = new List<string>();
         }
@@ -42,8 +58,74 @@ namespace LibertyFramework.Content
             }
             DrawableBuilder.SinglePage = true;
             result.Drawable = DrawableBuilder.Build(template, result.Mesh, null).Serialize();
-            result.Dictionary = BuildTexture(archive, manifest, template, asset, result);
+            result.TextureMode = manifest.TextureMode ?? AssetManifest.TextureModeTemplate;
+            result.Dictionary = result.TextureMode == AssetManifest.TextureModeNative
+                ? BuildNativeTexture(archive, manifest, template, asset, result)
+                : BuildTexture(archive, manifest, template, asset, result);
             return result;
+        }
+
+        private static byte[] BuildNativeTexture(ArchiveSource archive, AssetManifest manifest, DrawableFile template, ContentAsset asset, Result result)
+        {
+            string referenced = template.Shaders[0].Textures[0];
+            string templatePath = manifest.Template.Model + ".wtd";
+            RscResource templateDictionary = RscResource.Parse(archive.Extract(templatePath));
+            TextureDictionaryPrototype prototype = TextureDictionaryPrototype.FromResource(templateDictionary, templatePath);
+            List<string> differences = prototype.OpaqueDifferences(TextureDictionaryPrototype.Builtin());
+            if (differences.Count > 0) { result.Notes.Add("template dictionary's copied bytes differ from the builtin prototype at " + string.Join(", ", differences.ToArray())); }
+            // Keep the name the drawable references (spelled as the template dictionary spells it).
+            TextureDictionary.Texture named = TextureDictionary.Parse(templateDictionary, false).Textures.FirstOrDefault(t => string.Equals(t.Name, referenced, StringComparison.OrdinalIgnoreCase));
+            string textureName = named != null ? named.Name : referenced;
+
+            string format;
+            RgbaImage pixels = NativeSourcePixels(asset, result.Notes, out format);
+            NativeTexture texture = TextureEncoder.Encode(textureName, pixels, format, 0);
+            byte[] file = TextureDictionaryWriter.Write(new List<NativeTexture> { texture }, prototype).Resource.Serialize();
+            TextureDictionary.Parse(RscResource.Parse(file));
+            result.TextureName = texture.Name; result.TextureWidth = texture.Width; result.TextureHeight = texture.Height;
+            result.TextureFormat = texture.Format; result.TextureLevels = texture.Levels.Count;
+            result.EncodedTexture = texture; result.SourceImage = pixels;
+            result.Notes.Add("native texture dictionary: " + texture.Width + "x" + texture.Height + " " + texture.Format + ", " + texture.Levels.Count + " mip levels, prototype " + prototype.Source);
+            return file;
+        }
+
+        // Native mode's source: the LOD 0 material's texture at NativeSide x NativeSide, multiplied by its base colour (or a
+        // SolidColourTextureSizePixels square of the base colour without a texture), and the format to encode it in: DXT5
+        // when the material is not opaque and a pixel is translucent, else DXT1.
+        internal static RgbaImage NativeSourcePixels(ContentAsset asset, List<string> notes, out string format)
+        {
+            ContentMaterial material = Lod0Material(asset);
+            Bitmap image = material != null && material.Image >= 0 && material.Image < asset.Images.Count ? asset.Images[material.Image] : null;
+            float[] tint = material != null ? material.BaseColour : new float[] { 1, 1, 1, 1 };
+            RgbaImage pixels;
+            if (image == null)
+            {
+                pixels = RgbaImage.Solid(SolidColourTextureSizePixels, SolidColourTextureSizePixels, Channel(tint[0]), Channel(tint[1]), Channel(tint[2]), Channel(tint.Length > 3 ? tint[3] : 1));
+                notes.Add("no texture: " + SolidColourTextureSizePixels + "x" + SolidColourTextureSizePixels + " filled with the base colour");
+            }
+            else
+            {
+                int width = NativeSide(image.Width), height = NativeSide(image.Height);
+                if (width != image.Width || height != image.Height) { notes.Add("texture resampled " + image.Width + "x" + image.Height + " -> " + width + "x" + height + " (power of two, " + TextureEncoder.MinSizePixels + "-" + TextureEncoder.MaxSizePixels + ")"); }
+                pixels = RgbaImage.FromBitmap(image, width, height, tint);
+            }
+            bool alpha = material != null && material.AlphaMode != "OPAQUE" && pixels.HasTranslucency();
+            format = alpha ? "DXT5" : "DXT1";
+            if (material != null && material.AlphaMode != "OPAQUE" && !alpha) { notes.Add("alpha mode " + material.AlphaMode + " but every pixel is opaque: DXT1"); }
+            return pixels;
+        }
+
+        // Nearest power of two on a log scale, clamped to the writer's range.
+        internal static int NativeSide(int pixels)
+        {
+            int side = TextureEncoder.MinSizePixels;
+            while (side < TextureEncoder.MaxSizePixels && Math.Abs(Math.Log(side * 2.0 / pixels)) <= Math.Abs(Math.Log((double)side / pixels))) { side *= 2; }
+            return side;
+        }
+
+        private static ContentMaterial Lod0Material(ContentAsset asset)
+        {
+            return asset.Lod(0).Select(m => m.Material >= 0 && m.Material < asset.Materials.Count ? asset.Materials[m.Material] : null).FirstOrDefault(m => m != null);
         }
 
         // LOD 0 meshes merged into one; degenerate triangles dropped; normals generated when the source had none.
@@ -97,6 +179,7 @@ namespace LibertyFramework.Content
             TextureDictionary.Texture texture = dictionary.Textures.FirstOrDefault(t => string.Equals(t.Name, textureName, StringComparison.OrdinalIgnoreCase));
             if (texture == null || texture.Format != "DXT1") { throw new InvalidDataException("template dictionary has no DXT1 texture " + textureName); }
             result.TextureName = texture.Name; result.TextureWidth = texture.Width; result.TextureHeight = texture.Height;
+            result.TextureFormat = texture.Format; result.TextureLevels = Math.Max(1, texture.Levels);
             byte[] rgb = SourcePixels(asset, texture.Width, texture.Height, result);
             int offset = texture.DataOffset, width = texture.Width, height = texture.Height;
             for (int level = 0; level < Math.Max(1, texture.Levels); level++)
@@ -116,7 +199,7 @@ namespace LibertyFramework.Content
         // The LOD 0 material's texture resampled to width x height (RGB), or its base colour when it has none.
         private static byte[] SourcePixels(ContentAsset asset, int width, int height, Result result)
         {
-            ContentMaterial material = asset.Lod(0).Select(m => m.Material >= 0 && m.Material < asset.Materials.Count ? asset.Materials[m.Material] : null).FirstOrDefault(m => m != null);
+            ContentMaterial material = Lod0Material(asset);
             byte[] rgb = new byte[width * height * 3];
             Bitmap image = material != null && material.Image >= 0 && material.Image < asset.Images.Count ? asset.Images[material.Image] : null;
             float[] tint = material != null ? material.BaseColour : new float[] { 1, 1, 1, 1 };
