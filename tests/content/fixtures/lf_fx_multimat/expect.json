@@ -1,0 +1,36 @@
+{
+  "status": "invalid",
+  "errors": [
+    "LCC016"
+  ],
+  "codes": [
+    "LCC026"
+  ],
+  "report": {
+    "type": "prop",
+    "structure": {
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 12,
+          "geometries": [
+            {
+              "material": "fx_crate",
+              "textured": true,
+              "meshes": 1,
+              "triangles": 10
+            },
+            {
+              "material": "fx_lid",
+              "textured": false,
+              "meshes": 1,
+              "triangles": 2
+            }
+          ]
+        }
+      ],
+      "lodDistancesMeters": null,
+      "collision": []
+    }
+  }
+}

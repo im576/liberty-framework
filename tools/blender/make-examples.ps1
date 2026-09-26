@@ -3,7 +3,8 @@
     [string] $Blender = $env:LIBERTY_BLENDER
 )
 
-# Regenerates the example assets made in Blender (tools/blender/examples/make_*.py) into content/ through the add-on.
+# Regenerates what tools/blender/examples/make_*.py make in Blender through the add-on: the example assets in content/ and
+# the authoring fixtures in tests/content/fixtures (make_fixtures.py; check them with LibertyContent fixtures).
 $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path -LiteralPath (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))).Path
 if (-not $Blender -or -not (Test-Path -LiteralPath $Blender -PathType Leaf)) { throw 'Pass -Blender <blender.exe> or set LIBERTY_BLENDER.' }
@@ -11,6 +12,6 @@ $ErrorActionPreference = 'Continue'
 $failed = 0
 foreach ($script in Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot 'examples') -Filter 'make_*.py') {
     $log = & $Blender --background --factory-startup --python-exit-code 1 --python $script.FullName -- $repoRoot 2>&1 | Out-String
-    if ($LASTEXITCODE -ne 0) { $failed++; Write-Host "FAIL $($script.Name)"; Write-Host $log } else { $log -split "`r?`n" | Where-Object { $_ -match '^EXAMPLE' } | ForEach-Object { Write-Host $_ } }
+    if ($LASTEXITCODE -ne 0) { $failed++; Write-Host "FAIL $($script.Name)"; Write-Host $log } else { $log -split "`r?`n" | Where-Object { $_ -match '^(EXAMPLE|FIXTURE)' } | ForEach-Object { Write-Host $_ } }
 }
 if ($failed -gt 0) { exit 1 }

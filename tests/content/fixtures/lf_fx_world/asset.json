@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "name": "lf_fx_world",
+  "type": "object",
+  "source": "lf_fx_world.gltf",
+  "template": {
+    "archive": "pc/models/cdimages/weapons.img",
+    "model": "amb_nailgun"
+  },
+  "textureDictionary": "lf_fx_world",
+  "drawDistanceMeters": 300.0,
+  "lodDistancesMeters": [
+    60.0,
+    150.0
+  ]
+}

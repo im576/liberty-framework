@@ -187,7 +187,7 @@ Nothing to set up.
 |---|---|---|---|---|
 | `LOOP-build` | LOOP | pc-offline | exit code 0; build.ps1 and build-core.ps1 report no errors and ray_walk_test passes as a Windows .exe | QUEUED |
 | `LOOP-verify` | LOOP | pc-offline | exit code 0 and 'RESULT passed=N failed=0' with no NOT-RUN | QUEUED |
-| `LOOP-content-selftest` | T-028 | pc-offline | exit code 0 and 'selftest: ok passed=N failed=0' | QUEUED |
+| `LOOP-content-selftest` | T-028 | pc-offline | exit code 0 (self-test, then fixtures) and 'selftest: ok passed=N failed=0'; the log also shows 'fixtures: ok passed=5 failed=0' | QUEUED |
 | `T028-wtdcheck` | T-028 | pc-offline | exit code 0 and 'failed=0'; rebuilt equals identical (the review session reads the whole output) | QUEUED |
 | `LOOP-blender-tests` | T-028 | pc-offline | exit code 0 and 'Blender add-on tests passed' (needs Blender 4.2+ configured; otherwise NOT-RUN) | QUEUED |
 | `LOOP-package-install` | LOOP | pc-offline | package-phase2.ps1 and install-phase2.ps1 exit 0; every installed file hash-verified; backup folder recorded | QUEUED |
@@ -218,9 +218,9 @@ Nothing to set up.
 
 - `LOOP-build`: The Windows toolchain builds the same sources the cloud built; the native unit tests pass on the game's target (i686 Windows).
 - `LOOP-verify`: Every verifier section, including the 7 the cloud reports NOT-RUN: address resolution against GTAIV.exe, native names and CE hashes, the core native table, vehicle extras, gore particles in gta_core.wpfl, WeaponInfo.xml accuracies and the collapse engine's x86 hook code.
-- `LOOP-content-selftest`: The content compiler behaves the same on .NET Framework as under Mono in the cloud (codecs, writer, validator).
+- `LOOP-content-selftest`: The content compiler behaves the same on .NET Framework as under Mono in the cloud (codecs, writer, validator), and reads the Blender-made authoring fixtures (tests/content/fixtures: materials, LODs, collision, world object) into the same structure and codes.
 - `T028-wtdcheck`: The from-scratch WTD writer reproduces Rockstar's dictionaries byte for byte apart from placement. **Still unproven:** That the game loads and draws a native dictionary (T028-native-texture-review).
-- `LOOP-blender-tests`: The 9 build expectations the cloud reports NOT-RUN: template and native builds from Blender, LOD counts, previews, modifiers, collection export.
+- `LOOP-blender-tests`: The 9 build expectations the cloud reports NOT-RUN (template and native builds from Blender, LOD counts, previews, modifiers, collection export), and on the owner's Blender the authoring cases: the five fixtures exported and refused or built as expected (lf_fx_lods builds 'ok'), collision tags as glTF extras, the add-on's checks and operators, and checks.CAPABILITIES equal to 'LibertyContent capabilities'.
 - `LOOP-package-install`: The develop build packages against the owner's game (content assets compiled on game templates) and installs cleanly. Every scenario check depends on it.
 - `T028-native-crate-report`: The native writer's output for a real asset built against the game's template passes read-back.
 - `T028-alpha-panel-report`: DXT5 with alpha is written and read back for a real asset.

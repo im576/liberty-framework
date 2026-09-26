@@ -58,16 +58,20 @@ else
     record "Native core + unit tests" NOT-RUN "llvm-mingw not recorded"
 fi
 
-# 3. Content compiler and its self-test (no game).
+# 3. Content compiler, its self-test and the authoring fixtures (no game).
 if have; then
     if run "Content compiler build" content-build.log '^Built|failed' pwsh -NoProfile -File tools/build-content.ps1; then
         run "Content compiler self-test" content-selftest.log '^selftest:' mono tools/content/bin/LibertyContent.exe selftest
         content=$?
+        # Authoring fixtures made in Blender (tools/blender/examples/make_fixtures.py) against their expect.json.
+        run "Content authoring fixtures" content-fixtures.log '^fixtures:' mono tools/content/bin/LibertyContent.exe fixtures tests/content/fixtures
     else
         record "Content compiler self-test" NOT-RUN "the content compiler did not build"; content=1
+        record "Content authoring fixtures" NOT-RUN "the content compiler did not build"
     fi
 else
     record "Content compiler build" NOT-RUN "toolchain missing"; record "Content compiler self-test" NOT-RUN "toolchain missing"; content=1
+    record "Content authoring fixtures" NOT-RUN "toolchain missing"
 fi
 
 # 4. Offline verifier, repository-only sections (the game sections report NOT-RUN inside it).

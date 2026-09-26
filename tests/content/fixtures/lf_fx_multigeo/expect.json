@@ -1,0 +1,36 @@
+{
+  "status": "invalid",
+  "errors": [
+    "LCC016"
+  ],
+  "codes": [
+    "LCC026"
+  ],
+  "report": {
+    "type": "prop",
+    "meshes": 5,
+    "structure": {
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 60,
+          "geometries": [
+            {
+              "material": "fx_legs",
+              "textured": false,
+              "meshes": 4,
+              "triangles": 48
+            },
+            {
+              "material": "fx_top",
+              "textured": true,
+              "meshes": 1,
+              "triangles": 12
+            }
+          ]
+        }
+      ],
+      "collision": []
+    }
+  }
+}

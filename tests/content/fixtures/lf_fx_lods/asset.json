@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "name": "lf_fx_lods",
+  "type": "prop",
+  "source": "lf_fx_lods.gltf",
+  "template": {
+    "archive": "pc/models/cdimages/weapons.img",
+    "model": "amb_nailgun"
+  },
+  "textureDictionary": "lf_fx_lods",
+  "drawDistanceMeters": 250.0,
+  "lodDistancesMeters": [
+    25.0,
+    50.0,
+    100.0,
+    200.0
+  ]
+}

@@ -165,7 +165,9 @@ function Get-ToolCommand($Context, $Check) {
         }
         'verify' { return @{ File = $ps; Arguments = (Get-ScriptArguments (Join-Path $tools 'verify.ps1')) + @('-GameDirectory', $Context.Game); Timeout = 900; Pass = 'RESULT passed=\d+ failed=0(?! notrun)' } }
         'content-selftest' {
-            $command = "& '$(Join-Path $tools 'build-content.ps1')'; if (`$LASTEXITCODE) { exit `$LASTEXITCODE }; & '$content' selftest; exit `$LASTEXITCODE"
+            # The self-test, then the authoring fixtures (tests/content/fixtures) checked against their expect.json.
+            $fixtures = Join-Parts $repo 'tests' 'content' 'fixtures'
+            $command = "& '$(Join-Path $tools 'build-content.ps1')'; if (`$LASTEXITCODE) { exit `$LASTEXITCODE }; & '$content' selftest; if (`$LASTEXITCODE) { exit `$LASTEXITCODE }; & '$content' fixtures '$fixtures'; exit `$LASTEXITCODE"
             return @{ File = $ps; Arguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', $command); Timeout = 900; Pass = 'selftest: ok passed=\d+ failed=0' }
         }
         'wtdcheck' { return @{ File = $content; Arguments = @('wtdcheck', '--game', $Context.Game) + @($Check.run.archives); Timeout = 1800; Pass = 'failed=0' } }

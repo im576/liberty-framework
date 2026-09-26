@@ -69,13 +69,13 @@
     {
       "id": "LOOP-content-selftest",
       "task": "T-028",
-      "title": "Content compiler self-test on Windows .NET",
+      "title": "Content compiler self-test and authoring fixtures on Windows .NET",
       "kind": "pc-offline",
       "run": {
         "tool": "content-selftest"
       },
-      "pass": "exit code 0 and 'selftest: ok passed=N failed=0'",
-      "proves": "The content compiler behaves the same on .NET Framework as under Mono in the cloud (codecs, writer, validator).",
+      "pass": "exit code 0 (self-test, then fixtures) and 'selftest: ok passed=N failed=0'; the log also shows 'fixtures: ok passed=5 failed=0'",
+      "proves": "The content compiler behaves the same on .NET Framework as under Mono in the cloud (codecs, writer, validator), and reads the Blender-made authoring fixtures (tests/content/fixtures: materials, LODs, collision, world object) into the same structure and codes.",
       "status": "QUEUED",
       "addedIn": "claude/friendly-euler-m7hn4e (Session 1 seed)"
     },
@@ -106,7 +106,7 @@
         "tool": "blender-tests"
       },
       "pass": "exit code 0 and 'Blender add-on tests passed' (needs Blender 4.2+ configured; otherwise NOT-RUN)",
-      "proves": "The 9 build expectations the cloud reports NOT-RUN: template and native builds from Blender, LOD counts, previews, modifiers, collection export.",
+      "proves": "The 9 build expectations the cloud reports NOT-RUN (template and native builds from Blender, LOD counts, previews, modifiers, collection export), and on the owner's Blender the authoring cases: the five fixtures exported and refused or built as expected (lf_fx_lods builds 'ok'), collision tags as glTF extras, the add-on's checks and operators, and checks.CAPABILITIES equal to 'LibertyContent capabilities'.",
       "status": "QUEUED",
       "addedIn": "claude/friendly-euler-m7hn4e (Session 1 seed)"
     },
