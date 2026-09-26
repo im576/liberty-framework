@@ -4,6 +4,8 @@
 $ErrorActionPreference = 'Stop'
 $script:Game = $null
 $script:LaunchedUtc = [DateTime]::MinValue
+$script:LogCache = @{}
+Import-Module (Join-Path $PSScriptRoot 'AutopilotLogic.psm1') 3>$null
 
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Windows.Forms
@@ -39,27 +41,24 @@ public static class AutopilotNative
 }
 '@
 
-function Set-AutopilotGame([string] $GameDirectory) { $script:Game = (Resolve-Path -LiteralPath $GameDirectory).Path }
+# A game that is already running (the previous scenario launched it; each scenario is a new PowerShell) started this
+# session when its process started: earlier sessions in the same log are not this session's lines.
+function Set-AutopilotGame([string] $GameDirectory) {
+    $script:Game = (Resolve-Path -LiteralPath $GameDirectory).Path
+    $process = Get-GameProcess
+    if ($process -and $script:LaunchedUtc -eq [DateTime]::MinValue) {
+        try { $script:LaunchedUtc = $process.StartTime.ToUniversalTime() }
+        catch { Write-Host "autopilot: could not read the game's start time ($($_.Exception.Message)); reading the whole log" }
+    }
+}
 
 function Get-GameProcess { Get-Process GTAIV -ErrorAction SilentlyContinue | Select-Object -First 1 }
 
 function Get-LogPath { Join-Path $script:Game 'scripts\LibertyFramework\logs\LibertyFramework.log' }
 
-# Log lines written since the current launch (UTC timestamps at the start of each line).
+# Log lines written since the current launch (UTC timestamps at the start of each line); read incrementally.
 function Get-SessionLog {
-    $path = Get-LogPath
-    if (-not (Test-Path -LiteralPath $path)) { return @() }
-    $since = $script:LaunchedUtc.ToString('yyyy-MM-ddTHH:mm:ss')
-    $lines = New-Object System.Collections.Generic.List[string]
-    $stream = [IO.File]::Open($path, 'Open', 'Read', 'ReadWrite')
-    try {
-        $reader = New-Object IO.StreamReader($stream)
-        while (-not $reader.EndOfStream) {
-            $line = $reader.ReadLine()
-            if ($line.Length -ge 19 -and [string]::CompareOrdinal($line.Substring(0, 19), $since) -ge 0) { $lines.Add($line) }
-        }
-    } finally { $stream.Dispose() }
-    return $lines.ToArray()
+    return Update-SessionLogCache $script:LogCache (Get-LogPath) $script:LaunchedUtc.ToString('yyyy-MM-ddTHH:mm:ss')
 }
 
 function Start-Game {
@@ -104,8 +103,21 @@ function Send-GameKey([string] $Key, [int] $HoldMs = 80) {
 
 # The game presents through Vulkan (DXVK), which GDI capture sees as black; Steam's overlay screenshot (F12) captures
 # the real frame. Falls back to a desktop capture when no Steam screenshot appears.
+# Steam's install folders: LIBERTY_STEAM_DIR (override), the registry (per user, then machine), the default location.
+function Get-SteamRoots {
+    $roots = @($env:LIBERTY_STEAM_DIR)
+    foreach ($key in @(@('HKCU:\Software\Valve\Steam', 'SteamPath'), @('HKLM:\SOFTWARE\WOW6432Node\Valve\Steam', 'InstallPath'), @('HKLM:\SOFTWARE\Valve\Steam', 'InstallPath'))) {
+        try { $roots += (Get-ItemProperty -LiteralPath $key[0] -Name $key[1] -ErrorAction Stop).($key[1]) }
+        catch { Write-Verbose "no Steam path at $($key[0])" }
+    }
+    $roots += 'C:\Program Files (x86)\Steam'
+    return @($roots | Where-Object { $_ })
+}
+
 function Save-Screenshot([string] $Path) {
-    $folders = Get-ChildItem 'C:\Program Files (x86)\Steam\userdata' -Directory -ErrorAction SilentlyContinue | ForEach-Object { Join-Path $_.FullName '760\remote\12210\screenshots' }
+    $roots = Get-SteamRoots
+    $folders = @(Get-SteamScreenshotFolders $roots)
+    if ($folders.Count -eq 0) { throw "no Steam userdata folder found (looked in: $($roots -join '; ')); set LIBERTY_STEAM_DIR to the Steam folder" }
     $before = Get-Date
     # Right after launch the Steam overlay may not take the first F12 yet: try twice before giving up.
     for ($attempt = 0; $attempt -lt 2 -and (Get-GameProcess) -and (Focus-Game); $attempt++) {

@@ -88,6 +88,68 @@ function Resolve-ScenarioLine([string] $Line, [string] $ProbeDirectory) {
     return $Line
 }
 
+# The session log, read incrementally: only bytes appended since the previous call are read and decoded (the expect
+# loops poll every 500 ms; re-reading a long log each time was slow). $Cache is a hashtable the caller keeps between
+# calls. A log that got shorter (rotated or truncated), another path or another session start resets it. Only complete
+# lines are returned (a line still being written waits for its newline), and only lines stamped at or after $Since
+# (the log's UTC timestamps, yyyy-MM-ddTHH:mm:ss).
+function Update-SessionLogCache([hashtable] $Cache, [string] $Path, [string] $Since) {
+    if (-not (Test-Path -LiteralPath $Path)) { $Cache.Clear(); return @() }
+    $stream = [IO.File]::Open($Path, 'Open', 'Read', 'ReadWrite')
+    try {
+        $length = $stream.Length
+        if ($Cache['Path'] -ne $Path -or $Cache['Since'] -ne $Since -or $length -lt [long]$Cache['Offset']) {
+            $Cache['Path'] = $Path; $Cache['Since'] = $Since; $Cache['Offset'] = [long]0
+            $Cache['Pending'] = [byte[]]@(); $Cache['Lines'] = New-Object System.Collections.Generic.List[string]
+        }
+        $offset = [long]$Cache['Offset']
+        if ($length -gt $offset) {
+            [void]$stream.Seek($offset, 'Begin')
+            $fresh = New-Object byte[] ($length - $offset)
+            $read = 0
+            while ($read -lt $fresh.Length) {
+                $n = $stream.Read($fresh, $read, $fresh.Length - $read)
+                if ($n -le 0) { break }
+                $read += $n
+            }
+            $Cache['Offset'] = $offset + $read
+            $pending = [byte[]]$Cache['Pending']
+            $bytes = New-Object byte[] ($pending.Length + $read)
+            [Array]::Copy($pending, 0, $bytes, 0, $pending.Length)
+            [Array]::Copy($fresh, 0, $bytes, $pending.Length, $read)
+            # Up to the last newline byte: complete lines (a UTF-8 sequence never contains 0x0A, so none is split).
+            $end = [Array]::LastIndexOf($bytes, [byte]10)
+            if ($end -ge 0) {
+                $text = [Text.Encoding]::UTF8.GetString($bytes, 0, $end + 1)
+                $rest = New-Object byte[] ($bytes.Length - $end - 1)
+                [Array]::Copy($bytes, $end + 1, $rest, 0, $rest.Length)
+                $Cache['Pending'] = $rest
+                $lines = $Cache['Lines']
+                foreach ($line in $text.Split([char]10)) {
+                    $clean = $line.TrimEnd([char]13)
+                    if ($clean.Length -ge 19 -and [string]::CompareOrdinal($clean.Substring(0, 19), $Since) -ge 0) { $lines.Add($clean) }
+                }
+            }
+            else { $Cache['Pending'] = $bytes }
+        }
+    } finally { $stream.Dispose() }
+    return $Cache['Lines'].ToArray()
+}
+
+# Steam screenshot folders for the game (Steam app 12210, GTA IV: The Complete Edition): <root>\userdata\<account>\760\
+# remote\<app>\screenshots for every Steam root given (the registry's install path, an override, the default folder).
+function Get-SteamScreenshotFolders([string[]] $SteamRoots, [string] $AppId = '12210') {
+    $folders = New-Object System.Collections.Generic.List[string]
+    foreach ($root in @($SteamRoots | Where-Object { $_ } | ForEach-Object { $_.Replace('/', [IO.Path]::DirectorySeparatorChar).TrimEnd([IO.Path]::DirectorySeparatorChar) } | Select-Object -Unique)) {
+        $userdata = Join-Path $root 'userdata'
+        if (-not (Test-Path -LiteralPath $userdata)) { continue }
+        foreach ($account in Get-ChildItem -LiteralPath $userdata -Directory -ErrorAction SilentlyContinue) {
+            $folders.Add((Join-Path $account.FullName (Join-Path '760' (Join-Path 'remote' (Join-Path $AppId 'screenshots')))))
+        }
+    }
+    return $folders.ToArray()
+}
+
 # Run-Scenario.ps1 ends its output with exactly one line "AUTOPILOT_RESULT <path to result.json>". The suite reads the
 # status from that file, never from free text; anything missing or unreadable is ERROR.
 function Read-ScenarioResult([string] $Output) {
@@ -102,4 +164,4 @@ function Read-ScenarioResult([string] $Output) {
     return @{ Status = [string]$result.status; Detail = [string]$result.summary; Path = $path }
 }
 
-Export-ModuleMember -Function ConvertFrom-ExpectLine, Find-ExpectedLine, Test-CommandFailed, Get-ScenarioStatus, Get-ReviewStatus, Read-ScenarioResult, Resolve-ScenarioLine
+Export-ModuleMember -Function ConvertFrom-ExpectLine, Find-ExpectedLine, Test-CommandFailed, Get-ScenarioStatus, Get-ReviewStatus, Read-ScenarioResult, Resolve-ScenarioLine, Update-SessionLogCache, Get-SteamScreenshotFolders

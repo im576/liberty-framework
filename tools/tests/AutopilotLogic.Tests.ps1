@@ -70,3 +70,33 @@ $thrown = ''; try { Resolve-ScenarioLine 'x {probe:PROBE-collision:missing}' $pr
 Test-That 'probe value: a missing field fails the step' ($thrown -like "*no field 'missing'*") $thrown
 $thrown = ''; try { Resolve-ScenarioLine 'x {probe:PROBE-collision:odd}' $probes | Out-Null } catch { $thrown = $_.Exception.Message }
 Test-That 'probe value: a value that is not one word is refused (no command injection)' ($thrown -like '*not a plain word*') $thrown
+
+# Session log read incrementally (Update-SessionLogCache)
+$logFile = Join-Path $script:Scratch 'session.log'
+$utf8 = New-Object Text.UTF8Encoding($false)
+[IO.File]::WriteAllText($logFile, "2026-09-26T09:00:00.000Z [INFO] earlier session`n2026-09-26T10:00:00.000Z [INFO] engine_booted`n", $utf8)
+$cache = @{}
+$read = @(Update-SessionLogCache $cache $logFile '2026-09-26T10:00:00')
+Test-That 'log: lines before the session start are left out' ($read.Count -eq 1 -and $read[0] -like '*engine_booted') ($read -join ' | ')
+[IO.File]::AppendAllText($logFile, "2026-09-26T10:00:01.000Z [INFO] caf" + [char]0xE9 + " line`n2026-09-26T10:00:02.000Z [INFO] half", $utf8)
+$offsetBefore = $cache['Offset']
+$read = @(Update-SessionLogCache $cache $logFile '2026-09-26T10:00:00')
+Test-That 'log: appended lines are added, a line without its newline waits' ($read.Count -eq 2 -and $read[1] -eq ("2026-09-26T10:00:01.000Z [INFO] caf" + [char]0xE9 + " line")) ($read -join ' | ')
+Test-That 'log: only the appended bytes were read' ($cache['Offset'] -gt $offsetBefore -and $cache['Offset'] -eq (Get-Item -LiteralPath $logFile).Length)
+[IO.File]::AppendAllText($logFile, " written`r`n", $utf8)
+$read = @(Update-SessionLogCache $cache $logFile '2026-09-26T10:00:00')
+Test-That 'log: the finished line is returned whole (CRLF trimmed)' ($read.Count -eq 3 -and $read[2] -eq '2026-09-26T10:00:02.000Z [INFO] half written') ($read -join ' | ')
+[IO.File]::WriteAllText($logFile, "2026-09-26T10:05:00.000Z [INFO] after rotation`n", $utf8)
+$read = @(Update-SessionLogCache $cache $logFile '2026-09-26T10:00:00')
+Test-That 'log: a shorter (rotated) log is read again from its start' ($read.Count -eq 1 -and $read[0] -like '*after rotation') ($read -join ' | ')
+$read = @(Update-SessionLogCache $cache $logFile '2026-09-26T10:06:00')
+Test-That 'log: a new session start resets the cache' ($read.Count -eq 0) ($read -join ' | ')
+$read = @(Update-SessionLogCache $cache (Join-Path $script:Scratch 'missing.log') '2026-09-26T10:00:00')
+Test-That 'log: a missing log reads as empty' ($read.Count -eq 0)
+
+# Steam screenshot folders
+$steamA = Join-Path $script:Scratch 'SteamA'; $steamB = Join-Path $script:Scratch 'Steam B'
+New-Item -ItemType Directory -Force -Path (Join-Path $steamA 'userdata/111'), (Join-Path $steamA 'userdata/222'), (Join-Path $steamB 'userdata/333') | Out-Null
+$folders = @(Get-SteamScreenshotFolders @($steamA, ($steamB.Replace('\', '/') + '/'), $steamA, (Join-Path $script:Scratch 'NoSteam'), ''))
+Test-That 'steam: every account under every existing root, once each' ($folders.Count -eq 3) ($folders -join ' | ')
+Test-That 'steam: the GTA IV CE screenshot folder (app 12210)' (@($folders | Where-Object { $_ -like ('*333' + [IO.Path]::DirectorySeparatorChar + '760' + [IO.Path]::DirectorySeparatorChar + 'remote' + [IO.Path]::DirectorySeparatorChar + '12210' + [IO.Path]::DirectorySeparatorChar + 'screenshots') }).Count -eq 1) ($folders -join ' | ')
