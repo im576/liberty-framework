@@ -154,6 +154,9 @@ namespace Liberty.Autopilot
             }
 
             // Vehicles, their snapshot entry and appear/remove events.
+            // Once per module, however many times the self-test runs.
+            liberty.Events.Unsubscribe<VehicleAppeared>(owner, OnVehicleAppeared);
+            liberty.Events.Unsubscribe<VehicleRemoved>(owner, OnVehicleRemoved);
             liberty.Events.Subscribe<VehicleAppeared>(owner, OnVehicleAppeared);
             liberty.Events.Subscribe<VehicleRemoved>(owner, OnVehicleRemoved);
             VehicleRef car = VehicleRef.None;
@@ -268,7 +271,7 @@ namespace Liberty.Autopilot
             catch (Exception error) { liberty.Log.Error(owner, "selftest unexpected " + error.GetType().Name + ": " + error.Message); return false; }
         }
 
-                private bool Refused(Action action)
+        private bool Refused(Action action)
         {
             try { action(); return false; }
             catch (UnauthorizedAccessException) { return true; }
