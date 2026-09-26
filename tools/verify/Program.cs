@@ -10,42 +10,64 @@ namespace LibertyFramework.Verify
         {
             if (args.Length < 2)
             {
-                Console.WriteLine("usage: OfflineVerify <GTAIV.exe> <repo root>");
+                Console.WriteLine("usage: OfflineVerify <GTAIV.exe | --no-game> <repo root>");
                 return 2;
             }
+            string exe = args[0];
+            string repo = args[1];
             Checker check = new Checker();
-            try
-            {
-                Console.WriteLine("== Engine address resolution");
-                AddressChecks.Run(args[0], check);
-                Console.WriteLine("== Native names used by the DLL");
-                NativeChecks.Run(args[0], args[1], check);
-                EngineChecks.Run(args[0], args[1], check);
-                Console.WriteLine("== Gunplay logic and configuration");
-                LogicChecks.Run(args[1], check);
-                Console.WriteLine("== Arsenal core (T-020)");
-                ArsenalCoreChecks.Run(args[1], check);
-                Console.WriteLine("== Phase 2 ownership and catalog");
-                Phase2SystemsChecks.Run(args[1], check);
-                Console.WriteLine("== Feel and presentation (T-011, T-013..T-017, T-021)");
-                FeelChecks.Run(args[1], check);
-                Console.WriteLine("== Vehicle body parts (T-023)");
-                VehicleChecks.Run(args[0], check);
-                Console.WriteLine("== Dismemberment plans (T-022)");
-                CombatChecks.Run(args[0], args[1], check);
-                Console.WriteLine("== Dismemberment collapse engine machine code (ADR-0005)");
-                CollapseEngineChecks.Run(check);
-                Console.WriteLine("== Atmosphere: weather director and density governor (M-2, E-5)");
-                AtmosphereChecks.Run(args[1], check);
-                Console.WriteLine("== Hot reload file watcher (M5)");
-                HotReloadChecks.Run(check);
-            }
-            catch (Exception error)
-            {
-                check.True("verifier completed without exception", false, error.ToString());
-            }
-            Console.WriteLine("RESULT passed=" + check.Passed + " failed=" + check.Failed);
+            // --no-game (the cloud container): sections that read GTAIV.exe or game archives are reported NOT-RUN, the
+            // repository-only sections still run. A no-game run is never a full verification.
+            check.NoGame = exe == "--no-game";
+
+            Game(check, "Engine address resolution", delegate { AddressChecks.Run(exe, check); });
+            Game(check, "Native names used by the DLL", delegate { NativeChecks.Run(exe, repo, check); });
+            Game(check, "Core native table (ADR-0006)", delegate { EngineChecks.Run(exe, repo, check); });
+            Section(check, "Gunplay logic and configuration", delegate { LogicChecks.Run(repo, check); });
+            Section(check, "Arsenal core (T-020)", delegate { ArsenalCoreChecks.Run(repo, check); });
+            Section(check, "Phase 2 ownership and catalog", delegate { Phase2SystemsChecks.Run(repo, check); });
+            Section(check, "Feel and presentation (T-011, T-013..T-017, T-021)", delegate { FeelChecks.Run(repo, check); });
+            Game(check, "Vehicle body parts (T-023)", delegate { VehicleChecks.Run(exe, check); });
+            Game(check, "Dismemberment plans and particles (T-022)", delegate { CombatChecks.Run(exe, repo, check); });
+            WindowsOnly(check, "Dismemberment collapse engine machine code (ADR-0005)", delegate { CollapseEngineChecks.Run(check); });
+            Section(check, "Atmosphere: weather director and density governor (M-2, E-5)", delegate { AtmosphereChecks.Run(repo, check); });
+            Section(check, "Hot reload file watcher (M5)", delegate { HotReloadChecks.Run(check); });
+
+            Console.WriteLine("RESULT passed=" + check.Passed + " failed=" + check.Failed + (check.NotRun > 0 ? " notrun=" + check.NotRun : ""));
             return check.Failed == 0 ? 0 : 1;
+        }
+
+        // Each section is isolated: an exception fails that section and the remaining sections still run, so one broken
+        // check cannot hide the results after it.
+        private static void Section(Checker check, string name, Action run)
+        {
+            Console.WriteLine("== " + name);
+            try { run(); }
+            catch (Exception error) { check.True(name + ": section completed without exception", false, error.ToString()); }
+        }
+
+        // A section that reads GTAIV.exe or the game's archives.
+        private static void Game(Checker check, string name, Action run)
+        {
+            if (check.NoGame)
+            {
+                Console.WriteLine("== " + name);
+                check.Skip(name, "needs GTAIV.exe and game files; run tools/verify.ps1 -GameDirectory on the PC");
+                return;
+            }
+            Section(check, name, run);
+        }
+
+        // A section that executes 32-bit x86 machine code through VirtualAlloc: it needs Windows, whatever the game files.
+        private static void WindowsOnly(Checker check, string name, Action run)
+        {
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                Console.WriteLine("== " + name);
+                check.Skip(name, "executes x86 machine code through VirtualAlloc; needs Windows");
+                return;
+            }
+            Section(check, name, run);
         }
     }
 }

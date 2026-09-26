@@ -238,6 +238,7 @@ namespace LibertyFramework.Verify
         {
             string staged = Path.Combine(repoRoot, Path.Combine("staging", Path.Combine("phase1", Path.Combine("update", Path.Combine("common", Path.Combine("data", "WeaponInfo.xml"))))));
             if (!File.Exists(staged)) { staged = Path.Combine(repoRoot, Path.Combine("staging", Path.Combine("t007", "WeaponInfo.xml"))); }
+            if (!File.Exists(staged) && check.NoGame) { check.Skip("WeaponInfo.xml accuracies", "staging WeaponInfo.xml is generated from the game's files"); return; }
             Dictionary<string, float> accuracies = WeaponInfoXml.ReadAccuracies(staged);
             check.True("WeaponInfo.xml accuracy for LF_GOLD_PISTOL is 2.6", accuracies.ContainsKey("LF_GOLD_PISTOL") && Math.Abs(accuracies["LF_GOLD_PISTOL"] - 2.6f) < 1e-4, staged);
             check.True("LF_GOLD_CARBINE and LF_GOLD_SHOTGUN present", accuracies.ContainsKey("LF_GOLD_CARBINE") && accuracies.ContainsKey("LF_GOLD_SHOTGUN"), "");

@@ -6,6 +6,17 @@ namespace LibertyFramework.Verify
     {
         internal int Passed;
         internal int Failed;
+        internal int NotRun;
+        // True for a --no-game run: checks whose input is generated from the game's files may report NOT-RUN instead
+        // of failing when that input is missing. On the PC they still fail.
+        internal bool NoGame;
+
+        // A section that could not run (no game files in the cloud container). Never counted as passed.
+        internal void Skip(string section, string reason)
+        {
+            NotRun++;
+            Console.WriteLine("NOT-RUN " + section + " (" + reason + ")");
+        }
 
         internal void True(string name, bool condition, string detail)
         {
