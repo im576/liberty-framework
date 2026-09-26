@@ -1,9 +1,9 @@
 schema_version = "1.0.0"
 
 id = "liberty_exporter"
-version = "0.2.0"
+version = "0.3.0"
 name = "Liberty Exporter"
-tagline = "Export GTA IV props through the Liberty Content Compiler"
+tagline = "Author GTA IV props and world objects for the Liberty compiler"
 maintainer = "Liberty Framework"
 type = "add-on"
 tags = ["Import-Export"]

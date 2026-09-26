@@ -4,7 +4,7 @@ import subprocess
 import tempfile
 
 import bpy
-from bpy.props import IntProperty, StringProperty
+from bpy.props import EnumProperty, IntProperty, StringProperty
 
 from . import checks, exporter, lcc, preferences, state
 
@@ -53,7 +53,13 @@ def _export_and_compile(operator, context, build):
         operator.report({'WARNING'}, "Exported to %s; %s" % (exported.folder, result.message))
         return {'FINISHED'}
 
+    output = bpy.path.abspath(prefs.build_directory) if prefs.build_directory else os.path.join(tempfile.gettempdir(), "liberty_build")
+    folder = os.path.join(output, settings.asset_name)
+    # Build and the validation report share <output>/<name>/report.json: a stale one must never be read as this run's.
+    report = os.path.join(folder, "report.json")
     try:
+        if os.path.isfile(report):
+            os.remove(report)
         if build:
             game = bpy.path.abspath(prefs.game_directory)
             if not os.path.isfile(os.path.join(game, "GTAIV.exe")):
@@ -61,18 +67,19 @@ def _export_and_compile(operator, context, build):
                 result.message = "Set the GTA IV folder (with GTAIV.exe) in the preferences to build"
                 operator.report({'ERROR'}, result.message)
                 return {'CANCELLED'}
-            output = bpy.path.abspath(prefs.build_directory) if prefs.build_directory else os.path.join(tempfile.gettempdir(), "liberty_build")
             code, text = lcc.run(compiler, ["build", game, exported.manifest, output], prefs.compiler_timeout)
-            folder = os.path.join(output, settings.asset_name)
-            result.report = os.path.join(folder, "report.json")
-            report = lcc.read_report(result.report)
-            result.status = report.get("status", "failed") if report else "failed"
+            result.report = report
+            data = lcc.read_report(report)
+            result.status = data.get("status", "failed") if data else "failed"
             for path, attribute in ((settings.asset_name + "_preview.png", "preview"), (settings.asset_name + "_texture.png", "texture")):
                 if os.path.isfile(os.path.join(folder, path)):
                     setattr(result, attribute, os.path.join(folder, path))
         else:
-            code, text = lcc.run(compiler, ["validate", exported.manifest], prefs.compiler_timeout)
+            # The validation report: status valid/invalid, the asset's structure and every issue.
+            code, text = lcc.run(compiler, ["validate", exported.manifest, "--report", report], prefs.compiler_timeout)
             result.status = "exported" if code == 0 else "invalid"
+            if os.path.isfile(report):
+                result.report = report
     except (OSError, subprocess.SubprocessError) as error:
         result.status = "failed"
         result.message = "LibertyContent could not run: %s" % error
@@ -155,6 +162,93 @@ class LIBERTY_OT_clear_lod(bpy.types.Operator):
         return {'FINISHED'}
 
 
+COLLISION_ITEMS = [('NONE', "None", "A render object (removes the collision tag)"),
+                   ('MESH', "Mesh", "Collision from the object's triangles"),
+                   ('BOX', "Box", "A box fitted to the object's local bounds and transform"),
+                   ('SPHERE', "Sphere", "A sphere fitted to the object's local bounds (radius: the largest half extent)"),
+                   ('CAPSULE', "Capsule", "A capsule along the object's local Z axis, fitted to its local bounds")]
+
+
+class LIBERTY_OT_set_collision(bpy.types.Operator):
+    bl_idname = "liberty.set_collision"
+    bl_label = "Set Collision"
+    bl_description = "Tag the selected objects as collision of this shape (liberty_collision custom property, exported as glTF extras); collision is never drawn"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    shape: EnumProperty(name="Shape", items=COLLISION_ITEMS, default='MESH')
+
+    @classmethod
+    def poll(cls, context):
+        return any(o.type == 'MESH' for o in context.selected_objects)
+
+    def execute(self, context):
+        for obj in context.selected_objects:
+            if obj.type != 'MESH':
+                continue
+            if self.shape == 'NONE':
+                # An _col name makes an object collision on its own: "none" overrides it, else the tag is removed.
+                if checks.COLLISION_SUFFIX.search(obj.name):
+                    obj[checks.COLLISION_PROPERTY] = checks.COLLISION_NONE
+                elif checks.COLLISION_PROPERTY in obj.keys():
+                    del obj[checks.COLLISION_PROPERTY]
+                obj.display_type = 'TEXTURED'
+            else:
+                obj[checks.COLLISION_PROPERTY] = self.shape.lower()
+                obj.display_type = 'WIRE'
+        return {'FINISHED'}
+
+
+class LIBERTY_OT_set_surface(bpy.types.Operator):
+    bl_idname = "liberty.set_surface"
+    bl_label = "Set Collision Surface"
+    bl_description = "Name the surface of the selected collision objects (liberty_surface; empty removes it). How the game uses surfaces is decided by the collision writer"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    surface: StringProperty(name="Surface", maxlen=31, description="1-31 letters, digits or _")
+
+    @classmethod
+    def poll(cls, context):
+        return any(checks.collision_of(o) is not None for o in context.selected_objects)
+
+    def invoke(self, context, event):
+        active = context.active_object
+        if active is not None and checks.SURFACE_PROPERTY in active.keys():
+            self.surface = str(active[checks.SURFACE_PROPERTY])
+        return context.window_manager.invoke_props_dialog(self)
+
+    def execute(self, context):
+        for obj in context.selected_objects:
+            if checks.collision_of(obj) is None:
+                continue
+            if self.surface:
+                obj[checks.SURFACE_PROPERTY] = self.surface
+            elif checks.SURFACE_PROPERTY in obj.keys():
+                del obj[checks.SURFACE_PROPERTY]
+        return {'FINISHED'}
+
+
+class LIBERTY_OT_set_shader(bpy.types.Operator):
+    bl_idname = "liberty.set_shader"
+    bl_label = "Set Shader"
+    bl_description = "Set the active material's GTA IV shader (liberty_shader custom property, exported as glTF extras)"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    shader: StringProperty(name="Shader", default="gta_default",
+                           description="GTA IV shader name; the compiler refuses shaders its writer does not emit (LCC019)")
+
+    @classmethod
+    def poll(cls, context):
+        return context.active_object is not None and context.active_object.active_material is not None
+
+    def invoke(self, context, event):
+        self.shader = str(context.active_object.active_material.get(checks.SHADER_PROPERTY, "gta_default"))
+        return context.window_manager.invoke_props_dialog(self)
+
+    def execute(self, context):
+        context.active_object.active_material[checks.SHADER_PROPERTY] = self.shader.strip() or "gta_default"
+        return {'FINISHED'}
+
+
 class LIBERTY_OT_use_active_name(bpy.types.Operator):
     bl_idname = "liberty.use_active_name"
     bl_label = "Name from Active Object"
@@ -166,7 +260,7 @@ class LIBERTY_OT_use_active_name(bpy.types.Operator):
         return context.active_object is not None
 
     def execute(self, context):
-        name = checks.LOD_SUFFIX.sub("", context.active_object.name)
+        name = checks.COLLISION_SUFFIX.sub("", checks.LOD_SUFFIX.sub("", context.active_object.name))
         name = re.sub(r"\.\d+$", "", name)
         name = re.sub(r"[^A-Za-z0-9_]", "_", name).lower()[:23]
         context.scene.liberty_asset.asset_name = name
@@ -189,7 +283,7 @@ class LIBERTY_OT_open_path(bpy.types.Operator):
 
 
 _classes = (LIBERTY_OT_check, LIBERTY_OT_export, LIBERTY_OT_build, LIBERTY_OT_set_lod, LIBERTY_OT_clear_lod,
-            LIBERTY_OT_use_active_name, LIBERTY_OT_open_path)
+            LIBERTY_OT_set_collision, LIBERTY_OT_set_surface, LIBERTY_OT_set_shader, LIBERTY_OT_use_active_name, LIBERTY_OT_open_path)
 
 
 def _menu_export(self, context):

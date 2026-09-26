@@ -1,7 +1,7 @@
 # Writes content/<kind>/<name>/: <name>.gltf (+ .bin and textures) through Blender's own glTF exporter, and asset.json
 # for LibertyContent. glTF settings are fixed so every export is what the compiler expects: Y-up (the compiler turns it
 # back into Blender's Z-up), modifiers applied, extras on (liberty_lod on objects, liberty_shader on materials,
-# liberty_* on the scene), no cameras, lights or animation.
+# liberty_* on the scene; liberty_collision/liberty_surface on collision objects), no cameras, lights or animation.
 
 import json
 import os
@@ -10,8 +10,8 @@ import bpy
 
 from . import checks
 
-EXPORTER_VERSION = "0.2.0"
-KIND_FOLDERS = {"prop": "props"}
+EXPORTER_VERSION = "0.3.0"
+KIND_FOLDERS = {"prop": "props", "object": "objects"}
 
 
 class Exported:
@@ -25,7 +25,8 @@ def asset_folder(content_root, settings):
     return os.path.join(content_root, KIND_FOLDERS[settings.asset_type], settings.asset_name)
 
 
-def manifest_data(settings):
+def manifest_data(settings, lod_count):
+    """asset.json for the settings; lod_count (checks.lod_count) decides how many LOD distances are written."""
     data = {
         "schemaVersion": 1,
         "name": settings.asset_name,
@@ -40,6 +41,8 @@ def manifest_data(settings):
     # Only written when it differs from the compiler's default, so template-mode manifests stay as they were.
     if settings.texture_mode != 'template':
         data["textureMode"] = settings.texture_mode
+    if settings.use_lod_distances and lod_count > 0:
+        data["lodDistancesMeters"] = [round(float(d), 3) for d in settings.lod_distances[:lod_count]]
     return data
 
 
@@ -96,7 +99,7 @@ def export(context, settings, content_root):
 
     manifest = os.path.join(folder, "asset.json")
     with open(manifest, "w", encoding="utf-8", newline="\n") as stream:
-        json.dump(manifest_data(settings), stream, indent=2)
+        json.dump(manifest_data(settings, checks.lod_count(objects)), stream, indent=2)
         stream.write("\n")
     return Exported(folder, manifest, gltf)
 

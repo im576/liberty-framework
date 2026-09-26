@@ -12,12 +12,13 @@ import sys
 
 import bpy  # first: as the bpy Python module (cloud container), importing bpy is what puts addon_utils on the path
 import addon_utils
-import bmesh
-import numpy as np
 
 arguments = sys.argv[sys.argv.index("--") + 1:]
 REPO, GAME, OUTPUT = arguments[0], arguments[1], arguments[2]
 sys.path.insert(0, os.path.join(REPO, "tools", "blender"))
+sys.path.insert(0, os.path.join(REPO, "tools", "blender", "tests"))
+import fixtures  # noqa: E402
+from fixtures import box, clear_scene, cylinder, material, placed, select, tag_collision, texture, unit_box, uv_sphere  # noqa: E402
 
 CONTENT = os.path.join(OUTPUT, "content")
 BUILD = os.path.join(OUTPUT, "build")
@@ -60,98 +61,8 @@ def codes(issues):
     return [issue.code for issue in issues]
 
 
-def clear_scene():
-    for collection in (bpy.data.objects, bpy.data.meshes, bpy.data.materials, bpy.data.images, bpy.data.cameras, bpy.data.lights):
-        for block in list(collection):
-            collection.remove(block)
-    for collection in list(bpy.data.collections):
-        bpy.data.collections.remove(collection)
-    scene = bpy.context.scene
-    scene.unit_settings.scale_length = 1.0
-    settings = scene.liberty_asset
-    settings.asset_name = ""
-    settings.collection = None
-    settings.texture_dictionary = ""
-    settings.template_archive = "pc/models/cdimages/weapons.img"
-    settings.template_model = "amb_nailgun"
-    settings.draw_distance = 120.0
-
-
-def texture(name, size=256, packed=True):
-    image = bpy.data.images.new(name, size, size, alpha=False)
-    v, u = np.mgrid[0:size, 0:size] / float(size)
-    pixels = np.ones((size, size, 4), dtype=np.float32)
-    pixels[..., 0] = 0.25 + 0.5 * u
-    pixels[..., 1] = 0.25 + 0.5 * v
-    pixels[..., 2] = 0.3
-    image.pixels.foreach_set(pixels.ravel())
-    if packed:
-        image.pack()
-    return image
-
-
-def material(name, image=None):
-    mat = bpy.data.materials.new(name)
-    if mat.node_tree is None:
-        mat.use_nodes = True
-    nodes = mat.node_tree.nodes
-    bsdf = next((n for n in nodes if n.type == 'BSDF_PRINCIPLED'), None)
-    if bsdf is None:
-        bsdf = nodes.new("ShaderNodeBsdfPrincipled")
-        output = next((n for n in nodes if n.type == 'OUTPUT_MATERIAL'), None) or nodes.new("ShaderNodeOutputMaterial")
-        mat.node_tree.links.new(bsdf.outputs[0], output.inputs["Surface"])
-    if image is not None:
-        node = nodes.new("ShaderNodeTexImage")
-        node.image = image
-        mat.node_tree.links.new(node.outputs["Color"], bsdf.inputs["Base Color"])
-    return mat
-
-
-def box(name, low, high, mat=None):
-    """Axis-aligned box from low to high (metres, Blender world space), with UVs."""
-    mesh = bpy.data.meshes.new(name)
-    bm = bmesh.new()
-    bm.loops.layers.uv.new("UVMap")
-    bmesh.ops.create_cube(bm, size=1.0, calc_uvs=True)
-    low, high = np.array(low, dtype=float), np.array(high, dtype=float)
-    for vertex in bm.verts:
-        vertex.co = [low[i] + (vertex.co[i] + 0.5) * (high[i] - low[i]) for i in range(3)]
-    bm.to_mesh(mesh)
-    bm.free()
-    return link(name, mesh, mat)
-
-
-def cylinder(name, segments, radius, height, mat=None):
-    mesh = bpy.data.meshes.new(name)
-    bm = bmesh.new()
-    bm.loops.layers.uv.new("UVMap")
-    bmesh.ops.create_cone(bm, cap_ends=True, segments=segments, radius1=radius, radius2=radius, depth=height, calc_uvs=True)
-    bmesh.ops.translate(bm, verts=bm.verts, vec=(0.0, 0.0, height / 2))
-    bm.to_mesh(mesh)
-    bm.free()
-    return link(name, mesh, mat)
-
-
-def link(name, mesh, mat):
-    obj = bpy.data.objects.new(name, mesh)
-    bpy.context.scene.collection.objects.link(obj)
-    if mat is not None:
-        mesh.materials.append(mat)
-    return obj
-
-
-def select(*objects):
-    bpy.context.view_layer.update()
-    for obj in bpy.context.view_layer.objects:
-        if obj is not None:
-            obj.select_set(False)
-    for obj in objects:
-        obj.select_set(True)
-    bpy.context.view_layer.objects.active = objects[0] if objects else None
-
-
-def gltf_json(name):
-    with open(os.path.join(CONTENT, "props", name, name + ".gltf"), "r", encoding="utf-8") as stream:
+def gltf_json(name, kind="props"):
+    with open(os.path.join(CONTENT, kind, name, name + ".gltf"), "r", encoding="utf-8") as stream:
         return json.load(stream)
 
 
@@ -175,7 +86,7 @@ def main():
         shutil.rmtree(OUTPUT)
     os.makedirs(OUTPUT)
     addon_utils.enable("liberty_exporter", default_set=True, handle_error=None)
-    from liberty_exporter import checks, state  # noqa: E402
+    from liberty_exporter import checks, lcc, state  # noqa: E402
     prefs = bpy.context.preferences.addons["liberty_exporter"].preferences
     prefs.content_root = CONTENT
     prefs.compiler_path = COMPILER
@@ -212,10 +123,10 @@ def main():
     node_extras = {n["name"]: n.get("extras", {}) for n in document["nodes"]}
     expect(node_extras.get("lf_bt_barrel_far", {}).get("liberty_lod") == 2, "liberty_lod exported as node extras", node_extras)
     scene_extras = document["scenes"][0].get("extras", {})
-    expect(scene_extras.get("liberty_exporter") == "0.2.0" and "liberty_exporter" not in scene.keys(), "scene tags exported and removed again", scene_extras)
+    expect(scene_extras.get("liberty_exporter") == "0.3.0" and "liberty_exporter" not in scene.keys(), "scene tags exported and removed again", scene_extras)
     expect(any(i.get("uri", "").endswith(".png") for i in document.get("images", [])), "texture written as PNG", document.get("images"))
     built = {} if NO_GAME else report("lf_bt_barrel")
-    expect_built(lambda: built["lods"] == 3 and built["metadata"].get("liberty_exporter") == "0.2.0", "report: 3 LODs, exporter metadata", lambda: built)
+    expect_built(lambda: built["lods"] == 3 and built["metadata"].get("liberty_exporter") == "0.3.0", "report: 3 LODs, exporter metadata", lambda: built)
     expect_built(lambda: os.path.isfile(result.preview) and os.path.isfile(result.texture), "previews written", lambda: result.preview)
     expect_built(lambda: not any(i["code"] == "LCC017" for i in built["issues"]), "LOD triangle order accepted")
 
@@ -261,14 +172,26 @@ def main():
     expect_built(lambda: compiled.get("textureMode") == "native" and compiled.get("textureFormat") == "DXT1" and compiled.get("textureSize") == [128, 128] and
            compiled.get("textureLevels") == 6 and compiled.get("textureQuality", {}).get("psnrRgbDb", 0) >= 30, "native texture: 128x128 DXT1, 6 levels, PSNR >= 30 dB", lambda: compiled)
 
-    # 4. Two materials in LOD 0: rejected in Blender, nothing written.
+    # 4. Two materials in LOD 0: authored as it is (a warning in Blender, exported), refused by the compiler (LCC016).
+    #    An authoring error (a bad name) still writes nothing.
     clear_scene()
     a, b = box("lf_bt_two_a", (0, 0, 0), (0.5, 0.5, 0.5), material("red")), box("lf_bt_two_b", (0.5, 0, 0), (1, 0.5, 0.5), material("blue"))
     select(a, b)
     settings.asset_name = "lf_bt_two"
     outcome = call(bpy.ops.liberty.export)
-    expect(outcome == {'CANCELLED'} and "LBX009" in codes(state.get(scene).issues), "two materials per LOD rejected (LBX009)")
-    expect(not os.path.exists(os.path.join(CONTENT, "props", "lf_bt_two")), "rejected asset writes nothing")
+    result = state.get(scene)
+    lbx009 = [i for i in result.issues if i.code == "LBX009"]
+    expect(lbx009 and lbx009[0].severity == "warning" and "LCC016" in lbx009[0].message, "two materials per LOD: LBX009 warning naming LCC016", lbx009)
+    expect(outcome == {'CANCELLED'} and result.status == "invalid" and "LCC016" in codes(result.issues), "exported, then refused by LibertyContent (LCC016)",
+           "%s %s %s" % (outcome, result.status, codes(result.issues)))
+    expect(os.path.isfile(os.path.join(CONTENT, "props", "lf_bt_two", "asset.json")), "a capability refusal still writes the export")
+    validation = report("lf_bt_two") if os.path.isfile(os.path.join(BUILD, "lf_bt_two", "report.json")) else {}
+    expect(validation.get("status") == "invalid" and len(validation.get("structure", {}).get("lods", [{}])[0].get("geometries", [])) == 2 and
+           result.report.endswith("report.json"), "validation report: invalid, LOD 0 with two geometries", validation.get("structure"))
+    settings.asset_name = "lf bt two"
+    outcome = call(bpy.ops.liberty.export)
+    expect(outcome == {'CANCELLED'} and "LBX002" in codes(state.get(scene).issues) and not os.path.exists(os.path.join(CONTENT, "props", "lf bt two")),
+           "an authoring error (LBX002) writes nothing")
 
     # 5. Name, unit scale, pivot, missing texture, UVs, shader tag, alpha, nothing selected.
     clear_scene()
@@ -334,7 +257,120 @@ def main():
     if NO_GAME:
         expect(result.status == "exported", "collection export validated", result.log[-400:])
     expect_built(lambda: result.status == "ok" and built.get("lods") == 2, "collection export builds with 2 LODs", lambda: "%s %s" % (result.status, built.get("lods")))
-    expect_built(lambda: built.get("metadata", {}).get("liberty_exporter") == "0.2.0" and "liberty_exporter" not in collection.keys(), "collection export carries exporter metadata", lambda: built.get("metadata"))
+    expect_built(lambda: built.get("metadata", {}).get("liberty_exporter") == "0.3.0" and "liberty_exporter" not in collection.keys(), "collection export carries exporter metadata", lambda: built.get("metadata"))
+
+    # 7. The authoring fixtures (tests/fixtures.py; committed under tests/content/fixtures): export each, then check what
+    #    LibertyContent made of it against the fixture's expectations. v1 refuses all but lf_fx_lods on purpose.
+    for build_fixture in fixtures.FIXTURES:
+        clear_scene()
+        wanted = build_fixture(settings)
+        name, kind = settings.asset_name, fixtures.KINDS[settings.asset_type]
+        blender_errors = [i for i in checks.run(bpy.context, settings) if i.severity == "error"]
+        expect(not blender_errors, "%s: no add-on errors (capability limits are warnings)" % name, blender_errors)
+        build()
+        result = state.get(scene)
+        exported = os.path.isfile(os.path.join(CONTENT, kind, name, "asset.json"))
+        expect(exported, "%s: exported to %s/" % (name, kind))
+        if not exported:
+            continue
+        fixtures.ordered(wanted, gltf_json(name, kind))
+        built = report(name) if os.path.isfile(os.path.join(BUILD, name, "report.json")) else {}
+        status = built.get("status")
+        # A build of a valid asset reports "ok" (it needs the game); validation reports "valid".
+        want_status = ("ok" if not NO_GAME else "valid") if wanted["status"] == "valid" else "invalid"
+        expect(status == want_status, "%s: LibertyContent status %s" % (name, want_status), "%s (%s)" % (status, result.log[-400:]))
+        errors = sorted(set(i["code"] for i in built.get("issues", []) if i["severity"] == "error"))
+        expect(errors == sorted(wanted["errors"]), "%s: errors %s" % (name, wanted["errors"]), errors)
+        found = set(i["code"] for i in built.get("issues", []))
+        expect(all(code in found for code in wanted["codes"]), "%s: codes %s reported" % (name, wanted["codes"]), sorted(found))
+        problems = []
+        fixtures.match(wanted["report"], built, "report", problems)
+        expect(not problems, "%s: report structure as authored" % name, problems)
+    document = gltf_json("lf_fx_collision")
+    extras = {n["name"]: n.get("extras", {}) for n in document["nodes"]}
+    expect(extras.get("fx_box", {}).get("liberty_collision") == "box" and extras.get("fx_box", {}).get("liberty_surface") == "wood" and
+           extras.get("lf_fx_collision_col", {}).get("liberty_surface") == "wood", "collision tags exported as node extras", extras)
+    manifest = json.load(open(os.path.join(CONTENT, "objects", "lf_fx_world", "asset.json"), encoding="utf-8"))
+    expect(manifest.get("type") == "object" and manifest.get("lodDistancesMeters") == [60.0, 150.0], "world object asset.json: type and one distance per LOD", manifest)
+    manifest = json.load(open(os.path.join(CONTENT, "props", "lf_fx_multimat", "asset.json"), encoding="utf-8"))
+    expect("lodDistancesMeters" not in manifest, "LOD distances written only when enabled", manifest)
+
+    # 8. Collision authoring mistakes: caught in Blender (errors stop the export, warnings do not).
+    clear_scene()
+    crate = box("lf_bt_hull", (-0.4, -0.3, 0), (0.4, 0.3, 0.5), material("crate"))
+    cone = tag_collision(placed(unit_box("bt_cone"), (0, 0, 0.25), scale=(0.2, 0.2, 0.2)), "cone")
+    select(crate, cone)
+    settings.asset_name = "lf_bt_hull"
+    found = codes(checks.run(bpy.context, settings))
+    expect("LBX023" in found and checks.has_errors(checks.run(bpy.context, settings)), "unknown collision shape: LBX023 error", found)
+    cone["liberty_collision"] = "box"
+    cone["liberty_surface"] = "not a name"
+    expect("LBX023" in codes(checks.run(bpy.context, settings)), "bad surface name: LBX023")
+    del cone["liberty_surface"]
+    stub = tag_collision(placed(cylinder("bt_stub", 16, 0.3, 0.2, centred=True), (0, 0, 0.25)), "capsule")
+    egg = tag_collision(placed(uv_sphere("bt_egg", 0.2), (0, 0, 0.25), scale=(1, 1, 0.5)), "sphere")
+    tagged = tag_collision(placed(unit_box("bt_tagged_lod1"), (0, 0, 0.25), scale=(0.3, 0.3, 0.3)), "box")
+    far = tag_collision(placed(unit_box("bt_far"), (30, 0, 0.25), scale=(0.3, 0.3, 0.3)), "box")
+    select(crate, cone, stub, egg, tagged, far)
+    issues = checks.run(bpy.context, settings)
+    by_code = {}
+    for issue in issues:
+        by_code.setdefault(issue.code, []).append(issue)
+    expect(any("bt_stub" in i.message and "shorter than its diameter" in i.message for i in by_code.get("LBX024", [])), "capsule shorter than its diameter: LBX024", issues)
+    expect(any("bt_egg" in i.message for i in by_code.get("LBX025", [])), "non-round sphere: LBX025 warning", issues)
+    expect(any("bt_tagged_lod1" in i.message for i in by_code.get("LBX026", [])), "LOD tag on collision: LBX026 warning", issues)
+    expect(any("bt_far" in i.message for i in by_code.get("LBX027", [])), "collision outside the model: LBX027 warning", issues)
+    expect([i.severity for i in by_code.get("LBX028", [])] == ["warning"], "collision with compiler v1: one LBX028 warning", by_code.get("LBX028"))
+    expect("LBX001" not in by_code and "LBX021" in by_code and "5 collision shape(s)" in by_code["LBX021"][0].message, "collision objects are not render objects", by_code.get("LBX021"))
+    select(stub)
+    expect("LBX001" in codes(checks.run(bpy.context, settings)), "collision alone is nothing to export (LBX001)")
+
+    # 9. LOD distances and world objects in Blender.
+    clear_scene()
+    near = cylinder("lf_bt_dist", 12, 0.3, 0.9, material("dist"))
+    lod1 = cylinder("lf_bt_dist_lod1", 6, 0.3, 0.9, material("dist"))
+    select(near, lod1)
+    settings.asset_name = "lf_bt_dist"
+    settings.use_lod_distances = True
+    settings.lod_distances = (80.0, 40.0, 0.0, 0.0)
+    expect("LBX030" in codes(checks.run(bpy.context, settings)), "descending LOD distances: LBX030")
+    settings.lod_distances = (40.0, 200.0, 0.0, 0.0)
+    expect("LBX030" in codes(checks.run(bpy.context, settings)), "LOD distance beyond the draw distance: LBX030")
+    settings.lod_distances = (40.0, 100.0, 0.0, 0.0)
+    expect("LBX030" not in codes(checks.run(bpy.context, settings)), "only the distances of existing LODs are checked (LOD 2-3 zero)")
+    settings.asset_type = 'object'
+    found = codes(checks.run(bpy.context, settings))
+    expect("LBX029" in found and "LBX032" in found, "world object with v1 (LBX029) and without collision (LBX032)", found)
+    lod3 = cylinder("lf_bt_dist_lod3", 4, 0.3, 0.9, material("dist"))
+    select(near, lod1, lod3)
+    expect("LBX031" in codes(checks.run(bpy.context, settings)), "LOD 3 without LOD 2: LBX031")
+
+    # 10. Operators: collision, surface and shader tags.
+    clear_scene()
+    obj = box("lf_bt_ops", (0, 0, 0), (0.5, 0.5, 0.5), material("ops"))
+    select(obj)
+    call(bpy.ops.liberty.set_collision, shape='CAPSULE')
+    expect(obj.get("liberty_collision") == "capsule" and obj.display_type == 'WIRE' and checks.collision_of(obj) == "capsule", "set_collision tags and shows wireframe")
+    call(bpy.ops.liberty.set_surface, surface="metal")
+    expect(obj.get("liberty_surface") == "metal", "set_surface")
+    call(bpy.ops.liberty.set_surface, surface="")
+    expect("liberty_surface" not in obj.keys(), "an empty surface removes the tag")
+    call(bpy.ops.liberty.set_collision, shape='NONE')
+    expect("liberty_collision" not in obj.keys() and obj.display_type == 'TEXTURED' and checks.collision_of(obj) is None, "collision None removes the tag")
+    named = box("lf_bt_ops_col", (0, 0, 0), (0.5, 0.5, 0.5))
+    expect(checks.collision_of(named) == "mesh", "an _col name is mesh collision")
+    select(named)
+    call(bpy.ops.liberty.set_collision, shape='NONE')
+    expect(named.get("liberty_collision") == "none" and checks.collision_of(named) is None, "collision None on an _col name writes 'none'")
+    select(obj)
+    call(bpy.ops.liberty.set_shader, shader="gta_normal_spec")
+    expect(obj.active_material.get("liberty_shader") == "gta_normal_spec", "set_shader tags the active material")
+    found = [i for i in checks.run(bpy.context, settings) if i.code == "LBX019"]
+    expect(found and found[0].severity == "warning" and "LCC019" in found[0].message, "shader outside the capabilities: LBX019 warning naming LCC019", found)
+
+    # 11. The add-on's copy of the compiler's capabilities is current.
+    reported = lcc.capabilities(COMPILER, 120)
+    expect(reported == checks.CAPABILITIES, "checks.CAPABILITIES equals LibertyContent capabilities", "%s != %s" % (reported, checks.CAPABILITIES))
 
     print("RESULT passed=%d failed=%d%s" % (results["passed"], results["failed"], (" notrun=%d" % results["notrun"]) if results["notrun"] else ""))
     if results["failed"]:

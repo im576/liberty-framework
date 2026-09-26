@@ -9,10 +9,10 @@
 bl_info = {
     "name": "Liberty Exporter",
     "author": "Liberty Framework",
-    "version": (0, 1, 0),
+    "version": (0, 3, 0),
     "blender": (4, 2, 0),
     "location": "View3D > Sidebar > Liberty; File > Export > Liberty Asset",
-    "description": "Export GTA IV props through the Liberty Content Compiler",
+    "description": "Author GTA IV props and world objects for the Liberty Content Compiler",
     "category": "Import-Export",
 }
 
