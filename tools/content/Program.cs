@@ -78,7 +78,7 @@ namespace LibertyFramework.Content
         // report.json "status" values.
         internal const string StatusValid = "valid", StatusInvalid = "invalid";
 
-        private static int Build(string game, string manifestPath, string output, out string status)
+        internal static int Build(string game, string manifestPath, string output, out string status)
         {
             AssetManifest manifest = AssetManifest.Load(manifestPath);
             string folder = Path.Combine(output, manifest.Name);
@@ -94,6 +94,9 @@ namespace LibertyFramework.Content
                 compiled = PropCompiler.Compile(game, manifest, asset);
                 File.WriteAllBytes(Path.Combine(folder, manifest.Name + ".wdr"), compiled.Drawable);
                 File.WriteAllBytes(Path.Combine(folder, manifest.TextureDictionary + ".wtd"), compiled.Dictionary);
+                string collisionFile = Path.Combine(folder, manifest.Name + BorrowedCollision.Extension);
+                if (compiled.Collision != null) { File.WriteAllBytes(collisionFile, compiled.Collision); }
+                else if (File.Exists(collisionFile)) { File.Delete(collisionFile); } // a stale borrow must never be packaged
                 readback = Readback.Verify(compiled);
                 WritePreviews(folder, manifest, compiled);
             }
@@ -154,6 +157,8 @@ namespace LibertyFramework.Content
                     .Append(", \"flippedWinding\": ").Append(compiled.FlippedWinding ? "true" : "false").Append(", \"drawableBytes\": ").Append(compiled.Drawable.Length)
                     .Append(",\n    \"drawableWriter\": ").Append(Quote(compiled.DrawableWriter)).Append(", \"templateUsed\": ").Append(Quote(compiled.TemplateUsed))
                     .Append(StructureCompiledJson(compiled))
+                    .Append(compiled.Collision == null ? "" : ",\n    \"collision\": { \"mode\": \"borrowed\", \"from\": " + Quote(compiled.CollisionFrom) + ", \"rscType\": " + compiled.CollisionType +
+                        ", \"bytes\": " + compiled.Collision.Length + ", \"file\": " + Quote(manifest.Name + BorrowedCollision.Extension) + " }")
                     .Append(", \"dictionaryBytes\": ").Append(compiled.Dictionary.Length).Append(",\n    \"notes\": [").Append(string.Join(", ", compiled.Notes.Select(Quote).ToArray())).Append("] },\n");
             }
             json.Append("  \"issues\": [\n");
@@ -217,7 +222,7 @@ namespace LibertyFramework.Content
 
         // Builds every asset, then packs the models and dictionaries into one IMG with its IDE ("weap" entries: the class
         // script-created props use in the proven sling path; collision comes with the bounds writer).
-        private static int Package(string game, string output, string imgName, string ideName, string[] manifests)
+        internal static int Package(string game, string output, string imgName, string ideName, string[] manifests)
         {
             Directory.CreateDirectory(output);
             List<KeyValuePair<string, byte[]>> files = new List<KeyValuePair<string, byte[]>>();
@@ -232,6 +237,8 @@ namespace LibertyFramework.Content
                 string folder = Path.Combine(output, manifest.Name);
                 files.Add(new KeyValuePair<string, byte[]>(manifest.Name + ".wdr", File.ReadAllBytes(Path.Combine(folder, manifest.Name + ".wdr"))));
                 files.Add(new KeyValuePair<string, byte[]>(manifest.TextureDictionary + ".wtd", File.ReadAllBytes(Path.Combine(folder, manifest.TextureDictionary + ".wtd"))));
+                string collisionFile = Path.Combine(folder, manifest.Name + BorrowedCollision.Extension);
+                if (File.Exists(collisionFile)) { files.Add(new KeyValuePair<string, byte[]>(manifest.Name + BorrowedCollision.Extension, File.ReadAllBytes(collisionFile))); }
                 ide.Append(manifest.Name + ", " + manifest.TextureDictionary + ", null, 1, " + manifest.DrawDistanceMeters.ToString(CultureInfo.InvariantCulture) + ", 0\n");
                 if (!string.IsNullOrEmpty(manifest.AudioMaterial)) { amat.Append(manifest.Name + ", 0, " + manifest.AudioMaterial + "\n"); }
             }

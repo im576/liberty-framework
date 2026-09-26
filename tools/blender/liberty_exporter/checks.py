@@ -1,7 +1,7 @@
 # Checks an asset in Blender before export. The rules mirror LibertyContent's validator (tools/content/AssetValidator.cs,
 # codes LCC001-LCC037). They add what only Blender can see: unit scale, modifiers, armatures, missing image files and
 # material node setups the glTF exporter cannot translate. LibertyContent runs its own validation after export and stays
-# the authority. Codes (LBX001-LBX033) are stable so reports and tests can refer to them.
+# the authority. Codes (LBX001-LBX034) are stable so reports and tests can refer to them.
 #
 # Errors are authoring mistakes and stop the export. What the current compiler cannot write yet (more materials per LOD,
 # other shaders, collision, world objects: CAPABILITIES) is a warning: the asset is exported as authored, and
@@ -38,9 +38,10 @@ CAPABILITIES = {
     "lodSlots": 4,
     "maxVerticesPerGeometry": 65535,
     "shaders": ["gta_default"],
-    "assetTypes": ["prop"],
+    "assetTypes": ["prop", "object"],
     "collisionShapes": [],
     "lodDistances": False,
+    "collisionBorrow": True,
 }
 # The opt-in structure writer's limits (drawableWriter "structure", NEEDS-PLAYTEST): `LibertyContent capabilities --writer
 # structure`. The structure template decides how many materials really fit; the compiler says why one does not.
@@ -51,9 +52,10 @@ STRUCTURE_CAPABILITIES = {
     "lodSlots": 4,
     "maxVerticesPerGeometry": 65535,
     "shaders": ["gta_default"],
-    "assetTypes": ["prop"],
+    "assetTypes": ["prop", "object"],
     "collisionShapes": [],
     "lodDistances": True,
+    "collisionBorrow": True,
 }
 
 
@@ -317,7 +319,11 @@ def run(context, settings):
     if levels and levels != list(range(len(levels))):
         add("warning", "LBX031", "LOD levels %s have a gap (use 0, 1, 2... in order)" % levels)
 
-    shapes = _collision_checks(context, depsgraph, collision, low, high, add, caps)
+    borrowed = getattr(settings, "collision_source", 'authored') == 'borrow'
+    shapes = _collision_checks(context, depsgraph, collision, low, high, add, caps, borrowed)
+    if borrowed:
+        add("info", "LBX034", "collision is borrowed at build from %s/%s: that vanilla prop's own shape ships as %s.wbn (NEEDS-PLAYTEST)" %
+            (settings.collision_borrow_archive, settings.collision_borrow_model, settings.asset_name))
     _asset_checks(settings, levels, shapes, add, caps)
 
     if np.all(np.isfinite(low)):
@@ -337,7 +343,7 @@ def run(context, settings):
     return _sorted(issues)
 
 
-def _collision_checks(context, depsgraph, objects, low, high, add, caps):
+def _collision_checks(context, depsgraph, objects, low, high, add, caps, borrowed=False):
     """LBX023-LBX028 for collision objects; returns the shapes found (valid or not)."""
     shapes = []
     for obj in objects:
@@ -370,7 +376,9 @@ def _collision_checks(context, depsgraph, objects, low, high, add, caps):
         finally:
             evaluated.to_mesh_clear()
     unsupported = sorted(set(s for s in shapes if s in COLLISION_SHAPES and s not in caps["collisionShapes"]))
-    if unsupported:
+    if unsupported and borrowed:
+        add("warning", "LBX028", "%d authored collision shape(s) (%s) are not written; the borrowed collision ships instead (LCC040)" % (len(shapes), ", ".join(unsupported)))
+    elif unsupported:
         add("warning", "LBX028", "%d collision shape(s) (%s): compiler %s writes %s, so LibertyContent will refuse to build the asset (LCC032)" %
             (len(shapes), ", ".join(unsupported), caps["version"],
              ("only " + ", ".join(caps["collisionShapes"])) if caps["collisionShapes"] else "no collision yet"))
@@ -382,7 +390,7 @@ def _asset_checks(settings, levels, shapes, add, caps):
     if settings.asset_type not in caps["assetTypes"]:
         add("warning", "LBX029", "type '%s': compiler %s builds %s, so LibertyContent will refuse to build it (LCC033)" %
             (settings.asset_type, caps["version"], ", ".join(caps["assetTypes"])))
-    if settings.asset_type == 'object' and not shapes:
+    if settings.asset_type == 'object' and not shapes and getattr(settings, "collision_source", 'authored') != 'borrow':
         add("warning", "LBX032", "world object without collision: the player and vehicles would pass through it (tag collision objects)")
     if not settings.use_lod_distances or not levels:
         return

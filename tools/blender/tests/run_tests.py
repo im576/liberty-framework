@@ -349,7 +349,11 @@ def main():
     expect("LBX030" not in codes(checks.run(bpy.context, settings)), "only the distances of existing LODs are checked (LOD 2-3 zero)")
     settings.asset_type = 'object'
     found = codes(checks.run(bpy.context, settings))
-    expect("LBX029" in found and "LBX032" in found, "world object with v1 (LBX029) and without collision (LBX032)", found)
+    expect("LBX029" not in found and "LBX032" in found, "world objects build (no LBX029); without collision: LBX032", found)
+    settings.collision_source = 'borrow'
+    found = codes(checks.run(bpy.context, settings))
+    expect("LBX032" not in found and "LBX034" in found, "a world object with borrowed collision: no LBX032, LBX034 says where it comes from", found)
+    settings.collision_source = 'authored'
     lod3 = cylinder("lf_bt_dist_lod3", 4, 0.3, 0.9, material("dist"))
     select(near, lod1, lod3)
     expect("LBX031" in codes(checks.run(bpy.context, settings)), "LOD 3 without LOD 2: LBX031")
@@ -383,6 +387,19 @@ def main():
     code, text = lcc.run(COMPILER, ["capabilities", "--writer", "structure"], 120)
     reported = json.loads(text) if code == 0 else None
     expect(reported == checks.STRUCTURE_CAPABILITIES, "checks.STRUCTURE_CAPABILITIES equals capabilities --writer structure", "%s != %s" % (reported, checks.STRUCTURE_CAPABILITIES))
+
+    # 11b. Borrowed collision in asset.json; LibertyContent validates it (LCC039).
+    clear_scene()
+    obj = box("lf_bt_borrow", (-0.3, -0.3, 0), (0.3, 0.3, 0.6), material("borrow"))
+    select(obj)
+    settings.asset_name = "lf_bt_borrow"
+    settings.collision_source = 'borrow'
+    call(bpy.ops.liberty.export)
+    manifest = json.load(open(os.path.join(CONTENT, "props", "lf_bt_borrow", "asset.json"), encoding="utf-8"))
+    validation = report("lf_bt_borrow") if os.path.isfile(os.path.join(BUILD, "lf_bt_borrow", "report.json")) else {}
+    expect(manifest.get("collision") == {"borrow": {"archive": "*", "model": "auto"}} and any(i["code"] == "LCC039" for i in validation.get("issues", [])),
+           "collision borrow written to asset.json and reported by LibertyContent (LCC039)", manifest)
+    settings.collision_source = 'authored'
 
     # 12. The structure writer opt-in: two materials in LOD 0 are within its limits, asset.json carries the writer and
     #     its template, and LibertyContent validates the export with the structure capabilities (building needs the game).

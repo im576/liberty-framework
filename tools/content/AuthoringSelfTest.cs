@@ -20,12 +20,13 @@ namespace LibertyFramework.Content
         internal static void Capabilities(SelfTest.Runner t, string output)
         {
             CompilerCapabilities v1 = CompilerCapabilities.Current;
-            t.Check(v1.Version == "v1" && v1.Shaders.SequenceEqual(new[] { "gta_default" }) && v1.AssetTypes.SequenceEqual(new[] { "prop" }), "v1: gta_default, prop");
+            t.Check(v1.Version == "v1" && v1.Shaders.SequenceEqual(new[] { "gta_default" }) && v1.AssetTypes.SequenceEqual(new[] { "prop", "object" }), "v1: gta_default; props and world objects (session 6)");
             t.Check(v1.CollisionShapes.Length == 0 && !v1.WritesLodDistances, "v1 writes no collision and no LOD distances");
             Dictionary<string, object> json = (Dictionary<string, object>)new JavaScriptSerializer().DeserializeObject(v1.ToJson());
             t.Check((string)json["version"] == "v1" && Convert.ToInt32(json["maxMaterialsPerLod"]) == 1 && Convert.ToInt32(json["compiledLodLevels"]) == 1 &&
                 Convert.ToInt32(json["lodSlots"]) == 4 && Convert.ToInt32(json["maxVerticesPerGeometry"]) == 65535 && ((IList)json["collisionShapes"]).Count == 0 &&
-                (bool)json["lodDistances"] == false && ((IList)json["assetTypes"]).Cast<object>().SequenceEqual(new object[] { "prop" }), "capabilities JSON parses with every field", v1.ToJson());
+                (bool)json["lodDistances"] == false && ((IList)json["assetTypes"]).Cast<object>().SequenceEqual(new object[] { "prop", "object" }) && (bool)json["collisionBorrow"],
+                "capabilities JSON parses with every field", v1.ToJson());
         }
 
         // A unit cube (half size 0.5 in its local frame) shared by every node, positions and u16 indices in a data URI.
@@ -218,7 +219,9 @@ namespace LibertyFramework.Content
             ContentAsset solid = SelfTest.Asset(SelfTest.Box("a", 0, 0, 1));
             solid.Collisions.Add(BoxCollision("hull", 0, 0, 0.5f, 0.5f));
 
-            t.Check(ManifestCodes(bare, Manifest("object", null), v1, "error").Contains("LCC033"), "type object with v1: LCC033");
+            CompilerCapabilities propsOnly = new CompilerCapabilities("props-only", 1, 1, new[] { "gta_default" }, new[] { "prop" }, new string[0], false);
+            t.Check(ManifestCodes(bare, Manifest("object", null), propsOnly, "error").Contains("LCC033"), "type object with a compiler that builds props only: LCC033");
+            t.Check(!ManifestCodes(bare, Manifest("object", null), v1, null).Contains("LCC033"), "v1 builds world objects (session 6): no LCC033");
             t.Check(!ManifestCodes(solid, Manifest("object", null), objects, null).Contains("LCC033"), "LCC033 follows the capabilities");
             t.Check(!ManifestCodes(bare, Manifest("prop", null), v1, null).Contains("LCC033"), "type prop with v1: no LCC033");
             t.Check(ManifestCodes(bare, Manifest("object", null), objects, "warning").Contains("LCC034"), "world object without collision: LCC034");

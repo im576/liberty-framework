@@ -47,6 +47,15 @@ class LibertyAssetSettings(bpy.types.PropertyGroup):
         description="IDE draw distance in metres (not affected by the scene unit scale)")
     audio_material: StringProperty(
         name="Audio material", description="Optional IDE amat entry (collision sound)")
+    collision_source: EnumProperty(
+        name="Collision", default='authored',
+        items=[('authored', "Authored", "Collision objects in the scene (the collision writer is not available yet: LCC032)"),
+               ('borrow', "Borrow", "Ship a vanilla prop's own collision under this model's name (NEEDS-PLAYTEST, T-032)")])
+    collision_borrow_archive: StringProperty(
+        name="Borrow from archive", default="*", description="Archive holding the prop whose collision is borrowed; * searches every IMG")
+    collision_borrow_model: StringProperty(
+        name="Borrow from model", default="auto",
+        description="Model whose .wbn collision is shipped; auto takes the first vanilla prop with its own collision (as PROBE-collision lists them)")
     use_lod_distances: BoolProperty(
         name="LOD distances", default=False,
         description="Write lodDistancesMeters: how far each LOD is drawn. Checked now; written into the drawable by the LOD writer")

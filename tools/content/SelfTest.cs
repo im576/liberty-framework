@@ -80,6 +80,8 @@ namespace LibertyFramework.Content
                 Group("structure compiler", StructureSelfTest.Compiler),
                 Group("structure commands", StructureSelfTest.Commands),
                 Group("writer choice", StructureSelfTest.WriterChoice),
+                Group("collision borrow", CollisionSelfTest.Borrow),
+                Group("bounds probe", CollisionSelfTest.BoundsProbe),
                 Group("sample asset", Sample),
                 Group("probes", Probes),
             };

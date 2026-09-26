@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "liberty_exporter"
-version = "0.5.0"
+version = "0.6.0"
 name = "Liberty Exporter"
 tagline = "Author GTA IV props and world objects for the Liberty compiler"
 maintainer = "Liberty Framework"

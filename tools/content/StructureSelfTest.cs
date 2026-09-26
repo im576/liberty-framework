@@ -82,7 +82,7 @@ namespace LibertyFramework.Content
             t.Check(sharedReason != null, "geometries sharing a vertex buffer are refused (by the reader or the writer)", sharedReason);
         }
 
-        private static SyntheticDrawable.Spec FourLods()
+        internal static SyntheticDrawable.Spec FourLods()
         {
             SyntheticDrawable.Spec spec = new SyntheticDrawable.Spec { Textures = new[] { "old_a", "old_b", "old_c" } };
             for (int lod = 0; lod < 4; lod++)
@@ -153,12 +153,18 @@ namespace LibertyFramework.Content
         }
 
         // A game folder holding synthetic drawables in one unencrypted IMG (no IMG key: the probes' test setup).
-        private static string FakeGame(params KeyValuePair<string, RscResource>[] drawables)
+        internal static string FakeGame(params KeyValuePair<string, RscResource>[] drawables)
+        {
+            return FakeGameFiles(drawables.Select(d => new KeyValuePair<string, byte[]>(d.Key, d.Value.Serialize())).ToArray());
+        }
+
+        // A game folder with one unencrypted IMG (pc/models/cdimages/test.img) holding these files.
+        internal static string FakeGameFiles(params KeyValuePair<string, byte[]>[] files)
         {
             string game = Path.Combine(Path.GetTempPath(), "liberty-structure-" + Guid.NewGuid().ToString("N").Substring(0, 8));
             Directory.CreateDirectory(Path.Combine(game, "pc", "models", "cdimages"));
             File.WriteAllBytes(Path.Combine(game, "GTAIV.exe"), new byte[64]);
-            ImgArchive.Write(Path.Combine(game, "pc", "models", "cdimages", "test.img"), drawables.Select(d => new KeyValuePair<string, byte[]>(d.Key, d.Value.Serialize())).ToList());
+            ImgArchive.Write(Path.Combine(game, "pc", "models", "cdimages", "test.img"), files.ToList());
             return game;
         }
 

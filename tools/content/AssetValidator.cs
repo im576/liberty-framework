@@ -89,7 +89,7 @@ namespace LibertyFramework.Content
             }
 
             ValidateLods(asset, capabilities, issues);
-            ValidateCollision(asset, capabilities, issues, minX <= maxX ? new[] { minX, minY, minZ, maxX, maxY, maxZ } : null);
+            ValidateCollision(asset, capabilities, issues, minX <= maxX ? new[] { minX, minY, minZ, maxX, maxY, maxZ } : null, manifest != null && manifest.BorrowsCollision);
 
             foreach (ContentMaterial material in asset.Materials)
             {
@@ -159,7 +159,7 @@ namespace LibertyFramework.Content
         }
 
         // Collision shapes: metadata (LCC027), fitting (LCC028, LCC029), tags (LCC030), placement (LCC031), writer (LCC032).
-        private static void ValidateCollision(ContentAsset asset, CompilerCapabilities capabilities, List<Issue> issues, float[] renderBounds)
+        private static void ValidateCollision(ContentAsset asset, CompilerCapabilities capabilities, List<Issue> issues, float[] renderBounds, bool borrowed)
         {
             foreach (ContentCollision collision in asset.Collisions)
             {
@@ -205,7 +205,12 @@ namespace LibertyFramework.Content
                 // Unknown shapes were reported as LCC027; this names the known shapes the writer cannot emit.
                 string[] unsupported = asset.Collisions.Select(c => c.Shape).Where(shape => Array.IndexOf(ContentCollision.Shapes, shape) >= 0 && Array.IndexOf(capabilities.CollisionShapes, shape) < 0)
                     .Distinct().OrderBy(shape => shape).ToArray();
-                if (unsupported.Length > 0)
+                if (unsupported.Length > 0 && borrowed)
+                {
+                    Add(issues, "warning", "LCC040", Plural(asset.Collisions.Count, "authored collision shape", "authored collision shapes") + " (" + string.Join(", ", unsupported) + ") are not written by compiler " +
+                        capabilities.Version + "; the borrowed collision is shipped instead");
+                }
+                else if (unsupported.Length > 0)
                 {
                     Add(issues, "error", "LCC032", Plural(asset.Collisions.Count, "collision shape", "collision shapes") + " (" + string.Join(", ", unsupported) + ") but compiler " + capabilities.Version +
                         (capabilities.CollisionShapes.Length == 0 ? " writes no collision yet" : " writes only " + string.Join(", ", capabilities.CollisionShapes)) +
@@ -245,7 +250,8 @@ namespace LibertyFramework.Content
         // A sphere or capsule whose fitted extents differ by more than this fraction gets LCC029.
         private const float NonUniformTolerance = 0.01f;
 
-        // Asset type (LCC033, LCC034), LOD distances (LCC035-LCC037) and the structure writer's texture mode (LCC038).
+        // Asset type (LCC033, LCC034), LOD distances (LCC035-LCC037), the structure writer's texture mode (LCC038) and
+        // borrowed collision (LCC039; LCC040 in ValidateCollision).
         private static void ValidateManifest(ContentAsset asset, AssetManifest manifest, CompilerCapabilities capabilities, List<Issue> issues)
         {
             if (Array.IndexOf(capabilities.AssetTypes, manifest.Type) < 0)
@@ -257,7 +263,12 @@ namespace LibertyFramework.Content
             {
                 Add(issues, "error", "LCC038", "the structure writer writes one texture per material into a dictionary written from scratch: textureMode template cannot be used with it (remove textureMode or set native)");
             }
-            if (manifest.Type == AssetManifest.TypeObject && asset.Collisions.Count == 0)
+            if (manifest.BorrowsCollision)
+            {
+                Add(issues, "info", "LCC039", "collision borrowed at build from " + manifest.Collision.Borrow.Archive + "/" + manifest.Collision.Borrow.Model +
+                    ": the source prop's own shape, shipped as " + manifest.Name + BorrowedCollision.Extension + " (whether the game pairs it with this model is T032-collision-borrow)");
+            }
+            if (manifest.Type == AssetManifest.TypeObject && asset.Collisions.Count == 0 && !manifest.BorrowsCollision)
             {
                 Add(issues, "warning", "LCC034", "world object without collision: the player and vehicles would pass through it");
             }

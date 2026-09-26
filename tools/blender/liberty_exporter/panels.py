@@ -42,6 +42,11 @@ class LIBERTY_PT_asset(_LibertyPanel, bpy.types.Panel):
             column.prop(settings, "structure_template_model", text="Model")
         layout.prop(settings, "draw_distance")
         layout.prop(settings, "audio_material")
+        layout.prop(settings, "collision_source")
+        if settings.collision_source == 'borrow':
+            column = layout.column(align=True)
+            column.prop(settings, "collision_borrow_archive", text="Borrow from")
+            column.prop(settings, "collision_borrow_model", text="Model")
         layout.prop(settings, "use_lod_distances")
         if settings.use_lod_distances:
             column = layout.column(align=True)

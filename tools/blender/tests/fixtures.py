@@ -43,6 +43,9 @@ def clear_scene():
     settings.audio_material = ""
     settings.use_lod_distances = False
     settings.drawable_writer = 'auto'
+    settings.collision_source = 'authored'
+    settings.collision_borrow_archive = "*"
+    settings.collision_borrow_model = "auto"
     settings.structure_template_archive = "*"
     settings.structure_template_model = "auto"
 
@@ -325,7 +328,7 @@ def lf_fx_collision(settings):
 def lf_fx_world(settings):
     """A static world object: a low stone wall of four blocks and a coping (LOD 0: five meshes, one material, one
     geometry), a single block for LOD 1, a box collision fitted to it (named _col, the box tag wins) and LOD distances.
-    v1 builds neither world objects (LCC033) nor collision (LCC032)."""
+    World objects build (session 6); authored collision shapes are not written yet (LCC032)."""
     collection = new_collection("lf_fx_world")
     stone = material("fx_stone", texture("fx_stone_basecolor", FIXTURE_TEXTURE_PIXELS))
     for index in range(4):
@@ -341,7 +344,7 @@ def lf_fx_world(settings):
     settings.use_lod_distances = True
     settings.lod_distances = (60.0, 150.0, 0.0, 0.0)
     return {
-        "status": "invalid", "errors": ["LCC032", "LCC033"], "codes": ["LCC025", "LCC026", "LCC037"],
+        "status": "invalid", "errors": ["LCC032"], "codes": ["LCC025", "LCC026", "LCC037"],
         "report": {"type": "object", "lods": 2, "structure": {
             "lods": [{"level": 0, "triangles": 60, "geometries": [{"material": "fx_stone", "meshes": 5, "triangles": 60}]},
                      {"level": 1, "triangles": 12, "geometries": [{"material": "fx_stone", "meshes": 1, "triangles": 12}]}],

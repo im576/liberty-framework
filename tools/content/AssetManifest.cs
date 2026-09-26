@@ -19,6 +19,12 @@ namespace LibertyFramework.Content
             [DataMember(Name = "model", IsRequired = true)] internal string Model;
         }
 
+        [DataContract]
+        internal sealed class CollisionRef
+        {
+            [DataMember(Name = "borrow", IsRequired = false)] internal TemplateRef Borrow;
+        }
+
         [DataMember(Name = "schemaVersion", IsRequired = true)] internal int SchemaVersion;
         [DataMember(Name = "name", IsRequired = true)] internal string Name;
         [DataMember(Name = "type", IsRequired = true)] internal string Type;
@@ -42,6 +48,9 @@ namespace LibertyFramework.Content
         // "auto" takes the first suitable drawable (by name) in archive, and archive "*" searches every IMG of the game.
         // Absent: "*" / "auto".
         [DataMember(Name = "structureTemplate", IsRequired = false)] internal TemplateRef StructureTemplate;
+        // Optional: { "borrow": { archive, model } } ships a vanilla prop's own bounds resource under this model's name
+        // (BorrowedCollision; NEEDS-PLAYTEST, T-032). model "auto" takes the first prop candidate, archive "*" searches every IMG.
+        [DataMember(Name = "collision", IsRequired = false)] internal CollisionRef Collision;
 
         internal const string TextureModeTemplate = "template";
         internal const string TextureModeNative = "native";
@@ -98,6 +107,10 @@ namespace LibertyFramework.Content
             {
                 throw new InvalidDataException(path + ": drawableWriter '" + manifest.DrawableWriter + "' must be '" + WriterAuto + "', '" + WriterTemplate + "' or '" + WriterStructure + "'");
             }
+            if (manifest.Collision != null && (manifest.Collision.Borrow == null || string.IsNullOrEmpty(manifest.Collision.Borrow.Archive) || string.IsNullOrEmpty(manifest.Collision.Borrow.Model)))
+            {
+                throw new InvalidDataException(path + ": collision needs borrow { archive, model } (the only collision a build can ship until the bounds layout is known)");
+            }
             if (manifest.StructureTemplate != null && (string.IsNullOrEmpty(manifest.StructureTemplate.Archive) || string.IsNullOrEmpty(manifest.StructureTemplate.Model)))
             {
                 throw new InvalidDataException(path + ": structureTemplate needs archive and model");
@@ -141,6 +154,8 @@ namespace LibertyFramework.Content
 
         // The structure writer's template reference: structureTemplate, else a search of every archive.
         internal TemplateRef StructureTemplateOrDefault { get { return StructureTemplate ?? new TemplateRef { Archive = AnyArchive, Model = AutoTemplate }; } }
+
+        internal bool BorrowsCollision { get { return Collision != null && Collision.Borrow != null; } }
 
         internal string SourcePath { get { return Path.Combine(Directory, Source); } }
     }
