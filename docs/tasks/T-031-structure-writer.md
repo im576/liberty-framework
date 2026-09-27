@@ -106,6 +106,23 @@ No gameplay code, native code, memory access or config change. Vanilla is untouc
 structure writer the default (`CompilerCapabilities.Current`) and updates the fixtures' expectations. If only a fallback
 happened, it picks a template from the probe's `structureTemplates` and names it in `lf_lod_post`'s asset.json.
 
+## Session 4b (2026-09-26): the automatic writer
+
+The owner asked for the default switch before the PC run. It was made in the form that cannot regress a proven asset.
+`drawableWriter` absent now means `auto` (`AssetManifest.ResolveWriter`):
+- **Structure writer** when a LOD has several materials (v1 cannot write them at all), or when there are several LODs and
+  `textureMode` is explicitly native. It uses native textures unless `textureMode` is explicitly `template` (LCC038).
+- **v1 otherwise.** Every shipped single-geometry asset keeps the build proven in game: `lf_test_crate`,
+  `lf_blender_barrel`, `lf_native_crate` and `lf_alpha_panel` resolve to `template`. Checked, and tested in the self-test
+  group "writer choice".
+- An absent `structureTemplate` searches every archive (`*` / `auto`). `report.json` gains
+  `writer {drawable, reason, textureMode}`. The fixtures `lf_fx_multimat` and `lf_fx_multigeo` are now valid and
+  dry-build against the synthetic game.
+- Blender add-on 0.5.0: Drawable writer **Automatic** (default, not written). LBX033 is information.
+
+The verification run still decides: if `T031-drawable-roundtrip` or `T031-lod-review` fails, multi-material assets fail
+with it. Single-geometry assets are unaffected.
+
 ## Human test steps
 
 One verification run covers it. Close GTA IV first.

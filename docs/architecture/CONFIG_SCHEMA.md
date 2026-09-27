@@ -190,3 +190,24 @@ Each entry defines `id` (stable catalog ID), `family`, `label`, `role` (`replace
   - An idle interval of 0, or one not above `sampleIntervalMilliseconds`, keeps full-rate scanning.
 - `combat_effects.json` `dismemberRefreshMilliseconds` (0-1000) is the dismemberment upkeep cadence once the engine collapse is installed and every record is older than 1 s. 0 means every tick.
 - `combat_effects.json` `maximumCutsPerPed` (0-8, 0 = unlimited) is how many cuts one body can receive, counting pending and completed cuts.
+
+## World objects: config/world/objects.json (T-033)
+
+Read by the world mod (`mods/Liberty.World`, module id `world`) as `scripts\LibertyFramework\config\world\objects.json`.
+It is hot-reloaded. An invalid file is rejected and logged (`config_rejected world/objects`), and the defaults are used.
+The verifier checks the shipped file, and that every `model` it places is an asset under `content/`.
+
+| Field | Default | Meaning |
+|---|---|---|
+| `schemaVersion` | 1 | must be 1 |
+| `enabled` | true | false places nothing |
+| `streamInMeters` | 150 | spawn an object when the player is this close (horizontal distance), above 0 and at most 1500 |
+| `streamOutMeters` | 180 | delete it again beyond this; must be above `streamInMeters` (the gap stops flicker at the edge) |
+| `checkIntervalMilliseconds` | 500 | how often distances are checked, 50–10000 |
+| `collision` | true | give placed objects collision (from their model's bounds, when the game pairs them) |
+| `objects[].name` | — | unique id, used in logs and by `world ray <name>` |
+| `objects[].model` | — | model name of a LibertyContent asset (1–23 letters, digits or `_`) |
+| `objects[].position` | — | `[x, y, z]` metres: where the model's origin goes |
+| `objects[].headingDegrees` | 0 | 0 = north, counter-clockwise |
+| `objects[].snapToGround` | true | put the origin on the ground under `position` when the game reports a ground height there; `z` is where the search starts |
+

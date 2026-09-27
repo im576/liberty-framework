@@ -36,6 +36,8 @@ Batch compatible offline work and combine human checks into one gameplay session
 | T-029 | [Cloud development loop and local verification](T-029-cloud-local-loop.md) | none | NEEDS-PLAYTEST (first `verify-local.ps1 -Smoke` run) |
 | T-030 | [Content compiler authoring side: materials, LODs, collision, world objects](T-030-lcc-authoring-side.md) | T-028 | NEEDS-PLAYTEST (`LOOP-content-selftest`, `LOOP-blender-tests` on the PC; nothing in game) |
 | T-031 | [Content compiler structure writer: several geometries, shaders and LODs](T-031-structure-writer.md) | T-030, T-028 | NEEDS-PLAYTEST (`T031-drawable-roundtrip`, `T031-lod-post-report`, `T031-lod-review`, `PROBE-drawables`) |
+| T-032 | [Collision: layout research tooling and borrowed collision](T-032-collision.md) | T-030, T-027 | NEEDS-PLAYTEST (`PROBE-bounds-layout`, `T032-collision-borrow`; collision writer waits for the probes) |
+| T-033 | [Static world objects: build, register, place](T-033-world-objects.md) | T-030, T-032 | NEEDS-PLAYTEST (`T033-world-objects`, `T033-world-walk`) |
 
 **Arsenal run (2026-09-24):** two Codex agents work in separate worktrees/branches (`arsenal/core` = Agent A, `arsenal/feel` = Agent B) against the shared contracts in `src/LibertyFramework/Arsenal/Contracts`; the orchestrator merges, reviews, packages and installs. T-012 (DevTools completeness) is deferred by the owner.
 

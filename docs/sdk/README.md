@@ -6,6 +6,8 @@ ScriptHookDotNet, the engine assembly, raw natives or memory addresses. The engi
 cleans up after the mod.
 
 Working example: `mods/Liberty.Autopilot`. It is the SDK's first client and includes a self-test of every service.
+`mods/Liberty.World` places static world objects from its config (T-033). It shows streaming entities in and out by
+distance, and a `Logic` folder the offline verifier tests.
 
 ## 1. Make a mod
 

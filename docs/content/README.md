@@ -26,10 +26,19 @@ are authored, imported and validated; the writers do not emit them yet.**
 - Five Blender-made fixtures in `tests/content/fixtures` pin all of this offline (`LibertyContent fixtures`).
 
 Structure writer (2026-09-26, [T-031](../tasks/T-031-structure-writer.md)): **several geometries, shaders and LODs,
-NEEDS-PLAYTEST, opt-in.**
-- `"drawableWriter": "structure"` fills a game drawable of the same or larger structure (a structure template): every
-  LOD, one geometry per material, LOD distances. No structure is synthesised.
-- `LibertyContent roundtrip` tests the writer against the game's own drawables on the PC. `content/props/lf_lod_post`
+NEEDS-PLAYTEST, chosen automatically for multi-material assets (session 4b).**
+- It fills a game drawable of the same or larger structure (a structure template): every LOD, one geometry per material,
+  LOD distances. No structure is synthesised.
+- Without `drawableWriter`, the compiler picks it when a LOD has several materials, or several LODs with native
+  textures. Otherwise it uses v1, so shipped single-geometry assets keep their proven build.
+- `LibertyContent roundtrip` tests the writer against the game's own drawables on the PC.
+
+Collision and world objects (2026-09-26, [T-032](../tasks/T-032-collision.md), [T-033](../tasks/T-033-world-objects.md)):
+**NEEDS-PLAYTEST.**
+- `collision.borrow` ships a vanilla prop's own bounds resource under the asset's name, as the experiment before a
+  collision writer. `probe bounds` measures the collision layout that writer needs.
+- `type: object` builds with either writer. The world mod (`mods/Liberty.World`) places objects from
+  `config/world/objects.json`. `content/props/lf_lod_post`
   and the `lod-review` scenario test it in game.
 
 ## Layout
@@ -52,15 +61,16 @@ never installs.
 |---|---|
 | `schemaVersion` | 1 |
 | `name` | model name in the game (1–23 characters) |
-| `type` | `prop`: a model spawned by scripts (IDE `weap`, built by v1). `object`: a static world object with collision (IDE `objs` and placement). The manifest accepts it, but v1 refuses to build it (LCC033) until the collision and placement writers exist |
+| `type` | `prop`: a model spawned by scripts. `object`: a static world object, placed by the world mod from `config/world/objects.json` ([T-033](../tasks/T-033-world-objects.md)). Both are built the same way and registered with the IDE `weap` entry the proven spawn path uses (an `objs` entry and map placement files are not written: their formats are not established). LCC034 warns about an object without collision |
 | `source` | glTF file, relative to the manifest |
 | `template` | `{ archive, model }`: a game drawable whose structure v1 reuses. List candidates with `LibertyContent templates <game> <archive>`. `amb_nailgun` in `pc/models/cdimages/weapons.img` is a 256x256 gta_default prop |
 | `textureDictionary` | WTD name (1–23 characters) |
 | `drawDistanceMeters` | IDE draw distance |
 | `audioMaterial` | optional `amat` entry |
 | `textureMode` | optional. `template` (default): the template's dictionary with its texture's pixels replaced (template size, DXT1, opaque). `native`: the dictionary is written from scratch (below) |
-| `drawableWriter` | optional. `template` (default, v1). `structure` (NEEDS-PLAYTEST): the structure writer, [below](#structure-writer); needs `textureMode: native` (LCC038) |
-| `structureTemplate` | optional, structure writer only: `{ archive, model }`. `model: "auto"` takes the first drawable (by name) that fits; `archive: "*"` searches every IMG. Absent: `template` |
+| `drawableWriter` | optional. Absent or `auto`: the structure writer when a LOD has several materials, or several LODs with explicit `textureMode: native`, else v1 (`report.json` `writer` says which and why). `template`: v1. `structure` (NEEDS-PLAYTEST): the structure writer, [below](#structure-writer), with native textures unless `textureMode` is explicitly `template` (LCC038) |
+| `structureTemplate` | optional, structure writer only: `{ archive, model }`. `model: "auto"` takes the first drawable (by name) that fits; `archive: "*"` searches every IMG. Absent: `*` / `auto` |
+| `collision` | optional: `{ "borrow": { archive, model } }` ships that vanilla prop's own bounds resource, unchanged, as `<name>.wbn` (NEEDS-PLAYTEST, [T-032](../tasks/T-032-collision.md)). `model: "auto"` is `PROBE-collision`'s first prop candidate; without one the build ships no collision and says so. Authored collision shapes are not written yet (LCC032, or LCC040 with a borrow) |
 | `lodDistancesMeters` | optional. How far each LOD is drawn: one entry per LOD level from LOD 0, ascending, the last at most `drawDistanceMeters` (LCC035). Authoring intent for the LOD writer; v1 checks it but does not write it (LCC037) |
 
 ## Commands (`tools/build-content.ps1` → `tools/content/bin/LibertyContent.exe`)
@@ -70,6 +80,7 @@ never installs.
 | `sample <dir> <name>` | writes the original test crate as glTF (no Blender needed) |
 | `validate <asset.json> [--report <report.json>]` | import + validation, exit 2 on errors. `--report` writes `report.json` (status `valid`/`invalid`, the structure, every issue) without the game; the Blender add-on's Export uses it |
 | `capabilities [--writer structure]` | what this compiler writes, as JSON: materials per LOD, compiled LODs, shaders, asset types, collision shapes, LOD distances. `--writer structure`: the structure writer's set |
+| `probe bounds --game <game> --out <json>` | read only: each collision class's measured layout (word classes, small-integer values, root size bound). PC check `PROBE-bounds-layout` |
 | `roundtrip --game <game> [--out <json>] [archive...]` | read only: rebuilds every drawable the structure writer can use with it and compares byte for byte (both buffer orders). No archive: every IMG. PC check `T031-drawable-roundtrip` |
 | `fixtures <dir>` | validates every `<dir>/<name>/asset.json` and compares the result with its `expect.json` (below). No game |
 | `build <game> <asset.json> <out>` | validate, compile, read back, previews, `report.json` |
@@ -198,12 +209,14 @@ optionally followed by digits and Blender's `.001`, is mesh collision unless the
 | LCC030 | warning | LOD tag on a collision object (ignored) |
 | LCC031 | warning | collision shape outside the model's bounds |
 | LCC032 | error | collision shapes the compiler's capabilities do not write (v1: none) |
-| LCC033 | error | asset type the compiler does not build (v1: `prop`) |
+| LCC033 | error | asset type the compiler does not build (both writers build `prop` and `object`) |
 | LCC034 | warning | world object (`type: object`) without collision |
 | LCC035 | error | `lodDistancesMeters`: not one entry per LOD, not ascending, or the last beyond `drawDistanceMeters` |
 | LCC036 | warning | LOD levels with a gap (LOD 2 without LOD 1) |
 | LCC037 | info | `lodDistancesMeters` checked but not written by this compiler version |
-| LCC038 | error | `drawableWriter: structure` without `textureMode: native` |
+| LCC038 | error | the structure writer with `textureMode` explicitly `template` |
+| LCC039 | info | collision is borrowed at build (from `collision.borrow`) |
+| LCC040 | warning | authored collision shapes are not written; the borrowed collision ships instead |
 
 **Capabilities.** Errors LCC016, LCC019, LCC032 and LCC033 are not authoring mistakes. They are what this compiler
 version cannot write yet, and they name the version. The Blender add-on reports the same limits as warnings and exports
