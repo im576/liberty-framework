@@ -11,6 +11,12 @@ one-band post at 6, 18 and 38 m; it does not verify LOD switching. Details and e
 and four-LOD claim remain on hold. Research the game's actual LOD resource path and diagnose representative system-byte
 roundtrip differences before reworking the writer.
 
+**Follow-up probe (2026-09-28):** `PROBE-drawables` classified 13,269 multi-geometry files as `other` buffer order,
+compared with 824 interleaved and 1,274 vertices-first. `roundtrip` now also tries the source drawable's observed
+buffer order (`Template`) and reports each matching combination. This is a diagnostic candidate; it does not change
+the generated asset's default order or establish that the remaining files round-trip. Run the targeted archive first,
+then the full roundtrip if the candidate explains the failures.
+
 Depends on: T-030 (authoring side), T-028 (native texture dictionaries). Session 4 of
 [NEXT_SESSIONS](../workflow/NEXT_SESSIONS.md).
 

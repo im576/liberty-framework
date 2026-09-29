@@ -73,7 +73,7 @@ namespace LibertyFramework.Content
                         if (outcome.Identical.Count > 0)
                         {
                             identical++; identicalInArchive++;
-                            Increment(byOrder, outcome.Identical.Count == 2 ? "both (one buffer pair)" : outcome.Identical[0].ToString());
+                            Increment(byOrder, string.Join("+", outcome.Identical.Select(order => order.ToString()).ToArray()));
                             continue;
                         }
                         failed++;
@@ -121,7 +121,7 @@ namespace LibertyFramework.Content
             {
                 outcome.BoundsRecords.Add(model.Bounds == 0 ? "no bounds" : DrawableStructureBuilder.BoundsRecords(file, model) + " records for " + model.Geometries.Count + " geometr" + (model.Geometries.Count == 1 ? "y" : "ies"));
             }
-            foreach (DrawableStructureBuilder.GraphicsOrder order in new[] { DrawableStructureBuilder.GraphicsOrder.Interleaved, DrawableStructureBuilder.GraphicsOrder.VerticesFirst })
+            foreach (DrawableStructureBuilder.GraphicsOrder order in new[] { DrawableStructureBuilder.GraphicsOrder.Interleaved, DrawableStructureBuilder.GraphicsOrder.VerticesFirst, DrawableStructureBuilder.GraphicsOrder.Template })
             {
                 DrawableStructureBuilder.Plan plan = DrawableStructureBuilder.Identity(file);
                 plan.SinglePage = false;

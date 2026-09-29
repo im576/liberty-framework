@@ -34,7 +34,7 @@ namespace LibertyFramework.Content
                     order + ": synthetic drawable reads back (2 LODs, 3 geometries, 2 shaders)");
                 DrawableRoundTrip.Outcome outcome = DrawableRoundTrip.Check(original);
                 t.Check(outcome.Skip == null && outcome.Multi, order + ": eligible multi-geometry drawable", outcome.Skip);
-                t.Check(outcome.Identical.SequenceEqual(new[] { order }), order + ": identical under its own order only",
+                t.Check(outcome.Identical.SequenceEqual(new[] { order, DrawableStructureBuilder.GraphicsOrder.Template }), order + ": identical under its own order and template order",
                     string.Join(",", outcome.Identical.Select(o => o.ToString()).ToArray()) + " " + string.Join("; ", outcome.Differences.Select(p => p.Key + ": " + string.Join(" ", p.Value.Take(4).ToArray())).ToArray()));
                 t.Check(outcome.BoundsRecords.SequenceEqual(new[] { "3 records for 2 geometries", "1 records for 1 geometry" }), order + ": bounds records measured", string.Join(" | ", outcome.BoundsRecords.ToArray()));
             }
@@ -308,8 +308,8 @@ namespace LibertyFramework.Content
                 Dictionary<string, object> r = json.Deserialize<Dictionary<string, object>>(File.ReadAllText(roundtrip));
                 Dictionary<string, object> orders = (Dictionary<string, object>)r["identicalByOrder"];
                 t.Check(Convert.ToInt32(r["eligible"]) == 3 && Convert.ToInt32(r["multiGeometry"]) == 2 && Convert.ToInt32(r["failed"]) == 0, "roundtrip report: 3 eligible, 2 multi-geometry, none failed");
-                t.Check(Convert.ToInt32(orders["Interleaved"]) == 1 && Convert.ToInt32(orders["VerticesFirst"]) == 1 && Convert.ToInt32(orders["both (one buffer pair)"]) == 1,
-                    "roundtrip report: each order found once, the single-geometry file under both", string.Join(",", orders.Select(p => p.Key + "=" + p.Value).ToArray()));
+                t.Check(Convert.ToInt32(orders["Interleaved+Template"]) == 1 && Convert.ToInt32(orders["VerticesFirst+Template"]) == 1 && Convert.ToInt32(orders["Interleaved+VerticesFirst+Template"]) == 1,
+                    "roundtrip report: each multi-geometry order found once, the single-geometry file under all three", string.Join(",", orders.Select(p => p.Key + "=" + p.Value).ToArray()));
                 t.Check(DrawableRoundTrip.Run(new[] { "--game", game, "pc/models/cdimages/missing.img" }) == 1, "an archive that cannot be read proves nothing: exit 1");
 
                 t.Check(Probe.Run(new[] { "drawables", "--game", game, "--out", probe }) == 0, "probe drawables exits 0");

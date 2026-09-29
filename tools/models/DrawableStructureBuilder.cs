@@ -26,6 +26,7 @@ namespace LibertyFramework.Models
         {
             Interleaved,    // geometry 0 vertices, geometry 0 indices, geometry 1 vertices, ...
             VerticesFirst,  // every geometry's vertices in order, then every geometry's indices
+            Template,       // keep the source drawable's vertex/index buffer order
         }
 
         // Properties, not fields, for the settings only the content compiler assigns: LibertyModel compiles this file too,
@@ -185,7 +186,13 @@ namespace LibertyFramework.Models
             int stride = kept[0].Geometry.Layout.Stride;
             List<KeyValuePair<Placement, bool>> buffers = new List<KeyValuePair<Placement, bool>>(); // (geometry, isVertexBuffer)
             if (plan.Order == GraphicsOrder.Interleaved) { foreach (Placement p in kept) { buffers.Add(new KeyValuePair<Placement, bool>(p, true)); buffers.Add(new KeyValuePair<Placement, bool>(p, false)); } }
-            else { foreach (Placement p in kept) { buffers.Add(new KeyValuePair<Placement, bool>(p, true)); } foreach (Placement p in kept) { buffers.Add(new KeyValuePair<Placement, bool>(p, false)); } }
+            else if (plan.Order == GraphicsOrder.VerticesFirst) { foreach (Placement p in kept) { buffers.Add(new KeyValuePair<Placement, bool>(p, true)); } foreach (Placement p in kept) { buffers.Add(new KeyValuePair<Placement, bool>(p, false)); } }
+            else if (plan.Order == GraphicsOrder.Template)
+            {
+                foreach (Placement p in kept) { buffers.Add(new KeyValuePair<Placement, bool>(p, true)); buffers.Add(new KeyValuePair<Placement, bool>(p, false)); }
+                buffers = buffers.OrderBy(b => b.Value ? b.Key.Geometry.VertexData : b.Key.Geometry.IndexData).ToList();
+            }
+            else { throw ResourceView.Bad("unknown graphics order " + plan.Order); }
             Func<KeyValuePair<Placement, bool>, int> size = b => b.Value ? b.Key.Mesh.Vertices.Count * stride : b.Key.Mesh.Indices.Count * 2;
             int shift = DrawableBuilder.ShiftFor(buffers.Max(size));
             if (plan.SinglePage)
