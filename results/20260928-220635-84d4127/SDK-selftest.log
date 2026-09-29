@@ -1,0 +1,4 @@
+attempt 1 failed (seen=True); relaunching
+attempt 2 failed (seen=True); relaunching
+scenario sdk-selftest: PASS; steps=13 failed=0 logErrors=0 gameAlive=True; report <repo>\results-local\20260928-220635-84d4127\_runs\sdk-selftest-20260928-221242
+AUTOPILOT_RESULT <repo>\results-local\20260928-220635-84d4127\_runs\sdk-selftest-20260928-221242\result.json
