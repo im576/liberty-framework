@@ -46,6 +46,20 @@ particular WBN example, not this owner's CE corpus. The first probe must retain 
 class target; report numeric metadata only. No reference code is incorporated in Liberty. A reader/writer still needs
 independent field evidence, complete original-resource roundtrip and runtime pairing.
 
+Existing `results/20260929-d4ebc2f-wbd-targets/targets.json` supplies independent raw-field correlations:
+
+- `0x0069C19C`: +0xC8 and +0xCC classify as small integers in all 2,154 samples, while all four candidate pointers
+  are system pointers. These are VERIFIED OFFLINE byte classifications; count/array semantics remain HYPOTHESIS.
+- `0x0069AAF4`: those two fields are small integers in all 185 samples; +0xD8 is 1 (145 samples) or 2 (40).
+- `0x0069D56C`: +0xC8 is 8 and +0xCC is 6 in all 634 samples. Some entire +0x04 words equal 3; the low byte must
+  still be measured independently of surrounding flags. Its +0xD0 is a float in every sample, so do not apply the
+  geometry-material pointer hypothesis to this class.
+
+The new probe should inspect all four signed indices, including +0x16, to identify valid quads or sentinel values
+rather than assuming every polygon is a triangle. Array span validity means containment in the system segment;
+it does not by itself prove exclusive allocation ownership or correct decoding.
+
+
 ## Claims
 
 | # | Claim | Label | Source |
