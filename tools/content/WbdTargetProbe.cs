@@ -8,7 +8,7 @@ using LibertyFramework.Finishes;
 namespace LibertyFramework.Content
 {
     // Read-only word-class inventory of the six CE WBD indexed target classes.
-    // The 0x80-byte window is a prefix sample, not a claimed object size or decoded shape.
+    // The 0x200-byte window is a prefix sample, not a claimed object size or decoded shape.
     internal static class WbdTargetProbe
     {
         private const int PrefixBytes = 0x200;

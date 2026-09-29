@@ -77,6 +77,15 @@ Next, classify the six pointed-to vtable classes and decode the smallest relevan
 cross-checks. A full roundtrip of the relevant resource content and an in-game model-pairing test still precede the
 authored writer.
 
+**Target prefix inventory (2026-09-29, VERIFIED OFFLINE):** the read-only `wbdtargets` probe grouped all 3,239 CE WBD
+targets by first-word class. Class `0x0069C19C` has 2,154 entries in 298 WBDs; its target-relative offsets `+0x8C`,
+`+0xB0`, `+0xD0` and `+0xE0` classify as system pointers in all samples. The other five classes show different
+pointer-presence patterns. The sampled window does not establish object size, field meanings or a collision shape
+type; another allocation may lie before the next dictionary target. The full class counts and structural report are
+in `verification-results/results/20260929-d4ebc2f-wbd-targets/`. The next decode should follow these pointers in a
+small number of originals, compare allocation relationships across files, and verify the resulting interpretation
+before using it in a writer.
+
 ## Plan
 
 1. **Inventory (queued):** `PROBE-collision` (`LibertyContent probe collision`) lists which collision-like resources the

@@ -39,6 +39,12 @@ WBD, or prove GTA IV's runtime pairing. Evidence: `verification-results/results/
 The queued `T032-wbdcheck` also passed through the standard Windows verifier (run
 `20260929-093318-d4ebc2f`): 309/309 parsed and table-field round-trips, 3,239 entries, five unreadable IMG archives.
 The run installed nothing and captured its JSON report.
+
+**Focused WBD target prefix inventory:** `wbdtargets` sampled the first 0x200 bytes of all 3,239 indexed CE WBD
+targets, bounded by the next dictionary target where available. Six first-word classes were observed. The dominant
+class (`0x0069C19C`) has four consistent system-pointer fields at `+0x8C`, `+0xB0`, `+0xD0`, and `+0xE0`; their
+meanings remain unknown. This supports the next read-only decode step, not an authored collision writer. Evidence:
+`verification-results/results/20260929-d4ebc2f-wbd-targets/`.
 - The automatic borrowed-collision search therefore found no candidate. `lf_col_crate` and `lf_world_wall` built without a borrowed WBN. Their failed raycasts do not decide whether GTA IV would pair a same-named WBN with a script-created object if one were provided. The static wall did spawn and was visible in its screenshot.
 - `T028-wtdcheck` inspected 79 dictionaries; 68 rebuilt, 67 compared identical, 11 uncompressed dictionaries were skipped, and no parser exception was counted. Its nonzero exit is a real single roundtrip mismatch. The probe also recorded 99 nonzero texture-record `+0x40` words among compressed textures, while the writer emits zero, and all 79 dictionaries used several graphics pages. The native crate and alpha panel visibly rendered in game, but the texture roundtrip claim remains incomplete.
 

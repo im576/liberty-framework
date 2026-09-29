@@ -27,6 +27,11 @@ their shapes, the rest of each WBD and runtime pairing remain undecoded. Evidenc
 `verification-results/results/20260929-70e7fd4-wbd-structure/`. Next decode one relevant target class and establish
 a full resource roundtrip before writing an authored shape.
 
+**Target prefix inventory:** a read-only Windows probe sampled all 3,239 indexed targets by first-word class. The
+most common class, `0x0069C19C`, occurs 2,154 times across 298 CE WBDs and has four consistently present system
+pointer fields at offsets `+0x8C`, `+0xB0`, `+0xD0`, and `+0xE0`. These are structural observations, not decoded
+shape fields or object sizes. Evidence: `verification-results/results/20260929-d4ebc2f-wbd-targets/`.
+
 Depends on: T-030 (authored collision shapes), T-027 (engine raycast). Session 5 of
 [NEXT_SESSIONS](../workflow/NEXT_SESSIONS.md).
 
