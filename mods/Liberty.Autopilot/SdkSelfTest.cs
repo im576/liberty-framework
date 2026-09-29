@@ -138,9 +138,13 @@ namespace Liberty.Autopilot
                 Check("query-cone", inCone && coned.Ped == ped, "found=" + coned.Ped.Handle);
                 Check("query-onscreen", liberty.Query.IsSphereVisible(liberty.Peds.GetPosition(ped), 1f), "on_screen=" + liberty.Query.IsOnScreen(ped));
 
-                // Raycast to the ped: it stops the ray; with peds left out of the mask the ray passes through it.
-                Vec3 from = liberty.World.Player.Position, to = liberty.Peds.GetPosition(ped);
-                RayHit atPed = liberty.Query.Raycast(from, to + (to - from).Normalized * 2f, RayMask.All, RayIgnore.Of(player));
+                // Cast a short line through the test ped's torso. A line from the player's feet can hit an unrelated
+                // nearby object before reaching the ped in a populated game scene (seen in the Windows hot-reload run).
+                Vec3 pedFeet = liberty.Peds.GetPosition(ped);
+                Vec3 centre = pedFeet + (head - pedFeet) * 0.5f;
+                Vec3 direction = (centre - liberty.World.Player.Position).Normalized;
+                Vec3 from = centre - direction * 1.5f, to = centre + direction * 1.5f;
+                RayHit atPed = liberty.Query.Raycast(from, to, RayMask.All, RayIgnore.Of(player));
                 Check("raycast-ped", atPed.IsHit && atPed.Kind == RayEntityKind.Ped && atPed.Ped == ped, atPed.ToString());
                 RayHit pastPed = liberty.Query.Raycast(from, to, RayMask.World | RayMask.Vehicles | RayMask.Objects, RayIgnore.Of(player));
                 Check("raycast-pass-through", pastPed.Status == RayStatus.Clear && pastPed.PassedThrough >= 1, pastPed + " passed=" + pastPed.PassedThrough + " tests=" + pastPed.Tests);

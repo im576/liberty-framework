@@ -36,6 +36,9 @@ targets, and re-encoded the known table fields identically in all 309. In 13 sel
 same-IMG WDRs and their same-index target pointers are valid. Content self-test passed 354/354, including mutation
 checks. This verifies the hash-to-target table structure; it does not decode the target shapes, round-trip the full
 WBD, or prove GTA IV's runtime pairing. Evidence: `verification-results/results/20260929-70e7fd4-wbd-structure/`.
+The queued `T032-wbdcheck` also passed through the standard Windows verifier (run
+`20260929-093318-d4ebc2f`): 309/309 parsed and table-field round-trips, 3,239 entries, five unreadable IMG archives.
+The run installed nothing and captured its JSON report.
 - The automatic borrowed-collision search therefore found no candidate. `lf_col_crate` and `lf_world_wall` built without a borrowed WBN. Their failed raycasts do not decide whether GTA IV would pair a same-named WBN with a script-created object if one were provided. The static wall did spawn and was visible in its screenshot.
 - `T028-wtdcheck` inspected 79 dictionaries; 68 rebuilt, 67 compared identical, 11 uncompressed dictionaries were skipped, and no parser exception was counted. Its nonzero exit is a real single roundtrip mismatch. The probe also recorded 99 nonzero texture-record `+0x40` words among compressed textures, while the writer emits zero, and all 79 dictionaries used several graphics pages. The native crate and alpha panel visibly rendered in game, but the texture roundtrip claim remains incomplete.
 
@@ -49,6 +52,8 @@ copied from the matching source texture; their meaning has not been decoded.
 
 - The raycast spike, SDK self-test, engine events, bullet events, exact damage and vehicle events passed. The main raycast scenario's fixed forward ray lost a moving pedestrian before its filtered pass-through check. A targeted rerun using a `rayto` command passed that pedestrian check, but failed three other steps when a nearby object entered the car ray and Steam screenshot capture failed. Those are separate results; a clean raycast regression is still needed.
 - Hot reload restarted and reloaded, but its following self-test failed three ray checks after a nearby object blocked the test path. Sling and trunk scenarios also failed scripted steps. The visual scenarios need their screenshots reviewed independently of step success.
+  The self-test now casts a short line through the spawned test ped's torso instead of starting at the player's feet;
+  that targeted change needs a focused Windows `SDK-hot-reload` rerun.
 - Visual review of the published screenshots: the SDK list menu is visible and readable. The sling close-up shows a grayscale death scene with the player on the ground, so it cannot establish the requested weapon placement. The trunk `after_store` and `closed` shots both still show the open radial menu; the log's missing close/choreography events reflect a visible unfinished interaction. These checks need clean reruns after their scenario behavior is corrected.
 - The native crate texture is clearly visible on its side screenshot. The alpha panel's checker and red bar appear on both faces, but its screenshots do not put a contrasting object directly behind the checker. They establish texture rendering, not the intended 64/192 alpha blending; that visual check still needs an overlapping backdrop.
 - The trunk run reported frame intervals around 400–845 ms near the missed Backspace action. Its 250 ms injected key may have fallen between input polls; the scenario now holds it for 1,200 ms. This is a test hypothesis until a focused rerun shows a close event and a closed menu.
