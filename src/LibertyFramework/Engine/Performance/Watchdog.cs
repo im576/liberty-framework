@@ -18,6 +18,7 @@ namespace LibertyFramework.Engine.Performance
         private long frameStart;   // Stopwatch timestamp while a frame runs, 0 between frames
         private long reportedFrame;
         private long frameNumber;
+        private long blockingUntil;   // Stopwatch timestamp until which a declared blocking call is tolerated, 0 = none
         private MemoryProbe.Sample memory;
         private readonly object gate = new object();
 
@@ -44,6 +45,16 @@ namespace LibertyFramework.Engine.Performance
 
         internal void FrameEnd() { Interlocked.Exchange(ref frameStart, 0); }
 
+        // LOAD_SCENE (teleports) blocks the game thread by design for seconds. The caller declares that window so the
+        // watchdog neither logs an engine_stall nor writes a dump for it; a block that outlasts maxMilliseconds is a
+        // real stall and is reported as usual.
+        internal void ExpectBlocking(int maxMilliseconds)
+        {
+            Interlocked.Exchange(ref blockingUntil, Stopwatch.GetTimestamp() + (long)maxMilliseconds * Stopwatch.Frequency / 1000);
+        }
+
+        internal void EndBlocking() { Interlocked.Exchange(ref blockingUntil, 0); }
+
         internal MemoryProbe.Sample Memory { get { lock (gate) { return memory; } } }
 
         private void Run()
@@ -66,6 +77,7 @@ namespace LibertyFramework.Engine.Performance
                     double elapsedMs = (Stopwatch.GetTimestamp() - start) * 1000.0 / Stopwatch.Frequency;
                     long frame = Interlocked.Read(ref frameNumber);
                     if (elapsedMs < stallMs || reportedFrame == frame) { continue; }
+                    if (Stopwatch.GetTimestamp() < Interlocked.Read(ref blockingUntil)) { continue; }
                     reportedFrame = frame;
                     string phase = phaseName();
                     RuntimeLog.Error("engine_stall frame=" + frame + " elapsed_ms=" + elapsedMs.ToString("0") + " phase=" + phase);

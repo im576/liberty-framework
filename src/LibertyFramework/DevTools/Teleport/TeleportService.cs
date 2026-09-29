@@ -61,14 +61,23 @@ namespace LibertyFramework.DevTools.Teleport
             hasPrevious = true;
             RunStage(location.Id, "move", () => MoveTo(ped, location.X, location.Y, location.Z));
             RunStage(location.Id, "request_collision", () => Natives.RequestCollisionAt(location.X, location.Y, location.Z));
-            RunStage(location.Id, "load_scene", () => Natives.LoadScene(location.X, location.Y, location.Z));
+            RunStage(location.Id, "load_scene", () => LoadSceneDeclared(location.X, location.Y, location.Z));
             pending = location;
             pendingSinceUtc = DateTime.UtcNow;
             RuntimeLog.Info("teleport_start id=" + location.Id + " target=" + location.X + "," + location.Y + "," + location.Z + " snap=" + location.Snap);
             return "Teleporting to " + location.Name;
         }
 
-        // The Windows command stalled before teleport_start; locate the blocking stage without changing native behavior.
+        // LOAD_SCENE blocks the game thread by design; declare it so the engine watchdog does not report a stall.
+        private static void LoadSceneDeclared(float x, float y, float z)
+        {
+            Engine.LibertyEngine engine = Engine.LibertyEngine.Current;
+            if (engine != null && engine.Watchdog != null) { engine.Watchdog.ExpectBlocking(engine.Config.TeleportBlockingWindowMilliseconds); }
+            try { Natives.LoadScene(x, y, z); }
+            finally { if (engine != null && engine.Watchdog != null) { engine.Watchdog.EndBlocking(); } }
+        }
+
+        // Logs how long each teleport stage blocked (the stress-run stall was the load_scene stage).
         private static void RunStage(string id, string stage, Action action)
         {
             RuntimeLog.Info("teleport_stage id=" + id + " stage=" + stage + " begin");

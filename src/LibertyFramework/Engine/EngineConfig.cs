@@ -26,6 +26,8 @@ namespace LibertyFramework.Engine
         [DataMember(Name = "targetFrameMs", IsRequired = false)] public float TargetFrameMs;
         [DataMember(Name = "lowAddressSpaceMegabytes", IsRequired = false)] public int LowAddressSpaceMegabytes;
         [DataMember(Name = "watchdogStallMilliseconds", IsRequired = false)] public int WatchdogStallMilliseconds;
+        // Teleports call LOAD_SCENE, which blocks the game thread; the watchdog tolerates a stall this long for it.
+        [DataMember(Name = "teleportBlockingWindowMilliseconds", IsRequired = false)] public int TeleportBlockingWindowMilliseconds;
         [DataMember(Name = "adaptiveDensityFloor", IsRequired = false)] public float AdaptiveDensityFloor;
         // Development hot reload (ROADMAP M5): reload a mod assembly when its file in mods\ changes.
         [DataMember(Name = "hotReload", IsRequired = false)] public bool HotReload;
@@ -65,6 +67,8 @@ namespace LibertyFramework.Engine
             if (LowAddressSpaceMegabytes < 100 || LowAddressSpaceMegabytes > 2000) { throw new InvalidDataException("engine lowAddressSpaceMegabytes must be 100-2000"); }
             if (WatchdogStallMilliseconds == 0) { WatchdogStallMilliseconds = 5000; }
             if (WatchdogStallMilliseconds < 1000 || WatchdogStallMilliseconds > 60000) { throw new InvalidDataException("engine watchdogStallMilliseconds must be 1000-60000"); }
+            if (TeleportBlockingWindowMilliseconds == 0) { TeleportBlockingWindowMilliseconds = 60000; }
+            if (TeleportBlockingWindowMilliseconds < 5000 || TeleportBlockingWindowMilliseconds > 120000) { throw new InvalidDataException("engine teleportBlockingWindowMilliseconds must be 5000-120000"); }
             if (!(AdaptiveDensityFloor >= 0 && AdaptiveDensityFloor <= 1)) { throw new InvalidDataException("engine adaptiveDensityFloor must be 0-1"); }
             if (HotReloadPollMs == 0) { HotReloadPollMs = 1000; }
             if (HotReloadPollMs < 250 || HotReloadPollMs > 10000) { throw new InvalidDataException("engine hotReloadPollMs must be 250-10000"); }

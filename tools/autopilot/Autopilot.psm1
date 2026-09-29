@@ -183,6 +183,8 @@ function Test-GameFrozen([int] $Seconds = 75) {
 
 # Runs engine commands through the file channel and returns the reply lines.
 function Invoke-EngineCommand([string[]] $Lines, [int] $TimeoutSeconds = 20) {
+    # Teleports block on LOAD_SCENE (measured 0.3-5 s, 30 s once cold); give them room instead of a false no-reply.
+    if (($Lines -join "`n") -match '(?im)^\s*(goto|teleport|tp)\b') { $TimeoutSeconds = [Math]::Max($TimeoutSeconds, 90) }
     $root = Join-Path $script:Game 'scripts\LibertyFramework\autopilot'
     $inbox = Join-Path $root 'inbox'
     $outbox = Join-Path $root 'outbox'
