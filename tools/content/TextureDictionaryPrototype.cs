@@ -31,6 +31,9 @@ namespace LibertyFramework.Content
         internal byte[] Header;
         internal byte[] BlockMap;
         internal byte[] TextureRecord;
+        // A dictionary can use different opaque record bytes for individual textures (w_bat.wtd does at +0x00).
+        // Preserve them by name when rebuilding that dictionary; a new texture still uses TextureRecord.
+        internal readonly Dictionary<string, byte[]> TextureRecords = new Dictionary<string, byte[]>(StringComparer.Ordinal);
 
         // The bytes of amb_nailgun.wtd and coronas.wtd (Rockstar-built dictionaries: identical in every copied byte). The game
         // loads both. Offline builds (selftest) use this; the prop compiler captures the template's own dictionary instead.
@@ -77,6 +80,11 @@ namespace LibertyFramework.Content
             prototype.Header = Slice(body, 0, HeaderBytes);
             prototype.BlockMap = Slice(body, BlockMapOffset, BlockMapBytes);
             prototype.TextureRecord = Slice(body, SystemOffset(BitConverter.ToUInt32(body, array)), TextureRecordBytes);
+            for (int i = 0; i < parsed.Textures.Count; i++)
+            {
+                int record = SystemOffset(BitConverter.ToUInt32(body, array + i * 4));
+                prototype.TextureRecords[parsed.Textures[i].Name] = Slice(body, record, TextureRecordBytes);
+            }
             return prototype;
         }
 

@@ -438,6 +438,14 @@ namespace LibertyFramework.Content
             t.Check(many.Textures.All(p => p.RecordOffset % 16 == 0 && p.NameOffset % 16 == 0), "records and names 16-byte aligned");
             if (output != null) { File.WriteAllBytes(Path.Combine(output, "selftest_mixed.wtd"), manyFile); }
 
+            // A real dictionary (w_bat.wtd) has a different opaque header in one texture record. Rebuilding an
+            // existing dictionary must preserve that record, even though new textures use the default prototype.
+            RscResource varied = RscResource.Parse(manyFile);
+            Buffer.BlockCopy(BitConverter.GetBytes(0x006B1D95u), 0, varied.Body, many.Textures[1].RecordOffset, 4);
+            TextureDictionaryPrototype variedPrototype = TextureDictionaryPrototype.FromResource(varied, "varied records");
+            RscResource variedRebuilt = RscResource.Parse(TextureDictionaryWriter.Write(mixed, variedPrototype).Resource.Serialize());
+            t.Check(TextureDictionaryCheck.Compare(varied, variedRebuilt).Count == 0, "per-texture opaque records survive rebuild");
+
             // What `wtdcheck` does with a game dictionary, applied to the writer's own output: capture the prototype from the
             // file, compare it with the builtin one, rebuild from the file's textures and compare everything but placement.
             foreach (KeyValuePair<string, byte[]> sample in new[] { new KeyValuePair<string, byte[]>("single", file), new KeyValuePair<string, byte[]>("mixed", manyFile) })

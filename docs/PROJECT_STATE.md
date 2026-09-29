@@ -5,6 +5,8 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
+**First Windows verification (2026-09-28, Codex; [report](reports/2026-09-28-windows-verification.md)): foundation still open.** Smoke passed build, install and SDK self-test (49/49), with rollback hash checks. The full 54-check queue recorded 12 PASS, 10 NEEDS-REVIEW, 12 FAIL, 1 CRASH and 19 NOT-RUN. Drawables roundtripped 5,254/12,688 eligible files; no parsed WDR had multiple LOD slots; collision inventory found no same-named WDR/WBN pair, so the automatic borrowed-collision assets had no bounds. The wall placed visibly but its ray missed. The stress crash followed an invalid pavement-snap coordinate. Work proceeds from these measured findings; PR #7 and the release remain unmerged.
+
 **Sessions 4b, 5 and 6 (2026-09-26, Claude; [T-031](tasks/T-031-structure-writer.md), [T-032](tasks/T-032-collision.md), [T-033](tasks/T-033-world-objects.md)): offline checks pass; NEEDS-PLAYTEST.**
 - **4b:** the structure writer is now chosen automatically for multi-material assets. Single-geometry assets keep the v1 build proven in game.
 - **5:** `probe bounds` measures collision layouts, and borrowed collision (a vanilla prop's own bounds under our model's name) is the C4–C6 experiment. The authored-collision writer waits for the probe reports (session 5b).

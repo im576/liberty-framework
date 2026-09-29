@@ -109,7 +109,9 @@ namespace LibertyFramework.Content
                 Placement p = output.Textures[i];
                 NativeTexture t = p.Texture;
                 int record = p.RecordOffset;
-                Buffer.BlockCopy(prototype.TextureRecord, 0, body, record, TextureDictionaryPrototype.TextureRecordBytes);
+                byte[] originalRecord;
+                if (!prototype.TextureRecords.TryGetValue(t.Name, out originalRecord)) { originalRecord = prototype.TextureRecord; }
+                Buffer.BlockCopy(originalRecord, 0, body, record, TextureDictionaryPrototype.TextureRecordBytes);
                 PutU32(body, record + 0x14, SystemBase + (uint)p.NameOffset);
                 PutU16(body, record + 0x1C, t.Width);
                 PutU16(body, record + 0x1E, t.Height);

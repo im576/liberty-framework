@@ -2,6 +2,16 @@
 
 Status: **NEEDS-PLAYTEST**
 
+## September 28 stress-run crash
+
+The queued 25-ped stress scenario ended when GTAIV.exe exited with access violation `0xC0000005`. Immediately before
+the exit, DevTools logged `teleport_done id=east_park final=0.0,1417044000.0,2136292000000000000000000000.0` after
+requesting `(-64.8,663.4,15)` with pavement snap. This is evidence that a corrupt snap reached the teleport call;
+it does not establish where the bad value originated. `TeleportService` now rejects nonfinite or nonlocal pavement
+and ground results and falls back to the configured position, with a log entry. The offline verifier exercises the
+observed corrupt value. Rerun `T026-perf-stress` on Windows before treating this as a crash fix. The report is
+[`2026-09-28-windows-verification.md`](../reports/2026-09-28-windows-verification.md).
+
 ## Step 2: direct natives (2026-09-25, Claude)
 
 **Evidence from the owner's run:**

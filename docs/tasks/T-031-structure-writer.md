@@ -3,6 +3,14 @@
 Status: **NEEDS-PLAYTEST** (queued: `T031-drawable-roundtrip`, `T031-lod-post-report`, `T031-lod-review`, and the
 extended `PROBE-drawables`)
 
+**Windows result (2026-09-28):** `T031-drawable-roundtrip` failed: 5,254 of 12,688 eligible WDRs rebuilt identically;
+7,434 differed. `PROBE-drawables` found no parsed WDR with more than LOD slot 0. `lf_lod_post` consequently used the
+template fallback and kept LOD 0 only, despite the authored four levels. The screenshot sequence shows the green
+one-band post at 6, 18 and 38 m; it does not verify LOD switching. Details and evidence are in
+[`2026-09-28-windows-verification.md`](../reports/2026-09-28-windows-verification.md). The proposed default promotion
+and four-LOD claim remain on hold. Research the game's actual LOD resource path and diagnose representative system-byte
+roundtrip differences before reworking the writer.
+
 Depends on: T-030 (authoring side), T-028 (native texture dictionaries). Session 4 of
 [NEXT_SESSIONS](../workflow/NEXT_SESSIONS.md).
 

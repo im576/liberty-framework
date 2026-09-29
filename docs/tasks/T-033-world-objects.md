@@ -2,6 +2,11 @@
 
 Status: **NEEDS-PLAYTEST** (queued: `T033-world-wall-report`, `T033-world-objects`, `T033-world-walk`)
 
+**Windows result (2026-09-28):** the wall streamed in and appeared in the screenshot, but the automatic borrow found
+no WBN candidate; its report had no borrowed collision and `world ray` missed. Player and vehicle collision remain
+untested. See [`2026-09-28-windows-verification.md`](../reports/2026-09-28-windows-verification.md). Placement is
+demonstrated; collision is still an open foundation requirement.
+
 Depends on: T-030 (`type: object`), T-032 (borrowed collision). Session 6 of [NEXT_SESSIONS](../workflow/NEXT_SESSIONS.md).
 
 ## The path

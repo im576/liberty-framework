@@ -36,6 +36,7 @@ namespace LibertyFramework.Verify
             CheckCalibration(config, check);
             CheckWeaponXml(repoRoot, check);
             CheckLocations(repoRoot, check);
+            CheckTeleportSnap(check);
         }
 
         private static void CheckPresets(string repoRoot, GunplayConfig config, Checker check)
@@ -253,6 +254,14 @@ namespace LibertyFramework.Verify
             if (!File.Exists(path)) { return; }
             LibertyFramework.DevTools.Teleport.LocationFile file = JsonStore.Load<LibertyFramework.DevTools.Teleport.LocationFile>(path);
             check.True("locations include a gun test range", file.Locations != null && file.Locations.Exists(l => l.Id == "gun_test_range"), "");
+        }
+
+        private static void CheckTeleportSnap(Checker check)
+        {
+            check.True("nearby pavement snap accepted", LibertyFramework.DevTools.Teleport.Logic.TeleportSnap.IsUsablePavement(-64.8f, 663.4f, 15f, -64.4f, 674.8f, 14.5f), "");
+            check.True("corrupt pavement snap rejected", !LibertyFramework.DevTools.Teleport.Logic.TeleportSnap.IsUsablePavement(-64.8f, 663.4f, 15f, 0f, 1417044000f, 2.136292e27f), "");
+            check.True("nonfinite pavement snap rejected", !LibertyFramework.DevTools.Teleport.Logic.TeleportSnap.IsUsablePavement(-64.8f, 663.4f, 15f, float.NaN, 663.4f, 15f), "");
+            check.True("corrupt ground snap rejected", !LibertyFramework.DevTools.Teleport.Logic.TeleportSnap.IsUsableGround(15f, float.PositiveInfinity), "");
         }
     }
 }

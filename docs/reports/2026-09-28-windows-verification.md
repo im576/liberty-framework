@@ -1,0 +1,31 @@
+# Initial Windows verification of sessions 4b, 5 and 6
+
+Run: `20260928-221840-84d4127`, CE 1.2.0.59, commit `84d4127` (PR #7 plus the SDK smoke-test ray fix). The complete structure-only probes, scenario logs and screenshots are on the `verification-results` branch under `results/20260928-221840-84d4127/`. The verifier restored the prior installation. The earlier smoke run `20260928-220635-84d4127` passed build, package/install and SDK self-test (`49 passed, 0 failed`).
+
+## Queue result
+
+Of 54 checks: 12 PASS, 10 NEEDS-REVIEW, 12 FAIL, 1 CRASH and 19 NOT-RUN. Eighteen NOT-RUN checks were manual; the Blender check lacked a configured Windows Blender path. The build, offline verifier, content self-test, SDK self-test, engine events, bullet events, exact damage and vehicle events passed. The game scenarios remained alive except the 25-ped stress run.
+
+These results do not establish the initial engine foundation as finished. In particular, the LOD post used the v1 fallback, and the world wall spawned visibly but had no collision.
+
+## Format findings (VERIFIED OFFLINE on the owner's game files)
+
+- `PROBE-drawables` found 22,814 WDR entries and parsed 22,812. All parsed drawables used only LOD slot 0. The four-LOD test post therefore found no matching structure template, compiled as `template (fallback)` and retained only LOD 0. Its five screenshots do not prove LOD switching; the green one-band post is visible at 6, 18 and 38 m, the 75 m view is blocked by foliage, and the 130 m shot does not clearly show the post.
+- `T031-drawable-roundtrip` found 12,688 eligible drawables, of which 5,254 rebuilt identically and 7,434 differed. The first reported differences are system offsets; the report records only the first 25 failures, so their distribution is not yet established. The structure writer cannot be made the unconditional default from this evidence.
+- `PROBE-collision` found 732 WBN, 348 WBD and 85 WBS resources. It found zero drawable/WBN pairs with the same name in the same archive. WBN and WBD are RSC type 32; WBS is type 1. The bounds-layout probe grouped 1,165 resources into ten extension/type/root-word classes. These are measurements, not decoded collision structures.
+- The automatic borrowed-collision search therefore found no candidate. `lf_col_crate` and `lf_world_wall` built without a borrowed WBN. Their failed raycasts do not decide whether GTA IV would pair a same-named WBN with a script-created object if one were provided. The static wall did spawn and was visible in its screenshot.
+- `T028-wtdcheck` inspected 79 dictionaries; 68 rebuilt, 67 compared identical, 11 uncompressed dictionaries were skipped, and no parser exception was counted. Its nonzero exit is a real single roundtrip mismatch. The probe also recorded 99 nonzero texture-record `+0x40` words among compressed textures, while the writer emits zero, and all 79 dictionaries used several graphics pages. The native crate and alpha panel visibly rendered in game, but the texture roundtrip claim remains incomplete.
+
+## Runtime findings (VERIFIED IN GAME for this run)
+
+- The raycast spike, SDK self-test, engine events, bullet events, exact damage and vehicle events passed. The main raycast scenario's fixed forward ray lost a moving pedestrian before its filtered pass-through check. A targeted rerun using a `rayto` command passed that pedestrian check, but failed three other steps when a nearby object entered the car ray and Steam screenshot capture failed. Those are separate results; a clean raycast regression is still needed.
+- Hot reload restarted and reloaded, but its following self-test failed three ray checks after a nearby object blocked the test path. Sling and trunk scenarios also failed scripted steps. The visual scenarios need their screenshots reviewed independently of step success.
+- The stress scenario logged `teleport_done` with coordinates `(0, 1417044000, 2.136292e27)` immediately before GTAIV.exe exited with an access violation. The log supports a corrupt pavement snap reaching the teleport path; it does not prove the precise source of the corrupt value or exclude other crash causes. A guard now rejects nonfinite or nonlocal snap results and falls back to the configured destination. That guard needs a focused Windows rerun.
+
+## Required follow-up
+
+1. Diagnose the common WDR system-byte differences using representative original files and fix the writer or narrow its eligible set based on measured structure.
+2. Research how GTA IV represents multiple LODs when every sampled WDR uses one LOD slot. Change the content strategy or synthesize a verified structure; do not claim four in-game LODs from the current fallback.
+3. Map WBD/WBN to static prop collisions; decode one relevant bounds class and roundtrip original files before writing authored collision. Verify player, vehicle and raycast interaction in game.
+4. Fix the single WTD mismatch, rerun the raycast and hot-reload checks in clean scenes, inspect the scenario log errors, and rerun performance/stability after the teleport guard.
+5. Review visual screenshots and run the manual collision and episode checks before release stabilization and merging into `main`.

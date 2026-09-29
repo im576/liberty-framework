@@ -4,6 +4,7 @@ using System.IO;
 using GTA;
 using LibertyFramework.Core.Config;
 using LibertyFramework.Core.Logging;
+using LibertyFramework.DevTools.Teleport.Logic;
 using LibertyFramework.GameApi;
 
 namespace LibertyFramework.DevTools.Teleport
@@ -92,12 +93,16 @@ namespace LibertyFramework.DevTools.Teleport
             if (location.Snap == "pavement")
             {
                 Vector3 pavement = World.GetNextPositionOnPavement(target);
-                if (pavement.Length() > 1.0f) { target = pavement + new Vector3(0, 0, GroundClearance); }
+                if (TeleportSnap.IsUsablePavement(target.X, target.Y, target.Z, pavement.X, pavement.Y, pavement.Z))
+                { target = pavement + new Vector3(0, 0, GroundClearance); }
+                else { RuntimeLog.Info("teleport_snap_rejected id=" + location.Id + " snap=pavement; using configured position"); }
             }
             else if (location.Snap == "ground")
             {
                 float ground = Natives.GroundZ(location.X, location.Y, location.Z);
-                if (ground != 0) { target = new Vector3(location.X, location.Y, ground + GroundClearance); }
+                if (TeleportSnap.IsUsableGround(location.Z, ground))
+                { target = new Vector3(location.X, location.Y, ground + GroundClearance); }
+                else { RuntimeLog.Info("teleport_snap_rejected id=" + location.Id + " snap=ground; using configured position"); }
             }
             MoveTo(ped, target.X, target.Y, target.Z);
             if (!ped.isInVehicle()) { Natives.SetCharHeading(ped, location.Heading); }

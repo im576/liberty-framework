@@ -3,6 +3,10 @@
 **Status (2026-09-26): research not started in this project.** Nothing below is verified here. It sets out what to
 establish before any collision writer is built (roadmap: content compiler step 3, `docs/content/README.md`).
 
+**Update (2026-09-28):** the first Windows inventory and bounds-layout probes ran. See
+[`2026-09-28-windows-verification.md`](../reports/2026-09-28-windows-verification.md). Their results below supersede
+the initial status for the measured claims; no bounds class has been decoded or round-tripped yet.
+
 Evidence labels: **VERIFIED IN GAME**, **VERIFIED OFFLINE** (from the owner's game files by a repository tool),
 **PLAUSIBLE** (public community documentation, not checked here), **UNKNOWN**.
 
@@ -16,6 +20,23 @@ Evidence labels: **VERIFIED IN GAME**, **VERIFIED OFFLINE** (from the owner's ga
 | C4 | How the game pairs an IDE object with its collision: a bounds resource of the same name, the map section's `.wbd`, or a fragment. | UNKNOWN | Needs the inventory, then an in-game test |
 | C5 | Whether a script-created object (`CREATE_OBJECT`, `spawnprop`) gets collision from static bounds, or only from a fragment. | UNKNOWN | In-game test |
 | C6 | Whether the engine's raycast (ADR-0008, the game's line test against the physics world) hits an authored object's collision. | UNKNOWN | Follows from C4/C5; `RayMask.Objects` is also untested against vanilla props |
+
+## First Windows probe results (VERIFIED OFFLINE, CE 1.2.0.59)
+
+`PROBE-collision` in `verification-results/results/20260928-221840-84d4127` counted 732 `.wbn`, 348 `.wbd` and
+85 `.wbs` entries in opened IMG archives. WBN and WBD entries were RSC type 32; WBS entries were type 1. The
+`PROBE-bounds-layout` report measured 1,165 resources in ten extension/type/root-word classes. Five archives returned
+`Value was invalid.` and were omitted from that layout report; the result is an inventory of successfully opened
+archives, not a proof that no other bounds resources exist.
+
+The `propCandidates` rule found **zero** WDR/WBN pairs of the same name within one archive. Thus the automatic borrow
+in this session supplied no bounds file, and the failed `collision-borrow` and `world-objects` rays cannot answer C4–C6.
+Many WBN files are named for map chunks (for example `bronx_e_1.wbn`), while WBD files include map-area names (for
+example `bronx_e.wbd`). This naming pattern is evidence for further investigation, not a verified lookup rule.
+
+Next probe: inspect the WBD dictionary's entry names/hashes and its references to WBN or embedded bounds, then relate
+those entries to IDE object names and runtime object collision. Choose one small, relevant bounds class and prove a
+byte-for-byte round trip before enabling authored shapes. Do not substitute an arbitrary map WBN for a prop's bounds.
 
 ## Plan
 

@@ -3,6 +3,12 @@
 Status: **NEEDS-PLAYTEST** (queued: `PROBE-collision`, `PROBE-bounds-layout`, `T032-collision-borrow-report`,
 `T032-collision-borrow`; `T033-world-walk` covers the player)
 
+**Windows result (2026-09-28):** the probes ran, but `propCandidates` was empty on this game install. Automatic
+borrowing therefore built `lf_col_crate` without collision; its failed raycast does not test same-name pairing. WBN/WBD
+structure research is now required before Session 5b. The counts, class roots and next probe are in
+[`Collision.md`](../research/Collision.md#first-windows-probe-results-verified-offline). Do not enable authored
+collision or mark the borrow experiment passed from this run.
+
 Depends on: T-030 (authored collision shapes), T-027 (engine raycast). Session 5 of
 [NEXT_SESSIONS](../workflow/NEXT_SESSIONS.md).
 
