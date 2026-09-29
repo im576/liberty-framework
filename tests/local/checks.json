@@ -235,7 +235,7 @@
         "PROBE-collision"
       ],
       "proves": "RayMask.Objects in game: a script-created vanilla prop is hit as kind Object with its own handle (all kinds, and objects only), and a query that leaves objects out passes through it; the raycast link [result+0x0C] resolves objects through the object pool.",
-      "pass": "autopilot PASS: rayto prop all and objects both Hit kind=Object match=True; world,peds,vehicles passed>=1; faults=0; screenshot judged",
+      "pass": "autopilot PASS: rayto prop all and objects both Hit kind=Object match=True; world,peds,vehicles passed>=1; faults=0; screenshot judged; prop creation logs collision=True before ray tests",
       "unproven": "Only the probe's first candidate is tested; a FAIL on the first rayto may mean that model has no collision in game (the review session then tries the next candidate from the probe report) rather than a raycast fault. Authored (LCC) props need collision first (Session 5).",
       "review": {
         "screenshots": {
@@ -1033,7 +1033,7 @@
       "run": {
         "scenario": "collision-borrow"
       },
-      "pass": "autopilot PASS (both rays hit the crate as kind Object) and the screenshot shows the crate",
+      "pass": "autopilot PASS (both rays hit the crate as kind Object) and the screenshot shows the crate; prop creation logs collision=True before ray tests",
       "proves": "Collision.md C4-C6 for this project's archive: a model registered in lf_content.ide gets collision from a same-named bounds resource for a script-created object, and the engine's raycast hits it.",
       "unproven": "Player and vehicle collision against it (T033-world-walk); authored collision shapes (need the collision writer).",
       "review": {

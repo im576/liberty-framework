@@ -5,6 +5,13 @@ Status: **NEEDS-PLAYTEST**
 Roadmap: M3 WorldQuery layer 2. Decision: [ADR-0008](../architecture/decisions/ADR-0008-engine-raycast.md).
 Research: [Raycast.md](../research/Raycast.md). Continues the research spike in commit 13ff3c2.
 
+**Collision scenario correction (2026-09-29):** the visual-review `spawnprop` helper always called
+`SetCollision(false)`, including in `raycast-objects`. It now accepts a fourth positional `on|off` argument (off by
+default); this collision scenario explicitly passes `on` and requires `collision=True` in the creation log. That log
+proves the requested SDK call, not that the model has loaded bounds or that a ray hits it. The empty candidate list
+still blocks this owner's original scenario; dictionary-backed candidates and actual object-hit evidence remain open.
+Windows build and a relevant in-game object ray are pending for this change.
+
 ## Goal
 
 Mods and engine modules can ask "what is between these two points?" and "can this ped see that one?" using the

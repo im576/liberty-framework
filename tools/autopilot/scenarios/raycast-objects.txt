@@ -10,8 +10,8 @@ goto east_park
 wait 6000
 time 13 0
 clear
-spawnprop {probe:PROBE-collision:propCandidates} 3 0
-expect "autopilot_prop handle=\d+ model=" 20
+spawnprop {probe:PROBE-collision:propCandidates} 3 0 on
+expect "autopilot_prop handle=\d+ model=.*collision=True" 20
 wait 2500
 shot prop
 # Every kind stops the ray: the first thing between the player and the prop's origin is the prop (kind Object).

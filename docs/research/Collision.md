@@ -71,6 +71,12 @@ it does not by itself prove exclusive allocation ownership or correct decoding.
 | C5 | Whether a script-created object (`CREATE_OBJECT`, `spawnprop`) gets collision from static bounds, or only from a fragment. | UNKNOWN | In-game test |
 | C6 | Whether the engine's raycast (ADR-0008, the game's line test against the physics world) hits an authored object's collision. | UNKNOWN | Follows from C4/C5; `RayMask.Objects` is also untested against vanilla props |
 
+**Scenario setup limit:** the original `collision-borrow` scenario used a `spawnprop` helper that explicitly
+called `SetCollision(false)`. The helper now accepts a fourth `on|off` argument, and both collision-borrow and vanilla
+object-ray tests request `on`. Log evidence records the requested flag, not loaded bounds or successful interaction.
+The world's wall uses its separate configured collision setting. No prior borrowed-crate miss can establish pairing
+with collision disabled; missing bounds resources remain an independent blocker.
+
 ## First Windows probe results (VERIFIED OFFLINE, CE 1.2.0.59)
 
 `PROBE-collision` in `verification-results/results/20260928-221840-84d4127` counted 732 `.wbn`, 348 `.wbd` and

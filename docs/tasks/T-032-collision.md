@@ -9,6 +9,12 @@ structure research is now required before Session 5b. The counts, class roots an
 [`Collision.md`](../research/Collision.md#first-windows-probe-results-verified-offline). Do not enable authored
 collision or mark the borrow experiment passed from this run.
 
+**Experiment correction (2026-09-29):** `spawnprop` used the visual-review default `SetCollision(false)` even in
+`collision-borrow`. It now accepts an explicit fourth argument; the scenario uses `spawnprop lf_col_crate 3 0 on`
+and checks the logged collision request. Earlier misses cannot establish runtime pairing with collision disabled.
+The asset still has no borrowed resource on this install, so enabling collision does not complete C4–C6 or Session 5b.
+The world-object mod already uses its own configured collision flag and is unaffected by this helper correction.
+
 **Next research gate:** inspect a small CE map WBD's candidate key and pointer arrays, and compare candidate keys
 with hashes of nearby WDR and IDE model names. The measured root pointer fields are listed in
 [`Collision.md`](../research/Collision.md). The current `auto` rule cannot select a prop from this installation;

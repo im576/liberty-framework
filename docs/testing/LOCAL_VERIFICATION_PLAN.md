@@ -209,7 +209,7 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 | `PROBE-drawables` | RESEARCH | probe | exit code 0 and a JSON report; the review session reads it (no pass/fail on the numbers themselves) | QUEUED |
 | `PROBE-collision` | RESEARCH | probe | exit code 0 and a JSON report; the review session reads it | QUEUED |
 | `T027-raycast` | T-027 | scenario | autopilot PASS: ground hit, open sky clear, vehicle hit and filtered, ped hit and passed through, rayto matches, line of sight both ways, faults=0; screenshots judged | QUEUED |
-| `T027-raycast-objects` | T-027 | scenario | autopilot PASS: rayto prop all and objects both Hit kind=Object match=True; world,peds,vehicles passed>=1; faults=0; screenshot judged | QUEUED |
+| `T027-raycast-objects` | T-027 | scenario | autopilot PASS: rayto prop all and objects both Hit kind=Object match=True; world,peds,vehicles passed>=1; faults=0; screenshot judged; prop creation logs collision=True before ray tests | QUEUED |
 | `T027-raycast-spike` | T-027 | scenario | autopilot PASS (spawns succeed); the review session reads the raydebug/raybits lines for the vehicle | QUEUED |
 | `SDK-selftest` | T-027 | scenario | autopilot PASS: 'selftest_done passed=N failed=0' | QUEUED |
 | `T028-native-texture-review` | T-028 | scenario | autopilot PASS and the screenshots judged as described | QUEUED |
@@ -235,7 +235,7 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 | `PROBE-collision-links` | T-032 | probe | exit code 0 and a JSON report; the review session reads it | QUEUED |
 | `T032-wbdcheck` | T-032 | pc-offline | At least one CE WBD parses, every parsed table field round-trips, and the tool exits 0 with a JSON report. | QUEUED |
 | `T032-collision-borrow-report` | T-032 | pc-offline | report.json fields match: the build found a prop candidate and shipped its bounds as lf_col_crate.wbn | QUEUED |
-| `T032-collision-borrow` | T-032 | scenario | autopilot PASS (both rays hit the crate as kind Object) and the screenshot shows the crate | QUEUED |
+| `T032-collision-borrow` | T-032 | scenario | autopilot PASS (both rays hit the crate as kind Object) and the screenshot shows the crate; prop creation logs collision=True before ray tests | QUEUED |
 | `T033-world-wall-report` | T-033 | pc-offline | report.json fields match | QUEUED |
 | `T033-world-objects` | T-033 | scenario | autopilot PASS (spawned with a handle; the ray hits it) and the screenshot shows the wall | QUEUED |
 

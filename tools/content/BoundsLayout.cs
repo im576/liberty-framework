@@ -8,7 +8,7 @@ using LibertyFramework.Finishes;
 namespace LibertyFramework.Content
 {
     // `probe bounds` (check PROBE-bounds-layout, T-032): the layout of the game's collision resources, measured instead of
-    // assumed. Files are grouped by class (extension, RSC type and the root's first word, which is its vtable address).
+    // assumed. Files are grouped by extension, RSC type and serialized root class word, not a proven runtime address.
     // For each class, every 4-byte word of the root structure is classified across all its files as zero, a system or
     // graphics pointer (inside the file's segments), a small integer (with its values: type codes and counts), a plausible
     // float, or other. The same is done one level down for each root offset that holds a system pointer in most files.

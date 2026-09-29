@@ -12,6 +12,10 @@ player before teleport, and the scenario checks teleport completion and survival
 pending. All 42 install actions were independently restored with zero mismatches. Trunk navigation, storage and menu
 closure remain proven by `6931061`; the lid was partly obscured. Performance remains open.
 
+**Collision test setup correction:** the visual `spawnprop` helper disabled collision even in collision scenarios.
+It now accepts explicit `on|off`; `raycast-objects` and `collision-borrow` request `on` and check the logged request.
+This removes a test confound. Missing bounds resources, runtime pairing and object ray proof remain open.
+
 **Empty encrypted archives:** Windows decoded all five recurring IMG errors as version 3, count 0, table bytes 0.
 At `0d849f0`, engine/content builds pass, content selftest is 360/360 and verifier simulation is 47/47.
 The WBD probe now opens the empty archives with zero errors.

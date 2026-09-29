@@ -11,8 +11,8 @@ goto east_park
 wait 6000
 time 13 0
 clear
-spawnprop lf_col_crate 3 0
-expect "autopilot_prop handle=\d+ model=lf_col_crate" 20
+spawnprop lf_col_crate 3 0 on
+expect "autopilot_prop handle=\d+ model=lf_col_crate .*collision=True" 20
 wait 2500
 hud off
 shot crate

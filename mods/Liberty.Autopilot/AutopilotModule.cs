@@ -49,7 +49,7 @@ namespace Liberty.Autopilot
             Register("heading", "heading <degrees>", a => { Liberty.Peds.SetHeading(Liberty.Player.Ped, Args.Float(a, 0)); return "heading " + Args.F(Args.Float(a, 0)); });
             Register("spawn", "spawn <count> [distance m] [weapon id] - NPC subjects facing the player", Spawn);
             Register("spawncar", "spawncar <model> [distance m] - a vehicle in front of the player", SpawnCar);
-            Register("spawnprop", "spawnprop <model> [distance m] [height above ground m] - a frozen prop in front of the player (content tests)", SpawnProp);
+            Register("spawnprop", "spawnprop <model> [distance m] [height above ground m] [on|off] - frozen prop; collision off by default", SpawnProp);
             Register("at-trunk","at-trunk [distance behind m] - stand behind the last spawned car, facing its trunk", AtTrunk);
             Register("clear", "delete spawned subjects and vehicles", Clear);
             Register("peds", "list peds in the engine snapshot", Peds);
@@ -172,10 +172,13 @@ namespace Liberty.Autopilot
 
         private readonly List<PropRef> props = new List<PropRef>();
 
-        // A compiled asset in front of the player, frozen and without collision so it stays where the camera expects it.
+        // Visual reviews default to collision off. Collision/raycast experiments must explicitly request it on.
         private string SpawnProp(string[] args)
         {
             if (args.Length == 0) { return "spawnprop <model>"; }
+            if (args.Length > 3 && args[3] != "on" && args[3] != "off")
+            { throw new ArgumentException("collision must be on or off"); }
+            bool collision = args.Length > 3 && args[3] == "on";
             ModelRef model = Args.Word(args, 0);
             if (!Liberty.Streaming.IsValidModel(model)) { return "model " + args[0] + " is not in the game's model index"; }
             // InFront returns a point 1 m above the ground; height is measured from the ground.
@@ -184,10 +187,10 @@ namespace Liberty.Autopilot
             {
                 if (prop.IsNone) { Liberty.Log.Error(this, "autopilot_prop_failed model=" + args[0]); return; }
                 Liberty.Props.SetFrozen(prop, true);
-                Liberty.Props.SetCollision(prop, false);
+                Liberty.Props.SetCollision(prop, collision);
                 Liberty.Props.SetPosition(prop, at);
                 props.Add(prop);
-                Liberty.Log.Info(this, "autopilot_prop handle=" + prop.Handle + " model=" + args[0] + " at=" + at);
+                Liberty.Log.Info(this, "autopilot_prop handle=" + prop.Handle + " model=" + args[0] + " at=" + at + " collision=" + collision);
             });
             return "spawning prop " + args[0];
         }

@@ -333,8 +333,7 @@ namespace LibertyFramework.Content
                             byte[] data = archive.Extract(entry.Name);
                             RscResource resource = RscResource.Parse(data, true);
                             Count(headers, extension + " rsc type " + resource.Type + ", system " + SizeBucket(resource.SystemSize) + ", graphics " + SizeBucket(resource.GraphicsSize));
-                            // The first word of a RAGE resource's system segment is its root object's vtable address in
-                            // the exe: the same value in different files means the same class. It is an address, not data.
+                            // Group by the serialized root class word; it is not a proven CE runtime vtable address.
                             uint vtable = resource.Body.Length >= 4 ? BitConverter.ToUInt32(resource.Body, 0) : 0;
                             Count(firstWords, extension + " root word 0x" + vtable.ToString("X8"));
                             if (samples.Count < Samples && samples.Cast<Dictionary<string, object>>().Count(s => (string)s["extension"] == extension) < 8)
