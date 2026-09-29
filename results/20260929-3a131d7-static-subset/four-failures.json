@@ -1,0 +1,582 @@
+{
+  "sourceCommit": "3a131d7",
+  "diagnosticBranch": "4f42c66",
+  "externalTextureStaticSubset": {
+    "eligible": 95,
+    "identical": 91,
+    "failed": 4,
+    "excluded": {
+      "embedded dictionary": 81,
+      "skeleton": 10,
+      "skeleton and embedded dictionary": 1
+    },
+    "failures": [
+      "pc/data/maps/east/bronx_e.img/bx_bay_barriers01.wdr",
+      "pc/data/maps/east/bronx_e.img/bx_eltrain_1.wdr",
+      "pc/data/maps/east/bronx_e.img/bx_eltrain_4.wdr",
+      "pc/data/maps/east/bronx_e.img/el_lights04.wdr"
+    ],
+    "rule": "same broad builder eligibility, additionally no skeleton or embedded texture dictionary; not proof of material/template matching or runtime rendering"
+  },
+  "failures": [
+    "pc/data/maps/east/bronx_e.img/bx_bay_barriers01.wdr: Interleaved: sys+0x778 sys+0x788 sys+0x7F8 sys+0x808 sys+0x878 sys+0x8A8; VerticesFirst: sys+0x778 sys+0x788 sys+0x7F8 sys+0x808 sys+0x878 sys+0x8A8; Template: sys+0x8A8",
+    "pc/data/maps/east/bronx_e.img/bx_eltrain_1.wdr: Interleaved: sys+0xB28 sys+0xB38 sys+0xB68 sys+0xB78 sys+0xBA8 sys+0xBB8; VerticesFirst: sys+0xB28 sys+0xB38 sys+0xB68 sys+0xB78 sys+0xBA8 sys+0xBB8; Template: sys+0xCF8",
+    "pc/data/maps/east/bronx_e.img/bx_eltrain_4.wdr: Interleaved: sys+0xC68 sys+0xC78 sys+0xCA8 sys+0xCB8 sys+0xCE8 sys+0xCF8; VerticesFirst: sys+0xC68 sys+0xC78 sys+0xCA8 sys+0xCB8 sys+0xCE8 sys+0xCF8; Template: sys+0xDE8 sys+0xE78 box axis 2",
+    "pc/data/maps/east/bronx_e.img/el_lights04.wdr: Interleaved: sys+0x998 sys+0x9A8 sys+0x9D8 sys+0x9E8 sys+0xA18 sys+0xA28; VerticesFirst: sys+0x998 sys+0x9A8 sys+0x9D8 sys+0x9E8 sys+0xA18 sys+0xA28; Template: sys+0x998 sys+0x9A8 sys+0xA98 sys+0xAF8"
+  ],
+  "graphicsLayouts": [
+    {
+      "file": "pc/data/maps/east/bronx_e.img/bx_bay_barriers01.wdr",
+      "templateOrderLayout": {
+        "source": {
+          "flags": "0xD00A0010",
+          "graphicsBytes": 81920,
+          "graphicsPageShift": 4,
+          "graphicsPageBytes": 4096,
+          "graphicsPageCount": 20
+        },
+        "rebuilt": {
+          "flags": "0xCC130010",
+          "graphicsBytes": 77824,
+          "graphicsPageShift": 3,
+          "graphicsPageBytes": 2048,
+          "graphicsPageCount": 38
+        },
+        "hasSkeleton": false,
+        "hasEmbeddedTextureDictionary": false,
+        "buffers": [
+          {
+            "geometry": 0,
+            "kind": "vertices",
+            "sourceOffset": 0,
+            "rebuiltOffset": 0,
+            "bytes": 32616,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 2,
+            "kind": "vertices",
+            "sourceOffset": 32768,
+            "rebuiltOffset": 32768,
+            "bytes": 22608,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 1,
+            "kind": "vertices",
+            "sourceOffset": 55376,
+            "rebuiltOffset": 55376,
+            "bytes": 9504,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 2,
+            "kind": "indices",
+            "sourceOffset": 65536,
+            "rebuiltOffset": 65536,
+            "bytes": 5520,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 1,
+            "kind": "indices",
+            "sourceOffset": 71056,
+            "rebuiltOffset": 71056,
+            "bytes": 1440,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 0,
+            "kind": "indices",
+            "sourceOffset": 73728,
+            "rebuiltOffset": 72496,
+            "bytes": 4104,
+            "overlapWithEarlierBytes": 0
+          }
+        ],
+        "unmodeledSourceRanges": [
+          {
+            "offset": 32616,
+            "bytes": 152,
+            "zeroBytes": 0,
+            "cdBytes": 152,
+            "otherBytes": 0
+          },
+          {
+            "offset": 64880,
+            "bytes": 656,
+            "zeroBytes": 0,
+            "cdBytes": 656,
+            "otherBytes": 0
+          },
+          {
+            "offset": 72496,
+            "bytes": 1232,
+            "zeroBytes": 0,
+            "cdBytes": 1232,
+            "otherBytes": 0
+          },
+          {
+            "offset": 77832,
+            "bytes": 4088,
+            "zeroBytes": 0,
+            "cdBytes": 4088,
+            "otherBytes": 0
+          }
+        ],
+        "rule": "ranges and aggregate byte classes only; unmodeled ranges are not assumed to be padding"
+      }
+    },
+    {
+      "file": "pc/data/maps/east/bronx_e.img/bx_eltrain_1.wdr",
+      "templateOrderLayout": {
+        "source": {
+          "flags": "0xD40D0810",
+          "graphicsBytes": 212992,
+          "graphicsPageShift": 5,
+          "graphicsPageBytes": 8192,
+          "graphicsPageCount": 26
+        },
+        "rebuilt": {
+          "flags": "0xD40D0810",
+          "graphicsBytes": 212992,
+          "graphicsPageShift": 5,
+          "graphicsPageBytes": 8192,
+          "graphicsPageCount": 26
+        },
+        "hasSkeleton": false,
+        "hasEmbeddedTextureDictionary": false,
+        "buffers": [
+          {
+            "geometry": 2,
+            "kind": "vertices",
+            "sourceOffset": 0,
+            "rebuiltOffset": 0,
+            "bytes": 85752,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 4,
+            "kind": "vertices",
+            "sourceOffset": 85760,
+            "rebuiltOffset": 85760,
+            "bytes": 28080,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 3,
+            "kind": "vertices",
+            "sourceOffset": 113840,
+            "rebuiltOffset": 113840,
+            "bytes": 8064,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 2,
+            "kind": "indices",
+            "sourceOffset": 121904,
+            "rebuiltOffset": 121904,
+            "bytes": 8016,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 1,
+            "kind": "indices",
+            "sourceOffset": 129920,
+            "rebuiltOffset": 129920,
+            "bytes": 960,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 0,
+            "kind": "vertices",
+            "sourceOffset": 131072,
+            "rebuiltOffset": 131072,
+            "bytes": 58752,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 0,
+            "kind": "indices",
+            "sourceOffset": 189824,
+            "rebuiltOffset": 189824,
+            "bytes": 4896,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 1,
+            "kind": "vertices",
+            "sourceOffset": 196608,
+            "rebuiltOffset": 196608,
+            "bytes": 6912,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 3,
+            "kind": "indices",
+            "sourceOffset": 203520,
+            "rebuiltOffset": 203520,
+            "bytes": 960,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 4,
+            "kind": "indices",
+            "sourceOffset": 204800,
+            "rebuiltOffset": 204480,
+            "bytes": 3780,
+            "overlapWithEarlierBytes": 0
+          }
+        ],
+        "unmodeledSourceRanges": [
+          {
+            "offset": 85752,
+            "bytes": 8,
+            "zeroBytes": 0,
+            "cdBytes": 8,
+            "otherBytes": 0
+          },
+          {
+            "offset": 130880,
+            "bytes": 192,
+            "zeroBytes": 0,
+            "cdBytes": 192,
+            "otherBytes": 0
+          },
+          {
+            "offset": 194720,
+            "bytes": 1888,
+            "zeroBytes": 0,
+            "cdBytes": 1888,
+            "otherBytes": 0
+          },
+          {
+            "offset": 204480,
+            "bytes": 320,
+            "zeroBytes": 0,
+            "cdBytes": 320,
+            "otherBytes": 0
+          },
+          {
+            "offset": 208580,
+            "bytes": 4412,
+            "zeroBytes": 4096,
+            "cdBytes": 316,
+            "otherBytes": 0
+          }
+        ],
+        "rule": "ranges and aggregate byte classes only; unmodeled ranges are not assumed to be padding"
+      }
+    },
+    {
+      "file": "pc/data/maps/east/bronx_e.img/bx_eltrain_4.wdr",
+      "templateOrderLayout": {
+        "source": {
+          "flags": "0xD41B0810",
+          "graphicsBytes": 442368,
+          "graphicsPageShift": 5,
+          "graphicsPageBytes": 8192,
+          "graphicsPageCount": 54
+        },
+        "rebuilt": {
+          "flags": "0xD41B0810",
+          "graphicsBytes": 442368,
+          "graphicsPageShift": 5,
+          "graphicsPageBytes": 8192,
+          "graphicsPageCount": 54
+        },
+        "hasSkeleton": false,
+        "hasEmbeddedTextureDictionary": false,
+        "buffers": [
+          {
+            "geometry": 3,
+            "kind": "vertices",
+            "sourceOffset": 0,
+            "rebuiltOffset": 0,
+            "bytes": 117828,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 2,
+            "kind": "indices",
+            "sourceOffset": 117840,
+            "rebuiltOffset": 117840,
+            "bytes": 12240,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 5,
+            "kind": "vertices",
+            "sourceOffset": 131072,
+            "rebuiltOffset": 131072,
+            "bytes": 98784,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 1,
+            "kind": "vertices",
+            "sourceOffset": 229856,
+            "rebuiltOffset": 229856,
+            "bytes": 21528,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 3,
+            "kind": "indices",
+            "sourceOffset": 251392,
+            "rebuiltOffset": 251392,
+            "bytes": 10170,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 2,
+            "kind": "vertices",
+            "sourceOffset": 262144,
+            "rebuiltOffset": 262144,
+            "bytes": 77760,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 4,
+            "kind": "vertices",
+            "sourceOffset": 339904,
+            "rebuiltOffset": 339904,
+            "bytes": 52308,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 0,
+            "kind": "vertices",
+            "sourceOffset": 393216,
+            "rebuiltOffset": 393216,
+            "bytes": 20736,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 5,
+            "kind": "indices",
+            "sourceOffset": 413952,
+            "rebuiltOffset": 413952,
+            "bytes": 8232,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 0,
+            "kind": "indices",
+            "sourceOffset": 422192,
+            "rebuiltOffset": 422192,
+            "bytes": 3264,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 4,
+            "kind": "indices",
+            "sourceOffset": 425984,
+            "rebuiltOffset": 425456,
+            "bytes": 8214,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 1,
+            "kind": "indices",
+            "sourceOffset": 434208,
+            "rebuiltOffset": 433680,
+            "bytes": 3264,
+            "overlapWithEarlierBytes": 0
+          }
+        ],
+        "unmodeledSourceRanges": [
+          {
+            "offset": 117828,
+            "bytes": 12,
+            "zeroBytes": 0,
+            "cdBytes": 12,
+            "otherBytes": 0
+          },
+          {
+            "offset": 130080,
+            "bytes": 992,
+            "zeroBytes": 0,
+            "cdBytes": 992,
+            "otherBytes": 0
+          },
+          {
+            "offset": 251384,
+            "bytes": 8,
+            "zeroBytes": 0,
+            "cdBytes": 8,
+            "otherBytes": 0
+          },
+          {
+            "offset": 261562,
+            "bytes": 582,
+            "zeroBytes": 0,
+            "cdBytes": 582,
+            "otherBytes": 0
+          },
+          {
+            "offset": 392212,
+            "bytes": 1004,
+            "zeroBytes": 0,
+            "cdBytes": 1004,
+            "otherBytes": 0
+          },
+          {
+            "offset": 422184,
+            "bytes": 8,
+            "zeroBytes": 0,
+            "cdBytes": 8,
+            "otherBytes": 0
+          },
+          {
+            "offset": 425456,
+            "bytes": 528,
+            "zeroBytes": 0,
+            "cdBytes": 528,
+            "otherBytes": 0
+          },
+          {
+            "offset": 434198,
+            "bytes": 10,
+            "zeroBytes": 0,
+            "cdBytes": 10,
+            "otherBytes": 0
+          },
+          {
+            "offset": 437472,
+            "bytes": 4896,
+            "zeroBytes": 0,
+            "cdBytes": 4896,
+            "otherBytes": 0
+          }
+        ],
+        "rule": "ranges and aggregate byte classes only; unmodeled ranges are not assumed to be padding"
+      }
+    },
+    {
+      "file": "pc/data/maps/east/bronx_e.img/el_lights04.wdr",
+      "templateOrderLayout": {
+        "source": {
+          "flags": "0xD40A0010",
+          "graphicsBytes": 163840,
+          "graphicsPageShift": 5,
+          "graphicsPageBytes": 8192,
+          "graphicsPageCount": 20
+        },
+        "rebuilt": {
+          "flags": "0xD4098010",
+          "graphicsBytes": 155648,
+          "graphicsPageShift": 5,
+          "graphicsPageBytes": 8192,
+          "graphicsPageCount": 19
+        },
+        "hasSkeleton": false,
+        "hasEmbeddedTextureDictionary": false,
+        "buffers": [
+          {
+            "geometry": 1,
+            "kind": "vertices",
+            "sourceOffset": 0,
+            "rebuiltOffset": 0,
+            "bytes": 68472,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 0,
+            "kind": "vertices",
+            "sourceOffset": 68480,
+            "rebuiltOffset": 68480,
+            "bytes": 45360,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 3,
+            "kind": "vertices",
+            "sourceOffset": 113840,
+            "rebuiltOffset": 113840,
+            "bytes": 14112,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 3,
+            "kind": "indices",
+            "sourceOffset": 127952,
+            "rebuiltOffset": 127952,
+            "bytes": 2040,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 1,
+            "kind": "indices",
+            "sourceOffset": 131072,
+            "rebuiltOffset": 131072,
+            "bytes": 9552,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 0,
+            "kind": "indices",
+            "sourceOffset": 147456,
+            "rebuiltOffset": 140624,
+            "bytes": 7344,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 2,
+            "kind": "indices",
+            "sourceOffset": 154800,
+            "rebuiltOffset": 147968,
+            "bytes": 768,
+            "overlapWithEarlierBytes": 0
+          },
+          {
+            "geometry": 2,
+            "kind": "vertices",
+            "sourceOffset": 155648,
+            "rebuiltOffset": 148736,
+            "bytes": 6912,
+            "overlapWithEarlierBytes": 0
+          }
+        ],
+        "unmodeledSourceRanges": [
+          {
+            "offset": 68472,
+            "bytes": 8,
+            "zeroBytes": 0,
+            "cdBytes": 8,
+            "otherBytes": 0
+          },
+          {
+            "offset": 129992,
+            "bytes": 1080,
+            "zeroBytes": 0,
+            "cdBytes": 1080,
+            "otherBytes": 0
+          },
+          {
+            "offset": 140624,
+            "bytes": 6832,
+            "zeroBytes": 0,
+            "cdBytes": 6832,
+            "otherBytes": 0
+          },
+          {
+            "offset": 155568,
+            "bytes": 80,
+            "zeroBytes": 0,
+            "cdBytes": 80,
+            "otherBytes": 0
+          },
+          {
+            "offset": 162560,
+            "bytes": 1280,
+            "zeroBytes": 0,
+            "cdBytes": 1280,
+            "otherBytes": 0
+          }
+        ],
+        "rule": "ranges and aggregate byte classes only; unmodeled ranges are not assumed to be padding"
+      }
+    }
+  ]
+}
