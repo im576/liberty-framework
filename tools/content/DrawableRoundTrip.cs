@@ -29,6 +29,7 @@ namespace LibertyFramework.Content
             internal readonly Dictionary<DrawableStructureBuilder.GraphicsOrder, List<string>> Differences = new Dictionary<DrawableStructureBuilder.GraphicsOrder, List<string>>();
             internal readonly List<string> BoundsRecords = new List<string>(); // per model: "records/geometries"
             internal bool FlagsEqual;
+            internal string StaticSubsetExclusion;
             internal Dictionary<string, object> GraphicsLayout { get; set; }
         }
 
@@ -54,6 +55,9 @@ namespace LibertyFramework.Content
             Dictionary<string, int> byOrder = new Dictionary<string, int>(), skips = new Dictionary<string, int>(), bounds = new Dictionary<string, int>();
             List<string> failures = new List<string>(), archiveErrors = new List<string>();
             List<object> graphicsLayouts = new List<object>();
+            int staticEligible = 0, staticIdentical = 0, staticFailed = 0;
+            Dictionary<string, int> staticExcluded = new Dictionary<string, int>();
+            List<string> staticFailures = new List<string>();
             Dictionary<string, object> perArchive = new Dictionary<string, object>();
             foreach (string relative in archives)
             {
@@ -69,6 +73,17 @@ namespace LibertyFramework.Content
                         catch (Exception error) { outcome = new Outcome { Skip = "does not parse: " + Short(error.Message) }; }
                         if (outcome.Skip != null) { Increment(skips, outcome.Skip); continue; }
                         eligible++; inArchive++;
+                        if (outcome.StaticSubsetExclusion != null) { Increment(staticExcluded, outcome.StaticSubsetExclusion); }
+                        else
+                        {
+                            staticEligible++;
+                            if (outcome.Identical.Count > 0) { staticIdentical++; }
+                            else
+                            {
+                                staticFailed++;
+                                if (staticFailures.Count < MaxListed) { staticFailures.Add(relative + "/" + entry.Name); }
+                            }
+                        }
                         if (outcome.Multi) { multi++; }
                         if (outcome.FlagsEqual) { flagsEqual++; }
                         foreach (string record in outcome.BoundsRecords) { Increment(bounds, record); }
@@ -111,6 +126,11 @@ namespace LibertyFramework.Content
                     { "notEligible", skips.OrderByDescending(p => p.Value).Take(40).ToDictionary(p => p.Key, p => p.Value) },
                     { "failures", failures }, { "archives", perArchive }, { "archiveErrors", archiveErrors }, { "skippedArchives", skippedArchives },
                     { "graphicsLayouts", graphicsLayouts }, { "graphicsLayoutsLimit", MaxListed },
+                    { "externalTextureStaticSubset", new Dictionary<string, object> {
+                        { "eligible", staticEligible }, { "identical", staticIdentical }, { "failed", staticFailed },
+                        { "excluded", staticExcluded }, { "failures", staticFailures },
+                        { "rule", "same broad builder eligibility, additionally no skeleton or embedded texture dictionary; not proof of material/template matching or runtime rendering" }
+                    } },
                 }));
             }
             Console.WriteLine(summary + (output != null ? " report=" + output : ""));
@@ -123,6 +143,8 @@ namespace LibertyFramework.Content
             DrawableFile file = new DrawableFile(original);
             outcome.Skip = DrawableStructureBuilder.Unsupported(file);
             if (outcome.Skip != null) { return outcome; }
+            outcome.StaticSubsetExclusion = file.Skeleton != 0 && file.EmbeddedTextures != 0 ? "skeleton and embedded dictionary" :
+                file.Skeleton != 0 ? "skeleton" : file.EmbeddedTextures != 0 ? "embedded dictionary" : null;
             outcome.Multi = DrawableStructureBuilder.Geometries(file).Count() > 1;
             foreach (DrawableModel model in file.Models)
             {

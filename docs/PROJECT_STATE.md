@@ -13,12 +13,15 @@ rebuild/rerun is pending. `LOAD_SCENE` took 3,394 ms in hot reload; performance 
 confirmed all 42 restored files match their saved copies.
 
 **Empty encrypted archives:** Windows decoded all five recurring IMG errors as version 3, count 0, table bytes 0.
-The AES zero-block path is fixed with synthetic coverage; content build/self-test and real-file reopening are pending.
+At `0d849f0`, engine/content builds pass, content selftest is 360/360 and verifier simulation is 47/47.
+The WBD probe now opens the empty archives with zero errors; the focused protection/sling rerun is in progress.
 
 **Drawable placement diagnostic (2026-09-29):** the roundtrip tool now reports page metadata, source/rebuilt buffer
 ranges and byte-class counts in unmodeled graphics spans for up to 25 failures. An opaque-prefix mutation guards
-the diagnostic; Windows build/self-test and the targeted Bronx probe are pending. A matching subset now fails the
-roundtrip gate if another requested archive is unreadable. Writer behavior is unchanged.
+the diagnostic. Windows `773a528` passed 358 content checks; Bronx remains 105/187 identical. The first 25 failed
+layouts all have embedded dictionaries, which the compiler refuses. Separate static/external-texture subset counts
+now retain the broad totals and failures; their Windows check is pending. Unreadable requested archives fail the gate.
+Writer allocation is unchanged.
 
 **Focused runtime follow-up (2026-09-29):** `14010f6` installed and restored; no scenario crashed. Sling scripted
 checks passed, but the images establish one rifle/strap. Hot reload released owned invincibility as designed, then

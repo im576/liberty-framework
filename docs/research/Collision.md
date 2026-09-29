@@ -102,7 +102,8 @@ against the measured fields, then test any resulting layout across original reso
 `TLAD/pc/data/maps/interiors/int_test.img`. Each is 2,048 bytes. Using the existing owner-executable key finder
 and 16-round AES decryptor, Windows decoded all five headers as magic `0xA94E2A52`, version 3, entry count 0
 and table size 0. The reader attempted a zero-length `TransformBlock`, which fails on .NET Framework.
-The zero-block guard and synthetic empty encrypted IMG tests await Windows build and real-file reopening.
+The guard built at `0d849f0`, content selftest passed 360/360, and the WBD probe reopened the five originals with
+zero archive errors. No resource entries were added to the bounds corpus by opening empty archives.
 Header-decode evidence was captured by the Windows verification chat in turn
 `01a0ee95-20ab-76b0-9a98-670c0267478f`, command `exec-4a3965b7-ff4a-4813-8e18-87dc053aaba8`.
 This explains the five errors; it does not expand the measured bounds corpus or decode any shape.

@@ -76,6 +76,19 @@ namespace LibertyFramework.Content
             Dictionary<string, object> prefix = gaps.Count == 0 ? null : (Dictionary<string, object>)gaps[0];
             t.Check(prefix != null && (int)prefix["offset"] == 0 && (int)prefix["bytes"] == 16 && (int)prefix["otherBytes"] == 16,
                 "graphics diagnostic locates an opaque leading allocation");
+            t.Check(traced.StaticSubsetExclusion == null, "static subset retains a drawable with an opaque graphics prefix");
+            RscResource embedded = SyntheticDrawable.Build(TwoLods());
+            DrawableFile embeddedFile = new DrawableFile(embedded);
+            uint group = embeddedFile.View.U32(embeddedFile.Root + DrawableFile.DrawableShaderGroup);
+            // Presence-marker mutation only: the reader does not walk the embedded dictionary in this test.
+            Buffer.BlockCopy(BitConverter.GetBytes(ResourceView.SystemBase), 0, embedded.Body,
+                embeddedFile.View.Offset(group + DrawableFile.ShaderGroupTextures, 4), 4);
+            DrawableRoundTrip.Outcome embeddedOutcome = DrawableRoundTrip.Check(embedded);
+            t.Check(embeddedOutcome.Skip == null && embeddedOutcome.StaticSubsetExclusion == "embedded dictionary" &&
+                embeddedOutcome.Identical.Count > 0, "embedded presence is classified separately without hiding the broad result");
+            Buffer.BlockCopy(BitConverter.GetBytes(ResourceView.SystemBase), 0, embedded.Body, DrawableFile.DrawableSkeleton, 4);
+            t.Check(DrawableRoundTrip.Check(embedded).StaticSubsetExclusion == "skeleton and embedded dictionary",
+                "subset exclusion records both presence markers");
         }
 
         internal static void BoundsRecords(SelfTest.Runner t, string output)
@@ -331,6 +344,9 @@ namespace LibertyFramework.Content
                 Dictionary<string, object> r = json.Deserialize<Dictionary<string, object>>(File.ReadAllText(roundtrip));
                 Dictionary<string, object> orders = (Dictionary<string, object>)r["identicalByOrder"];
                 t.Check(Convert.ToInt32(r["eligible"]) == 3 && Convert.ToInt32(r["multiGeometry"]) == 2 && Convert.ToInt32(r["failed"]) == 0, "roundtrip report: 3 eligible, 2 multi-geometry, none failed");
+                Dictionary<string, object> subset = (Dictionary<string, object>)r["externalTextureStaticSubset"];
+                t.Check(Convert.ToInt32(subset["eligible"]) == 3 && Convert.ToInt32(subset["identical"]) == 3 &&
+                    Convert.ToInt32(subset["failed"]) == 0, "roundtrip reports the external-texture static subset alongside broad totals");
                 t.Check(Convert.ToInt32(orders["Interleaved+Template"]) == 1 && Convert.ToInt32(orders["VerticesFirst+Template"]) == 1 && Convert.ToInt32(orders["Interleaved+VerticesFirst+Template"]) == 1,
                     "roundtrip report: each multi-geometry order found once, the single-geometry file under all three", string.Join(",", orders.Select(p => p.Key + "=" + p.Value).ToArray()));
                 t.Check(DrawableRoundTrip.Run(new[] { "--game", game, "pc/models/cdimages/missing.img" }) == 1, "an archive that cannot be read proves nothing: exit 1");

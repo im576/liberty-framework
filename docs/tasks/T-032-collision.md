@@ -39,7 +39,8 @@ The next useful gate is static constructor/resource-fixup analysis for this vtab
 **Empty-archive reader fix:** Windows header decryption established that the five omitted IMG files are encrypted
 v3 archives with zero entries and zero table bytes, not unreadable bounds content. `ImgArchive.Decrypt` now returns
 without calling `TransformBlock` when there are no complete AES blocks. Synthetic encrypted empty-archive tests
-cover the path; content build/self-test and reopening the five originals are pending on Windows.
+cover the path. At `0d849f0`, the engine/content builds pass, content selftest is 360/360, and the WBD probe opens
+the five originals with zero archive errors. No authored collision has been enabled.
 
 Depends on: T-030 (authored collision shapes), T-027 (engine raycast). Session 5 of
 [NEXT_SESSIONS](../workflow/NEXT_SESSIONS.md).

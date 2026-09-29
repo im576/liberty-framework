@@ -28,7 +28,14 @@ lists source/rebuilt page flags, per-geometry buffer offsets/sizes, overlaps and
 ranges report only counts of zero, 0xCD and other bytes; their meaning is not assumed. A synthetic opaque-prefix
 mutation checks that repacking stays a failure and the leading range is identified. Run the queued roundtrip on
 `pc/data/maps/east/bronx_e.img` first, then use its measured gaps and page shifts to choose the next placement test.
-This diagnostic changes no writer allocation policy and awaits the Windows build/self-test/probe.
+**Diagnostic result (`773a528`):** Windows content self-test passed 358/358. Bronx remains 187 eligible,
+105 identical and 82 different, with no archive errors. All first 25 failed layouts have an embedded dictionary;
+one also has a skeleton. Their unmodeled ranges contain nonzero/non-CD bytes, so treating them as padding is
+unsupported. `StructureCompiler.Match` refuses these templates. The report now adds `externalTextureStaticSubset`
+counts and a separate failure list for broad-builder-eligible files without either presence flag, retaining the broad
+totals and exit condition. This establishes the relevant remaining failures before changing allocation. The subset
+is not a claim that every material, shader or requested LOD fits. New subset counters await Windows testing.
+Evidence: `verification-results/results/20260929-773a528-bronx-layout/`.
 The roundtrip exit status also fails when any requested archive is unreadable, even if every eligible drawable in
 the other archives matches. The report retains the partial matches and archive errors; a synthetic mixed valid/missing
 archive test checks this release gate. The five current archive errors need header review before being classified.
