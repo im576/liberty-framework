@@ -106,6 +106,7 @@ Initialize-SimulatedGame (Join-Path $root 'game') @{
     commands = @{ 'selftest' = @{ reply = 'started'; log = @('selftest_done passed=3 failed=0') }; 'boom' = @{ reply = 'ok'; crash = $true }
         'spawnprop simulated 3 0' = @{ reply = 'spawning prop simulated'; log = @('autopilot_prop handle=77 model=simulated') } }
 } @()
+$worktreesBefore = @(& git -C $script:RepoRoot worktree list --porcelain | Where-Object { $_ -like 'worktree *' } | Sort-Object)
 & $verifyLocal -Simulate -SimulationFile $simFile -QueuePath $queuePath -KeepInstall 6>&1 | Out-Null
 $runFolder = Get-ChildItem -LiteralPath (Join-Path $root 'results') -Directory | Select-Object -First 1
 $summary = Get-Content -LiteralPath (Join-Path $runFolder.FullName 'summary.json') -Raw | ConvertFrom-Json
@@ -129,7 +130,14 @@ Test-That 'run: the scenario after a crash relaunches and passes' ($status['T-sc
 Test-That 'run: a scenario uses the value its probe found in the same run' ($status['T-scenario-probed'] -eq 'PASS') ($status['T-scenario-probed'])
 Test-That 'run: manual answer p is PASS' ($status['T-manual-pass'] -eq 'PASS')
 Test-That 'run: unanswered manual check is NOT-RUN' ($status['T-manual-skipped'] -eq 'NOT-RUN')
-Test-That 'run: evidence copied (scenario report and screenshot)' (Test-Path -LiteralPath (Join-Path $runFolder.FullName (Join-Path 'T-scenario-good' 'view.png')))
+$scenarioEvidence = Join-Path $runFolder.FullName 'T-scenario-good'
+$imageName = if ($env:OS -eq 'Windows_NT') { 'view.jpg' } else { 'view.png' }
+$imagePath = Join-Path $scenarioEvidence $imageName
+$scenarioResult = Get-Content -LiteralPath (Join-Path $scenarioEvidence 'result.json') -Raw | ConvertFrom-Json
+Test-That 'run: evidence copied (report, image and matching result reference)' (
+    (Test-Path -LiteralPath (Join-Path $scenarioEvidence 'report.md')) -and
+    (Test-Path -LiteralPath $imagePath) -and (Get-Item -LiteralPath $imagePath).Length -gt 0 -and
+    @($scenarioResult.screenshots) -contains $imageName)
 Test-That 'run: install kept and recorded' ($summary.run.install -like 'kept the tested build*')
 $text = Get-ChildItem -LiteralPath $runFolder.FullName -Recurse -File | Where-Object { $_.Extension -in '.json', '.md', '.log' } | ForEach-Object { [IO.File]::ReadAllText($_.FullName) }
 Test-That 'run: machine paths scrubbed from every text file' (-not (($text -join "`n").Contains($root))) 'the simulation root appears in the results'
@@ -141,7 +149,9 @@ Test-That 'publish: results/<run>/summary.json on verification-results' (@($publ
 Test-That 'publish: LATEST names the run' ((& git --git-dir $remote show verification-results:LATEST).Trim() -eq $runFolder.Name)
 $history = @(& git --git-dir $remote log --format=%P verification-results)
 Test-That 'publish: the branch is an orphan (no parent from the code history)' ($history.Count -eq 1 -and -not $history[0].Trim())
-Test-That 'publish: no worktree left behind' (@(& git -C $script:RepoRoot worktree list).Count -eq 1)
+$worktreesAfter = @(& git -C $script:RepoRoot worktree list --porcelain | Where-Object { $_ -like 'worktree *' } | Sort-Object)
+Test-That 'publish: temporary worktree removed and existing worktrees preserved' (
+    ($worktreesBefore -join "`n") -eq ($worktreesAfter -join "`n"))
 
 # ---- Install failure: everything that needs the install is NOT-RUN, not PASS; a second publish appends
 $sim.install = @{ fails = $true }
