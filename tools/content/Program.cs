@@ -42,13 +42,14 @@ namespace LibertyFramework.Content
                 if (args.Length >= 1 && args[0] == "probe") { return Probe.Run(args.Skip(1).ToArray()); }
                 if (args.Length >= 1 && args[0] == "wbdtrace") { return WbdTrace.Run(args.Skip(1).ToArray()); }
                 if (args.Length >= 1 && args[0] == "wbdcheck") { return WbdDictionaryCheck.Run(args.Skip(1).ToArray()); }
+                if (args.Length >= 1 && args[0] == "wbdtargets") { return WbdTargetProbe.Run(args.Skip(1).ToArray()); }
                 if (args.Length >= 1 && args[0] == "roundtrip") { return DrawableRoundTrip.Run(args.Skip(1).ToArray()); }
                 Console.WriteLine("usage: LibertyContent sample <dir> <name> | validate <asset.json> [--report <file>] | capabilities | fixtures <dir> |");
                 Console.WriteLine("       build <game> <asset.json> <out> |");
                 Console.WriteLine("       package <game> <out> <img> <ide> <asset.json...> | templates <game> <archive> |");
                 Console.WriteLine("       selftest [--out <dir>] | wtdcheck [--game <dir>] <file.wtd|folder|archive.img...> |");
                 Console.WriteLine("       probe drawables|collision|bounds|collision-links --game <dir> --out <json> | roundtrip --game <dir> [--out <json>] [archive.img...]");
-                Console.WriteLine("       wbdtrace --game <dir> --out <json> <archive.img...> | wbdcheck --game <dir> --out <json>");
+                Console.WriteLine("       wbdtrace --game <dir> --out <json> <archive.img...> | wbdcheck|wbdtargets --game <dir> --out <json>");
                 return 1;
             }
             catch (Exception error)
