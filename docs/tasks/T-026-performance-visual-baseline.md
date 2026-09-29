@@ -9,8 +9,14 @@ the exit, DevTools logged `teleport_done id=east_park final=0.0,1417044000.0,213
 requesting `(-64.8,663.4,15)` with pavement snap. This is evidence that a corrupt snap reached the teleport call;
 it does not establish where the bad value originated. `TeleportService` now rejects nonfinite or nonlocal pavement
 and ground results and falls back to the configured position, with a log entry. The offline verifier exercises the
-observed corrupt value. Rerun `T026-perf-stress` on Windows before treating this as a crash fix. The report is
+observed corrupt value. The initial run and its follow-up are recorded in
 [`2026-09-28-windows-verification.md`](../reports/2026-09-28-windows-verification.md).
+
+**Focused rerun (commit `762fd62`):** the 25-ped scenario completed 18/18 steps and GTA IV stayed alive. The
+teleport ended at a local position. The verifier restored all installed files. The run remains NEEDS-REVIEW:
+`engine.commands` logged a 5,013 ms setup stall, and 25-ped frame p95 was 55.64 ms on a machine reporting 94% physical
+memory load. Investigate that stall and repeat performance/stability runs before release. Evidence:
+`verification-results/results/20260928-233544-762fd62/`.
 
 ## Step 2: direct natives (2026-09-25, Claude)
 

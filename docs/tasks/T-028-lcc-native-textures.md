@@ -4,8 +4,9 @@ Status: **NEEDS-PLAYTEST**
 
 **Windows update (2026-09-28):** the native crate and alpha panel rendered with textures in game. `wtdcheck` rebuilt
 67 of 68 eligible game dictionaries identically; `w_bat.wtd` differed only in the icon texture's opaque record header
-at `+0x00..+0x03`. The writer now preserves opaque records by texture name when rebuilding an existing dictionary;
-the targeted Windows roundtrip rerun is pending. The probe also found nonzero record `+0x40` pointers and multipage
+at `+0x00..+0x03`. The writer now preserves opaque records by texture name when rebuilding an existing dictionary.
+The targeted Windows rerun passed: all 68 compressed dictionaries rebuilt byte-identically, with 11 uncompressed
+dictionaries skipped (`verification-results/results/20260928-234601-762fd62/`). The probe also found nonzero record `+0x40` pointers and multipage
 graphics in many original files, so their meaning and generated-dictionary behavior remain open. See
 [`2026-09-28-windows-verification.md`](../reports/2026-09-28-windows-verification.md).
 
