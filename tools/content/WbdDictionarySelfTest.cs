@@ -15,16 +15,16 @@ namespace LibertyFramework.Content
             Put32(body, 0x90, 0x50000100); Put32(body, 0x94, 0x50000200);
             Put32(body, 0x100, 0x0069C19C); Put32(body, 0x200, 0x0069AAF4);
             WbdDictionaryReader reader = WbdDictionaryReader.Parse(body, body.Length, 32);
-            t.Check(reader.Entries.Count == 2 && reader.HashOffset == 0x80 && reader.BoundsOffset == 0x90,
+            t.Check(reader.Entries.Count == 2 && reader.HashOffset == 0x80 && reader.TargetOffset == 0x90,
                 "two equal-length arrays read from root pointers and count fields");
-            t.Check(reader.Entries[0].NameHash == 0x12345678 && reader.Entries[1].BoundsPointer == 0x50000200 &&
-                reader.Entries[1].BoundsVtable == 0x0069AAF4, "hashes pair by index with valid target structures");
+            t.Check(reader.Entries[0].NameHash == 0x12345678 && reader.Entries[1].TargetPointer == 0x50000200 &&
+                reader.Entries[1].TargetVtable == 0x0069AAF4, "hashes pair by index with valid target structures");
             t.Check(reader.TableRoundTrip(), "decoded root fields and arrays reproduce the source bytes");
             reader.Entries[0].NameHash ^= 1;
             t.Check(!reader.TableRoundTrip(), "a changed hash fails the table roundtrip");
             reader.Entries[0].NameHash ^= 1;
-            reader.Entries[1].BoundsPointer += 4;
-            t.Check(!reader.TableRoundTrip(), "a changed bounds pointer fails the table roundtrip");
+            reader.Entries[1].TargetPointer += 4;
+            t.Check(!reader.TableRoundTrip(), "a changed target pointer fails the table roundtrip");
             byte[] badCount = (byte[])body.Clone(); Put16(badCount, 0x1C, 1);
             t.Throws<InvalidDataException>(() => WbdDictionaryReader.Parse(badCount, badCount.Length, 32),
                 "unequal root counts are refused");

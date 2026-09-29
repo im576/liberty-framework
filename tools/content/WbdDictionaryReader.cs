@@ -14,13 +14,13 @@ namespace LibertyFramework.Content
         internal sealed class Entry
         {
             internal uint NameHash;
-            internal uint BoundsPointer;
-            internal uint BoundsVtable;
+            internal uint TargetPointer;
+            internal uint TargetVtable;
         }
 
         internal readonly List<Entry> Entries = new List<Entry>();
-        internal int HashOffset, BoundsOffset, HashCapacity, BoundsCapacity;
-        internal uint HashPointer, BoundsArrayPointer;
+        internal int HashOffset, TargetOffset, HashCapacity, TargetCapacity;
+        internal uint HashPointer, TargetArrayPointer;
         private byte[] body;
 
         internal static WbdDictionaryReader Parse(RscResource resource)
@@ -34,25 +34,25 @@ namespace LibertyFramework.Content
             { throw new InvalidDataException("not CE WBD root class 0x00695360"); }
             WbdDictionaryReader result = new WbdDictionaryReader { body = body };
             result.HashPointer = BitConverter.ToUInt32(body, 0x10);
-            result.BoundsArrayPointer = BitConverter.ToUInt32(body, 0x18);
+            result.TargetArrayPointer = BitConverter.ToUInt32(body, 0x18);
             int hashCount = BitConverter.ToUInt16(body, 0x14);
             result.HashCapacity = BitConverter.ToUInt16(body, 0x16);
             int boundsCount = BitConverter.ToUInt16(body, 0x1C);
-            result.BoundsCapacity = BitConverter.ToUInt16(body, 0x1E);
-            if (hashCount != boundsCount || hashCount > result.HashCapacity || boundsCount > result.BoundsCapacity)
+            result.TargetCapacity = BitConverter.ToUInt16(body, 0x1E);
+            if (hashCount != boundsCount || hashCount > result.HashCapacity || boundsCount > result.TargetCapacity)
             { throw new InvalidDataException("WBD parallel table counts/capacities disagree"); }
             if (hashCount > 16384) { throw new InvalidDataException("WBD table count too large"); }
             if (hashCount == 0) { return result; }
             result.HashOffset = SystemOffset(result.HashPointer, systemSize, hashCount * 4);
-            result.BoundsOffset = SystemOffset(result.BoundsArrayPointer, systemSize, boundsCount * 4);
+            result.TargetOffset = SystemOffset(result.TargetArrayPointer, systemSize, boundsCount * 4);
             for (int i = 0; i < hashCount; i++)
             {
-                uint pointer = BitConverter.ToUInt32(body, result.BoundsOffset + i * 4);
+                uint pointer = BitConverter.ToUInt32(body, result.TargetOffset + i * 4);
                 int target = SystemOffset(pointer, systemSize, 4);
                 result.Entries.Add(new Entry {
                     NameHash = BitConverter.ToUInt32(body, result.HashOffset + i * 4),
-                    BoundsPointer = pointer,
-                    BoundsVtable = BitConverter.ToUInt32(body, target)
+                    TargetPointer = pointer,
+                    TargetVtable = BitConverter.ToUInt32(body, target)
                 });
             }
             return result;
@@ -74,16 +74,16 @@ namespace LibertyFramework.Content
             for (int i = 0; i < Entries.Count; i++)
             {
                 Buffer.BlockCopy(BitConverter.GetBytes(Entries[i].NameHash), 0, hashes, i * 4, 4);
-                Buffer.BlockCopy(BitConverter.GetBytes(Entries[i].BoundsPointer), 0, bounds, i * 4, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(Entries[i].TargetPointer), 0, bounds, i * 4, 4);
             }
             byte[] root = new byte[16];
             Buffer.BlockCopy(BitConverter.GetBytes(HashPointer), 0, root, 0, 4);
             Buffer.BlockCopy(BitConverter.GetBytes((ushort)Entries.Count), 0, root, 4, 2);
             Buffer.BlockCopy(BitConverter.GetBytes((ushort)HashCapacity), 0, root, 6, 2);
-            Buffer.BlockCopy(BitConverter.GetBytes(BoundsArrayPointer), 0, root, 8, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(TargetArrayPointer), 0, root, 8, 4);
             Buffer.BlockCopy(BitConverter.GetBytes((ushort)Entries.Count), 0, root, 12, 2);
-            Buffer.BlockCopy(BitConverter.GetBytes((ushort)BoundsCapacity), 0, root, 14, 2);
-            return Equal(body, 0x10, root) && Equal(body, HashOffset, hashes) && Equal(body, BoundsOffset, bounds);
+            Buffer.BlockCopy(BitConverter.GetBytes((ushort)TargetCapacity), 0, root, 14, 2);
+            return Equal(body, 0x10, root) && Equal(body, HashOffset, hashes) && Equal(body, TargetOffset, bounds);
         }
 
         private static bool Equal(byte[] body, int at, byte[] expected)

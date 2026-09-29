@@ -45,16 +45,16 @@ namespace LibertyFramework.Content
                             {
                                 entries++;
                                 if (hashes.Contains(item.NameHash)) { local++; sameImgWdr++; }
-                                string vtable = "0x" + item.BoundsVtable.ToString("X8");
+                                string vtable = "0x" + item.TargetVtable.ToString("X8");
                                 int n; targetVtables.TryGetValue(vtable, out n); targetVtables[vtable] = n + 1;
                             }
                             if (samples.Count < 30 && reader.Entries.Count > 0)
                             {
                                 samples.Add(new Dictionary<string, object> {
                                     { "archive", relative }, { "bounds", entry.Name }, { "hashArray", Hex(reader.HashOffset) },
-                                    { "targetArray", Hex(reader.BoundsOffset) }, { "count", reader.Entries.Count },
+                                    { "targetArray", Hex(reader.TargetOffset) }, { "count", reader.Entries.Count },
                                     { "localWdrNames", local }, { "hashCapacity", reader.HashCapacity },
-                                    { "targetCapacity", reader.BoundsCapacity }
+                                    { "targetCapacity", reader.TargetCapacity }
                                 });
                             }
                         }
@@ -64,7 +64,7 @@ namespace LibertyFramework.Content
                 catch (Exception error) { if (errors.Count < 30) { errors.Add(relative + ": " + error.Message); } }
             }
             Dictionary<string, object> report = new Dictionary<string, object> {
-                { "question", "Does CE WBD class 0x00695360 consistently contain equal-length name-hash and bounds-target arrays that round-trip?" },
+                { "question", "Does CE WBD class 0x00695360 consistently contain equal-length name-hash and target-pointer arrays that round-trip?" },
                 { "rule", "structure only: counts, names, offsets and target vtable classes; no resource bytes" },
                 { "wbdResources", wbd }, { "ceClass", ce }, { "parsed", parsed }, { "tableRoundTrips", tableRoundTrips },
                 { "entries", entries }, { "sameImgWdrNameHashes", sameImgWdr }, { "targetVtables", targetVtables },
