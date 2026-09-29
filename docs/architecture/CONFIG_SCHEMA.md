@@ -1,4 +1,4 @@
-﻿# Configuration contract
+# Configuration contract
 
 All files are JSON read with `DataContractJsonSerializer`; every field is required (a missing field rejects the file). Invalid edits are logged and the last valid config stays active. Runtime copies live in `scripts/LibertyFramework/config/`.
 
@@ -65,7 +65,7 @@ The `performance` log line every 30 seconds records ScriptHook tick interval p50
 
 Per-episode `state/arsenal_<episode>.json` contains owned-carried IDs, persistent vehicle trunk bins, safehouse stash bins, last safehouse, and last vehicle marker. `JsonStore.Save` writes atomically and maintains `.bak`. A corrupt state file is renamed to `.corrupt_<UTC>` without changing the existing `.bak`, then state starts empty.
 
-Finish colour ramps (`shadowRgb`, `midRgb`, `highlightRgb`, `contrast`, `lift`, `gamma`) per texture role (`diffuse`, `specular`, `icon`) and model variants (`variantModel`, `baseModel`, `sourceImg`, `finish`, `animGroup`, `drawDistance`, `audioMaterial`, `weaponInfoType`, `textureRoles`). Add a finish or a weapon variant here and rerun `tools/package-phase1.ps1`.
+Finish colour ramps (`shadowRgb`, `midRgb`, `highlightRgb`, `contrast`, `lift`, `gamma`) per texture role (`diffuse`, `specular`, `icon`) and model variants (`variantModel`, `baseModel`, `sourceImg`, `finish`, `animGroup`, `drawDistance`, `audioMaterial`, `weaponInfoType`, `textureRoles`). Add a finish or a weapon variant here and rerun `tools/archive/package-phase1.ps1`.
 
 ## holsters.json (T-021)
 

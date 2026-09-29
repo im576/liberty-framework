@@ -29,5 +29,5 @@ Every T-020 gameplay behavior. In particular, confirm the cutscene natives' sema
 
 ## Requests for orchestrator
 
-1. Add `config/arsenal.json` to `tools/package-phase1.ps1` and the install manifest; that script currently copies a fixed file list.
+1. Add `config/arsenal.json` to `tools/archive/package-phase1.ps1` and the install manifest; that script currently copies a fixed file list.
 2. Add a one or two line T-020 entry to `docs/PROJECT_STATE.md` after merge. That file is outside Agent A's ownership.

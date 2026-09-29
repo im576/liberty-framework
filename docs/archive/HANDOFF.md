@@ -1,3 +1,5 @@
+> Historical: this is the original project spec (design intent), kept for reference. Current state is in [../PROJECT_STATE.md](../PROJECT_STATE.md).
+
 # Original project handoff
 
 This is the design brief supplied by the project owner. It is a product specification, not an instruction to implement all features in one task. The current assignment is research and repository setup only.

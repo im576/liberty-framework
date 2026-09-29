@@ -4,7 +4,7 @@ Status: **DONE** (owner confirmed the remaining gameplay checks on 2026-09-24). 
 
 ## Steps and evidence
 
-Follow [setup checklist](../setup/ENVIRONMENT.md). Record exact GTA IV exe version, install channel, FusionFix release/config, ScriptHookDotNet release/file list, controller and Steam Input mapping, aiming settings, launch success/failure, and relevant logs. Check that one vanilla pistol can aim/fire/reload, enter cover, and shoot from a vehicle before adding custom scripts.
+Follow [setup checklist](../../setup/ENVIRONMENT.md). Record exact GTA IV exe version, install channel, FusionFix release/config, ScriptHookDotNet release/file list, controller and Steam Input mapping, aiming settings, launch success/failure, and relevant logs. Check that one vanilla pistol can aim/fire/reload, enter cover, and shoot from a vehicle before adding custom scripts.
 
 ## Tester report — 2026-09-24
 
@@ -31,4 +31,4 @@ The exact community layout title and optional sensitivity details can be added l
 
 ## Completion
 
-Paste the observations and log excerpts in a [playtest report](../testing/PLAYTEST_REPORT_TEMPLATE.md), then set this card `DONE`. An agent may proceed to T-001 only after the baseline is known.
+Paste the observations and log excerpts in a [playtest report](../../testing/PLAYTEST_REPORT_TEMPLATE.md), then set this card `DONE`. An agent may proceed to T-001 only after the baseline is known.

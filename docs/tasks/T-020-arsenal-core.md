@@ -31,7 +31,7 @@ Status: **NEEDS-PLAYTEST** (Codex Agent A, branch `arsenal/core`). Owner decisio
 - Tests: overflow picks least-recently-used; long-gun cap 2 across 4 categories; ownership transitions (purchase window, stash → owned, mission → unowned); bust clears all; death moves only owned to last safehouse; mission gate defers moves; storage JSON round-trip and corrupt-file recovery; LVS owned-file parse on a sample built from the LVS source format.
 - Every native in `native-hashes.csv`, registered and ScriptHook-mapped (verify proves it).
 - `config/arsenal.json` documented in `docs/architecture/CONFIG_SCHEMA.md` (Arsenal section).
-- Human test steps below, status `NEEDS-PLAYTEST`, report in `docs/agent-reports/agent-a.md`.
+- Human test steps below, status `NEEDS-PLAYTEST`, report in `docs/archive/agent-reports/agent-a.md`.
 
 ## Human test steps
 
@@ -50,4 +50,4 @@ Offline evidence: `tools/build.ps1` built 77 sources with zero errors and zero w
 
 ## Integration note
 
-`tools/package-phase1.ps1` currently copies named config files and omits `arsenal.json`. The orchestrator must add it to packaging/install manifests before a playtest. `docs/PROJECT_STATE.md` is outside Agent A's file ownership; orchestrator should add the T-020 entry after merge.
+`tools/archive/package-phase1.ps1` currently copies named config files and omits `arsenal.json`. The orchestrator must add it to packaging/install manifests before a playtest. `docs/PROJECT_STATE.md` is outside Agent A's file ownership; orchestrator should add the T-020 entry after merge.

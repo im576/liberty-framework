@@ -5,7 +5,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $game = (Resolve-Path -LiteralPath $GameDirectory).Path
-$repoRoot = Split-Path -Parent $PSScriptRoot
+$repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $base = Join-Path $game 'common\data\WeaponInfo.xml'
 $stageDirectory = Join-Path $repoRoot 'staging\t007'
 $stageXml = Join-Path $stageDirectory 'WeaponInfo.xml'

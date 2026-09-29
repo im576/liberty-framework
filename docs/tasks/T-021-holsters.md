@@ -34,7 +34,7 @@ Evidence: `verification-results/results/20260929-142632-0d849f0/`.
 
 ## Acceptance (offline)
 
-Build/verify green; tests in `tools/verify/FeelChecks.cs` for slot mapping, hide rules, and `holsters.json` validation; config documented in `CONFIG_SCHEMA.md`; human test steps (per slot: is it visible, placed well, hidden in hand/vehicle/cutscene, gone after death/bust/reload); report in `docs/agent-reports/agent-b.md`.
+Build/verify green; tests in `tools/verify/FeelChecks.cs` for slot mapping, hide rules, and `holsters.json` validation; config documented in `CONFIG_SCHEMA.md`; human test steps (per slot: is it visible, placed well, hidden in hand/vehicle/cutscene, gone after death/bust/reload); report in `docs/archive/agent-reports/agent-b.md`.
 
 ## Human test steps
 

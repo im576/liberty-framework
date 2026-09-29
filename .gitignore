@@ -30,3 +30,6 @@ __pycache__/
 # tools/verify-local.ps1: remembered settings and local results (pushed to verification-results, never committed here)
 tools/verify-local.settings.json
 results-local/
+
+# Per-user Claude Code settings
+.claude/settings.local.json

@@ -5,7 +5,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $game = (Resolve-Path -LiteralPath $GameDirectory).Path
-$repoRoot = Split-Path -Parent $PSScriptRoot
+$repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $exe = Join-Path $game 'GTAIV.exe'
 $base = Join-Path $game 'common\data\WeaponInfo.xml'
 $fusionConfig = Join-Path $game 'plugins\GTAIV.EFLC.FusionFix.ini'

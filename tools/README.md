@@ -1,110 +1,49 @@
-# Build and deployment tooling
+# Tools index
 
-## Cloud build container (Claude Code on the web)
+Run everything from the repository root in PowerShell. The GTA IV folder is `<GTAIV>` (the one containing `GTAIV.exe`);
+close the game before anything that installs or rolls back.
 
-Cloud sessions have no game and no Windows, but they build and test everything that needs neither.
+## Build
 
-- **Setup:** `.claude/hooks/session-start.sh` runs `tools/cloud/setup.sh` at session start. It installs mono, PowerShell 7,
-  the pinned Roslyn and llvm-mingw, the hash-pinned ScriptHookDotNet compile reference (outside the repository, never
-  committed) and Blender 5.2.2 as the `bpy` Python module, then writes `tools/toolchains.local.json`. Idempotent; a step
-  it cannot finish is listed in `/opt/liberty-toolchains/setup-status.txt` and never fails the session.
-- **Tests:** `tools/cloud/test-all.sh` runs every offline check and prints a PASS / FAIL / NOT-RUN table:
-  C# build, native core and its unit tests, content compiler and self-test, `verify.ps1 -NoGame`, Blender manifest
-  validation, Blender headless tests with `--no-game`, the PowerShell unit tests and the local check queue.
-- **Differences from the PC, on purpose:** .NET programs run under Mono; native unit tests run as 32-bit host programs
-  (`clang++ -m32`) because the game-target `.exe` cannot run; `verify.ps1 -NoGame` reports the sections that read
-  `GTAIV.exe` or game archives, and the section that executes x86 hook code, as NOT-RUN; the Blender tests export and
-  validate instead of building (builds need the game's template archives). Everything NOT-RUN here is covered on the
-  PC by `tools/verify-local.ps1` (see `docs/workflow/CLOUD_LOCAL_LOOP.md`).
+- `get-toolchains.ps1 -Directory <outside repo>`: downloads the pinned Roslyn (C# 7.3) and llvm-mingw; writes the git-ignored `toolchains.local.json` (`toolchains.ps1` reads it).
+- `build.ps1 -ScriptHookDotNetReference <ScriptHookDotNet.asi>`: builds `LibertyFramework.net.dll` (warnings are errors).
+- `build-core.ps1`: builds `native/LibertyCore/bin/LibertyCore.dll` (32-bit C++20).
+- `build-content.ps1`: builds the content compiler `tools/content/bin/LibertyContent.exe`. `build-finishes.ps1` and `generate-presets.ps1` are the old gold-finish and preset generators.
 
+## Verify
 
-## Local verification on the PC (`tools/verify-local.ps1`, T-029)
+- `verify.ps1 -GameDirectory <GTAIV>` (or `-NoGame` in the cloud): offline verifier (resolvers vs disassembly, natives, config and logic tests, SDK examples). Sources in `tools/verify/`.
+- `tools/tests/Run-Tests.ps1`: PowerShell unit tests for the autopilot and the local verifier against a simulated game.
 
-With GTA IV closed, on branch `develop`: `./tools/verify-local.ps1 -Smoke -GameDirectory '<GTAIV folder>'` the first
-time, then `./tools/verify-local.ps1`. It runs every check in `tests/local/checks.json` (builds, the full verifier,
-probes, package and install with a backup, autopilot scenarios, then the manual checks it asks you about), keeps or
-restores the install, and pushes the results to the `verification-results` branch. Settings are remembered in the
-git-ignored `tools/verify-local.settings.json`; results stay in `results-local/`. Options, order and the review
-procedure: [CLOUD_LOCAL_LOOP.md](../docs/workflow/CLOUD_LOCAL_LOOP.md). The plan for the owner:
-[LOCAL_VERIFICATION_PLAN.md](../docs/testing/LOCAL_VERIFICATION_PLAN.md).
+## Package, install, rollback
 
-## Performance capture (T-026)
+- `package-phase2.ps1` builds the whole stack (DLL, core, models, config) into `staging/phase2`; `install-phase2.ps1 -GameDirectory <GTAIV>` installs it with a backup; `rollback-phase2.ps1` restores the newest backup; `test-phase2-install.ps1` dry-runs install and rollback on a mock game folder.
+- Optional companions: `install-violent-liberty.ps1` / `rollback-violent-liberty.ps1` (owner-downloaded archive, hash-checked), `install-weapon-pack.ps1` / `rollback-weapon-pack.ps1` (Realistic Weapon Overhaul), `install-mood.ps1` (timecycle from `config/mood.json`, `-Restore` undoes it).
 
-With GTA IV running and a save loaded, open **PowerShell as Administrator** and run `./tools/capture-performance.ps1 -Label baseline-street -Seconds 120` from the repository root. The script uses the portable PresentMon CLI staged at `D:\GTAIV-Reborn-Tools\downloads\PresentMon-2.6.0-x64.exe` and writes a timestamped CSV under `D:\GTAIV-Reborn-Tools\captures`. Use `-PresentMonPath` and `-OutputDirectory` to override those locations. See [T-026](../docs/tasks/T-026-performance-visual-baseline.md) for the complete test sequence.
+## Cloud tests
 
-## Optional Violent Liberty visual companion (T-022)
+`.claude/hooks/session-start.sh` runs `cloud/setup.sh` (mono, PowerShell 7, Roslyn, llvm-mingw, Blender `bpy`). `cloud/test-all.sh` runs every offline check and prints PASS / FAIL / NOT-RUN. Anything NOT-RUN is covered on the PC by the local verifier. Details: [CLOUD_LOCAL_LOOP.md](../docs/workflow/CLOUD_LOCAL_LOOP.md).
 
-With GTA IV closed, build the DLL, then run `./tools/install-violent-liberty.ps1 -GameDirectory '<GTAIV folder>' -ArchivePath '<owner-downloaded Violent Liberty zip>'`. The installer accepts only the inspected archive hash, checks GTA IV 1.2.0.59, backs up each touched file, installs the user's ASI/INI/WTD into the game, updates the DLL, sets `bloodVisualMode=external`, and selects Vulkan in both graphics config files. It prints a backup path. To restore exact prior files while the game is closed: `./tools/rollback-violent-liberty.ps1 -GameDirectory '<GTAIV folder>' -BackupDirectory '<printed backup path>'`. Neither third-party binary nor its texture archive enters Git. Follow [the companion playtest](../docs/testing/PHASE2_PLAYTEST.md#7d-violent-liberty-companion-visual-test).
+## Local verification on the PC
 
-The install preserves existing `combat_effects.json` values and fills in newly added fields from the repository default. It tunes the owner's installed Violent Liberty INI with [violent_liberty_tuning.json](../config/violent_liberty_tuning.json); the original INI is backed up. The new profile selects stronger head/neck bleeding, a longer fatal flow and more frequent shotgun body runoff. These settings take effect on game restart.
+`verify-local.ps1 [-Smoke] [-GameDirectory <GTAIV>]` runs every check in `tests/local/checks.json` (builds, verifier, probes, package and install with backup, autopilot scenarios, manual checks) and pushes results to the `verification-results` branch. Settings: git-ignored `verify-local.settings.json`; results: `results-local/`. Code in `local/VerifyLocal.psm1`; `checks/checks.py` validates the queue and regenerates [LOCAL_VERIFICATION_PLAN.md](../docs/testing/LOCAL_VERIFICATION_PLAN.md).
 
-T-001 is a load/log/reload probe only. It has no gameplay changes. The build uses the Windows .NET Framework compiler already installed on the tester's machine. The project targets .NET Framework 4.0 and x86; in-game load and reload were verified on 2026-09-24.
+## Content, models, Blender
 
-1. Download [Tomasak's v1.7.1.8 release](https://github.com/Tomasak/gta4_scripthookdotnet/releases/tag/release): `scripthookdotnet_v1.7.1.8.zip`. Expected SHA256: `5669E4423F93BEDFB0AE34579E922213775B46BBEE4DB6ADC953CB53E7AD9058`.
-2. From the repository root, build with `./tools/build.ps1 -ScriptHookDotNetReference <path-to-extracted-ScriptHookDotNet.asi>`. This writes `src/LibertyFramework/bin/Release/LibertyFramework.net.dll`. The runtime binary is a local compiler reference and is not committed.
-3. After closing GTA IV, run `./tools/deploy-t001.ps1 -GameDirectory <path-containing-GTAIV.exe> -RuntimeArchivePath <path-to-release-zip>`. It verifies the game version and archive hash, checks for existing files, then installs only the three required runtime files and the probe DLL. It does not copy upstream examples or alter FusionFix.
-4. Launch through Steam and follow [T-001 human test steps](../docs/tasks/T-001-runtime-spike.md).
+- `content/` is the Liberty Content Compiler (`LibertyContent`: build, validate, probes, selftest); see [docs/content](../docs/content/README.md).
+- `models/` builds `LibertyModel.exe` (read/write GTA IV drawables; `export`, `survey`, `selftest`); see [ModelFormat.md](../docs/research/ModelFormat.md). `finishes/`, `ui/`, `mood/`, `vehicles/` are smaller asset helpers.
+- `blender/`: the Liberty Exporter add-on. `blender/run-tests.ps1 -Blender <blender.exe>` runs its headless tests; `blender/make-examples.ps1` regenerates examples and fixtures. See [BLENDER.md](../docs/content/BLENDER.md).
 
-On this machine the game directory is `D:\SteamLibrary\steamapps\common\Grand Theft Auto IV\GTAIV`. No absolute machine path is baked into the scripts.
+## Autopilot
 
-## T-002 config probe
+`Import-Module tools/autopilot/Autopilot.psm1`, then `Test-Boot`, `Start-GameReady`, `Invoke-EngineCommand`, `Save-Screenshot`. `autopilot/Run-Scenario.ps1 -GameDirectory <GTAIV> -Scenario tools/autopilot/scenarios/<name>.txt -OutputDirectory <runs>` runs one scenario; `Run-Suite.ps1` runs many and exits 1 unless all pass. Each run writes `report.md` and `result.json` and prints `AUTOPILOT_RESULT <path>`; statuses are PASS, NEEDS-REVIEW, FAIL, CRASH, ERROR. Scenario lines are engine commands (`lf help`) plus `wait`, `shot`, `expect`, `key`. Screenshots use Steam F12 (GDI is black under Vulkan). Decision logic: `autopilot/AutopilotLogic.psm1`.
 
-Run the same build command above to compile the T-002 source. After GTA IV closes, deploy with `./tools/deploy-t002.ps1 -GameDirectory 'D:\SteamLibrary\steamapps\common\Grand Theft Auto IV\GTAIV'`. When the installed DLL differs, the installer backs it up; it preserves the first `LibertyFramework.net.dll.t001.bak` backup on later deployments. It installs the new DLL and copies `config/probe.json` into `scripts/LibertyFramework/config/probe.json` only if that file does not exist. It leaves ScriptHookDotNet and FusionFix untouched. Follow the exact [T-002 human test steps](../docs/tasks/T-002-config-logging.md). Do not copy the new DLL into a running game.
+## Ops
 
-For the remaining live reload test, launch GTA IV once and load gameplay, then run `./tools/test-t002-live.ps1 -GameDirectory 'D:\SteamLibrary\steamapps\common\Grand Theft Auto IV\GTAIV'` from the repository root. The script waits for the valid edit, malformed edit, and recovery log events, and restores the original config even if a check fails. Keep gameplay active until it finishes and report whether the game remained responsive. The script changes only `probe.json`; it does not redeploy the DLL.
+- `capture-performance.ps1 -Label <name> -Seconds 120` (PowerShell as Administrator, needs PresentMon): frame-time capture, see [T-026](../docs/tasks/T-026-performance-visual-baseline.md).
+- `install-dxvk-gplasync.ps1` / `rollback-dxvk-gplasync.ps1`: optional async-shader DXVK build (inspected archive hashes only, files backed up).
+- Violent Liberty: `install-violent-liberty.ps1 -GameDirectory <GTAIV> -ArchivePath <zip>` prints a backup path for `rollback-violent-liberty.ps1 -BackupDirectory`. Third-party binaries never enter Git.
 
-## T-003 DevTools menu
+## Archive
 
-Build with the same command. The DLL adds a controller menu script. The first version opened the phone when D-pad navigation was used. The revised build temporarily disables player controls while the menu is open and restores them on close, error, or script-domain unload. The owner verified that controller navigation, phone suppression, and normal control restoration worked. The guarded `deploy-t002.ps1` command backs up the installed DLL and preserves the current config. Do not copy a DLL while GTA IV is running.
-
-## T-007 custom weapon identity probe
-
-`./tools/prepare-t007.ps1 -GameDirectory '<GTAIV folder>'` generates an ignored, local-only `staging/t007/WeaponInfo.xml` by cloning the installed vanilla pistol, M4, and pump shotgun entries as `LF_GOLD_PISTOL`, `LF_GOLD_CARBINE`, and `LF_GOLD_SHOTGUN`. The models and stats remain vanilla for identity testing. The live pistol test selected custom ID 58; the vanilla pistol disappeared from the handgun inventory. The owner verified the menu switch and total-ammo transfer. A pistol-only XML is already installed on the tester's machine; do not rerun `deploy-t007.ps1` against the existing override. The installer refuses to overwrite an existing weapon override or install while the game runs. `remove-t007.ps1` removes only a hash-matching T-007 override while the game is closed. See [T-007](../docs/tasks/T-007-weapon-slots.md) for findings.
-
-For the next identity expansion, `prepare-t007.ps1` now stages three cloned entries: pistol, M4 carbine, and pump shotgun. The local menu build includes the added guarded actions. While the game is closed, first upgrade the existing hash-matching weapon override with `upgrade-t007.ps1`, then deploy the rebuilt DLL with `deploy-t002.ps1`. The upgrade keeps a backup of the pistol-only XML and updates the receipt hash. The original `common/data/WeaponInfo.xml` is untouched. See [T-007](../docs/tasks/T-007-weapon-slots.md) for the next playtest.
-
-## Phase 1 (T-010) — build, verify, package, install, rollback
-
-All steps except install/rollback are read-only on the game folder and safe while GTA IV runs.
-
-| Step | Command |
-|---|---|
-| Build DLL | `./tools/build.ps1 -ScriptHookDotNetReference <ScriptHookDotNet.asi>` (all `src/LibertyFramework/**/*.cs`, warnings are errors) |
-| Offline verification | `./tools/verify.ps1 -GameDirectory <GTAIV>` — resolver vs disassembly, native registration and ScriptHook.dll name→CE hash mapping, config/logic tests |
-| Gold finish | `./tools/build-finishes.ps1 -GameDirectory <GTAIV>` — reads `weapons.img`, writes `staging/phase1/update/...` and PNG previews |
-| Presets | `./tools/generate-presets.ps1` — regenerate `config/presets` from `config/gunplay.json` |
-| Package | `./tools/package-phase1.ps1 -GameDirectory <GTAIV> -ScriptHookDotNetReference <asi>` — runs all of the above, writes `staging/phase1/manifest.json` |
-| Install (game closed) | `./tools/install-phase1.ps1 -GameDirectory <GTAIV>` — checks, backs up to `scripts/LibertyFramework/backups/phase1-*`, installs, hash-verifies |
-| Rollback (game closed) | `./tools/rollback-phase1.ps1 -GameDirectory <GTAIV>` — restores the newest phase1 backup |
-
-Installed files: `scripts/LibertyFramework.net.dll`, `scripts/LibertyFramework/config/{gunplay.json,presets/*.json,devtools/locations.json}`, `update/common/data/{WeaponInfo.xml,default.dat,lf_finishes.ide}`, `update/LibertyFramework/LibertyFramework.img`. `default.dat` is the installed Various Pedestrian Actions copy plus one `IDE common:/data/lf_finishes.ide` line; `WeaponInfo.xml` is the T-007 file with `LF_GOLD_PISTOL` using model `lf_gold_pistol`. The superseded `deploy-t00x`/`upgrade-t007` scripts remain for history only.
-
-## Toolchains, engine core and autopilot (ADR-0006)
-
-- **Toolchains:** `./tools/get-toolchains.ps1 -Directory <folder outside the repo>` downloads the pinned Roslyn compiler (C# 7.3) and llvm-mingw clang. It records their paths in the git-ignored `tools/toolchains.local.json`. `build.ps1` and `build-core.ps1` read them from there.
-- **Engine core:** `./tools/build-core.ps1` builds `native/LibertyCore/bin/LibertyCore.dll` (32-bit, C++20, warnings are errors). Packaging stages it to `scripts/LibertyFramework/bin/`.
-- **Autopilot:** `Import-Module tools/autopilot/Autopilot.psm1`, then `Test-Boot`, `Start-GameReady`, `Invoke-EngineCommand` and `Save-Screenshot`.
-  - It launches through Steam and retries the known early startup crash (MTLX.DLL), cleaning up the Rockstar helpers left behind.
-  - Screenshots use Steam's F12 capture, because GDI capture is black under Vulkan.
-- **Scenarios:** `./tools/autopilot/Run-Scenario.ps1 -GameDirectory <GTAIV> -Scenario tools/autopilot/scenarios/<name>.txt -OutputDirectory <runs folder>` runs a scenario. Scenario lines are engine commands (`lf help` lists them) plus `wait`, `shot`, `expect` and `key`. Each run writes a `report.md` with every step, screenshots and the run's log.
-- **Results you can trust:** each run also writes `result.json`, and its last output line is `AUTOPILOT_RESULT <path>`.
-  Statuses: PASS, NEEDS-REVIEW (passed, but `[ERROR]` log lines appeared), FAIL, CRASH (the game exited, even after the
-  last step), ERROR (no launch, nothing executed). `expect` only accepts log lines written after the latest command was
-  sent (a line count, not a clock), and never a command's own log line unless the pattern needs its reply. A refused
-  command, a missing screenshot or an unparseable `expect` fails the step. `Run-Suite.ps1` reads each `result.json`,
-  continues after a broken scenario, and exits 1 unless everything passed. The decisions live in
-  `tools/autopilot/AutopilotLogic.psm1` and are tested in the cloud against a simulated game (`tools/tests`).
-
-## Model pipeline (T-2)
-
-`tools/models` compiles to `LibertyModel.exe`, which reads and writes GTA IV drawables. `package-phase2.ps1` builds and runs it: first the round-trip self-test, then `sling config/models/sling.json`. The generated `LibertyModels.img`, `lf_models.ide` and a `default.dat` with one added IDE line are staged with the other Phase 2 files.
-
-To inspect a model by hand, use `LibertyModel export <game> <archive> <model.wdr> out.obj`. It also writes a PNG preview. `survey` and `selftest` validate whole archives. See [ModelFormat.md](../docs/research/ModelFormat.md).
-
-## Optional DXVK GPLAsync (T-026)
-
-- **Install:** with GTA IV closed, run `./tools/install-dxvk-gplasync.ps1 -GameDirectory '<GTAIV folder>' -DxvkArchivePath '<DXVK 2.6.2 GPLAsync ... FusionFix zip>' -ShaderCacheArchivePath '<FusionFix 5.0 - Shader Cache zip>'`.
-- **What it does:** replaces FusionFix's stock DXVK `vulkan.dll` with the asynchronous-shader build and writes `dxvk.conf` (async on, 2 compiler threads for a 4-thread CPU, frame latency 1). It also adds the prebuilt `GTAIV.dxvk-cache`.
-- **Safety:** only the inspected archive hashes are accepted, and every touched file is backed up.
-- **Rollback:** `./tools/rollback-dxvk-gplasync.ps1 -GameDirectory '<GTAIV folder>' -BackupDirectory '<printed backup path>'`.
-- **Checks after install:** Violent Liberty's log line `DXVK mesh path: ...` shows whether it keeps its validated 2.6.2 path or uses its safe fallback. The DXVK log header should read `v2.6.2-1-gplasync`.
+One-shot Phase 1 scripts (T-001/T-002/T-007 deploys, Phase 1 package/install/rollback, SSD moves) live in [archive/](archive/README.md).

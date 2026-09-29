@@ -6,7 +6,7 @@ Controller names: Cross = A, Circle = B. DevTools: hold **L3+R3** (or **F10**). 
 
 1. Save and quit GTA IV completely.
 2. Back up: copy `...\GTAIV\scripts` and `...\GTAIV\update` to a safe folder.
-3. In PowerShell from the repo folder: `.\tools\install-phase1.ps1 -GameDirectory 'D:\SteamLibrary\steamapps\common\Grand Theft Auto IV\GTAIV'`. It refuses to run while the game is open, checks the files it was built from, backs up everything it replaces under `scripts\LibertyFramework\backups\phase1-<time>\`, and verifies hashes. Expect "Phase 1 installed and verified".
+3. In PowerShell from the repo folder: `.\tools\archive\install-phase1.ps1 -GameDirectory 'D:\SteamLibrary\steamapps\common\Grand Theft Auto IV\GTAIV'`. It refuses to run while the game is open, checks the files it was built from, backs up everything it replaces under `scripts\LibertyFramework\backups\phase1-<time>\`, and verifies hashes. Expect "Phase 1 installed and verified".
 
 ## 1. Startup (log: `scripts\LibertyFramework\logs\LibertyFramework.log`)
 
@@ -70,7 +70,7 @@ For each numbered section: pass / fail / notes. Attach `scripts\LibertyFramework
 
 ## Rollback (game closed)
 
-`.\tools\rollback-phase1.ps1 -GameDirectory 'D:\SteamLibrary\steamapps\common\Grand Theft Auto IV\GTAIV'` restores every replaced file from the newest phase1 backup and removes added files. If the script cannot run, copy back the `scripts` and `update` folders you saved in step 0. Afterwards check Settings > Controls > Auto-Aim once (LF restores it automatically, but a crash during the session could have left it Off).
+`.\tools\archive\rollback-phase1.ps1 -GameDirectory 'D:\SteamLibrary\steamapps\common\Grand Theft Auto IV\GTAIV'` restores every replaced file from the newest phase1 backup and removes added files. If the script cannot run, copy back the `scripts` and `update` folders you saved in step 0. Afterwards check Settings > Controls > Auto-Aim once (LF restores it automatically, but a crash during the session could have left it Off).
 
 ## 11. Agent B Feel and Presentation extension (T-011/T-013/T-014/T-016/T-017/T-021)
 

@@ -8,7 +8,7 @@ Which .NET target/platform/C# language level actually loads? Where do logs go? D
 
 ## Deliverables
 
-Minimal source and project file; reproducible build/deploy commands in [tools/README.md](../../tools/README.md); dependency sourcing; exact build output; startup/reload log sample after human test; updated [ADR-0001](../architecture/decisions/ADR-0001-runtime.md). Do not vendor ScriptHookDotNet binaries.
+Minimal source and project file; reproducible build/deploy commands in [tools/README.md](../../../tools/README.md); dependency sourcing; exact build output; startup/reload log sample after human test; updated [ADR-0001](../../architecture/decisions/ADR-0001-runtime.md). Do not vendor ScriptHookDotNet binaries.
 
 Build result on 2026-09-24: Windows .NET Framework C# compiler produced `LibertyFramework.net.dll` for x86 with **zero errors and zero warnings**. Its .NET Framework 4.0 project file also built with zero errors and one warning (the 4.0 targeting pack is absent, so MSBuild used installed framework assemblies). The compiler script is the reproducible build path.
 

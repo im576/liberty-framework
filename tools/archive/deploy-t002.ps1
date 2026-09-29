@@ -5,7 +5,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $game = (Resolve-Path -LiteralPath $GameDirectory).Path
-$repoRoot = Split-Path -Parent $PSScriptRoot
+$repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $exe = Join-Path $game 'GTAIV.exe'
 $sourceDll = Join-Path $repoRoot 'src\LibertyFramework\bin\Release\LibertyFramework.net.dll'
 $sourceConfig = Join-Path $repoRoot 'config\probe.json'

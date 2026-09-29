@@ -7,7 +7,7 @@ param(
 # the files it was built from are unchanged, backs up every file it replaces into
 # scripts\LibertyFramework\backups\phase1-<timestamp>\ with a rollback manifest, then verifies hashes.
 $ErrorActionPreference = 'Stop'
-$repoRoot = Split-Path -Parent $PSScriptRoot
+$repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $game = (Resolve-Path -LiteralPath $GameDirectory).Path
 $stage = Join-Path $repoRoot 'staging\phase1'
 $manifest = Get-Content -LiteralPath (Join-Path $stage 'manifest.json') -Raw | ConvertFrom-Json

@@ -6,23 +6,25 @@ Read this whole file before doing anything. It is short on purpose.
 ## 1. Read these first, in this order
 
 1. `AGENTS.md` (this file)
-2. `docs/PROJECT_STATE.md` — what is done, what is verified, what is blocked
+2. `docs/PROJECT_STATE.md` — short dashboard: current phase, engine component status, decisions (history: `docs/archive/`)
    - In a cloud session (Claude Code on the web): also `docs/workflow/CLOUD_LOCAL_LOOP.md` — how work is built in the
      cloud, queued for the owner's PC and verified there. `tools/cloud/test-all.sh` runs every offline check.
    - Asked to "do the next session": `docs/workflow/NEXT_SESSIONS.md`.
-3. The task card you were given, in `docs/tasks/` (e.g. `docs/tasks/T-003-devtools-menu.md`)
-4. Only the docs that task card links to. Do not read the whole repo.
+3. The task card you were given, in `docs/tasks/` (e.g. `docs/tasks/T-033-world-objects.md`); finished cards are in `docs/archive/tasks/`
+4. `docs/workflow/CLOUD_LOCAL_LOOP.md` (cloud sessions build and test offline; the owner's PC verifies through `tests/local/checks.json`) and `docs/workflow/NEXT_SESSIONS.md`, if your work queues game checks\n5. Only the docs that task card links to. Do not read the whole repo.
 
-If you were not given a task card: open `docs/tasks/README.md`, pick the **first** task whose
+If you were not given a task card: open `docs/tasks/README.md`, pick the first active task whose
 status is `READY` and whose dependencies are all `DONE`. Tell the human which one you picked.
 
 ## 2. What this project is (one paragraph)
 
-A modern gunplay framework for **GTA IV: The Complete Edition, exe 1.2.0.59**, running on top of
-**FusionFix** and **ScriptHookDotNet** (C#). Phase 1 = three gold test weapons (pistol, carbine,
-pump shotgun) with free aim, data-driven recoil, a clean spread crosshair, and a controller-first
-developer menu ("Liberty DevTools") with live tuning, teleports, and a debug overlay.
-Full original spec: `docs/HANDOFF.md`. Architecture: `docs/architecture/OVERVIEW.md`.
+The **Liberty engine** for **GTA IV: The Complete Edition, exe 1.2.0.59**, running on top of **FusionFix** and
+**ScriptHookDotNet** (C#): a native core (`native/LibertyCore`), a public SDK (`sdk/`), a content compiler and Blender
+add-on (`tools/content`, `tools/blender`), hot reload, and an autopilot that launches the game and runs scenarios. The
+Phase 1/2 gameplay work (gold test weapons with free aim, recoil, crosshair, Arsenal, holsters/slings, trunk, gore, the
+"Liberty DevTools" menu) is finished and kept as reference modules. Next: the first complex mod built on the engine;
+then Phase 3, reverse engineering toward FiveM-level control. Current state: `docs/PROJECT_STATE.md`. Original spec
+(historical): `docs/archive/HANDOFF.md`. Architecture: `docs/architecture/OVERVIEW.md`, `docs/architecture/ENGINE.md`.
 
 ## 3. Hard rules (never break these)
 
@@ -67,7 +69,7 @@ Full original spec: `docs/HANDOFF.md`. Architecture: `docs/architecture/OVERVIEW
 | Native core | `native/LibertyCore` (C++20, clang/llvm-mingw, 32-bit) loaded by the engine; see ADR-0006 and `docs/architecture/ENGINE.md` |
 | Structure | One SHDN script (`Engine.EngineHost`); every feature is a `[Module]` class. New features must be modules, not `GTA.Script` subclasses |
 | In-game testing | `tools/autopilot` launches the game and runs scenarios; add a scenario for each new mechanic |
-| Output | `LibertyFramework.net.dll` copied to `<GTA IV>\scripts\` |
+| Output | `LibertyFramework.net.dll` in `<GTA IV>\scripts\`; `LibertyCore.dll` in `scripts\LibertyFramework\bin\`; installed by `tools/install-phase2.ps1` or the local verifier |
 | Config | JSON files in `config/`, deployed to `<GTA IV>\scripts\LibertyFramework\config\` |
 | Logs | `<GTA IV>\scripts\LibertyFramework\logs\LibertyFramework.log` |
 

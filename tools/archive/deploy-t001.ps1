@@ -9,7 +9,7 @@ $ErrorActionPreference = 'Stop'
 $game = (Resolve-Path -LiteralPath $GameDirectory).Path
 $archivePath = (Resolve-Path -LiteralPath $RuntimeArchivePath).Path
 $exe = Join-Path $game 'GTAIV.exe'
-$probe = Join-Path (Split-Path -Parent $PSScriptRoot) 'src\LibertyFramework\bin\Release\LibertyFramework.net.dll'
+$probe = Join-Path (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)) 'src\LibertyFramework\bin\Release\LibertyFramework.net.dll'
 $expectedArchiveHash = '5669E4423F93BEDFB0AE34579E922213775B46BBEE4DB6ADC953CB53E7AD9058'
 $runtimeFiles = @('aCompleteEditionHook.asi', 'ScriptHook.dll', 'ScriptHookDotNet.asi')
 

@@ -1,0 +1,225 @@
+# Project State
+
+Update this file at the end of every task. Newest entries at the top of each section.
+Keep it short: this is a dashboard, not a diary.
+
+## Current phase
+
+**Latest focused run (2026-09-29, `0d849f0`):** hot reload passed 24/24 and SDK selftest 49/49 again.
+Sling failed 1/41 steps: its first survival check found a player already dead before scenario setup. Later captures
+show two slung long guns after respawn, away from the intended park. A bounded SDK coroutine now waits for a live
+player before teleport, and the scenario checks teleport completion and survival before screenshots. This rerun is
+pending. All 42 install actions were independently restored with zero mismatches. Trunk navigation, storage and menu
+closure remain proven by `6931061`; the lid was partly obscured. Performance remains open.
+
+**Collision test setup correction:** the visual `spawnprop` helper disabled collision even in collision scenarios.
+It now accepts explicit `on|off`; `raycast-objects` and `collision-borrow` request `on` and check the logged request.
+This removes a test confound. Missing bounds resources, runtime pairing and object ray proof remain open.
+
+**Empty encrypted archives:** Windows decoded all five recurring IMG errors as version 3, count 0, table bytes 0.
+At `0d849f0`, engine/content builds pass, content selftest is 360/360 and verifier simulation is 47/47.
+The WBD probe now opens the empty archives with zero errors.
+
+**Drawable diagnostic (`3a131d7`):** Windows content selftest passes 364/364. Bronx retains 105/187 identical,
+82 different and zero archive errors. The static/external-texture subset is 91/95 identical, four failures;
+81 embedded, ten skeleton and one combined case are excluded from that subset, while broad totals remain intact.
+Targeted layouts of the four static failures are next. Writer allocation is unchanged. The authored two-material
+fixture compiles with `structure`, template `bronx_e.img/big_fence2_bxe`, two geometries/textures and empty readback.
+It is now packaged and queued for report and in-game material review; rendering remains unverified.
+
+**Focused runtime follow-up (2026-09-29):** `14010f6` installed and restored; no scenario crashed. Sling scripted
+checks passed, but the images establish one rifle/strap. Hot reload released owned invincibility as designed, then
+the unprotected player died during self-test (48/49); trunk missed its short initial interaction press. Scenarios
+now reacquire protection, grant separate shotgun/rifle slots and lengthen E. Teleport stage logs target the separate
+30-second setup stall. All revised checks remain pending. See [Windows report](../reports/2026-09-28-windows-verification.md).
+
+**First Windows verification (2026-09-28, Codex; [report](../reports/2026-09-28-windows-verification.md)): foundation still open.** Smoke passed build, install and SDK self-test (49/49), with rollback hash checks. The full 54-check queue recorded 12 PASS, 10 NEEDS-REVIEW, 12 FAIL, 1 CRASH and 19 NOT-RUN. Drawables roundtripped 5,254/12,688 eligible files; no parsed WDR had multiple LOD slots; collision inventory found no same-named WDR/WBN pair, so the automatic borrowed-collision assets had no bounds. The wall placed visibly but its ray missed. The stress crash followed an invalid pavement-snap coordinate. Work proceeds from these measured findings. PR #7 merged into `develop` on 2026-09-29 (`44dbbd0`); release promotion to `main` remains open.
+
+**Focused Windows fixes (2026-09-28, Codex):** commit `762fd62` built and passed 834 offline verifier checks and 345 content self-test checks. WTD roundtrip is now 68/68 byte-identical compressed dictionaries. The 25-ped GTA IV scenario completed 18/18 steps without a crash, but logged a 5,013 ms setup stall and remains NEEDS-REVIEW. The verifier restored all 42 installed-file actions. See the focused runs in the report above.
+
+**Collision follow-up (2026-09-29):** `PROBE-collision-links` built and passed 347/347 content self-tests on Windows. It found 3,564 WBD words matching same-IMG WDR name hashes (eight in WBN), including a twelve-word consecutive run in `bronx_e.wbd`. This supports a WBD name-hash table, but Session 5b still needs a proven hash-to-bounds association, a bounds class roundtrip and an in-game pairing test. The read-only report is under `verification-results/results/20260929-a61fdfe-collision-links/`.
+
+**WBD table reader (2026-09-29):** root class `0x00695360` contains index-aligned name-hash and structured-target arrays. The reader validated 309/309 available CE WBDs and 3,239 entries; its known table fields round-tripped in all 309, and the content self-test passed 354/354. Target shapes, full resource roundtrip and runtime collision pairing remain open. Evidence: `verification-results/results/20260929-70e7fd4-wbd-structure/`.
+
+**Integration:** PR #7 is merged into `develop` (`44dbbd0`). Follow-up verification fixes and research are in draft PR #8. Neither the foundation release nor `main` has been promoted.
+
+**Sessions 4b, 5 and 6 (2026-09-26, Claude; [T-031](../tasks/T-031-structure-writer.md), [T-032](../tasks/T-032-collision.md), [T-033](../tasks/T-033-world-objects.md)): offline checks pass; NEEDS-PLAYTEST.**
+- **4b:** the structure writer is now chosen automatically for multi-material assets. Single-geometry assets keep the v1 build proven in game.
+- **5:** `probe bounds` measures collision layouts, and borrowed collision (a vanilla prop's own bounds under our model's name) is the C4–C6 experiment. The authored-collision writer waits for the probe reports (session 5b).
+- **6:** type-object assets build, and the new SDK mod `mods/Liberty.World` places them from `config/world/objects.json` (test wall at East Park).
+- **Evidence:** test-all 11/11; content self-test 344; verifier 242; Blender 86 passed / 9 NOT-RUN. Queued: PROBE-bounds-layout, T032-*, T033-*.
+
+**Content compiler structure writer (2026-09-26, Claude, session 4, [T-031](../tasks/T-031-structure-writer.md)): offline checks pass; NEEDS-PLAYTEST, opt-in.**
+- **Built:** `drawableWriter: "structure"` writes every LOD and one geometry per material into a game drawable of the same or larger structure. It trims the rest and never synthesises structures (their sizes are not established). The default stays v1. `LibertyContent roundtrip` tests the writer against the game's own drawables. Test post `lf_lod_post` (4 LODs, colour per LOD), scenario `lod-review`, and the probe now lists structure templates.
+- **Evidence:** content self-test 308/308 (synthetic drawables, mutations caught), offline dry build of `lf_lod_post` ok, Blender 83 passed / 9 NOT-RUN, PowerShell 109. Queued: `T031-drawable-roundtrip`, `T031-lod-post-report`, `T031-lod-review`, `PROBE-drawables`.
+
+**Content compiler authoring side (2026-09-26, Claude, session 3 of [NEXT_SESSIONS](../workflow/NEXT_SESSIONS.md), [T-030](../tasks/T-030-lcc-authoring-side.md)): offline checks pass; NEEDS-PLAYTEST on the PC.**
+- **Built:** Blender add-on 0.3.0 and the compiler IR/validator carry collision (mesh/box/sphere/capsule, surfaces), per-material geometries, LOD distances and world objects (`type: object`). `CompilerCapabilities` refuses what v1 cannot write with named errors, and `report.json` shows the structure. Five Blender-made fixtures live in `tests/content/fixtures`. No new writer output.
+- **Evidence:** content self-test 248/248, fixtures 5/5, Blender tests 78 passed / 9 NOT-RUN (need the game). Also fixed: glTF `matrix` node transforms were ignored.
+
+**Engine audit and hardening (2026-09-26, Claude, session 2 of [NEXT_SESSIONS](../workflow/NEXT_SESSIONS.md)): offline checks pass; in-game checks queued.** [Report](../reports/2026-09-26-engine-audit.md).
+- **Fixed:** a throwing `Wait.Until` condition or an unowned coroutine stopped every module for the session; an event handler's failure skipped the next module's handler; null owners left control locks, HUD, clock and memory patches unreleasable; menus could stay open with controls locked; overlapping memory patches left a stale patch; hooks outlived a core switched off mid-session; a faulted native kept being called for the rest of its frame; a double exact `PedDied` 5–10 s after a kill; the autopilot's log reads and Steam screenshot folder.
+- **New offline checks:** the core's C ABI against `CoreAbi.cs`, engine plumbing (scheduler, events, ledger, commands), native-name coverage, SDK examples compiled; the verifier now builds with the same Roslyn C# 7.3 as the build. New in-game checks: `T027-raycast-objects` (model chosen by `PROBE-collision`), self-test `vehicle-driver`.
+
+**Owner remote: cloud development loop (2026-09-26, Claude, [T-029](../tasks/T-029-cloud-local-loop.md)): NEEDS-PLAYTEST.**
+- **How work goes now:** cloud sessions build on `develop`; the owner's PC runs `tools/verify-local.ps1` and pushes results to `verification-results`; a review session processes them ([workflow](../workflow/CLOUD_LOCAL_LOOP.md), [next sessions](../workflow/NEXT_SESSIONS.md)).
+- **Queue:** 44 checks in `tests/local/checks.json` cover every NEEDS-PLAYTEST task (T-007 to T-028) plus SDK regressions and two research probes; [plan](../testing/LOCAL_VERIFICATION_PLAN.md). First step at the PC: `verify-local.ps1 -Smoke`.
+- **Cloud offline results (session 1):** C# build (SDK, engine, mods), native core + 13 unit tests, content self-test 178/178, verifier 144 passed / 7 NOT-RUN (need game files or Windows), Blender manifest + 19 tests passed / 9 NOT-RUN (builds need the game), 88 PowerShell tests, queue valid.
+- **Integrated:** raycast/LOS (T-027) and native textures (renumbered T-028) merged; both still NEEDS-PLAYTEST.
+- **Fixed on the way:** autopilot false passes (suite matched "PASS" anywhere; stale and command-echo `expect` matches; crash on the last step passed), the verifier's single try/catch hiding later sections, `package-phase2.ps1` deleting the content reports the T-028 steps read.
+
+**Engine raycast / line of sight, SDK 1.1 (2026-09-26, Claude, [T-027](../tasks/T-027-engine-raycast.md), [ADR-0008](../architecture/decisions/ADR-0008-engine-raycast.md)):**
+- **Research** ([Raycast.md](../research/Raycast.md)): the game's line test `0xA536B0` on the physics world; the spike verified ground and ped hits and the hit-entity link `[instance+0x0C]`.
+- **Built:** core ABI 5 (`lc_raycast` with kind filtering by pass-through, 4 ignored entities, fault → off; unit test 13/13), SDK 1.1 `Query.Raycast` / `HasLineOfSight` (points and peds), `engine.json` raycast fields, `lf ray`/`raystats`, self-test checks, scenario `raycast`.
+- **Status:** builds clean (Linux container); owner's Windows build + verify and the `raycast`/`sdk-selftest` runs pending. Vehicle hits are the first unverified fact.
+
+**Liberty Engine (ADR-0006, 2026-09-25, Claude):**
+- **Engine:** a native C++ core (world snapshot, events) plus one C# host running every mechanic as a module, with events, coroutines and services. It is verified in game (21/21 natives) and documented in [ENGINE.md](../architecture/ENGINE.md).
+- **Autopilot:** Claude launches and tests the game itself (`tools/autopilot`). The engine-events, gore-review, sling-review and perf-baseline scenarios pass.
+- **Post-load freeze:** it was FusionFix's hidden "Error building shader!" box, which the engine now acknowledges.
+- **Slings:** they render correctly (single-page models).
+- **Performance:** gunplay 6.2 -> 1.4 ms/frame; arsenal 2.9 -> 1.5 ms/tick.
+- **Branch:** work is on `main`.
+
+**Model pipeline T-2 and sling straps (2026-09-25, Claude):**
+- **Tool:** `tools/models` (LibertyModel) reads GTA IV drawables and skeletons from IMG and RPF archives and writes new ones. All 79 weapon-pack models and 45 of Niko's models parse, and all 49 single-mesh props rebuild byte-identical.
+- **First models:** body-fitted leather sling straps, cut from the union of Niko's outfits. They are packed in `LibertyModels.img` and registered through `lf_models.ide`. The holsters attach them to Spine2 whenever a long gun is slung.
+- **Lag fix:** stalls near cars came from reading `Game.Resolution` on the draw thread; it is now cached on the script tick.
+- **Status:** installed, verify 395/395. The in-game load of generated models is not yet verified. See [ModelFormat](../research/ModelFormat.md) and playtest [section 12](testing/PHASE2_PLAYTEST.md#12-lag-near-cars-fixed-first-generated-models-sling-straps).
+
+**Weapon wheel storage and trunk animation (2026-09-25, Claude):** trunks, safehouse stashes and the gunsmith now use one radial wheel with the weapons' own HUD icons, extracted at install. Niko turns, opens the trunk with IV's `amb@car_stash`/`car_boot` animations, reaches in for each take or store, and shuts it. The storage prompt is now an IV-style help box. `maximumSeveredPeds` is raised to 10. Verify 395/395; installed (phase2 then VL). Owner playtest: [section 11](testing/PHASE2_PLAYTEST.md#11-weapon-wheel-storage-and-trunk-animation-s-2s-3).
+
+**Script cost pass (2026-09-25, Claude):**
+
+- The startup crashes are Rockstar `MTLX.DLL` crashes, present since 09-20 on DirectX 9 too, so not Vulkan or Violent Liberty.
+- Gunplay camera natives are cached. Combat damage scans run at full rate only after shots, with one native per ped.
+- Per-script `performance_scripts` and `native_cost` logging was added.
+- Verify 339/339. See [T-026](../tasks/T-026-performance-visual-baseline.md).
+
+**Camera hotspot measured (2026-09-25, Codex):** Despite a reported failed launch, one diagnostic run started all scripts and logged nine minutes of timings. GunplayController averaged 16.71 ms/tick across 17,094 ticks, with camera handling 10.11 ms (60.5%); initial 24–25 ms tick spacing later degraded to 80–92 ms. Repeated early `0xc0000005` crashes occur before ASI load and remain separate from the script hot path. Captures are saved; next steps are camera subphase timing and a renderer startup A/B. Game files unchanged during retry. [T-026](../tasks/T-026-performance-visual-baseline.md).
+
+**Framework-off result and targeted timing build (2026-09-25, Codex):** Owner reports gameplay is generally smooth and playable without Liberty Framework, with random drops remaining. This identifies a material framework cost, though an external frame trace is still missing. A coarse five-phase GunplayController timing build compiles (113 sources, zero errors/warnings), passes 339/339 offline checks, and is installed with SHA-256 confirmation while GTA IV is closed; the prior DLL is preserved outside the game. Next: short in-game phase timing run, then optimize the measured hotspot. [T-026](../tasks/T-026-performance-visual-baseline.md).
+
+**First live performance sample and A/B staged (2026-09-25, Codex):** A no-LVS retry loaded, then frame-spacing proxy deteriorated from 22 ms to 50–94 ms p50; GunplayController consumed 14–36 ms average per tick. CPU averaged 27% of four cores, GPU 3D snapshots 21–65%, GPU memory ~1.2 GB; foreground state was not verified. An earlier no-LVS startup still crashed before ASI load, so LVS was restored. With GTA IV closed, only Liberty Framework's DLL was hash-checked and moved outside the game for the next performance comparison; FusionFix, DXVK, Violent Liberty, and LVS remain. [T-026](../tasks/T-026-performance-visual-baseline.md).
+
+**Startup crash isolation (2026-09-25, Codex):** Owner's loading-screen freeze ended in Windows Error 1000, `scripthook.dll` / `0xc0000417`. The hook log stopped as it began loading Liberty Vehicle Services; installed configs match the saved baseline. With GTA IV closed, only the LVS `.CS` file was hash-checked and moved to an external quarantine for one controlled startup test. Causality and game launch result await the owner. [T-026](../tasks/T-026-performance-visual-baseline.md).
+
+**Performance baseline setup (2026-09-25, Codex):** Owner reports 15–20 FPS and world shadow/light/building flicker. Portable PresentMon, Ghidra + JDK, and FusionFix/DXVK reference sources are staged outside the game. Installed GTAIV.exe was imported into a read-only Ghidra project; an elevated capture script and configuration snapshot are prepared. Frame traces and in-game comparison remain pending. [T-026](../tasks/T-026-performance-visual-baseline.md).
+
+**Gore bleed/limb presentation installed (2026-09-24, Codex):** Owner reports Violent Liberty's larger stains/streaks work; little visible leaking and intermittent thrown limbs remain. Log confirms all attempted looping blood effects failed. The current build pulses confirmed one-shot effects with fade/slow timing, retains/retries limb clones and marks landing, and tunes the owner's Violent Liberty INI for stronger/longer head/neck and more frequent shotgun bleed. Build 112 sources, verify 339/339; copied install/rollback byte-identical, 7 real files hash-checked. Backup `violent-liberty-20260924-231558`. Owner playtest pending; stump cap geometry remains open. [T-022](../tasks/T-022-combat-effects.md).
+
+**Gore visual companion installed (2026-09-24, Codex):** Owner confirms pass 3 limb throwing and persistent removal in game, but says the cut/blood presentation is poor. A local Violent Liberty 1.2.2 archive provides dynamic wounds and surface blood; source is not included. Added a reversible external-blood mode so that mod can own wound rendering while Liberty Framework owns cuts and stump effects. Build 112 sources, verify 336/336, install/rollback fixture byte-identical; 7 installed files hash-checked, backup `violent-liberty-20260924-224005`. Vulkan startup/combined visuals await owner playtest. See [research](../research/ViolentLiberty.md) and [T-022](../tasks/T-022-combat-effects.md).
+
+**Gore overhaul (2026-09-24, Claude):** visible blood on every firearm hit, 25 s bleeding, limb and head severing with burst/arterial spray and thrown limbs, fixed the ped-skeleton resolver, and added the ADR-0005 post-rebuild hook. Verify 312/312. Owner playtest pending ([section 7](testing/PHASE2_PLAYTEST.md)).
+
+**Phase 2 open-items build installed (2026-09-24, Claude):** shoulder swap (T-015), arm/leg dismemberment with thrown limbs (T-022), LVS body-part labels (T-023). Verify 296/296; install/rollback dry run passed; owner playtest pending.
+
+**Phase 2 follow-up installed (2026-09-24):** Enabled the owner-approved corpse head-removal prototype and expanded the safehouse gunsmith to carbine/shotgun tuning attachments. Build 104 sources and offline checks 270/270; install backup `phase2-20260924-194809`. In-game effects remain NEEDS-PLAYTEST. Shoulder swap, true limb mesh removal, and model-verified vehicle body kits still require CE runtime/asset evidence.
+
+**Phase 2 integrated build installed (2026-09-24).** Owner confirmed Phase 1 weapon feel, back holsters including gold variants, and trunk storage worked in-game. Safehouse storage remains provisionally assumed. The integrated T-022/T-024/T-025 build passed 270/270 offline checks and an install/rollback dry run, then was installed with backup `phase2-20260924-184410`; all new behavior awaits the [combined owner playtest](testing/PHASE2_PLAYTEST.md). T-015 shoulder swap and T-023 real body variants remain blocked.
+
+**Phase 1 + Liberty Arsenal baseline (2026-09-24).** Universal free aim, per-weapon recoil and real spread for test weapons 58/59/60, spread crosshair, gold pistol finish, expanded DevTools, Arsenal, and Liberty Vehicle Services CE were installed. The owner reported the tested weapons, tunes, holsters, gold variants, and trunks worked; individual T-010 edge cases are not all evidenced. Safehouse behavior is a provisional assumption.
+
+## Key decisions (see `docs/architecture/decisions/`)
+
+- ADR-0001: CE + FusionFix + Tomasak ScriptHookDotNet 1.7.1.8 loads an x86 .NET Framework 4.0 C# probe and reloads successfully. No downgrade.
+- ADR-0002: FusionFix v5.0.1 ExtendedLimits assigned the custom pistol ID 58. It replaced the vanilla pistol in the handgun inventory; a deliberate switch is needed. Unused episodic slots are deferred.
+- ADR-0004: Engine data (aim camera, CWeaponInfo accuracy, menu prefs, hud.dat reticle globals, bullet list) is located by native-hash/instruction-shape resolvers, validated at runtime, never code-patched, and restored on exit. See docs/game-api/MEMORY.md.
+- ADR-0005: Owner-approved exception to ADR-0004 for dismemberment: after-call hooks on the fragInst skeleton rebuilds (0x5F7D70/0x5F6FB0). Bytes validated, flag-gated, restored on unload/exit.
+- ADR-0008: The engine core calls the game's physics line test (0xA536B0) directly for raycasts: resolved by pattern and pinned offline, called only on the engine tick under SEH, read-only, switched off on the first fault.
+- ADR-0003: T-002 implements a JSON sample with live polling and last-valid retention; live log and gameplay checks passed.
+
+## Verified in-game (by the human tester)
+
+- 2026-09-24 (owner report): Phase 1 weapon gameplay and tunes worked, visible weapons including gold ones appeared on the player's back, and trunk storage worked perfectly. Safehouse storage is provisionally assumed working, without a direct report. Phase 2 has no in-game result yet.
+- 2026-09-24 (owner report and logs): the T-007 carbine (ID 59) and shotgun (ID 60) identities selected and worked first try alongside the pistol (ID 58).
+- 2026-09-24 (tester report and fresh logs): Steam Complete Edition exe 1.2.0.59 and FusionFix 5.0.1 reach gameplay. Tomasak ScriptHookDotNet 1.7.1.8 loads the probe; startup, heartbeats, domain unload, and restart after `ReloadScripts` were logged, and gameplay continued. Bluetooth DualSense through a Steam Input community layout; in-game auto aim on. With the runtime installed, vanilla pistol aim, fire, reload, cover and vehicle shooting, and save/load passed. See [T-000](tasks/T-000-baseline.md) and [T-001](tasks/T-001-runtime-spike.md).
+- 2026-09-24 (tester report, screenshot, and fresh logs): The first DevTools panel opened, navigated, and closed with the controller; D-pad navigation also opened the phone. `LFWeaponGive` selected custom ID 58, and the vanilla handgun presence changed from true to false. Game heartbeats continued. Candidate firing and save/load have not been confirmed.
+- 2026-09-24 (tester report): The custom ID 58 pistol passed aim, fire, reload, cover, vehicle, and save/load checks; GTA IV was then closed for the revised menu install.
+- 2026-09-24 (tester report and fresh logs): Revised DevTools menu passed controller navigation without phone conflict; game control returned on close. XInput was connected in-game. Menu actions switched between custom pistol ID 58 and vanilla pistol ID 7. Total handgun ammo remained 226 across multiple switches, then 217 after gameplay and another switch. No DevTools error was logged.
+
+## Open questions (blockers for later tasks)
+
+| # | Question | Resolved by |
+|---|---|---|
+| Q1 | Resolved: ScriptHookDotNet 1.7.1.8 loads an x86 .NET Framework 4.0 DLL on CE 1.2.0.59 with FusionFix; reload succeeds. The maximum usable C# language level is not established. | T-001 |
+| Q2 | Resolved: custom IDs 58/59/60 select in game (owner report, logs), and menu switching preserves total ammo. A custom weapon and its vanilla counterpart cannot be carried at the same time (same slot). | T-007 |
+| Q3 | Answered offline (universal, accepted by owner): PREF_AUTO_AIM + DISABLE_PLAYER_LOCKON + hud.dat health/armour globals. In-game confirmation pending. | T-010 |
+| Q4 | Answered offline: CCamAimWeapon pitch/heading fields (+0x218/+0x21C) found via the SET_GAME_CAM_PITCH worker; runtime-validated before use. In-game confirmation pending. | T-010 |
+| Q5 | Answered offline: shrink/zero the hud.dat reticle globals the HUD copies every frame. In-game confirmation pending. | T-010 |
+| Q6 | Does Steam Input need a specific controller config (e.g. Xbox layout, no gyro) for consistent results? | T-000 |
+
+## Changelog
+
+- 2026-09-24 — Phase 2 integration: merged both Sol task branches with T-024, reviewed ownership and installer behavior, added a persistent paid Match grip with a spread effect, built 104 sources with zero build warnings/errors, verified 270/270 CE checks, passed byte-identical install/rollback dry run, and installed 10 manifest files with SHA-256 confirmation. The Phase 1 gold assets, LVS scripts/INI, holster config, and player state were retained. Latest backup `scripts/LibertyFramework/backups/phase2-20260924-184410`; combined owner playtest pending.
+- 2026-09-24 — T-024 Phase 2 foundations: lower early-burst bloom and faster short-burst recovery for registered test weapons; compact Square/X or E trunk/safehouse panel; lighter holster/debug scans and cached projection; 30-second frame/tick timing lines. Offline checks pass, combined owner playtest pending.
+- 2026-09-24 — T-022 combat effects built on `codex/phase2-combat`: bounded player-attributed sampling, bone-region reactions via force native, stock blood PTFX attached to hit bone with cleanup, transient injury/wound state, corpse-only head-removal spike, and limb-loss candidate gating. CE native checks pass offline; appearance/behavior and actual arm/leg mesh removal remain open for owner playtest.
+- 2026-09-24 — T-025 stream C staged on `codex/phase2-systems`: physical weapon IDs and metadata survive carry/trunk/safehouse/owned-car state; catalog covers a vanilla sidearm pair and existing carbine. A paid safehouse gunsmith choice switches a pistol between factory/gold variants. T-023 body variants remain blocked pending a model/extra-slot visual test; generic LVS Extras remain unchanged. Offline checks pass; integration and owner playtest pending.
+- 2026-09-24 — Liberty Arsenal run (two Codex agents + orchestrator): T-020 Arsenal core (RDR2 loadout + melee, last-car/safehouse overflow, ownership, busted/wasted rules, trunk + safehouse stashes, LVS owned-vehicle link, safehouse discovery from map blips), T-021 visible holsters, T-011 gold carbine/shotgun, T-013 debug hit info, T-014 aim profiles (free/vanilla), T-016 switch while aiming, T-017 shake + aiming FOV; T-015 shoulder swap BLOCKED (no validated camera offset). Liberty Vehicle Services CE (MIT) bundled. Build clean, verify 240/240, install/rollback dry run byte-identical, **installed into the game** (backup phase1-20260924-163020). Owner playtest pending.
+- 2026-09-24 — T-010 review pass: checked FusionFix patches against every resolver anchor (no conflict), added ScriptHook.dll name→CE hash checks to verify (166/166). Fixed runtime risks: no natives from drawing callbacks or at process exit, memory restores before the lock-on native, cheaper logging and controller polling, wrap-safe memory checks. Rebuilt and repackaged; game files untouched; owner playtest pending.
+- 2026-09-24 — T-010 built: free aim, recoil, real spread with shot-audit calibration, crosshair, gold pistol finish (lf_gold_pistol in update/LibertyFramework/LibertyFramework.img), DevTools pages (weapons, gunplay, live tuning, presets/config, teleport, test range, inspect). Build clean; verify 132/132; package + install/rollback dry run passed. Game files untouched; owner playtest pending.
+- 2026-09-24 — With GTA IV closed, installed the T-007 three-weapon XML override and matching DLL. Backup, hash receipt, XML parse, and installed file checks passed; next step is one in-game carbine/shotgun test.
+- 2026-09-24 — Staged T-007 carbine and shotgun XML entries using base M4 and pump shotgun models/stats, added guarded menu actions and per-pair ammo transfer, and built x86 offline. The running game files were not changed.
+- 2026-09-24 — Owner confirmed the revised controller menu and weapon switching worked completely; T-003 is DONE. Logs independently confirm raw XInput input, menu actions, control lock/open-close, and handgun ammo continuity. T-007 advances to carbine/shotgun expansion.
+- 2026-09-24 — Owner confirmed all candidate pistol behavior checks passed. Added total-ammo transfer to the revised menu's handgun switch; x86 build passed while GTA IV was closed. Clip state and menu switch behavior remain unverified.
+- 2026-09-24 — After live feedback, added Weapon Status/Give Test Pistol/Give Vanilla Pistol to DevTools with confirmation for give actions. Revised menu temporarily disables player controls while open to prevent D-pad phone input; local x86 build passed, live test pending. No files under the running game were changed.
+- 2026-09-24 — Found FusionFix v5.0.1's custom weapon registration at ID 58+, with ExtendedLimits already enabled. Staged a cloned pistol definition under LF_GOLD_PISTOL and built diagnostic console commands. XML parsing and game-running deployment guard passed; no game files changed. Awaiting combined T-003/T-007 playtest.
+- 2026-09-24 — Built T-003's read-only DevTools menu for x86 with zero errors/warnings. L3+R3 and D-pad input paths are prepared but unverified in-game; existing game files were not changed while GTA IV ran.
+- 2026-09-24 — Owner confirmed all remaining pistol, vehicle, and save/load baseline checks passed with the runtime installed; T-000 and T-001 are DONE.
+- 2026-09-24 — Owner confirmed gameplay stayed responsive after the T-002 live config test; T-002 is DONE and T-003 is ready for implementation.
+- 2026-09-24 — T-002 live config test passed all three log checks in one session and restored the original config. GTA IV stayed running; awaiting tester confirmation of gameplay after the test.
+- 2026-09-24 — Audited installed T-002 logs and hash; startup/default heartbeats are confirmed. Added one-session live config test script and guarded the original T-001 DLL backup against replacement. Live config edits are still untested in-game.
+- 2026-09-24 — T-002 config sample, loader, bounded logger, and guarded deployment script built with zero errors/warnings. Offline harness passed valid edit, malformed-input retention, and recovery. Installed after GTA IV closed; installed DLL hash matches the build. In-game test pending.
+- 2026-09-24 — T-001 probe built with zero compiler errors/warnings, deployed while GTA IV was closed, and verified in gameplay. Fresh logs confirm startup, heartbeats, domain unload, and restart after `ReloadScripts`; tester reported continued gameplay.
+- 2026-09-24 — Recorded tester's partial T-000 baseline; left T-000 open for gameplay/vehicle/runtime-install evidence.
+- 2026-09-24 — Recovered the interrupted Claude scaffold; completed the research summary, task queue, setup/test templates, architecture notes, and original brief. No gameplay implementation or in-game verification.
+- 2026-09-24 — Initial research notes and scaffold started. Task backlog written.
+
+## SDK 1.0 build-out (Claude, 2026-09-25, in progress)
+
+- **Liberty.Sdk 1.0**: public API assembly (`sdk/Liberty.Sdk`), no ScriptHookDotNet types. `LibertyEngine` implements `ILiberty` with all services (player, peds, vehicles, props, weapons, tasks, cameras, animation + choreography, FX, audio, streaming, input capture, UI with list/radial menus and canvas, world control, blips, state, config, commands, log, perf, modules, memory, natives). Modules are discovered from `[Liberty.Sdk.Module]` manifests, with dependency order, SDK version and capability checks. Everything a module owns is released through the resource ledger when it stops.
+- **Deploy**: `Liberty.Sdk.dll` goes **next to GTAIV.exe**. ScriptHookDotNet loads script assemblies from bytes into a domain whose ApplicationBase is the game folder, and its `GetTypes()` failure kills the game. `scripts\Liberty.Sdk.dll` is not probed (a stray copy there is harmless).
+- **Mods**: SDK-only mods in `mods/<Name>` build to `scripts\LibertyFramework\mods\`. The autopilot is now such a mod (`mods/Liberty.Autopilot`) and includes an SDK self-test (`lf selftest`, scenario `sdk-selftest`).
+- **Core ABI v2**: vehicle, object and bullet lists; pool stats; reload-start inference; crash minidumps + phase names; stall watchdog; SEH-contained native calls (`safe_call.cpp`).
+- **Crash found and fixed**: `GET_DRIVER_OF_CAR` faulted on some pooled vehicles and corrupted game state; the core now reads the driver from `[vehicle+0xF50]`. `GET_CAR_COORDINATES` dereferences the entity matrix unchecked, so vehicles without one (+0x20) are skipped.
+- **In game (2026-09-25)**: boots with 9/9 modules; 21/21 + 8/8 natives verified; 17 vehicles in the snapshot, zero faults; SDK self-test **34/34 passed** on the installed build (aaeefe9), including the ped-bone position and the degrees-to-radians attach conversion (a 90° request now turns the prop by 90.0°).
+- **Research answer**: `ATTACH_OBJECT_TO_PED/CAR` take rotations in **radians** (90 → 116.6°, measured). The SDK converts from degrees.
+- **Not done yet (as of this entry; M1–M5 below did all but the episode tests)**: Arsenal wheel/trunk ported onto Liberty.Ui / choreography; Content Compiler (glTF); hooks for exact damage; episode tests; SDK reference docs and IV-SDK parity matrix; full autopilot suite run on this build.
+
+## M2–M4 (Claude, 2026-09-25)
+
+**M1 leftovers:**
+- The Arsenal weapon wheel is now a Liberty.Ui radial menu (`StorageWheel`, with a gunsmith list menu).
+- The trunk sequence is an engine choreography (`TrunkSequence`).
+- Autopilot `trunk-review` passes in game: open, navigate, store, close with the lid animation.
+- `Tasks.ShootAt` uses `TASK_SHOOT_AT_COORD`. SHDN's `Ped.ShootAt` (FIRE_PED_WEAPON) stalled the engine.
+- `god` also sets the ped flag.
+
+**M2, exact damage and hooks (ADR-0007):**
+- Core hook manager, and a detour on the damage routine (0xCA3820).
+- `PedDamaged`/`PedDied` are exact: attacker, weapon, type, bone, amounts, bullet hit point and direction, kill.
+- Verified in game (`exact-damage` passes).
+
+**M3, WorldQuery layer 1:** `Liberty.Query` (snapshot radius and cone queries, ground, water, perception, visibility), with self-test checks. The raycast is still open.
+
+**M4, Liberty Content Compiler v1:** `tools/content`, `content/`, `docs/content/README.md`.
+- Pipeline: glTF import → validation (LCC001–023) → template-based WDR/WTD → read-back → previews and report → LibertyContent.img + lf_content.ide.
+- The test crate renders correctly in game (`asset-review`).
+
+**M4 Blender add-on (2026-09-26):**
+- `tools/blender/liberty_exporter` 0.1.0 (docs/content/BLENDER.md): checks LBX001–022, exports glTF + asset.json, runs LibertyContent validate/build.
+- 23 headless tests plus extension validation pass on Blender 5.2.2.
+- `content/props/lf_blender_barrel` is made in Blender and renders correctly in game (`asset-review` passes).
+
+**LCC v2, native texture dictionaries (T-028, 2026-09-26): NEEDS-PLAYTEST.**
+- `"textureMode": "native"` writes the `.wtd` from scratch (source size, full mips, DXT1/DXT5 alpha); DXT5 encoder and DXT decoder; byte-exact read-back with PSNR in `report.json`; validator IR/capabilities (LCC024/025); `selftest` (168 offline checks, run by `package-phase2.ps1`) and `wtdcheck`; Blender add-on 0.2.0 Texture mode.
+- Offline only: builds with Roslyn C# 7.3 (warnings as errors) and the self-test passes, both on Linux/Mono. Pending: `wtdcheck` on the game archives, and the `native-texture-review` scenario (`lf_native_crate`, `lf_alpha_panel`).
+
+**M5 developer loop:**
+- Hot reload: `lf reload <module>` swaps a mod assembly in the running game, and `lf restart <module>` restarts one.
+- `hotreload on` watches the mods folder (`engine.json` `hotReload`, off by default; leak cap `hotReloadMaxLeakMegabytes`).
+- The `hot-reload` scenario passes: after the autopilot reloads itself, its crate is released and the self-test passes 38/38.
+- The trunk choreography timings moved to `arsenal.json` `trunkTimings`.
+- Visual inspector: `lf inspector on` (`inspector-review` passes).
+- Full regression suite passes (docs/reports/2026-09-26-sdk-1.0.md).
+- Next: raycast (physics RE), skinned meshes/LODs/collision in LCC, then episodes (TLAD/TBoGT) coverage.

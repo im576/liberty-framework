@@ -9,4 +9,4 @@ This is a reproducibility checklist, **not** a claim that a particular install w
 5. Install the [proposed CE ScriptHookDotNet release](https://github.com/Tomasak/gta4_scripthookdotnet/releases) following its release instructions. Record every installed file/version and launch result.
 6. If a launch fails, revert the last addition, preserve its log, and report exact symptoms. Do not combine multiple unknown fixes at once.
 
-The human fills [T-000](../tasks/T-000-baseline.md) with observed results. T-001 is the first agent-authored runtime experiment. No setup dependencies or game files are committed to Git.
+The human fills [T-000](../archive/tasks/T-000-baseline.md) with observed results. T-001 is the first agent-authored runtime experiment. No setup dependencies or game files are committed to Git.

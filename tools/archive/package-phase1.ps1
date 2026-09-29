@@ -12,18 +12,18 @@ param(
 #   2. run offline verification (tools/verify)    5. copy config/presets/locations
 #   3. build the gold pistol finish (IMG + IDE)   6. write staging/phase1/manifest.json with SHA-256 of every file
 $ErrorActionPreference = 'Stop'
-$repoRoot = Split-Path -Parent $PSScriptRoot
+$repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $game = (Resolve-Path -LiteralPath $GameDirectory).Path
 $stage = Join-Path $repoRoot 'staging\phase1'
 
-& (Join-Path $PSScriptRoot 'build.ps1') -ScriptHookDotNetReference $ScriptHookDotNetReference
-& (Join-Path $PSScriptRoot 'verify.ps1') -GameDirectory $game | Select-String -Pattern '^(FAIL|RESULT)'
+& (Join-Path $PSScriptRoot '..\build.ps1') -ScriptHookDotNetReference $ScriptHookDotNetReference
+& (Join-Path $PSScriptRoot '..\verify.ps1') -GameDirectory $game | Select-String -Pattern '^(FAIL|RESULT)'
 
 foreach ($child in @('scripts', 'update', 'previews', 'plugins')) {
     $path = Join-Path $stage $child
     if (Test-Path -LiteralPath $path) { Remove-Item -LiteralPath $path -Recurse -Force }
 }
-& (Join-Path $PSScriptRoot 'build-finishes.ps1') -GameDirectory $game -StagingDirectory $stage
+& (Join-Path $PSScriptRoot '..\build-finishes.ps1') -GameDirectory $game -StagingDirectory $stage
 
 # WeaponInfo.xml: the installed T-007 override (hash-checked against its receipt) with the gold pistol
 # pointed at the finish variant model. Carbine and shotgun are unchanged.
