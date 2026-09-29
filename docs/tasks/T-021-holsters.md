@@ -7,6 +7,13 @@ one slung rifle and its strap. The scenario granted two rifles that share one ga
 and rifle 14 and expects both sling attachment slots before capture. Two-gun placement still needs the revised
 in-game review. Evidence: `verification-results/results/20260929-115421-14010f6/`.
 
+**Later run `6931061`:** both attachment slots logged and all 32 script steps passed, but the player took lethal
+NPC damage after an accepted `god on`. Front/back are death scenes, left is black, and right/close show an unarmed
+respawn. Visual result is FAIL. Repeated SDK invincibility requests now reapply native flags while retaining one
+ownership entry. The scenario reasserts after teleport, checks that entry, and requires a live player before every
+capture. The reason the original flags ceased protecting the player remains unknown; the fix needs Windows proof.
+Evidence: `verification-results/results/20260929-121911-6931061/T021-sling-review/`.
+
 ## Requirements
 
 1. Every carried weapon that is **not in hand** is shown as a prop of its own model on the player: `SidearmPrimary` (handgun) on the right thigh, `SidearmSecondary` (SMG) on the left hip, `LongGun1`/`LongGun2` slung on the back (two distinct positions, no overlap), `Melee` on the belt/back. Gold variants (`lf_gold_*`) show gold.

@@ -5,6 +5,16 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
+**Latest focused run (2026-09-29, `6931061`):** hot reload passed 24/24 steps and SDK selftest 49/49. Trunk passed
+35/35 with visible navigation, AK-47 storage and menu closure; lid closure is partly obscured. Sling passed scripted
+steps but failed visual review: death scenes, one black frame, then an unarmed respawn. Repeated invincibility requests
+now reapply the native flags without another ownership entry, and sling captures check player survival. Windows
+rebuild/rerun is pending. `LOAD_SCENE` took 3,394 ms in hot reload; performance remains open. The independent install-hash comparison
+confirmed all 42 restored files match their saved copies.
+
+**Empty encrypted archives:** Windows decoded all five recurring IMG errors as version 3, count 0, table bytes 0.
+The AES zero-block path is fixed with synthetic coverage; content build/self-test and real-file reopening are pending.
+
 **Drawable placement diagnostic (2026-09-29):** the roundtrip tool now reports page metadata, source/rebuilt buffer
 ranges and byte-class counts in unmodeled graphics spans for up to 25 failures. An opaque-prefix mutation guards
 the diagnostic; Windows build/self-test and the targeted Bronx probe are pending. A matching subset now fails the

@@ -4,6 +4,11 @@ god on
 wanted 0
 goto east_park
 wait 4000
+# Reassert after scene setup too; ownership alone does not prove the native flags remained set.
+god on
+alive
+owned autopilot
+expect "line=.owned autopilot. reply=.*invincible=1\b" 10
 time 13 0
 weather 1
 mark
@@ -16,18 +21,23 @@ expectmarked "holster_sling_attached slot=LongGun2" 15
 hud off
 cam 0 2.2 0.4
 wait 1500
+alive
 shot front
 cam 180 2.2 0.4
 wait 1500
+alive
 shot back
 cam 90 2.0 0.4
 wait 1500
+alive
 shot left
 cam 270 2.0 0.4
 wait 1500
+alive
 shot right
 cam 150 1.4 0.6
 wait 1500
+alive
 shot back_close
 cam off
 hud on

@@ -26,6 +26,13 @@ namespace Liberty.Autopilot
             events = new EventLogger(this, Liberty);
             events.Subscribe();
             Register("pos", "player position and heading", Position);
+            Register("alive", "fail the command if the player is missing or dead", a =>
+            {
+                PedRef player = Liberty.Player.Ped;
+                if (player.IsNone || !Liberty.Peds.Exists(player) || Liberty.Peds.IsDead(player))
+                { return "error player is missing or dead"; }
+                return "player alive health=" + Liberty.Peds.GetHealth(player);
+            });
             Register("tp", "tp x y z [heading] - teleport the player", Teleport);
             Register("time", "time h m - set the clock", a => { Liberty.WorldControl.SetTime(Args.Int(a, 0), Args.Int(a, 1, 0)); return "time " + Args.Int(a, 0) + ":" + Args.Int(a, 1, 0).ToString("00"); });
             Register("weather", "weather <id> - force weather (0 sunny .. 7 lightning) until the module stops", a => { Liberty.WorldControl.ForceWeather(this, Args.Int(a, 0)); return "weather " + Args.Int(a, 0); });

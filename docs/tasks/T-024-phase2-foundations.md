@@ -10,6 +10,12 @@ The later `14010f6` run missed the initial 80 ms E press and never opened storag
 alive, zero log errors). Its screenshots retain the trunk prompt. E now uses the same 1,200 ms hold as the remaining
 wheel controls, pending a focused retry. Evidence: `verification-results/results/20260929-115421-14010f6/`.
 
+**Latest run `6931061`:** 35/35 steps passed with zero log errors. The open screenshot shows the rifle slot,
+Right navigates to sniper rifles, the store screenshot shows `In here: AK-47 120`, and the final shot has no menu.
+The boot lid is partly obscured, so the full visual check remains NEEDS-REVIEW for lid closure. No acceptance claim
+is made for weapon taking, save persistence or animation quality from these four shots.
+Evidence: `verification-results/results/20260929-121911-6931061/T024-trunk-review/`.
+
 ## Changes
 
 - The three registered test weapons use a separate early-burst bloom increment, a chain reset pause, and faster short-burst recovery. All values are in `config/gunplay.json` and the generated presets. Vanilla weapons retain their own spread.

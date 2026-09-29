@@ -14,6 +14,7 @@ namespace Liberty.Sdk
         void ReleaseControl(LibertyModule owner);
         // Loads the area first so the player does not fall through the map.
         void Teleport(Vec3 position, float heading);
+        // Repeated true requests reapply protection without duplicating ownership. The last owner's release disables it.
         void SetInvincible(LibertyModule owner, bool invincible);
     }
 }

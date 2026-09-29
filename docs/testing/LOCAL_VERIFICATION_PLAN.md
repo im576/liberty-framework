@@ -16,7 +16,7 @@
 |---|---|---|
 | pc-offline | 13 | automatically (builds and tests that need Windows or the game's files) |
 | probe | 4 | automatically (read-only questions about the game's files; structure only) |
-| scenario | 21 | automatically (autopilot drives the game; about 2-4 minutes each) |
+| scenario | 20 | automatically (autopilot drives the game; about 2-4 minutes each) |
 | manual | 18 | you play and judge; about 162 minutes in total, grouped below |
 
 Statuses: QUEUED (never run on the current code), PASS, FAIL, ERROR, CRASH, NOT-RUN, NEEDS-REVIEW (a person or the review session must judge screenshots or log errors).
@@ -221,12 +221,12 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 | `SDK-bullet-events` | ADR-0006 | scenario | autopilot PASS | QUEUED |
 | `SDK-exact-damage` | ADR-0007 | scenario | autopilot PASS | QUEUED |
 | `SDK-vehicle-events` | ADR-0006 | scenario | autopilot PASS | QUEUED |
-| `SDK-hot-reload` | M5 | scenario | autopilot PASS | QUEUED |
+| `SDK-hot-reload` | M5 | scenario | autopilot PASS | PASS |
 | `SDK-inspector-review` | M5 | scenario | autopilot PASS and the screenshots judged | QUEUED |
 | `SDK-ui-review` | M5 | scenario | autopilot PASS and the screenshots judged | QUEUED |
 | `T022-gore-review` | T-022 | scenario | autopilot PASS and the screenshots judged | QUEUED |
 | `T021-sling-review` | T-021 | scenario | autopilot PASS and the screenshots judged | QUEUED |
-| `T024-trunk-review` | T-024 | scenario | autopilot PASS and the screenshots judged | QUEUED |
+| `T024-trunk-review` | T-024 | scenario | autopilot PASS and the screenshots judged | NEEDS-REVIEW |
 | `T026-perf-baseline` | T-026 | scenario | autopilot PASS; the review session reads the performance lines | QUEUED |
 | `T026-perf-stress` | T-026 | scenario | autopilot PASS; the review session reads the governor and memory figures | QUEUED |
 | `PROBE-bounds-layout` | T-032 | probe | exit code 0 and a JSON report; the review session reads it | QUEUED |

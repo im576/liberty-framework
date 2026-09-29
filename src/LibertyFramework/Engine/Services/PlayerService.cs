@@ -86,8 +86,10 @@ namespace LibertyFramework.Engine.Services
             engine.RequireOwner(owner);
             if (on)
             {
+                // Reassert the requested native state even when the ownership entry already exists. The Windows
+                // follow-on sling run accepted god on but took lethal damage; ownership is not a native-state readback.
+                Apply(true);
                 if (!invincible.Add(owner)) { return; }
-                if (invincible.Count == 1) { Apply(true); }
                 engine.Ledger.Add(owner, "invincible", 0, () => { if (invincible.Remove(owner) && invincible.Count == 0) { Apply(false); } });
             }
             else { engine.Ledger.Release(owner, "invincible", 0); }

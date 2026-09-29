@@ -54,6 +54,24 @@ meanings remain unknown. This supports the next read-only decode step, not an au
 `verification-results/results/20260928-234601-762fd62/`. The other nonzero `+0x40` records remain opaque and are
 copied from the matching source texture; their meaning has not been decoded.
 
+## Latest focused run: 20260929-121911-6931061
+
+- Package/install passed. SDK hot reload passed all 24 steps, zero log errors; selftest completed 49/49.
+- Sling completed 32 scripted steps, but visual review is FAIL. Front/back show the player dead; left is black;
+  right/close show an unarmed respawn. Both attachment-slot events occurred before death. NPC gunfire reduced
+  player health after `god on` was accepted, followed by `arsenal_loss_no_safehouse`. The repeated protection
+  request was a no-op for an existing owner. Reapplying on every explicit true request and checking survival
+  before each capture are pending fixes; the native flag reset's cause has not been established.
+- Trunk completed 35/35 steps, zero errors. The wheel navigates from rifles to sniper rifles, stores AK-47 with
+  120 rounds, and closes in the final image. The partially hidden lid prevents a complete boot-closure verdict.
+- Hot-reload teleport stages: move 3 ms, collision request 6 ms, `LOAD_SCENE` 3,394 ms. Later scene loads were
+  296 ms (sling) and 649 ms (trunk). This isolates a blocking scene load in this run; it does not establish the
+  previous 30-second stall's exact stage. Performance remains a release gate.
+- `restore.log` records restoration. The resumed Windows agent independently compared all 42 saved install
+  files: 42 hash matches, zero mismatches. The usage interruption did not prevent the verifier finishing.
+
+Evidence: `verification-results/results/20260929-121911-6931061/` (published at `335f1ea`).
+
 ## Runtime findings (VERIFIED IN GAME for this run)
 
 - The raycast spike, SDK self-test, engine events, bullet events, exact damage and vehicle events passed. The main raycast scenario's fixed forward ray lost a moving pedestrian before its filtered pass-through check. A targeted rerun using a `rayto` command passed that pedestrian check, but failed three other steps when a nearby object entered the car ray and Steam screenshot capture failed. Those are separate results; a clean raycast regression is still needed.

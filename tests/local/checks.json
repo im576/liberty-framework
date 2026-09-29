@@ -443,8 +443,14 @@
       },
       "proves": "Module restart and mod assembly reload still work; the SDK self-test passes on reloaded code.",
       "pass": "autopilot PASS",
-      "status": "QUEUED",
-      "addedIn": "claude/friendly-euler-m7hn4e (Session 1 seed)"
+      "status": "PASS",
+      "addedIn": "claude/friendly-euler-m7hn4e (Session 1 seed)",
+      "lastRun": "20260929-121911-6931061",
+      "evidence": [
+        "results/20260929-121911-6931061/SDK-hot-reload/result.json",
+        "results/20260929-121911-6931061/SDK-hot-reload/run.log",
+        "docs/reports/2026-09-28-windows-verification.md#latest-focused-run-20260929-121911-6931061"
+      ]
     },
     {
       "id": "SDK-inspector-review",
@@ -527,7 +533,13 @@
         }
       },
       "status": "QUEUED",
-      "addedIn": "claude/friendly-euler-m7hn4e (Session 1 seed)"
+      "addedIn": "claude/friendly-euler-m7hn4e (Session 1 seed)",
+      "lastRun": "20260929-121911-6931061",
+      "evidence": [
+        "results/20260929-121911-6931061/T021-sling-review/result.json",
+        "results/20260929-121911-6931061/T021-sling-review/run.log",
+        "docs/reports/2026-09-28-windows-verification.md#latest-focused-run-20260929-121911-6931061"
+      ]
     },
     {
       "id": "T024-trunk-review",
@@ -548,8 +560,14 @@
         }
       },
       "reference": "docs/tasks/T-024-phase2-foundations.md#human-test-steps",
-      "status": "QUEUED",
-      "addedIn": "claude/friendly-euler-m7hn4e (Session 1 seed)"
+      "status": "NEEDS-REVIEW",
+      "addedIn": "claude/friendly-euler-m7hn4e (Session 1 seed)",
+      "lastRun": "20260929-121911-6931061",
+      "evidence": [
+        "results/20260929-121911-6931061/T024-trunk-review/result.json",
+        "results/20260929-121911-6931061/T024-trunk-review/run.log",
+        "docs/reports/2026-09-28-windows-verification.md#latest-focused-run-20260929-121911-6931061"
+      ]
     },
     {
       "id": "T026-perf-baseline",
