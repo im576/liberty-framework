@@ -2,6 +2,11 @@
 
 Status: **NEEDS-PLAYTEST** (Codex Agent B, branch `arsenal/feel`). Built from scratch, using ScriptHookDotNet wrappers and documented natives.
 
+**September 29 focused review:** `14010f6` passed 31/31 scripted steps with no log errors; images show a live player,
+one slung rifle and its strap. The scenario granted two rifles that share one game slot. It now grants shotgun 10
+and rifle 14 and expects both sling attachment slots before capture. Two-gun placement still needs the revised
+in-game review. Evidence: `verification-results/results/20260929-115421-14010f6/`.
+
 ## Requirements
 
 1. Every carried weapon that is **not in hand** is shown as a prop of its own model on the player: `SidearmPrimary` (handgun) on the right thigh, `SidearmSecondary` (SMG) on the left hip, `LongGun1`/`LongGun2` slung on the back (two distinct positions, no overlap), `Melee` on the belt/back. Gold variants (`lf_gold_*`) show gold.

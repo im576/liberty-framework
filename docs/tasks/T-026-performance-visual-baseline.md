@@ -20,6 +20,12 @@ memory load. Investigate that stall and repeat performance/stability runs before
 
 ## Step 2: direct natives (2026-09-25, Claude)
 
+**September 29 follow-up:** the hot-reload run's first `goto east_park` took about 30 seconds before its reply,
+exceeding the host command timeout. `engine.commands` logged a stall before `teleport_start`. Timing logs now bracket
+the existing move, collision-request and scene-load calls without changing their behavior. The next focused run
+must identify the blocking stage before a streaming change is made. Evidence:
+`verification-results/results/20260929-115421-14010f6/`.
+
 **Evidence from the owner's run:**
 
 - `engine_thread_probe` showed `frame_advanced_during_tick=0` over 5,000+ ticks, with exactly one tick per frame: the game thread is parked while SHDN scripts tick.

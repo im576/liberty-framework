@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using GTA;
 using LibertyFramework.Core.Config;
@@ -58,13 +59,22 @@ namespace LibertyFramework.DevTools.Teleport
             previousPosition = ped.Position;
             previousHeading = ped.Heading;
             hasPrevious = true;
-            MoveTo(ped, location.X, location.Y, location.Z);
-            Natives.RequestCollisionAt(location.X, location.Y, location.Z);
-            Natives.LoadScene(location.X, location.Y, location.Z);
+            RunStage(location.Id, "move", () => MoveTo(ped, location.X, location.Y, location.Z));
+            RunStage(location.Id, "request_collision", () => Natives.RequestCollisionAt(location.X, location.Y, location.Z));
+            RunStage(location.Id, "load_scene", () => Natives.LoadScene(location.X, location.Y, location.Z));
             pending = location;
             pendingSinceUtc = DateTime.UtcNow;
             RuntimeLog.Info("teleport_start id=" + location.Id + " target=" + location.X + "," + location.Y + "," + location.Z + " snap=" + location.Snap);
             return "Teleporting to " + location.Name;
+        }
+
+        // The Windows command stalled before teleport_start; locate the blocking stage without changing native behavior.
+        private static void RunStage(string id, string stage, Action action)
+        {
+            RuntimeLog.Info("teleport_stage id=" + id + " stage=" + stage + " begin");
+            Stopwatch elapsed = Stopwatch.StartNew();
+            try { action(); }
+            finally { RuntimeLog.Info("teleport_stage id=" + id + " stage=" + stage + " elapsed_ms=" + elapsed.ElapsedMilliseconds); }
         }
 
         internal string Return(Player player)

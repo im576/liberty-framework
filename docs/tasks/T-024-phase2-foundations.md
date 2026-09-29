@@ -6,6 +6,10 @@ slot with nothing stored, and the trunk lid is partly obscured. The scenario now
 1,200 ms, as it already does Backspace, and requires an `arsenal_store id=14` log event. That revised selection/store
 check needs a focused in-game run. Evidence: `verification-results/results/20260929-090327-a61fdfe/`.
 
+The later `14010f6` run missed the initial 80 ms E press and never opened storage (five failed expectations; game
+alive, zero log errors). Its screenshots retain the trunk prompt. E now uses the same 1,200 ms hold as the remaining
+wheel controls, pending a focused retry. Evidence: `verification-results/results/20260929-115421-14010f6/`.
+
 ## Changes
 
 - The three registered test weapons use a separate early-burst bloom increment, a chain reset pause, and faster short-burst recovery. All values are in `config/gunplay.json` and the generated presets. Vanilla weapons retain their own spread.

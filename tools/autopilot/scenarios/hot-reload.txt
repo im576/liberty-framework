@@ -14,6 +14,9 @@ expect "engine_module_stopped autopilot released=[1-9]" 15
 expect "engine_module_reloaded assembly=Liberty.Autopilot.dll modules=autopilot reloads=1" 15
 owned autopilot
 expect "line=.owned autopilot. reply=.autopilot: nothing" 10
+# Reload correctly released the old module's invincibility; acquire it on the new instance before the self-test.
+god on
+wanted 0
 modules
 selftest
 expect "selftest_done passed=\d+ failed=0" 120

@@ -88,6 +88,24 @@ matched their backups and both newly created files were removed.
 
 ## Required follow-up
 
+**September 29 focused runtime run (`14010f6`):** package/install passed and GTA IV stayed alive in all three
+scenarios; the verifier recorded restoration of all 42 installed-file actions. The sling scenario passed 31/31
+steps with no log errors. Its images show a live player, one slung rifle and a shoulder strap. Both granted long guns
+were rifles (IDs 15 and 14 share a game slot), so the scenario now gives shotgun 10 and rifle 14 and expects both
+`LongGun1` and `LongGun2` attachment events before capture. Two-gun placement remains pending.
+
+Hot reload itself succeeded and all revised ped/vehicle ray checks passed. The self-test finished 48/49: player
+death cancelled its choreography. Reload released the old Autopilot's invincibility resource, and the scenario had
+not acquired it on the new instance. The scenario now reapplies `god on` after proving the old resources were
+released. Its initial teleport reply arrived after about 30 seconds, beyond the command channel's 20-second timeout;
+new `teleport_stage` timing logs will distinguish move, collision request and scene load. This stall remains a
+performance failure, not a passing teleport check.
+
+Trunk failed all five interaction expectations. Its screenshot still shows the nearby trunk prompt and a closed
+menu; the initial E press lasted 80 ms amid roughly 100 ms frames. The scenario now holds E for 1,200 ms, matching
+its other interaction keys. This is a test hypothesis pending a rerun. Evidence:
+`verification-results/results/20260929-115421-14010f6/`.
+
 1. Diagnose the common WDR system-byte differences using representative original files and fix the writer or narrow its eligible set based on measured structure.
 2. Research how GTA IV represents multiple LODs when every sampled WDR uses one LOD slot. Change the content strategy or synthesize a verified structure; do not claim four in-game LODs from the current fallback.
 3. Map WBD/WBN to static prop collisions; decode one relevant bounds class and roundtrip original files before writing authored collision. Verify player, vehicle and raycast interaction in game.

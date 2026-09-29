@@ -12,7 +12,8 @@ expect "autopilot_spawncar handle=" 15
 wait 1500
 at-trunk 3.0
 wait 2000
-key E
+# The measured run reached ~100 ms frames here; keep the initial interaction across input polls too.
+key E 1200
 wait 4000
 expect "choreography_begin trunk" 8
 expect "arsenal_storage_open" 8

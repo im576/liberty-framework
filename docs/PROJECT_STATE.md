@@ -5,6 +5,12 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
+**Focused runtime follow-up (2026-09-29):** `14010f6` installed and restored; no scenario crashed. Sling scripted
+checks passed, but the images establish one rifle/strap. Hot reload released owned invincibility as designed, then
+the unprotected player died during self-test (48/49); trunk missed its short initial interaction press. Scenarios
+now reacquire protection, grant separate shotgun/rifle slots and lengthen E. Teleport stage logs target the separate
+30-second setup stall. All revised checks remain pending. See [Windows report](reports/2026-09-28-windows-verification.md).
+
 **First Windows verification (2026-09-28, Codex; [report](reports/2026-09-28-windows-verification.md)): foundation still open.** Smoke passed build, install and SDK self-test (49/49), with rollback hash checks. The full 54-check queue recorded 12 PASS, 10 NEEDS-REVIEW, 12 FAIL, 1 CRASH and 19 NOT-RUN. Drawables roundtripped 5,254/12,688 eligible files; no parsed WDR had multiple LOD slots; collision inventory found no same-named WDR/WBN pair, so the automatic borrowed-collision assets had no bounds. The wall placed visibly but its ray missed. The stress crash followed an invalid pavement-snap coordinate. Work proceeds from these measured findings. PR #7 merged into `develop` on 2026-09-29 (`44dbbd0`); release promotion to `main` remains open.
 
 **Focused Windows fixes (2026-09-28, Codex):** commit `762fd62` built and passed 834 offline verifier checks and 345 content self-test checks. WTD roundtrip is now 68/68 byte-identical compressed dictionaries. The 25-ped GTA IV scenario completed 18/18 steps without a crash, but logged a 5,013 ms setup stall and remains NEEDS-REVIEW. The verifier restored all 42 installed-file actions. See the focused runs in the report above.
