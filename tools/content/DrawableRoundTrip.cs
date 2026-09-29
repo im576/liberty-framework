@@ -29,6 +29,7 @@ namespace LibertyFramework.Content
             internal readonly Dictionary<DrawableStructureBuilder.GraphicsOrder, List<string>> Differences = new Dictionary<DrawableStructureBuilder.GraphicsOrder, List<string>>();
             internal readonly List<string> BoundsRecords = new List<string>(); // per model: "records/geometries"
             internal bool FlagsEqual;
+            internal Dictionary<string, object> GraphicsLayout { get; set; }
         }
 
         internal static int Run(string[] args)
@@ -52,6 +53,7 @@ namespace LibertyFramework.Content
             int drawables = 0, eligible = 0, multi = 0, identical = 0, failed = 0, flagsEqual = 0;
             Dictionary<string, int> byOrder = new Dictionary<string, int>(), skips = new Dictionary<string, int>(), bounds = new Dictionary<string, int>();
             List<string> failures = new List<string>(), archiveErrors = new List<string>();
+            List<object> graphicsLayouts = new List<object>();
             Dictionary<string, object> perArchive = new Dictionary<string, object>();
             foreach (string relative in archives)
             {
@@ -63,7 +65,7 @@ namespace LibertyFramework.Content
                     {
                         drawables++;
                         Outcome outcome;
-                        try { outcome = Check(RscResource.Parse(archive.Extract(entry.Name), true)); }
+                        try { outcome = Check(RscResource.Parse(archive.Extract(entry.Name), true), failures.Count < MaxListed); }
                         catch (Exception error) { outcome = new Outcome { Skip = "does not parse: " + Short(error.Message) }; }
                         if (outcome.Skip != null) { Increment(skips, outcome.Skip); continue; }
                         eligible++; inArchive++;
@@ -80,6 +82,9 @@ namespace LibertyFramework.Content
                         if (failures.Count < MaxListed)
                         {
                             failures.Add(relative + "/" + entry.Name + ": " + string.Join("; ", outcome.Differences.Select(p => p.Key + ": " + string.Join(" ", p.Value.Take(6).ToArray())).ToArray()));
+                            if (outcome.GraphicsLayout != null) { graphicsLayouts.Add(new Dictionary<string, object> {
+                                { "file", relative + "/" + entry.Name }, { "templateOrderLayout", outcome.GraphicsLayout }
+                            }); }
                         }
                     }
                     perArchive[relative] = new Dictionary<string, object> { { "eligible", inArchive }, { "identical", identicalInArchive } };
@@ -104,13 +109,14 @@ namespace LibertyFramework.Content
                     { "identicalByOrder", byOrder }, { "boundsRecords", bounds }, { "pageFlagsEqual", flagsEqual },
                     { "notEligible", skips.OrderByDescending(p => p.Value).Take(40).ToDictionary(p => p.Key, p => p.Value) },
                     { "failures", failures }, { "archives", perArchive }, { "archiveErrors", archiveErrors }, { "skippedArchives", skippedArchives },
+                    { "graphicsLayouts", graphicsLayouts }, { "graphicsLayoutsLimit", MaxListed },
                 }));
             }
             Console.WriteLine(summary + (output != null ? " report=" + output : ""));
             return ok ? 0 : 1;
         }
 
-        internal static Outcome Check(RscResource original)
+        internal static Outcome Check(RscResource original, bool graphicsDetails = false)
         {
             Outcome outcome = new Outcome();
             DrawableFile file = new DrawableFile(original);
@@ -132,6 +138,8 @@ namespace LibertyFramework.Content
                 {
                     DrawableStructureBuilder.Output rebuilt = DrawableStructureBuilder.Build(file, plan);
                     differences = Compare(original, file, rebuilt);
+                    if (graphicsDetails && order == DrawableStructureBuilder.GraphicsOrder.Template && differences.Count > 0)
+                    { outcome.GraphicsLayout = DrawableGraphicsLayout.Describe(original, rebuilt); }
                     if (rebuilt.Resource.Flags == original.Flags) { outcome.FlagsEqual = true; }
                 }
                 catch (Exception error) { differences = new List<string> { "error " + Short(error.Message) }; }

@@ -23,6 +23,13 @@ failed drawable-box containment. No vertex/index data-content mismatch was repor
 page flags, which the roundtrip does not require. The writer still needs a measured graphics placement model and the
 full-corpus rerun; the evidence is in `verification-results/results/20260928-4f56e61-bronx-e/`.
 
+**Next diagnostic:** the existing roundtrip report now includes `graphicsLayouts` for up to 25 failed files. Each
+lists source/rebuilt page flags, per-geometry buffer offsets/sizes, overlaps and unmodeled source ranges. Those
+ranges report only counts of zero, 0xCD and other bytes; their meaning is not assumed. A synthetic opaque-prefix
+mutation checks that repacking stays a failure and the leading range is identified. Run the queued roundtrip on
+`pc/data/maps/east/bronx_e.img` first, then use its measured gaps and page shifts to choose the next placement test.
+This diagnostic changes no writer allocation policy and awaits the Windows build/self-test/probe.
+
 Depends on: T-030 (authoring side), T-028 (native texture dictionaries). Session 4 of
 [NEXT_SESSIONS](../workflow/NEXT_SESSIONS.md).
 

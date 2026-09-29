@@ -53,6 +53,29 @@ namespace LibertyFramework.Content
             plan.SinglePage = false; plan.ExactBounds = true; plan.LodDistances = new[] { 31f, float.NaN, float.NaN, float.NaN };
             diffs = DrawableRoundTrip.Compare(source, template, DrawableStructureBuilder.Build(template, plan));
             t.Check(diffs.SequenceEqual(new[] { "sys+0x50" }), "a changed LOD distance is found in the system segment", string.Join(" ", diffs.ToArray()));
+
+            // Shift a real synthetic graphics layout behind an opaque prefix. Repacking must remain a failure,
+            // and the diagnostic must identify the unmodeled bytes without exporting them.
+            RscResource prefixed = SyntheticDrawable.Build(TwoLods());
+            DrawableFile before = new DrawableFile(prefixed);
+            Buffer.BlockCopy(prefixed.Body, prefixed.SystemSize, prefixed.Body, prefixed.SystemSize + 16, prefixed.GraphicsSize - 16);
+            for (int i = 0; i < 16; i++) { prefixed.Body[prefixed.SystemSize + i] = 0xA5; }
+            foreach (DrawableGeometry g in DrawableStructureBuilder.Geometries(before))
+            {
+                foreach (uint field in new[] { g.VertexBuffer + DrawableGeometry.VertexBufferData, g.VertexBuffer + DrawableGeometry.VertexBufferData2,
+                    g.IndexBuffer + DrawableGeometry.IndexBufferData })
+                {
+                    uint pointer = before.View.U32(field);
+                    if (ResourceView.IsGraphics(pointer)) { Buffer.BlockCopy(BitConverter.GetBytes(pointer + 16), 0, prefixed.Body, before.View.Offset(field, 4), 4); }
+                }
+            }
+            DrawableRoundTrip.Outcome traced = DrawableRoundTrip.Check(prefixed, true);
+            t.Check(traced.Skip == null && traced.Identical.Count == 0 && traced.GraphicsLayout != null,
+                "opaque graphics prefix remains a roundtrip failure with layout evidence", traced.Skip);
+            List<object> gaps = traced.GraphicsLayout == null ? new List<object>() : (List<object>)traced.GraphicsLayout["unmodeledSourceRanges"];
+            Dictionary<string, object> prefix = gaps.Count == 0 ? null : (Dictionary<string, object>)gaps[0];
+            t.Check(prefix != null && (int)prefix["offset"] == 0 && (int)prefix["bytes"] == 16 && (int)prefix["otherBytes"] == 16,
+                "graphics diagnostic locates an opaque leading allocation");
         }
 
         internal static void BoundsRecords(SelfTest.Runner t, string output)

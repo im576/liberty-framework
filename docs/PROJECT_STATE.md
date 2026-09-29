@@ -5,6 +5,10 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
+**Drawable placement diagnostic (2026-09-29):** the roundtrip tool now reports page metadata, source/rebuilt buffer
+ranges and byte-class counts in unmodeled graphics spans for up to 25 failures. An opaque-prefix mutation guards
+the diagnostic; Windows build/self-test and the targeted Bronx probe are pending. Writer behavior is unchanged.
+
 **Focused runtime follow-up (2026-09-29):** `14010f6` installed and restored; no scenario crashed. Sling scripted
 checks passed, but the images establish one rifle/strap. Hot reload released owned invincibility as designed, then
 the unprotected player died during self-test (48/49); trunk missed its short initial interaction press. Scenarios
