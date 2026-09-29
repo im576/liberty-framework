@@ -109,8 +109,10 @@ namespace LibertyFramework.Content
 
         internal static void BoundsProbe(SelfTest.Runner t, string output)
         {
+            RscResource linked = RscResource.Parse(FakeBounds(0x00123456, 1));
+            BitConverter.GetBytes(TextureNameHash.Compute("d")).CopyTo(linked.Body, 0x20);
             string game = StructureSelfTest.FakeGameFiles(new KeyValuePair<string, byte[]>("a.wbn", FakeBounds(0x00ABCDEF, 3)), new KeyValuePair<string, byte[]>("b.wbn", FakeBounds(0x00ABCDEF, 5)),
-                new KeyValuePair<string, byte[]>("c.wbd", FakeBounds(0x00123456, 1)), new KeyValuePair<string, byte[]>("d.wdr", new byte[] { 1, 2, 3 }));
+                new KeyValuePair<string, byte[]>("c.wbd", linked.Serialize()), new KeyValuePair<string, byte[]>("d.wdr", new byte[] { 1, 2, 3 }));
             try
             {
                 string path = Path.Combine(game, "bounds.json");
@@ -129,6 +131,14 @@ namespace LibertyFramework.Content
                 Dictionary<string, object> pointed = (Dictionary<string, object>)wbn["pointed"];
                 t.Check(pointed.ContainsKey("root+0x04") && Convert.ToInt32(((Dictionary<string, object>)((ArrayList)pointed["root+0x04"])[0])["smallInt"]) == 100, "the pointed structure is measured one level down");
                 t.Check(((Dictionary<string, object>)wbn["rootSizeBound"]).ContainsKey("<= 0x7F"), "the smallest pointer target bounds the root size");
+
+                string linksPath = Path.Combine(game, "collision-links.json");
+                t.Check(Probe.Run(new[] { "collision-links", "--game", game, "--out", linksPath }) == 0, "probe collision-links exits 0");
+                Dictionary<string, object> links = new JavaScriptSerializer().Deserialize<Dictionary<string, object>>(File.ReadAllText(linksPath));
+                Dictionary<string, object> match = (Dictionary<string, object>)((ArrayList)links["examples"])[0];
+                t.Check(Convert.ToInt32(links["matchingWords"]) == 1 && (string)match["bounds"] == "c.wbd" &&
+                    (string)match["model"] == "d" && (string)match["systemOffset"] == "0x20",
+                    "collision-links records only a local drawable hash match and its system offset");
             }
             finally { try { Directory.Delete(game, true); } catch (IOException) { } }
         }
