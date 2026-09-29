@@ -1,0 +1,7 @@
+# Focused Windows runtime review at `0d849f0`
+
+The verifier published the primary logs, JSON and screenshots in this run directory. SDK hot reload **passed 24/24** with no log errors, including the completed selftest. T-021 sling **failed 1 of 41 steps**, with one log error: the first `alive` check, just after teleport, returned `error player is missing or dead`. The log shows `holsters_removed reason=wasted` and `arsenal_loss_no_safehouse` before the sling scenario's first command, and subsequent `god on` returned success while the player was still dead. Thus the early failure records a real invalid player state after the prior scenario, not a mere missing log line.
+
+The player later respawned. The scenario granted two different long-gun slots, logged `holster_sling_attached` for both LongGun1 and LongGun2, and each of five checks before capture reported `player alive health=100`. Visual review of `front.jpg`, `back.jpg`, `left.jpg`, `right.jpg`, and `back_close.jpg` shows two distinct slung long guns attached across the character's back; the rear close-up is clearest. These images support both attachments after respawn, while the full scenario remains **FAIL** because of the initial dead state. The screenshots are near a medical center, consistent with respawn rather than the intended East Park setting.
+
+The verifier restored the install from `phase2-20260929-143341`. An independent SHA-256 comparison of all 42 rollback actions against their saved originals found **0 mismatches**. No game installation remains from this run.
