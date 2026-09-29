@@ -70,6 +70,7 @@ namespace LibertyFramework.Content
                 Group("manifest", Manifest),
                 Group("capabilities", AuthoringSelfTest.Capabilities),
                 Group("collision import", AuthoringSelfTest.CollisionImport),
+                Group("WBD table reader", WbdDictionarySelfTest.Run),
                 Group("structure rules", AuthoringSelfTest.StructureRules),
                 Group("world object rules", AuthoringSelfTest.WorldObjectRules),
                 Group("report structure", AuthoringSelfTest.ReportStructure),
