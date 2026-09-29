@@ -12,7 +12,23 @@ These results do not establish the initial engine foundation as finished. In par
 
 - `PROBE-drawables` found 22,814 WDR entries and parsed 22,812. All parsed drawables used only LOD slot 0. The four-LOD test post therefore found no matching structure template, compiled as `template (fallback)` and retained only LOD 0. Its five screenshots do not prove LOD switching; the green one-band post is visible at 6, 18 and 38 m, the 75 m view is blocked by foliage, and the 130 m shot does not clearly show the post.
 - `T031-drawable-roundtrip` found 12,688 eligible drawables, of which 5,254 rebuilt identically and 7,434 differed. The first reported differences are system offsets; the report records only the first 25 failures, so their distribution is not yet established. The structure writer cannot be made the unconditional default from this evidence.
+
+**Focused WDR diagnostic (commit `4f56e61`):** the read-only `Template` buffer order candidate was tested on
+`bronx_e.img`. Of 352 WDRs, 187 were eligible; 105 matched and 82 differed. `Template` alone accounted for 23
+matches missed by both earlier orders. The full field classification found changed index-buffer data pointers in all
+82 remaining files and changed vertex-buffer data pointers in 77; no vertex/index data-content mismatch was reported.
+Two files also failed the drawable-box containment check. Only 66 of 187 eligible files had matching RSC page flags,
+which are outside this roundtrip pass condition. Buffer placement, gaps or padding and the two bounds cases need
+further research before the writer can be promoted. This targeted archive result does not replace the full-corpus
+12,688-file result. Evidence: `verification-results/results/20260928-4f56e61-bronx-e/`.
 - `PROBE-collision` found 732 WBN, 348 WBD and 85 WBS resources. It found zero drawable/WBN pairs with the same name in the same archive. WBN and WBD are RSC type 32; WBS is type 1. The bounds-layout probe grouped 1,165 resources into ten extension/type/root-word classes. These are measurements, not decoded collision structures.
+
+**Focused collision-link probe (commit `a61fdfe`):** the Windows content build and 347/347 self-tests passed. Across
+1,080 WBD/WBN resources in 195 opened IMG archives with WDRs, the probe found 3,572 aligned words matching hashes of
+same-IMG WDR names: 3,564 in WBD and eight in WBN. `bronx_e.wbd` has twelve consecutive matching names. This
+strongly suggests a WBD name-hash table but does not associate a hash with a bounds object or establish runtime
+collision pairing. Five IMG archives were omitted after parse errors. Evidence:
+`verification-results/results/20260929-a61fdfe-collision-links/`.
 - The automatic borrowed-collision search therefore found no candidate. `lf_col_crate` and `lf_world_wall` built without a borrowed WBN. Their failed raycasts do not decide whether GTA IV would pair a same-named WBN with a script-created object if one were provided. The static wall did spawn and was visible in its screenshot.
 - `T028-wtdcheck` inspected 79 dictionaries; 68 rebuilt, 67 compared identical, 11 uncompressed dictionaries were skipped, and no parser exception was counted. Its nonzero exit is a real single roundtrip mismatch. The probe also recorded 99 nonzero texture-record `+0x40` words among compressed textures, while the writer emits zero, and all 79 dictionaries used several graphics pages. The native crate and alpha panel visibly rendered in game, but the texture roundtrip claim remains incomplete.
 

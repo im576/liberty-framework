@@ -14,7 +14,11 @@ with hashes of nearby WDR and IDE model names. The measured root pointer fields 
 [`Collision.md`](../research/Collision.md). The current `auto` rule cannot select a prop from this installation;
 replace it only after the game's actual collision lookup has evidence. A roundtrip reader/writer for one relevant
 bounds class and an in-game pairing test are required before authored collision work.
-`PROBE-collision-links` is queued as a conservative same-IMG hash scan to direct that inspection.
+`PROBE-collision-links` has now run as a conservative same-IMG hash scan. It found 3,564 matching words in WBD and
+eight in WBN; `bronx_e.wbd` contains a twelve-word consecutive run of WDR-name hashes. The result supports a WBD
+name-hash table, but it does not associate a key with a bounds object. Evidence:
+`verification-results/results/20260929-a61fdfe-collision-links/`. The next probe should trace the table's owning
+structure, count and parallel bounds references before any reader/writer is attempted.
 
 Depends on: T-030 (authored collision shapes), T-027 (engine raycast). Session 5 of
 [NEXT_SESSIONS](../workflow/NEXT_SESSIONS.md).

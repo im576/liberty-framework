@@ -9,7 +9,7 @@ Keep it short: this is a dashboard, not a diary.
 
 **Focused Windows fixes (2026-09-28, Codex):** commit `762fd62` built and passed 834 offline verifier checks and 345 content self-test checks. WTD roundtrip is now 68/68 byte-identical compressed dictionaries. The 25-ped GTA IV scenario completed 18/18 steps without a crash, but logged a 5,013 ms setup stall and remains NEEDS-REVIEW. The verifier restored all 42 installed-file actions. See the focused runs in the report above.
 
-**Collision follow-up:** `PROBE-collision-links` is queued to test whether local WDR name hashes appear in WBD/WBN system words; it is a hypothesis scan, not a decoded collision writer. Session 5b still needs a proven model-to-bounds relationship and a bounds class roundtrip.
+**Collision follow-up (2026-09-29):** `PROBE-collision-links` built and passed 347/347 content self-tests on Windows. It found 3,564 WBD words matching same-IMG WDR name hashes (eight in WBN), including a twelve-word consecutive run in `bronx_e.wbd`. This supports a WBD name-hash table, but Session 5b still needs a proven hash-to-bounds association, a bounds class roundtrip and an in-game pairing test. The read-only report is under `verification-results/results/20260929-a61fdfe-collision-links/`.
 
 **Sessions 4b, 5 and 6 (2026-09-26, Claude; [T-031](tasks/T-031-structure-writer.md), [T-032](tasks/T-032-collision.md), [T-033](tasks/T-033-world-objects.md)): offline checks pass; NEEDS-PLAYTEST.**
 - **4b:** the structure writer is now chosen automatically for multi-material assets. Single-geometry assets keep the v1 build proven in game.

@@ -51,6 +51,18 @@ WBD/WBN resources for hashes of WDR names **from the same IMG**, reporting only 
 not assume where the dictionary table starts or claim a matched word is a key. A zero-match result would narrow the
 hypothesis but would not exclude references by IDE ID, cross-archive name, another hash, or an unaligned field.
 
+**Windows result (2026-09-29, VERIFIED OFFLINE):** in 195 successfully opened IMG archives containing both drawables
+and bounds, the probe scanned 1,080 WBD/WBN resources. It found 3,572 matching aligned words across 172 resources and
+3,569 distinct same-IMG WDR model names. WBD accounts for 3,564 matches; WBN accounts for eight. `bronx_e.wbd`
+contains twelve consecutive matching WDR hashes at system offsets `0x4FB0`–`0x4FDC`. These runs strongly support a
+WBD model-name hash table, but neither a hash-to-bounds association nor the runtime pairing rule is proven. Five IMG
+archives could not be opened by the probe. Full names, offsets and counts are in
+`verification-results/results/20260929-a61fdfe-collision-links/`; the report contains no resource bytes.
+
+The next read-only probe should locate the structure that points to the consecutive hash run, compare its candidate
+count with the run length, and locate a parallel bounds-pointer array or entries. A same-name/hash match alone is
+insufficient to select a collision resource for `lf_col_crate`.
+
 ## Plan
 
 1. **Inventory (queued):** `PROBE-collision` (`LibertyContent probe collision`) lists which collision-like resources the

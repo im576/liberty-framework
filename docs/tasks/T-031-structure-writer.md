@@ -14,8 +14,14 @@ roundtrip differences before reworking the writer.
 **Follow-up probe (2026-09-28):** `PROBE-drawables` classified 13,269 multi-geometry files as `other` buffer order,
 compared with 824 interleaved and 1,274 vertices-first. `roundtrip` now also tries the source drawable's observed
 buffer order (`Template`) and reports each matching combination. This is a diagnostic candidate; it does not change
-the generated asset's default order or establish that the remaining files round-trip. Run the targeted archive first,
-then the full roundtrip if the candidate explains the failures.
+the generated asset's default order or establish that the remaining files round-trip. The targeted archive result
+below determines the next diagnostic.
+
+**Targeted Windows result:** in `bronx_e.img`, 105 of 187 eligible WDRs matched; 23 matched only under `Template`.
+All 82 remaining failures changed index-buffer data pointers, 77 also changed vertex-buffer data pointers, and two
+failed drawable-box containment. No vertex/index data-content mismatch was reported. Only 66/187 had identical RSC
+page flags, which the roundtrip does not require. The writer still needs a measured graphics placement model and the
+full-corpus rerun; the evidence is in `verification-results/results/20260928-4f56e61-bronx-e/`.
 
 Depends on: T-030 (authoring side), T-028 (native texture dictionaries). Session 4 of
 [NEXT_SESSIONS](../workflow/NEXT_SESSIONS.md).
