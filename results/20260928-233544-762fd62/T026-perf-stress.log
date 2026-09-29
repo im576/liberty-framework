@@ -1,0 +1,2 @@
+scenario perf-stress: NEEDS-REVIEW; steps=18 failed=0 logErrors=2 gameAlive=True; report <repo>\results-local\20260928-233544-762fd62\_runs\perf-stress-20260928-234212
+AUTOPILOT_RESULT <repo>\results-local\20260928-233544-762fd62\_runs\perf-stress-20260928-234212\result.json

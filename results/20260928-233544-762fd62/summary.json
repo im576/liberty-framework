@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "run": {
+    "id": "20260928-233544-762fd62",
+    "commit": "762fd62",
+    "branch": "codex/pr7-windows-check",
+    "mode": "full",
+    "startedUtc": "2026-09-29T06:35:44.5109503Z",
+    "finishedUtc": "2026-09-29T06:44:53.9610109Z",
+    "game": {
+      "version": "1.2.0.59",
+      "exeSha256": "08759A5516F9837920EA504436236BBAB89D0826A8E4D04FF106345177B5345D",
+      "fusionFix": "5.0.1",
+      "scriptHookDotNetSha256": "AB8E7652A53A82C00018EB85D6FB5DB7F47197513F16B5959771B4CA2D8D4D3B"
+    },
+    "install": "restored from <game>\\scripts\\LibertyFramework\\backups\\phase2-20260928-234209",
+    "installBackup": "<game>\\scripts\\LibertyFramework\\backups\\phase2-20260928-234209",
+    "selected": [
+      "LOOP-package-install",
+      "T026-perf-stress"
+    ]
+  },
+  "counts": {
+    "PASS": 1,
+    "NEEDS-REVIEW": 1,
+    "FAIL": 0,
+    "CRASH": 0,
+    "ERROR": 0,
+    "NOT-RUN": 0
+  },
+  "checks": [
+    {
+      "id": "LOOP-package-install",
+      "task": "LOOP",
+      "kind": "pc-offline",
+      "title": "Package and install the develop build (backup kept)",
+      "status": "PASS",
+      "detail": "installed; backup <game>\\scripts\\LibertyFramework\\backups\\phase2-20260928-234209",
+      "evidence": [
+        "LOOP-package-install.log",
+        "LOOP-package-install-install.log"
+      ],
+      "seconds": 386
+    },
+    {
+      "id": "T026-perf-stress",
+      "task": "T-026",
+      "kind": "scenario",
+      "title": "Performance under load (25 extra peds)",
+      "status": "NEEDS-REVIEW",
+      "detail": "NEEDS-REVIEW; steps=18 failed=0 logErrors=2 gameAlive=True",
+      "evidence": [
+        "T026-perf-stress.log",
+        "T026-perf-stress"
+      ],
+      "seconds": 151
+    }
+  ]
+}

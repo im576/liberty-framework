@@ -1,0 +1,13 @@
+{
+  "scenario": "perf-stress",
+  "status": "NEEDS-REVIEW",
+  "summary": "NEEDS-REVIEW; steps=18 failed=0 logErrors=2 gameAlive=True",
+  "steps": 18,
+  "failedSteps": [],
+  "screenshots": [],
+  "logErrors": 2,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T06:43:49.5403254Z",
+  "finishedUtc": "2026-09-29T06:44:41.4774571Z"
+}
