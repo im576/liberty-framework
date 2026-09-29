@@ -1,0 +1,21 @@
+{
+    "scenario":  "sling-review",
+    "status":  "FAIL",
+    "summary":  "FAIL; steps=41 failed=1 logErrors=1 gameAlive=True",
+    "steps":  41,
+    "failedSteps":  [
+                        "command refused: alive =\u003e alive =\u003e error player is missing or dead"
+                    ],
+    "screenshots":  [
+                        "front.jpg",
+                        "back.jpg",
+                        "left.jpg",
+                        "right.jpg",
+                        "back_close.jpg"
+                    ],
+    "logErrors":  1,
+    "gameAlive":  true,
+    "runnerError":  "",
+    "startedUtc":  "2026-09-29T21:35:36.5500071Z",
+    "finishedUtc":  "2026-09-29T21:36:20.7396198Z"
+}
