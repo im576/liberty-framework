@@ -6,12 +6,12 @@ goto east_park
 wait 4000
 time 13 0
 weather 1
+mark
 give 15 200
 give 14 200
 give 7 100
 select 7
-wait 3000
-expect holster_sling_attached 15
+expectmarked holster_sling_attached 15
 hud off
 cam 0 2.2 0.4
 wait 1500

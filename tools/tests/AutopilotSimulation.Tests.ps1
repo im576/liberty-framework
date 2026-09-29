@@ -38,6 +38,15 @@ Test-That 'sim: result.json lists the screenshot' ($r.Json -and @($r.Json.screen
 $r = Invoke-SimScenario 'stale' @('spawn_silent', 'expect "autopilot_spawned count=1" 1') $world @('autopilot_spawned count=1')
 Test-That 'sim: a line from before the command does not satisfy expect' ($r.Status -eq 'FAIL') $r.Output
 
+$r = Invoke-SimScenario 'marked' @('mark', 'spawn 1 5 0', 'spawn_silent', 'expectmarked "autopilot_spawned count=1" 1') $world
+Test-That 'sim: marked sequence accepts event between commands' ($r.Status -eq 'PASS') $r.Output
+
+$r = Invoke-SimScenario 'marked-stale' @('mark', 'spawn_silent', 'expectmarked "autopilot_spawned count=1" 1') $world @('autopilot_spawned count=1')
+Test-That 'sim: marked sequence rejects event before mark' ($r.Status -eq 'FAIL') $r.Output
+
+$r = Invoke-SimScenario 'unmarked' @('spawn 1 5 0', 'expectmarked "autopilot_spawned count=1" 1') $world
+Test-That 'sim: expectmarked requires mark' ($r.Status -eq 'FAIL') $r.Output
+
 $r = Invoke-SimScenario 'echo' @('spawn_silent', 'expect "spawn_silent" 1') $world
 Test-That 'sim: the command echo does not satisfy expect' ($r.Status -eq 'FAIL') $r.Output
 

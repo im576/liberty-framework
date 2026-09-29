@@ -25,6 +25,8 @@ param(
 #   shot <name>                  Steam F12 screenshot -> <name>.png (a missing screenshot fails the step)
 #   expect <regex> [seconds]     wait for a log line written after the latest engine command (default 20 s); fails the
 #                                step if absent. The command's own log line only counts when the pattern needs its reply.
+#   mark                         remember the current log position before a sequence of commands
+#   expectmarked <regex> [seconds] wait for a log line written after mark, including between commands in the sequence
 #   key <Keys name> [hold ms]    press a key in the game window (default 80 ms)
 #   anything else                an engine command (see "lf help"), sent through the command channel; a refused
 #                                command (unknown, error, module not running, no reply) fails the step
@@ -58,6 +60,7 @@ try {
     $startUtc = [DateTime]::UtcNow
     # expect only accepts log lines written after the most recent engine command was sent (a line count, not a clock).
     $mark = @(Get-SessionLog).Count
+    $sequenceMark = -1
 
     foreach ($raw in $lines) {
         $line = $raw.Trim()
@@ -68,6 +71,11 @@ try {
             $words = $line -split '\s+'
             switch ($words[0]) {
                 'wait' { Start-Sleep -Milliseconds ([int]$words[1]); $steps.Add("wait $($words[1]) ms") }
+                'mark' {
+                    if ($words.Count -ne 1) { Add-Failure "unparseable mark line: $line"; break }
+                    $sequenceMark = @(Get-SessionLog).Count
+                    $steps.Add("mark log line $sequenceMark")
+                }
                 'shot' {
                     $file = Save-Screenshot (Join-Path $report ($words[1] + '.png'))
                     if (-not (Test-Path -LiteralPath $file) -or (Get-Item -LiteralPath $file).Length -eq 0) { throw "screenshot $($words[1]) was not written" }
@@ -75,19 +83,22 @@ try {
                     $steps.Add("shot $($words[1]) -> $(Split-Path -Leaf $file)")
                 }
                 'key' { $hold = if ($words.Count -gt 2) { [int]$words[2] } else { 80 }; Send-GameKey $words[1] $hold; $steps.Add("key $($words[1]) $hold ms") }
-                'expect' {
-                    $expect = ConvertFrom-ExpectLine $line
+                { $_ -eq 'expect' -or $_ -eq 'expectmarked' } {
+                    $fromSequence = $words[0] -eq 'expectmarked'
+                    $expect = ConvertFrom-ExpectLine ($line -replace '^expectmarked\b', 'expect')
                     if (-not $expect) { Add-Failure "unparseable expect line: $line"; break }
+                    if ($fromSequence -and $sequenceMark -lt 0) { Add-Failure "expectmarked without mark: $line"; break }
+                    $from = if ($fromSequence) { $sequenceMark } else { $mark }
                     $deadline = (Get-Date).AddSeconds($expect.TimeoutSeconds)
                     $hit = $null
                     while (-not $hit -and (Get-Date) -lt $deadline) {
-                        $hit = Find-ExpectedLine @(Get-SessionLog) $mark $expect.Pattern
+                        $hit = Find-ExpectedLine @(Get-SessionLog) $from $expect.Pattern
                         if (-not $hit) {
                             if (-not (Get-GameProcess)) { throw 'game exited while waiting' }
                             Start-Sleep -Milliseconds 500
                         }
                     }
-                    if ($hit) { $steps.Add("expect $($expect.Pattern): OK $hit") } else { Add-Failure "expect $($expect.Pattern): no new log line in $($expect.TimeoutSeconds) s" }
+                    if ($hit) { $steps.Add("$($words[0]) $($expect.Pattern): OK $hit") } else { Add-Failure "$($words[0]) $($expect.Pattern): no new log line in $($expect.TimeoutSeconds) s" }
                 }
                 default {
                     $mark = @(Get-SessionLog).Count
