@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "run": {
+    "id": "20260928-215323-e0a48d9",
+    "commit": "e0a48d9",
+    "branch": "HEAD",
+    "mode": "smoke",
+    "startedUtc": "2026-09-29T04:53:23.5030581Z",
+    "finishedUtc": "2026-09-29T04:54:37.9878905Z",
+    "game": {
+      "version": "1.2.0.59",
+      "exeSha256": "08759A5516F9837920EA504436236BBAB89D0826A8E4D04FF106345177B5345D",
+      "fusionFix": "5.0.1",
+      "scriptHookDotNetSha256": "AB8E7652A53A82C00018EB85D6FB5DB7F47197513F16B5959771B4CA2D8D4D3B"
+    },
+    "install": "not installed",
+    "installBackup": "",
+    "selected": [
+      "LOOP-build",
+      "LOOP-package-install",
+      "SDK-selftest"
+    ]
+  },
+  "counts": {
+    "PASS": 1,
+    "NEEDS-REVIEW": 0,
+    "FAIL": 1,
+    "CRASH": 0,
+    "ERROR": 0,
+    "NOT-RUN": 1
+  },
+  "checks": [
+    {
+      "id": "LOOP-build",
+      "task": "LOOP",
+      "kind": "pc-offline",
+      "title": "Engine, SDK, mods and native core build on Windows",
+      "status": "PASS",
+      "detail": "exit code 0",
+      "evidence": [
+        "LOOP-build.log"
+      ],
+      "seconds": 33
+    },
+    {
+      "id": "LOOP-package-install",
+      "task": "LOOP",
+      "kind": "pc-offline",
+      "title": "Package and install the develop build (backup kept)",
+      "status": "FAIL",
+      "detail": "package-phase2.ps1 failed (exit 1)",
+      "evidence": [
+        "LOOP-package-install.log"
+      ],
+      "seconds": 41
+    },
+    {
+      "id": "SDK-selftest",
+      "task": "T-027",
+      "kind": "scenario",
+      "title": "SDK self-test in game (all services, raycast checks included)",
+      "status": "NOT-RUN",
+      "detail": "LOOP-package-install did not pass in this run",
+      "evidence": [],
+      "seconds": 0
+    }
+  ]
+}

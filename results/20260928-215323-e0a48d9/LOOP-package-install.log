@@ -1,0 +1,41 @@
+Built <repo>\sdk\Liberty.Sdk\bin\Liberty.Sdk.dll from 101 source files
+Built <repo>\src\LibertyFramework\bin\Release\LibertyFramework.net.dll from 182 source files
+SHA256 6D56B9BED70A52A9B29870BF93C328B332835B315BAA9751E9CF4C63B88631A7
+Built mod <repo>\mods\Liberty.Autopilot\bin\Liberty.Autopilot.dll from 4 source files
+Built mod <repo>\mods\Liberty.World\bin\Liberty.World.dll from 3 source files
+Built <repo>\native\LibertyCore\bin\LibertyCore.dll
+SHA256 DF8CDE0DA81C81B7A5EEC27FC00BEAF40BB3D004EB9436337F532B0C85F5C120
+ok   both natives verified
+ok   a working native returns its result and out slot
+ok   a faulting native returns 0 with its out slot zeroed
+ok   the fault switches the native off
+ok   the fault names the native and its argument
+ok   a faulted native still answers 0
+ok   a faulted native is not invoked again
+ok   verification cannot switch a faulted native back on
+ok   a new handler (a new lc_init) starts clean
+ok   other natives are unaffected
+natives_test passed
+ok   empty segment is clear after one test
+ok   wall hit, distance 10
+ok   passes two peds, stops at the wall
+ok   excluded hits only: clear
+ok   pass budget exhausted: inconclusive with the last excluded hit
+ok   max_passes 0 still reports an accepted first hit
+ok   ignored self and own vehicle, hits the ped beyond
+ok   ignored vehicle passed twice, wall hit
+ok   walk always advances and ends
+ok   a failed test fails the query
+ok   zero-length ray refused without a test
+ok   non-positive step refused
+ok   object excluded when only peds stop the ray
+ray_walk_test passed
+
+FAIL Gunplay logic and configuration: section completed without exception (System.IO.DirectoryNotFoundException: Could 
+not find a part of the path '<repo>\staging\t007\WeaponInfo.xml'.
+RESULT passed=825 failed=1
+Exception: <repo>\tools\verify.ps1:78
+Line |
+  78 |  … DE -ne 0) { throw "Offline verification failed (exit $LASTEXITCODE)"  …
+     |                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Offline verification failed (exit 1)
