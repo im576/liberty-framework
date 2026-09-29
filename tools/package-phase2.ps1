@@ -66,6 +66,8 @@ foreach ($name in @('gunplay.json', 'combat_effects.json', 'weapon-catalog.json'
 }
 Stage-File (Join-Path $repoRoot 'config\arsenal.json') 'scripts\LibertyFramework\config\arsenal.json' 'merge-defaults'
 Stage-File (Join-Path $repoRoot 'config\holsters.json') 'scripts\LibertyFramework\config\holsters.json' 'merge-defaults'
+# T-033: where the static world objects stand (read by the world mod, mods/Liberty.World: config\<module id>\objects.json).
+Stage-File (Join-Path $repoRoot 'config\world\objects.json') 'scripts\LibertyFramework\config\world\objects.json' 'replace'
 Get-ChildItem -LiteralPath (Join-Path $repoRoot 'config\presets') -Filter '*.json' | Sort-Object Name | ForEach-Object {
     Stage-File $_.FullName "scripts\LibertyFramework\config\presets\$($_.Name)" 'replace'
 }

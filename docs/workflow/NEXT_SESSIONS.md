@@ -19,9 +19,9 @@ RAN-PASS / RAN-FAIL / NOT RUN (reason) / NEEDS LOCAL VERIFY. Stop and report ins
 | 2 | Engine audit and hardening | DONE (PR into `develop`; [report](../reports/2026-09-26-engine-audit.md)) | none |
 | 3 | Blender and compiler authoring side: materials, LODs, collision and world metadata | DONE ([T-030](../tasks/T-030-lcc-authoring-side.md), PR into `develop`) | session 2 merged |
 | 4 | Multi-geometry and LOD drawable writer | DONE, capability off ([T-031](../tasks/T-031-structure-writer.md); opt-in `drawableWriter: structure`; round trip, LOD scenario and probe queued) | session 3 merged; `PROBE-drawables` results strongly preferred |
-| 4b | Structure writer as the default | queued | a verification run with `T031-drawable-roundtrip` PASS and `T031-lod-review` showing the LODs |
-| 5 | Collision: research, then writer | NEXT (research part; the writer waits for `PROBE-collision`) | `PROBE-collision` results (research may start before) |
-| 6 | Static world objects (IDE, placement, packaging) | queued | session 5 |
+| 4b | Structure writer as the default | DONE (automatic for multi-material assets; single-geometry assets stay v1; [T-031](../tasks/T-031-structure-writer.md#session-4b-2026-09-26-the-automatic-writer)) | owner's request, before the PC run |
+| 5 | Collision: research, then writer | DONE up to the writer ([T-032](../tasks/T-032-collision.md): layout probe, borrowed-collision experiment); **5b, the collision writer, waits for `PROBE-collision` and `PROBE-bounds-layout`** | `PROBE-collision` results (research may start before) |
+| 6 | Static world objects (IDE, placement, packaging) | DONE ([T-033](../tasks/T-033-world-objects.md): world mod, `config/world/objects.json`, borrowed collision) | session 5 |
 | 7+ | SDK features for the mod pack | queued | session D |
 | D | Mod pack design document | any time | none |
 
@@ -98,6 +98,13 @@ Only after a run where `T031-drawable-roundtrip` passes and `T031-lod-review` sh
 - pick default templates from `PROBE-drawables` `structureTemplates`.
 
 If the round trip fails: read its report, fix the rule it names (buffer order, records), and keep the check queued.
+
+## Session 5b: collision writer (after the verification run)
+
+Read `PROBE-collision` and `PROBE-bounds-layout`, decode the class a static prop uses (labels in Collision.md), write a
+probe that round-trips the game's files, then the writer, turning shapes on in `CompilerCapabilities.CollisionShapes`.
+`lf_fx_collision` and `lf_world_wall`'s authored shapes are its inputs. `T032-collision-borrow` says whether same-named
+bounds are paired at all.
 
 ## Session 5: collision
 

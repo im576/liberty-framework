@@ -7,7 +7,7 @@
 	"scenes":[
 		{
 			"extras":{
-				"liberty_exporter":"0.3.0",
+				"liberty_exporter":"0.6.0",
 				"liberty_blender":"5.2.2 LTS",
 				"liberty_source":"unsaved"
 			},

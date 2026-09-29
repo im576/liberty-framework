@@ -1,6 +1,6 @@
 # Authoring in Blender (Liberty Exporter add-on)
 
-Blender models and textures the asset. The Liberty Exporter add-on (`tools/blender/liberty_exporter`, v0.4.0) turns
+Blender models and textures the asset. The Liberty Exporter add-on (`tools/blender/liberty_exporter`, v0.6.0) turns
 the scene into a validated asset folder. LibertyContent (docs/content/README.md) then compiles it for GTA IV.
 
 ```
@@ -17,7 +17,7 @@ Tested with Blender 5.2.2 LTS. The minimum version is 4.2, where extensions star
    ```
    blender --background --factory-startup --command extension build --source-dir tools/blender/liberty_exporter --output-dir staging
    ```
-3. Install `staging/liberty_exporter-0.4.0.zip` in Blender: Edit > Preferences > Get Extensions > ⌄ > Install from Disk.
+3. Install `staging/liberty_exporter-0.6.0.zip` in Blender: Edit > Preferences > Get Extensions > ⌄ > Install from Disk.
 4. In the add-on's preferences, set:
    - **Content folder:** the repository's `content` folder.
    - **GTA IV folder:** the folder with `GTAIV.exe`. Builds read the template drawable from the game archives.
@@ -78,8 +78,9 @@ Tested with Blender 5.2.2 LTS. The minimum version is 4.2, where extensions star
 | Template / Model | `template` |
 | Texture dictionary | `textureDictionary` (empty uses the name) |
 | Texture mode | `textureMode`: Template (default, not written) or Native |
-| Drawable writer | `drawableWriter`: Template (default, not written) or Structure (every LOD, one geometry per material; needs Native; NEEDS-PLAYTEST, T-031) |
-| Structure template / Model | `structureTemplate` (Structure only): `*` / `auto` search every IMG for the first drawable that fits |
+| Drawable writer | `drawableWriter`: Automatic (default, not written: the structure writer for several materials per LOD), Template (v1) or Structure (every LOD, one geometry per material, native textures; NEEDS-PLAYTEST, T-031) |
+| Structure template / Model | `structureTemplate`, written only when not the default `*` / `auto` (search every IMG for the first drawable that fits) |
+| Collision | Authored (collision objects; not written yet, LCC032) or Borrow: `collision.borrow` ships a vanilla prop's own collision (`*` / `auto`: `PROBE-collision`'s first candidate; NEEDS-PLAYTEST, T-032) |
 | Draw distance (m) | `drawDistanceMeters` |
 | Audio material | `audioMaterial` |
 | LOD distances | `lodDistancesMeters` (when ticked; one entry per LOD the asset has) |
@@ -115,7 +116,7 @@ export.
 | LBX006 | warning | largest extent outside 0.02–200 m |
 | LBX007 | warning | model centre far from the world origin (spawn point) |
 | LBX008 | info | lowest point not at Z = 0 |
-| LBX009 | warning | more materials in a LOD than compiler v1 writes (exported; LibertyContent refuses: LCC016) |
+| LBX009 | warning | Drawable writer Template with more than one material in a LOD (exported; LibertyContent refuses: LCC016). Automatic takes the structure writer instead |
 | LBX010 | warning | faces without a material |
 | LBX011 | warning | material the glTF exporter can't translate (no Principled BSDF, Base Color not a direct Image Texture) |
 | LBX012 | error | image file missing, not a still image, or no pixels |
@@ -135,16 +136,17 @@ export.
 | LBX026 | warning | LOD tag on a collision object (ignored) |
 | LBX027 | warning | collision outside the model's bounds |
 | LBX028 | warning | collision, which compiler v1 does not write (exported; LibertyContent refuses: LCC032) |
-| LBX029 | warning | asset type compiler v1 does not build (exported; LibertyContent refuses: LCC033) |
+| LBX029 | warning | asset type the chosen writer does not build (both build props and world objects) |
 | LBX030 | error | LOD distance not above 0, not ascending, or beyond the draw distance |
 | LBX031 | warning | LOD levels with a gap |
 | LBX032 | warning | world object without collision |
-| LBX033 | error | Drawable writer Structure with Texture mode Template (LCC038) |
+| LBX033 | info | the structure writer (chosen or automatic) uses native textures, whatever Texture mode says |
+| LBX034 | info | collision is borrowed at build (from where) |
 
 ## Scripts and tests
 
 - `tools/blender/run-tests.ps1 -GameDirectory <game> -Blender <blender.exe>`:
-  - Blender's extension validation, plus 92 headless tests (0.4.0). Without the game (`--no-game`, the cloud) 83
+  - Blender's extension validation, plus 95 headless tests (0.6.0). Without the game (`--no-game`, the cloud) 86
     run and the 9 that build against the game's archives are NOT-RUN.
   - The tests cover registration, LOD tags, export files and extras, validate and build against the real game
     archives, and axis/metre round trips.
@@ -160,6 +162,7 @@ export.
   - The drum's `.blend` and texture are kept in `source/` for hand editing.
   - `tests/content/fixtures`: the authoring fixtures (`make_fixtures.py`), checked by `LibertyContent fixtures`.
   - `content/props/lf_lod_post`: the structure writer's four-LOD test post (`make_lf_lod_post.py`, T-031).
+  - `content/objects/lf_world_wall`: the world-object test wall with borrowed collision (`make_lf_world_wall.py`, T-033).
 - A portable Blender for tests lives outside the repository. On the owner's PC it is
   `D:\LibertyTools\blender-5.2.2-windows-x64`; set `LIBERTY_BLENDER` to its `blender.exe`.
 

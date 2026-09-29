@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "enabled": true,
+  "streamInMeters": 150,
+  "streamOutMeters": 180,
+  "checkIntervalMilliseconds": 500,
+  "collision": true,
+  "objects": [
+    {
+      "name": "test_wall",
+      "model": "lf_world_wall",
+      "position": [-64.8, 671.4, 15.0],
+      "headingDegrees": 90,
+      "snapToGround": true
+    }
+  ]
+}

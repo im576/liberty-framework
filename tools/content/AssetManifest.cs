@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 
@@ -17,6 +19,12 @@ namespace LibertyFramework.Content
             [DataMember(Name = "model", IsRequired = true)] internal string Model;
         }
 
+        [DataContract]
+        internal sealed class CollisionRef
+        {
+            [DataMember(Name = "borrow", IsRequired = false)] internal TemplateRef Borrow;
+        }
+
         [DataMember(Name = "schemaVersion", IsRequired = true)] internal int SchemaVersion;
         [DataMember(Name = "name", IsRequired = true)] internal string Name;
         [DataMember(Name = "type", IsRequired = true)] internal string Type;
@@ -31,14 +39,18 @@ namespace LibertyFramework.Content
         // Optional: the distance up to which each LOD is drawn, one entry per LOD level from LOD 0, ascending, the last at
         // most drawDistanceMeters. Authoring intent for the LOD writer; the validator checks it against the asset's LODs.
         [DataMember(Name = "lodDistancesMeters", IsRequired = false)] internal float[] LodDistancesMeters;
-        // "template" (default): v1, the template's single geometry patched (proven in game). "structure" (NEEDS-PLAYTEST):
-        // DrawableStructureBuilder over structureTemplate, writing every LOD and one geometry per material
-        // (CompilerCapabilities.Structure). Needs textureMode native.
+        // "auto" (default, absent): the structure writer when the asset needs it (ResolveWriter), else v1. "template": v1, the
+        // template's single geometry patched (proven in game). "structure" (NEEDS-PLAYTEST): DrawableStructureBuilder over
+        // structureTemplate, writing every LOD and one geometry per material (CompilerCapabilities.Structure), with native
+        // textures unless textureMode says template (LCC038).
         [DataMember(Name = "drawableWriter", IsRequired = false)] internal string DrawableWriter;
         // The structure writer's template: a drawable with enough LOD slots, geometries and gta_default shaders. model
         // "auto" takes the first suitable drawable (by name) in archive, and archive "*" searches every IMG of the game.
-        // Absent: the template above.
+        // Absent: "*" / "auto".
         [DataMember(Name = "structureTemplate", IsRequired = false)] internal TemplateRef StructureTemplate;
+        // Optional: { "borrow": { archive, model } } ships a vanilla prop's own bounds resource under this model's name
+        // (BorrowedCollision; NEEDS-PLAYTEST, T-032). model "auto" takes the first prop candidate, archive "*" searches every IMG.
+        [DataMember(Name = "collision", IsRequired = false)] internal CollisionRef Collision;
 
         internal const string TextureModeTemplate = "template";
         internal const string TextureModeNative = "native";
@@ -48,6 +60,7 @@ namespace LibertyFramework.Content
         internal const string TypeObject = "object";
         internal static readonly string[] Types = { TypeProp, TypeObject };
         internal const float MaxDrawDistanceMeters = 1500;
+        internal const string WriterAuto = "auto";
         internal const string WriterTemplate = "template";
         internal const string WriterStructure = "structure";
         internal const string AutoTemplate = "auto";
@@ -83,15 +96,20 @@ namespace LibertyFramework.Content
                     if (!(distance > 0 && distance <= MaxDrawDistanceMeters)) { throw new InvalidDataException(path + ": lodDistancesMeters entries must be 0-" + MaxDrawDistanceMeters); }
                 }
             }
+            manifest.TextureModeExplicit = !string.IsNullOrEmpty(manifest.TextureMode);
             if (string.IsNullOrEmpty(manifest.TextureMode)) { manifest.TextureMode = TextureModeTemplate; }
             if (manifest.TextureMode != TextureModeTemplate && manifest.TextureMode != TextureModeNative)
             {
                 throw new InvalidDataException(path + ": textureMode '" + manifest.TextureMode + "' must be '" + TextureModeTemplate + "' or '" + TextureModeNative + "'");
             }
-            if (string.IsNullOrEmpty(manifest.DrawableWriter)) { manifest.DrawableWriter = WriterTemplate; }
-            if (manifest.DrawableWriter != WriterTemplate && manifest.DrawableWriter != WriterStructure)
+            if (string.IsNullOrEmpty(manifest.DrawableWriter)) { manifest.DrawableWriter = WriterAuto; }
+            if (manifest.DrawableWriter != WriterAuto && manifest.DrawableWriter != WriterTemplate && manifest.DrawableWriter != WriterStructure)
             {
-                throw new InvalidDataException(path + ": drawableWriter '" + manifest.DrawableWriter + "' must be '" + WriterTemplate + "' or '" + WriterStructure + "'");
+                throw new InvalidDataException(path + ": drawableWriter '" + manifest.DrawableWriter + "' must be '" + WriterAuto + "', '" + WriterTemplate + "' or '" + WriterStructure + "'");
+            }
+            if (manifest.Collision != null && (manifest.Collision.Borrow == null || string.IsNullOrEmpty(manifest.Collision.Borrow.Archive) || string.IsNullOrEmpty(manifest.Collision.Borrow.Model)))
+            {
+                throw new InvalidDataException(path + ": collision needs borrow { archive, model } (the only collision a build can ship until the bounds layout is known)");
             }
             if (manifest.StructureTemplate != null && (string.IsNullOrEmpty(manifest.StructureTemplate.Archive) || string.IsNullOrEmpty(manifest.StructureTemplate.Model)))
             {
@@ -100,8 +118,44 @@ namespace LibertyFramework.Content
             return manifest;
         }
 
-        // The structure writer's template reference (structureTemplate, else template).
-        internal TemplateRef StructureTemplateOrDefault { get { return StructureTemplate ?? Template; } }
+        // Whether asset.json set textureMode (absent means template, but the structure writer then uses native).
+        internal bool TextureModeExplicit;
+        // Why ResolveWriter chose the writer, for report.json.
+        internal string WriterReason;
+
+        // Settles "auto": the structure writer when a LOD has several materials (v1 writes one), or when the asset has several
+        // LODs and asks for native textures (v1 would drop the extra LODs); otherwise v1, which every shipped single-geometry
+        // asset was proven with in game. The structure writer uses native textures unless textureMode says template.
+        internal void ResolveWriter(ContentAsset asset)
+        {
+            if (DrawableWriter == WriterAuto)
+            {
+                List<ContentLod> lods = asset.BuildLods().Where(l => l.TriangleCount > 0).ToList();
+                ContentLod crowded = lods.FirstOrDefault(l => l.Groups.Count(g => g.TriangleCount > 0) > 1);
+                if (crowded != null)
+                {
+                    DrawableWriter = WriterStructure;
+                    WriterReason = "auto: LOD " + crowded.Level + " has " + crowded.Groups.Count(g => g.TriangleCount > 0) + " materials";
+                }
+                else if (lods.Count > 1 && TextureModeExplicit && TextureMode == TextureModeNative)
+                {
+                    DrawableWriter = WriterStructure;
+                    WriterReason = "auto: " + lods.Count + " LODs with native textures";
+                }
+                else
+                {
+                    DrawableWriter = WriterTemplate;
+                    WriterReason = "auto: one material per LOD" + (lods.Count > 1 && !(TextureModeExplicit && TextureMode == TextureModeNative) ? " (extra LODs are written only with textureMode native)" : "");
+                }
+            }
+            else if (WriterReason == null) { WriterReason = "asset.json"; }
+            if (DrawableWriter == WriterStructure && !TextureModeExplicit) { TextureMode = TextureModeNative; }
+        }
+
+        // The structure writer's template reference: structureTemplate, else a search of every archive.
+        internal TemplateRef StructureTemplateOrDefault { get { return StructureTemplate ?? new TemplateRef { Archive = AnyArchive, Model = AutoTemplate }; } }
+
+        internal bool BorrowsCollision { get { return Collision != null && Collision.Borrow != null; } }
 
         internal string SourcePath { get { return Path.Combine(Directory, Source); } }
     }

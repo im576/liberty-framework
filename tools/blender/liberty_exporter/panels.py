@@ -42,6 +42,11 @@ class LIBERTY_PT_asset(_LibertyPanel, bpy.types.Panel):
             column.prop(settings, "structure_template_model", text="Model")
         layout.prop(settings, "draw_distance")
         layout.prop(settings, "audio_material")
+        layout.prop(settings, "collision_source")
+        if settings.collision_source == 'borrow':
+            column = layout.column(align=True)
+            column.prop(settings, "collision_borrow_archive", text="Borrow from")
+            column.prop(settings, "collision_borrow_model", text="Model")
         layout.prop(settings, "use_lod_distances")
         if settings.use_lod_distances:
             column = layout.column(align=True)
@@ -112,7 +117,9 @@ class LIBERTY_PT_materials(_LibertyPanel, bpy.types.Panel):
             else:
                 box.label(text="No texture: the base colour fills it", icon='INFO')
         used = len([s for s in obj.material_slots if s.material is not None])
-        if used > caps["maxMaterialsPerLod"]:
+        if used > caps["maxMaterialsPerLod"] and context.scene.liberty_asset.drawable_writer == 'auto':
+            layout.label(text="Several materials: the automatic writer uses the structure writer", icon='INFO')
+        elif used > caps["maxMaterialsPerLod"]:
             layout.label(text="Compiler %s writes %d material(s) per LOD (LCC016)" % (caps["version"], caps["maxMaterialsPerLod"]), icon='INFO')
 
 

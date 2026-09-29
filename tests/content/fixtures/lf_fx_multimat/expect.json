@@ -1,13 +1,15 @@
 {
-  "status": "invalid",
-  "errors": [
-    "LCC016"
-  ],
+  "status": "valid",
+  "errors": [],
   "codes": [
     "LCC026"
   ],
   "report": {
     "type": "prop",
+    "writer": {
+      "drawable": "structure",
+      "textureMode": "native"
+    },
     "structure": {
       "lods": [
         {

@@ -7,7 +7,7 @@
 	"scenes":[
 		{
 			"extras":{
-				"liberty_exporter":"0.3.0",
+				"liberty_exporter":"0.6.0",
 				"liberty_blender":"5.2.2 LTS",
 				"liberty_source":"unsaved",
 				"liberty_asset":{
@@ -20,7 +20,13 @@
 					"template_model":"amb_nailgun",
 					"draw_distance":120.0,
 					"audio_material":"",
-					"use_lod_distances":0
+					"use_lod_distances":0,
+					"drawable_writer":0,
+					"collision_source":0,
+					"collision_borrow_archive":"*",
+					"collision_borrow_model":"auto",
+					"structure_template_archive":"*",
+					"structure_template_model":"auto"
 				}
 			},
 			"name":"Scene",

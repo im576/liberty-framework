@@ -1,8 +1,7 @@
 {
   "status": "invalid",
   "errors": [
-    "LCC032",
-    "LCC033"
+    "LCC032"
   ],
   "codes": [
     "LCC025",

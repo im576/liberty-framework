@@ -5,6 +5,12 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
+**Sessions 4b, 5 and 6 (2026-09-26, Claude; [T-031](tasks/T-031-structure-writer.md), [T-032](tasks/T-032-collision.md), [T-033](tasks/T-033-world-objects.md)): offline checks pass; NEEDS-PLAYTEST.**
+- **4b:** the structure writer is now chosen automatically for multi-material assets. Single-geometry assets keep the v1 build proven in game.
+- **5:** `probe bounds` measures collision layouts, and borrowed collision (a vanilla prop's own bounds under our model's name) is the C4–C6 experiment. The authored-collision writer waits for the probe reports (session 5b).
+- **6:** type-object assets build, and the new SDK mod `mods/Liberty.World` places them from `config/world/objects.json` (test wall at East Park).
+- **Evidence:** test-all 11/11; content self-test 344; verifier 242; Blender 86 passed / 9 NOT-RUN. Queued: PROBE-bounds-layout, T032-*, T033-*.
+
 **Content compiler structure writer (2026-09-26, Claude, session 4, [T-031](tasks/T-031-structure-writer.md)): offline checks pass; NEEDS-PLAYTEST, opt-in.**
 - **Built:** `drawableWriter: "structure"` writes every LOD and one geometry per material into a game drawable of the same or larger structure. It trims the rest and never synthesises structures (their sizes are not established). The default stays v1. `LibertyContent roundtrip` tests the writer against the game's own drawables. Test post `lf_lod_post` (4 LODs, colour per LOD), scenario `lod-review`, and the probe now lists structure templates.
 - **Evidence:** content self-test 308/308 (synthetic drawables, mutations caught), offline dry build of `lf_lod_post` ok, Blender 83 passed / 9 NOT-RUN, PowerShell 109. Queued: `T031-drawable-roundtrip`, `T031-lod-post-report`, `T031-lod-review`, `PROBE-drawables`.

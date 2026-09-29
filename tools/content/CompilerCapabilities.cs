@@ -29,9 +29,11 @@ namespace LibertyFramework.Content
         internal readonly string[] CollisionShapes;
         // Whether asset.json lodDistancesMeters is written into the drawable.
         internal readonly bool WritesLodDistances;
+        // Whether a build can ship borrowed collision (asset.json collision.borrow, BorrowedCollision; NEEDS-PLAYTEST).
+        internal const bool CollisionBorrow = true;
 
         internal CompilerCapabilities(string version, int maxMaterialsPerLod, int compiledLodLevels)
-            : this(version, maxMaterialsPerLod, compiledLodLevels, new[] { "gta_default" }, new[] { AssetManifest.TypeProp }, new string[0], false)
+            : this(version, maxMaterialsPerLod, compiledLodLevels, new[] { "gta_default" }, WorldObjectTypes, new string[0], false)
         {
         }
 
@@ -46,13 +48,19 @@ namespace LibertyFramework.Content
             WritesLodDistances = writesLodDistances;
         }
 
+        // Both writers build world objects (session 6, T-033): the drawable is built like a prop's, registered the same way,
+        // and placed by the engine's WorldObjects module (config/world_objects.json), not by a map placement file.
+        internal static readonly string[] WorldObjectTypes = { AssetManifest.TypeProp, AssetManifest.TypeObject };
+        // Declared before the capability sets that use it (static fields initialise in order).
+
         internal static readonly CompilerCapabilities Current = new CompilerCapabilities("v1", V1MaxMaterialsPerLod, V1CompiledLodLevels);
 
         // drawableWriter "structure" (NEEDS-PLAYTEST, T-031): every LOD slot, one geometry per material, LOD distances.
         // How many materials a LOD can have is decided by the structure template; this bound only keeps the search sane.
         internal const int StructureMaxMaterialsPerLod = 16;
         internal static readonly CompilerCapabilities Structure = new CompilerCapabilities("v2-structure", StructureMaxMaterialsPerLod, DrawableLodSlots,
-            new[] { "gta_default" }, new[] { AssetManifest.TypeProp }, new string[0], true);
+            new[] { "gta_default" }, WorldObjectTypes, new string[0], true);
+
 
         // The capabilities that apply to a manifest: the default writer's, unless it opts into the structure writer.
         internal static CompilerCapabilities For(AssetManifest manifest)
@@ -65,7 +73,7 @@ namespace LibertyFramework.Content
             return "{ \"version\": " + Quote(Version) + ", \"maxMaterialsPerLod\": " + MaxMaterialsPerLod.ToString(CultureInfo.InvariantCulture) +
                 ", \"compiledLodLevels\": " + CompiledLodLevels.ToString(CultureInfo.InvariantCulture) + ", \"lodSlots\": " + DrawableLodSlots.ToString(CultureInfo.InvariantCulture) +
                 ", \"maxVerticesPerGeometry\": " + MaxVerticesPerGeometry.ToString(CultureInfo.InvariantCulture) + ", \"shaders\": " + List(Shaders) +
-                ", \"assetTypes\": " + List(AssetTypes) + ", \"collisionShapes\": " + List(CollisionShapes) + ", \"lodDistances\": " + (WritesLodDistances ? "true" : "false") + " }";
+                ", \"assetTypes\": " + List(AssetTypes) + ", \"collisionShapes\": " + List(CollisionShapes) + ", \"lodDistances\": " + (WritesLodDistances ? "true" : "false") + ", \"collisionBorrow\": " + (CollisionBorrow ? "true" : "false") + " }";
         }
 
         private static string List(string[] values) { return "[" + string.Join(", ", values.Select(Quote).ToArray()) + "]"; }

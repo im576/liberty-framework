@@ -11,10 +11,6 @@
   "drawDistanceMeters": 150.0,
   "textureMode": "native",
   "drawableWriter": "structure",
-  "structureTemplate": {
-    "archive": "*",
-    "model": "auto"
-  },
   "lodDistancesMeters": [
     12.0,
     25.0,

@@ -2,7 +2,8 @@
 # multi-material, multi-geometry, LOD 0-3, collision and a static world object. Each builder makes the scene, sets the
 # Liberty asset settings and returns what LibertyContent must make of the export (expect.json):
 #   status  "valid" or "invalid" (a build reports "ok" for a valid asset)
-#   errors  the exact set of LibertyContent error codes: v1 refuses what it cannot write yet (LCC016, LCC032, LCC033)
+#   errors  the exact set of LibertyContent error codes: what no writer can write yet is refused (LCC032, LCC033); several
+#           materials per LOD go to the structure writer automatically (session 4b)
 #   codes   codes that must appear
 #   report  a subset of report.json, every number worked out by hand from the scene below
 # Used by tests/run_tests.py (checked on every run) and examples/make_fixtures.py (writes tests/content/fixtures, which
@@ -41,7 +42,10 @@ def clear_scene():
     settings.draw_distance = 120.0
     settings.audio_material = ""
     settings.use_lod_distances = False
-    settings.drawable_writer = 'template'
+    settings.drawable_writer = 'auto'
+    settings.collision_source = 'authored'
+    settings.collision_borrow_archive = "*"
+    settings.collision_borrow_model = "auto"
     settings.structure_template_archive = "*"
     settings.structure_template_model = "auto"
 
@@ -219,7 +223,7 @@ def match(expected, actual, path, problems, tolerance=1e-3):
 
 def lf_fx_multimat(settings):
     """One crate object with two material slots: a textured body and an untextured red lid (the +Z face). Two
-    geometries in LOD 0; v1 writes one material per LOD."""
+    geometries in LOD 0, so the automatic writer chooses the structure writer (native textures)."""
     body = material("fx_crate", texture("fx_crate_basecolor", FIXTURE_TEXTURE_PIXELS))
     lid = material("fx_lid", colour=(0.8, 0.1, 0.1))
     obj = box("lf_fx_multimat", (-0.3, -0.3, 0.0), (0.3, 0.3, 0.6), body)
@@ -229,8 +233,8 @@ def lf_fx_multimat(settings):
     select(obj)
     settings.asset_name = "lf_fx_multimat"
     return {
-        "status": "invalid", "errors": ["LCC016"], "codes": ["LCC026"],
-        "report": {"type": "prop", "structure": {
+        "status": "valid", "errors": [], "codes": ["LCC026"],
+        "report": {"type": "prop", "writer": {"drawable": "structure", "textureMode": "native"}, "structure": {
             "lods": [{"level": 0, "triangles": 12, "geometries": [
                 {"material": "fx_crate", "textured": True, "meshes": 1, "triangles": 10},
                 {"material": "fx_lid", "textured": False, "meshes": 1, "triangles": 2}]}],
@@ -240,7 +244,7 @@ def lf_fx_multimat(settings):
 
 def lf_fx_multigeo(settings):
     """A table from five objects: a textured top and four legs sharing one metal material. Meshes of one material merge
-    into one geometry, so LOD 0 has two geometries (top: 1 mesh, legs: 4 meshes)."""
+    into one geometry, so LOD 0 has two geometries (top: 1 mesh, legs: 4 meshes): the structure writer's job."""
     collection = new_collection("lf_fx_multigeo")
     wood = material("fx_top", texture("fx_top_basecolor", FIXTURE_TEXTURE_PIXELS))
     metal = material("fx_legs", colour=(0.2, 0.2, 0.22))
@@ -251,8 +255,8 @@ def lf_fx_multigeo(settings):
     settings.asset_name = "lf_fx_multigeo"
     settings.collection = collection
     return {
-        "status": "invalid", "errors": ["LCC016"], "codes": ["LCC026"],
-        "report": {"type": "prop", "meshes": 5, "structure": {
+        "status": "valid", "errors": [], "codes": ["LCC026"],
+        "report": {"type": "prop", "meshes": 5, "writer": {"drawable": "structure"}, "structure": {
             "lods": [{"level": 0, "triangles": 60, "geometries": [
                 {"material": "fx_top", "textured": True, "meshes": 1, "triangles": 12},
                 {"material": "fx_legs", "textured": False, "meshes": 4, "triangles": 48}]}],
@@ -284,7 +288,7 @@ def lf_fx_lods(settings):
     settings.lod_distances = LOD_DISTANCES
     return {
         "status": "valid", "errors": [], "codes": ["LCC025", "LCC026", "LCC037"],
-        "report": {"type": "prop", "lods": 4, "structure": {"lods": lods, "lodDistancesMeters": list(LOD_DISTANCES), "collision": []}},
+        "report": {"type": "prop", "lods": 4, "writer": {"drawable": "template"}, "structure": {"lods": lods, "lodDistancesMeters": list(LOD_DISTANCES), "collision": []}},
     }
 
 
@@ -324,7 +328,7 @@ def lf_fx_collision(settings):
 def lf_fx_world(settings):
     """A static world object: a low stone wall of four blocks and a coping (LOD 0: five meshes, one material, one
     geometry), a single block for LOD 1, a box collision fitted to it (named _col, the box tag wins) and LOD distances.
-    v1 builds neither world objects (LCC033) nor collision (LCC032)."""
+    World objects build (session 6); authored collision shapes are not written yet (LCC032)."""
     collection = new_collection("lf_fx_world")
     stone = material("fx_stone", texture("fx_stone_basecolor", FIXTURE_TEXTURE_PIXELS))
     for index in range(4):
@@ -340,7 +344,7 @@ def lf_fx_world(settings):
     settings.use_lod_distances = True
     settings.lod_distances = (60.0, 150.0, 0.0, 0.0)
     return {
-        "status": "invalid", "errors": ["LCC032", "LCC033"], "codes": ["LCC025", "LCC026", "LCC037"],
+        "status": "invalid", "errors": ["LCC032"], "codes": ["LCC025", "LCC026", "LCC037"],
         "report": {"type": "object", "lods": 2, "structure": {
             "lods": [{"level": 0, "triangles": 60, "geometries": [{"material": "fx_stone", "meshes": 5, "triangles": 60}]},
                      {"level": 1, "triangles": 12, "geometries": [{"material": "fx_stone", "meshes": 1, "triangles": 12}]}],

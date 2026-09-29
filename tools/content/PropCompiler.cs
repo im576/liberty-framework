@@ -53,6 +53,10 @@ namespace LibertyFramework.Content
             internal readonly List<RgbaImage> TextureSources = new List<RgbaImage>();
             internal readonly List<TextureQuality> TextureQualities = new List<TextureQuality>();
             internal float[] LodDistancesWritten;
+            // Borrowed collision (asset.json collision.borrow): the bounds resource shipped as <name>.wbn, and where it came from.
+            internal byte[] Collision;
+            internal string CollisionFrom;
+            internal uint CollisionType;
         }
 
         internal sealed class Part
@@ -64,6 +68,20 @@ namespace LibertyFramework.Content
         }
 
         internal static Result Compile(string game, AssetManifest manifest, ContentAsset asset)
+        {
+            Result result = CompileDrawable(game, manifest, asset);
+            if (manifest.BorrowsCollision)
+            {
+                BorrowedCollision.Borrowed borrowed = BorrowedCollision.Find(game, manifest.Collision.Borrow, result.Notes);
+                if (borrowed == null) { return result; }
+                result.Collision = borrowed.Resource;
+                result.CollisionFrom = borrowed.From;
+                result.CollisionType = borrowed.ResourceType;
+            }
+            return result;
+        }
+
+        private static Result CompileDrawable(string game, AssetManifest manifest, ContentAsset asset)
         {
             string fallback = null;
             if (manifest.DrawableWriter == AssetManifest.WriterStructure)

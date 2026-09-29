@@ -82,7 +82,7 @@ namespace LibertyFramework.Content
             t.Check(sharedReason != null, "geometries sharing a vertex buffer are refused (by the reader or the writer)", sharedReason);
         }
 
-        private static SyntheticDrawable.Spec FourLods()
+        internal static SyntheticDrawable.Spec FourLods()
         {
             SyntheticDrawable.Spec spec = new SyntheticDrawable.Spec { Textures = new[] { "old_a", "old_b", "old_c" } };
             for (int lod = 0; lod < 4; lod++)
@@ -153,12 +153,18 @@ namespace LibertyFramework.Content
         }
 
         // A game folder holding synthetic drawables in one unencrypted IMG (no IMG key: the probes' test setup).
-        private static string FakeGame(params KeyValuePair<string, RscResource>[] drawables)
+        internal static string FakeGame(params KeyValuePair<string, RscResource>[] drawables)
+        {
+            return FakeGameFiles(drawables.Select(d => new KeyValuePair<string, byte[]>(d.Key, d.Value.Serialize())).ToArray());
+        }
+
+        // A game folder with one unencrypted IMG (pc/models/cdimages/test.img) holding these files.
+        internal static string FakeGameFiles(params KeyValuePair<string, byte[]>[] files)
         {
             string game = Path.Combine(Path.GetTempPath(), "liberty-structure-" + Guid.NewGuid().ToString("N").Substring(0, 8));
             Directory.CreateDirectory(Path.Combine(game, "pc", "models", "cdimages"));
             File.WriteAllBytes(Path.Combine(game, "GTAIV.exe"), new byte[64]);
-            ImgArchive.Write(Path.Combine(game, "pc", "models", "cdimages", "test.img"), drawables.Select(d => new KeyValuePair<string, byte[]>(d.Key, d.Value.Serialize())).ToList());
+            ImgArchive.Write(Path.Combine(game, "pc", "models", "cdimages", "test.img"), files.ToList());
             return game;
         }
 
@@ -249,6 +255,38 @@ namespace LibertyFramework.Content
                 t.Check(refused != null && refused.Contains("v1 cannot write") && refused.Contains("LCC016"), "no template and v1 cannot build it either: a clear error, not a silent LOD 0", refused);
             }
             finally { try { Directory.Delete(game, true); } catch (IOException) { } }
+        }
+
+        private static AssetManifest WriterManifest(string extra)
+        {
+            return SelfTest.ParseManifest("{\"schemaVersion\":1,\"name\":\"lf_choice\",\"type\":\"prop\",\"source\":\"x.gltf\",\"template\":{\"archive\":\"a.img\",\"model\":\"m\"}," +
+                "\"textureDictionary\":\"lf_choice\",\"drawDistanceMeters\":100" + extra + "}");
+        }
+
+        // Session 4b: which writer an asset gets when asset.json does not say (ResolveWriter), and what explicit choices keep.
+        internal static void WriterChoice(SelfTest.Runner t, string output)
+        {
+            ContentAsset single = SelfTest.Asset(SelfTest.Box("a", 0, 0, 1));
+            ContentAsset twoMaterials = SelfTest.Asset(SelfTest.Box("a", 0, 0, 1), SelfTest.Box("b", 0, 1, 0.5f));
+            ContentAsset twoLods = SelfTest.Asset(SelfTest.Box("a", 0, 0, 1), SelfTest.Box("b", 1, 0, 0.5f));
+            Func<string, ContentAsset, AssetManifest> resolve = (extra, asset) => { AssetManifest m = WriterManifest(extra); m.ResolveWriter(asset); return m; };
+
+            AssetManifest m1 = resolve("", single);
+            t.Check(m1.DrawableWriter == "template" && m1.TextureMode == "template" && CompilerCapabilities.For(m1) == CompilerCapabilities.Current, "auto, one LOD, one material: v1 as before", m1.WriterReason);
+            AssetManifest m2 = resolve("", twoMaterials);
+            t.Check(m2.DrawableWriter == "structure" && m2.TextureMode == "native" && m2.WriterReason.Contains("LOD 0 has 2 materials"), "auto, two materials in LOD 0: structure writer, native textures", m2.DrawableWriter + " " + m2.TextureMode + " " + m2.WriterReason);
+            t.Check(!AssetValidator.Validate(twoMaterials, m2, CompilerCapabilities.For(m2)).Any(i => i.Severity == "error"), "auto multi-material asset validates (no LCC016, no LCC038)");
+            AssetManifest m3 = resolve("", twoLods);
+            t.Check(m3.DrawableWriter == "template" && m3.WriterReason.Contains("textureMode native"), "auto, two LODs with template textures: v1 (shipped assets such as the barrel keep their proven build)", m3.WriterReason);
+            AssetManifest m4 = resolve(",\"textureMode\":\"native\"", twoLods);
+            t.Check(m4.DrawableWriter == "structure" && m4.WriterReason.Contains("2 LODs"), "auto, two LODs with native textures: structure writer", m4.WriterReason);
+            AssetManifest m5 = resolve(",\"drawableWriter\":\"template\"", twoMaterials);
+            t.Check(m5.DrawableWriter == "template" && AssetValidator.Validate(twoMaterials, m5, CompilerCapabilities.For(m5)).Any(i => i.Code == "LCC016"), "explicit template keeps v1 and its LCC016");
+            AssetManifest m6 = resolve(",\"drawableWriter\":\"structure\"", single);
+            t.Check(m6.DrawableWriter == "structure" && m6.TextureMode == "native" && m6.WriterReason == "asset.json", "explicit structure without textureMode: native textures");
+            AssetManifest m7 = resolve(",\"drawableWriter\":\"structure\",\"textureMode\":\"template\"", single);
+            t.Check(AssetValidator.Validate(single, m7, CompilerCapabilities.For(m7)).Any(i => i.Code == "LCC038"), "explicit structure with explicit template textures: LCC038");
+            t.Throws<InvalidDataException>(() => WriterManifest(",\"drawableWriter\":\"magic\""), "an unknown drawableWriter is refused");
         }
 
         // The two PC commands end to end on a synthetic game: `roundtrip` (both buffer orders found, report written) and the

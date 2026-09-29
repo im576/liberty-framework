@@ -28,10 +28,12 @@ class LibertyAssetSettings(bpy.types.PropertyGroup):
                ('native', "Native", "Dictionary written from scratch: source size (power of two, 4-2048), full mip chain, "
                                     "DXT5 when the material has alpha, else DXT1 (needs playtest)")])
     drawable_writer: EnumProperty(
-        name="Drawable writer", default='template',
-        items=[('template', "Template", "Compiler v1: LOD 0, one material, the template's single geometry patched (proven in game)"),
+        name="Drawable writer", default='auto',
+        items=[('auto', "Automatic", "The structure writer when a LOD has several materials (or several LODs with Native textures), "
+                                     "else Template. Not written to asset.json"),
+               ('template', "Template", "Compiler v1: LOD 0, one material, the template's single geometry patched (proven in game)"),
                ('structure', "Structure", "Every LOD and one geometry per material, written into a game drawable of the same or larger "
-                                          "structure (needs Native texture mode; needs playtest)")])
+                                          "structure, with native textures (needs playtest)")])
     structure_template_archive: StringProperty(
         name="Structure template archive", default="*",
         description="Archive holding the structure template; * searches every IMG of the game")
@@ -45,6 +47,15 @@ class LibertyAssetSettings(bpy.types.PropertyGroup):
         description="IDE draw distance in metres (not affected by the scene unit scale)")
     audio_material: StringProperty(
         name="Audio material", description="Optional IDE amat entry (collision sound)")
+    collision_source: EnumProperty(
+        name="Collision", default='authored',
+        items=[('authored', "Authored", "Collision objects in the scene (the collision writer is not available yet: LCC032)"),
+               ('borrow', "Borrow", "Ship a vanilla prop's own collision under this model's name (NEEDS-PLAYTEST, T-032)")])
+    collision_borrow_archive: StringProperty(
+        name="Borrow from archive", default="*", description="Archive holding the prop whose collision is borrowed; * searches every IMG")
+    collision_borrow_model: StringProperty(
+        name="Borrow from model", default="auto",
+        description="Model whose .wbn collision is shipped; auto takes the first vanilla prop with its own collision (as PROBE-collision lists them)")
     use_lod_distances: BoolProperty(
         name="LOD distances", default=False,
         description="Write lodDistancesMeters: how far each LOD is drawn. Checked now; written into the drawable by the LOD writer")

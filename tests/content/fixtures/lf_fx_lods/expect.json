@@ -9,6 +9,9 @@
   "report": {
     "type": "prop",
     "lods": 4,
+    "writer": {
+      "drawable": "template"
+    },
     "structure": {
       "lods": [
         {

@@ -42,3 +42,18 @@ When step 3 establishes the bounds classes:
 - it lists the shapes it emits in `CompilerCapabilities.CollisionShapes`.
 
 Until then the validator refuses collision (LCC032). Surface names are kept as authored; their game meaning is UNKNOWN.
+
+## Session 5 (2026-09-26, T-032): tooling up to plan step 3, and one experiment
+
+- **Plan step 1:** `PROBE-collision` (queued) is the inventory and lists `propCandidates`.
+- **Input for step 3:** `PROBE-bounds-layout` (`LibertyContent probe bounds`) measures each class's layout: every root
+  word classified across all files as pointer, small integer (with values), float, zero or other, the same one level
+  down, and a root size bound. Decoding a class starts from that report, with labels, then a probe that round-trips the
+  game's files. Nothing is decoded from memory.
+- **Experiment for C4–C6:** borrowed collision. `asset.json` `collision.borrow` ships a vanilla prop's own bounds
+  resource, unchanged, as `<name>.wbn` next to this project's model.
+  - `lf_col_crate` and scenario `collision-borrow` test the pairing and the raycast, against `raycast-objects` on the
+    same vanilla prop.
+  - `lf_world_wall` (T-033) tests a placed world object and the player (`T033-world-walk`).
+- **Step 4, the collision writer for authored shapes,** waits for steps 2 and 3.
+  `CompilerCapabilities.CollisionShapes` stays empty and LCC032 stays until then.
