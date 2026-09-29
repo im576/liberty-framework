@@ -1,0 +1,3 @@
+attempt 1 failed (seen=True); relaunching
+scenario raycast: FAIL; steps=40 failed=3 logErrors=0 gameAlive=True; report <repo>\results-local\20260928-225833-0f466c8\_runs\raycast-20260928-230509
+AUTOPILOT_RESULT <repo>\results-local\20260928-225833-0f466c8\_runs\raycast-20260928-230509\result.json

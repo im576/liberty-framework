@@ -1,0 +1,19 @@
+{
+  "scenario": "raycast",
+  "status": "FAIL",
+  "summary": "FAIL; steps=40 failed=3 logErrors=0 gameAlive=True",
+  "steps": 40,
+  "failedSteps": [
+    "shot vehicle => EXCEPTION no Steam screenshot for vehicle.jpg (desktop fallback saved; it is black under Vulkan)",
+    "expect ray dir=forward mask=All status=Hit kind=Vehicle: no new log line in 5 s",
+    "expect ray dir=forward mask=World\\|Peds status=(Clear|Hit kind=World) .*passed=[1-9]: no new log line in 5 s"
+  ],
+  "screenshots": [
+    "ped.jpg"
+  ],
+  "logErrors": 0,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T06:08:02.8818140Z",
+  "finishedUtc": "2026-09-29T06:08:56.3106122Z"
+}
