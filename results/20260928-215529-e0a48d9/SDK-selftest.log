@@ -1,0 +1,2 @@
+scenario sdk-selftest: FAIL; steps=13 failed=1 logErrors=1 gameAlive=True; report <repo>\results-local\20260928-215529-e0a48d9\_runs\sdk-selftest-20260928-220126
+AUTOPILOT_RESULT <repo>\results-local\20260928-215529-e0a48d9\_runs\sdk-selftest-20260928-220126\result.json

@@ -1,0 +1,15 @@
+{
+  "scenario": "sdk-selftest",
+  "status": "FAIL",
+  "summary": "FAIL; steps=13 failed=1 logErrors=1 gameAlive=True",
+  "steps": 13,
+  "failedSteps": [
+    "expect selftest_done passed=\\d+ failed=0: no new log line in 90 s"
+  ],
+  "screenshots": [],
+  "logErrors": 1,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:03:00.7255974Z",
+  "finishedUtc": "2026-09-29T05:04:43.6568530Z"
+}

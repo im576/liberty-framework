@@ -1,0 +1,32 @@
+Built <repo>\native\LibertyCore\bin\LibertyCore.dll
+SHA256 A60DE8131B096FC133B6E2C0E45C2411F05061115D805459EE8F7B82CD6C5E14
+ok   both natives verified
+ok   a working native returns its result and out slot
+ok   a faulting native returns 0 with its out slot zeroed
+ok   the fault switches the native off
+ok   the fault names the native and its argument
+ok   a faulted native still answers 0
+ok   a faulted native is not invoked again
+ok   verification cannot switch a faulted native back on
+ok   a new handler (a new lc_init) starts clean
+ok   other natives are unaffected
+natives_test passed
+ok   empty segment is clear after one test
+ok   wall hit, distance 10
+ok   passes two peds, stops at the wall
+ok   excluded hits only: clear
+ok   pass budget exhausted: inconclusive with the last excluded hit
+ok   max_passes 0 still reports an accepted first hit
+ok   ignored self and own vehicle, hits the ped beyond
+ok   ignored vehicle passed twice, wall hit
+ok   walk always advances and ends
+ok   a failed test fails the query
+ok   zero-length ray refused without a test
+ok   non-positive step refused
+ok   object excluded when only peds stop the ray
+ray_walk_test passed
+Built <repo>\sdk\Liberty.Sdk\bin\Liberty.Sdk.dll from 101 source files
+Built <repo>\src\LibertyFramework\bin\Release\LibertyFramework.net.dll from 182 source files
+SHA256 351B682A8C45915A07F5932355C9C2955C7B477B74A9721128E9E24A96F7F3A7
+Built mod <repo>\mods\Liberty.Autopilot\bin\Liberty.Autopilot.dll from 4 source files
+Built mod <repo>\mods\Liberty.World\bin\Liberty.World.dll from 3 source files
