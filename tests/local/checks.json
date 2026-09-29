@@ -910,6 +910,22 @@
       "addedIn": "claude/confident-hopper-16pan1 (sessions 5-6)"
     },
     {
+      "id": "PROBE-collision-links",
+      "task": "T-032",
+      "title": "Candidate hash references between bounds resources and local drawables",
+      "kind": "probe",
+      "run": {
+        "tool": "probe",
+        "probe": "collision-links"
+      },
+      "pass": "exit code 0 and a JSON report; the review session reads it",
+      "proves": "Whether any 32-bit system words in WBD/WBN resources match Jenkins hashes of WDR names from the same IMG, with names and offsets for targeted structural investigation.",
+      "unproven": "That a matching word is a dictionary key or that the game pairs that bounds resource with the model at runtime.",
+      "reference": "docs/research/Collision.md",
+      "status": "QUEUED",
+      "addedIn": "codex/pr7-verification-fixes (collision follow-up)"
+    },
+    {
       "id": "T032-collision-borrow-report",
       "task": "T-032",
       "title": "lf_col_crate ships a borrowed collision resource",

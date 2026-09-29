@@ -14,6 +14,7 @@ with hashes of nearby WDR and IDE model names. The measured root pointer fields 
 [`Collision.md`](../research/Collision.md). The current `auto` rule cannot select a prop from this installation;
 replace it only after the game's actual collision lookup has evidence. A roundtrip reader/writer for one relevant
 bounds class and an in-game pairing test are required before authored collision work.
+`PROBE-collision-links` is queued as a conservative same-IMG hash scan to direct that inspection.
 
 Depends on: T-030 (authored collision shapes), T-027 (engine raycast). Session 5 of
 [NEXT_SESSIONS](../workflow/NEXT_SESSIONS.md).

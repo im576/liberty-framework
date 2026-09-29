@@ -45,7 +45,7 @@ namespace LibertyFramework.Content
                 Console.WriteLine("       build <game> <asset.json> <out> |");
                 Console.WriteLine("       package <game> <out> <img> <ide> <asset.json...> | templates <game> <archive> |");
                 Console.WriteLine("       selftest [--out <dir>] | wtdcheck [--game <dir>] <file.wtd|folder|archive.img...> |");
-                Console.WriteLine("       probe drawables|collision --game <dir> --out <json> | roundtrip --game <dir> [--out <json>] [archive.img...]");
+                Console.WriteLine("       probe drawables|collision|bounds|collision-links --game <dir> --out <json> | roundtrip --game <dir> [--out <json>] [archive.img...]");
                 return 1;
             }
             catch (Exception error)

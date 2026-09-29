@@ -13,6 +13,7 @@ namespace LibertyFramework.Content
     //   probe drawables --game <game> --out <report.json>   how drawables use geometries, shaders and LOD slots
     //   probe collision --game <game> --out <report.json>   which collision resources exist, where, and their headers
     //   probe bounds --game <game> --out <report.json>      the layout of those resources, measured per class (T-032)
+    //   probe collision-links --game <game> --out <report.json> possible hash references from WBD/WBN to local WDRs
     // Reports hold structure only: counts, sizes, resource types and flags, field values that describe layout, archive
     // and file names. Never geometry, pixels or raw asset bytes (third_party/README.md, AGENTS.md rule 7). A probe
     // answers a question for the next cloud session; it never passes or fails on the numbers themselves.
@@ -28,9 +29,9 @@ namespace LibertyFramework.Content
             string name = args.Length > 0 ? args[0] : "";
             string game = Option(args, "--game");
             string output = Option(args, "--out");
-            if (game == null || output == null || (name != "drawables" && name != "collision" && name != "bounds"))
+            if (game == null || output == null || (name != "drawables" && name != "collision" && name != "bounds" && name != "collision-links"))
             {
-                Console.WriteLine("usage: LibertyContent probe drawables|collision|bounds --game <game folder> --out <report.json>");
+                Console.WriteLine("usage: LibertyContent probe drawables|collision|bounds|collision-links --game <game folder> --out <report.json>");
                 return 2;
             }
             if (!File.Exists(Path.Combine(game, "GTAIV.exe"))) { Console.WriteLine("ERROR GTAIV.exe not found in " + game); return 1; }
@@ -39,7 +40,7 @@ namespace LibertyFramework.Content
             byte[] key = null;
             try { key = ImgArchive.FindKey(Path.Combine(game, "GTAIV.exe")); }
             catch (InvalidDataException error) { Console.WriteLine("note: " + error.Message + "; encrypted archives will be reported as errors"); }
-            Dictionary<string, object> report = name == "drawables" ? Drawables(game, key) : name == "collision" ? Collision(game, key) : BoundsLayout.Measure(game, key);
+            Dictionary<string, object> report = name == "drawables" ? Drawables(game, key) : name == "collision" ? Collision(game, key) : name == "bounds" ? BoundsLayout.Measure(game, key) : CollisionLinks.Measure(game, key);
             report["probe"] = name;
             report["generatedUtc"] = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture);
             report["rule"] = "structure only: counts, sizes, types, layout fields and names; no geometry, pixels or asset bytes";

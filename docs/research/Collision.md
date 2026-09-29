@@ -46,6 +46,11 @@ WBD, then compare candidate key words with the existing Jenkins hashes of nearby
 names and offsets without publishing resource bytes. Only after the relationship is demonstrated should a reader name
 those fields and attempt a round trip. The TBoGT root class has a different vtable and needs separate validation.
 
+`PROBE-collision-links` is the first read-only check for this hypothesis. It scans 32-bit aligned system words in
+WBD/WBN resources for hashes of WDR names **from the same IMG**, reporting only matching names and offsets. It does
+not assume where the dictionary table starts or claim a matched word is a key. A zero-match result would narrow the
+hypothesis but would not exclude references by IDE ID, cross-archive name, another hash, or an unaligned field.
+
 ## Plan
 
 1. **Inventory (queued):** `PROBE-collision` (`LibertyContent probe collision`) lists which collision-like resources the
