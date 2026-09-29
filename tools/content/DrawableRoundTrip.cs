@@ -19,7 +19,7 @@ namespace LibertyFramework.Content
     // Read only; the report holds names, counts and offsets, never asset data. Check T031-drawable-roundtrip.
     internal static class DrawableRoundTrip
     {
-        private const int MaxListed = 25;
+        private const int MaxListed = 100;
 
         internal sealed class Outcome
         {
