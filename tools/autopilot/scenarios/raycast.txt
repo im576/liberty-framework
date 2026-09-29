@@ -32,8 +32,9 @@ wait 2500
 shot ped
 ray forward 10 0
 expect "ray dir=forward mask=All status=Hit kind=Ped" 5
-ray forward 10 0 world,vehicles,objects
-expect "ray dir=forward mask=World\|Vehicles\|Objects status=(Clear|Hit kind=World) .*passed=[1-9]" 5
+# The ambient ped walks; aim this filtered cast at its current position so it still crosses the ped.
+rayto 0 world,vehicles,objects
+expect "autopilot_rayto target=0 .*mask=World\|Vehicles\|Objects status=(Clear|Hit kind=World) .*passed=[1-9]" 5
 rayto 0
 expect "autopilot_rayto target=0 .*match=True" 5
 los 0
