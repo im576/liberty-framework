@@ -10,12 +10,13 @@ namespace LibertyFramework.Content
     // not the pointed-to bounds shapes or the other root fields.
     internal sealed class WbdDictionaryReader
     {
+        // Serialized first-word class tag in the sampled CE resources, not a proven current-executable vtable address.
         internal const uint CeVtable = 0x00695360;
         internal sealed class Entry
         {
             internal uint NameHash;
             internal uint TargetPointer;
-            internal uint TargetVtable;
+            internal uint TargetVtable; // Legacy field name: raw first resource word, not a resolved runtime pointer.
         }
 
         internal readonly List<Entry> Entries = new List<Entry>();

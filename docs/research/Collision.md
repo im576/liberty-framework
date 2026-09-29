@@ -10,6 +10,14 @@ the initial status for the measured claims; no bounds class has been decoded or 
 Evidence labels: **VERIFIED IN GAME**, **VERIFIED OFFLINE** (from the owner's game files by a repository tool),
 **PLAUSIBLE** (public community documentation, not checked here), **UNKNOWN**.
 
+**Serialized class words are not runtime addresses:** the current probes and historical tables call the first
+resource word a `vtable`. That is a grouping label for bytes in the file, not proof that the value addresses a
+vtable in CE 1.2.0.59. Static inspection of the owner's executable places `0x0069C19C` in `.text`, rather than a
+demonstrated vtable, and found no direct address reference in the scan. Do not disassemble it as a function start,
+use it as a hook address or infer a constructor from it. Resource fixup/type dispatch must establish the mapping
+to current runtime classes. An absent direct reference does not exclude indirect dispatch. The first-word class
+inventory and field measurements remain valid; their runtime interpretation is UNKNOWN.
+
 ## Claims
 
 | # | Claim | Label | Source |

@@ -35,6 +35,9 @@ The nested probe followed these fields in all 2,154 samples; `+0xE0` consistentl
 Its candidate-target gaps use raw aligned words and can contain false positives; they are not allocation size
 bounds. No array stride/count was established. Evidence: `verification-results/results/20260929-cb1b81f-wbd-nested/`.
 The next useful gate is static constructor/resource-fixup analysis for this vtable, cross-checked against originals.
+The serialized first-word tags must first be mapped to runtime classes: `0x0069C19C` lands in `.text` in the
+owner's current CE executable, not a proven vtable. Probe fields named `vtable` are raw file values. Search resource
+fixup/type dispatch before naming constructors; do not use these tags as hook addresses.
 
 **Empty-archive reader fix:** Windows header decryption established that the five omitted IMG files are encrypted
 v3 archives with zero entries and zero table bytes, not unreadable bounds content. `ImgArchive.Decrypt` now returns
