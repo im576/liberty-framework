@@ -15,6 +15,14 @@ capture. The reason the original flags ceased protecting the player remains unkn
 Cleanup is registered before native application so a partial native failure still belongs to the module's ledger.
 Evidence: `verification-results/results/20260929-121911-6931061/T021-sling-review/`.
 
+**Follow-up `0d849f0`:** hot reload passed 24/24 and selftest 49/49, but sling failed its first survival check
+(1/41 failed). The player was already dead before the first command. Later captures show the live respawned player
+with two slung long guns; the close-up establishes distinct weapon props and straps, but motion/clipping behavior
+and the intended scene remain unverified. The scenario now runs `await-alive` through the SDK scheduler with a
+60-second bound before teleporting. Its fresh readiness log, teleport completion and subsequent survival checks must
+all pass; a timeout is still a failed expectation. No resurrection or guessed native was added. Windows proof pending.
+Evidence: `verification-results/results/20260929-142632-0d849f0/`.
+
 ## Requirements
 
 1. Every carried weapon that is **not in hand** is shown as a prop of its own model on the player: `SidearmPrimary` (handgun) on the right thigh, `SidearmSecondary` (SMG) on the left hip, `LongGun1`/`LongGun2` slung on the back (two distinct positions, no overlap), `Melee` on the belt/back. Gold variants (`lf_gold_*`) show gold.

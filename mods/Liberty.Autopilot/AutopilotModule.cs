@@ -33,6 +33,12 @@ namespace Liberty.Autopilot
                 { return "error player is missing or dead"; }
                 return "player alive health=" + Liberty.Peds.GetHealth(player);
             });
+            Register("await-alive", "await-alive [timeout ms] - wait for a live player before scenario setup", a =>
+            {
+                int timeout = Math.Max(1, Math.Min(120000, Args.Int(a, 0, 60000)));
+                Liberty.Scheduler.Start(this, "await-alive", AwaitAlive(timeout));
+                return "waiting for live player";
+            });
             Register("tp", "tp x y z [heading] - teleport the player", Teleport);
             Register("time", "time h m - set the clock", a => { Liberty.WorldControl.SetTime(Args.Int(a, 0), Args.Int(a, 1, 0)); return "time " + Args.Int(a, 0) + ":" + Args.Int(a, 1, 0).ToString("00"); });
             Register("weather", "weather <id> - force weather (0 sunny .. 7 lightning) until the module stops", a => { Liberty.WorldControl.ForceWeather(this, Args.Int(a, 0)); return "weather " + Args.Int(a, 0); });
@@ -76,6 +82,19 @@ namespace Liberty.Autopilot
         }
 
         private void Register(string name, string usage, Func<string[], string> handler) { Liberty.Commands.Register(this, name, usage, handler); }
+
+        private bool HasLivePlayer()
+        {
+            PedRef player = Liberty.Player.Ped;
+            return !player.IsNone && Liberty.Peds.Exists(player) && !Liberty.Peds.IsDead(player);
+        }
+
+        private IEnumerator AwaitAlive(int timeoutMs)
+        {
+            // A previous scenario may end during a wasted/respawn transition. Do not teleport a dead player.
+            yield return Wait.Until(HasLivePlayer, timeoutMs);
+            Liberty.Log.Info(this, HasLivePlayer() ? "autopilot_player_ready" : "autopilot_player_wait timed_out");
+        }
 
         private string Position(string[] args)
         {

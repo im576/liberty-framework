@@ -314,6 +314,49 @@
       "addedIn": "claude/confident-hopper-16pan1 (session 4)"
     },
     {
+      "id": "T031-multimat-report",
+      "task": "T-031",
+      "title": "Two-material fixture compiles with automatic structure selection",
+      "kind": "pc-offline",
+      "run": {
+        "tool": "content-report",
+        "asset": "lf_fx_multimat",
+        "expect": {
+          "status": "ok",
+          "compiled.drawableWriter": "structure",
+          "compiled.lodCount": 1,
+          "compiled.textureFormat": "DXT1"
+        }
+      },
+      "pass": "report fields match; inspect compiled.geometries and textures for two distinct material groups and readback []",
+      "proves": "The packaged authored fixture uses automatic structure writer selection and passes readback. The report names the real template and both material textures.",
+      "unproven": "In-game material appearance, culling and placement; tested by T031-multimat-review.",
+      "reference": "docs/tasks/T-031-structure-writer.md",
+      "status": "QUEUED",
+      "addedIn": "codex/pr7-verification-fixes"
+    },
+    {
+      "id": "T031-multimat-review",
+      "task": "T-031",
+      "title": "Two geometries and material textures drawn in game",
+      "kind": "scenario",
+      "run": {
+        "scenario": "multimat-review"
+      },
+      "pass": "autopilot PASS plus reviewed screenshots: textured sides and red top simultaneously visible, no missing geometry or corrupt material",
+      "proves": "The game draws the authored crate from the structure writer with separate side and top materials.",
+      "unproven": "Additional LOD slots, authored collision and the broad drawable roundtrip gate.",
+      "review": {
+        "screenshots": {
+          "multimat_top": "top is red; crate side is textured; both material groups render without garbage or missing faces",
+          "multimat_side": "textured side is visible; check seams and material assignment"
+        }
+      },
+      "reference": "docs/tasks/T-031-structure-writer.md",
+      "status": "QUEUED",
+      "addedIn": "codex/pr7-verification-fixes"
+    },
+    {
       "id": "T031-lod-post-report",
       "task": "T-031",
       "title": "lf_lod_post compiled by the structure writer",
@@ -445,11 +488,11 @@
       "pass": "autopilot PASS",
       "status": "PASS",
       "addedIn": "claude/friendly-euler-m7hn4e (Session 1 seed)",
-      "lastRun": "20260929-121911-6931061",
+      "lastRun": "20260929-142632-0d849f0",
       "evidence": [
-        "results/20260929-121911-6931061/SDK-hot-reload/result.json",
-        "results/20260929-121911-6931061/SDK-hot-reload/run.log",
-        "docs/reports/2026-09-28-windows-verification.md#latest-focused-run-20260929-121911-6931061"
+        "results/20260929-142632-0d849f0/SDK-hot-reload/result.json",
+        "results/20260929-142632-0d849f0/SDK-hot-reload/run.log",
+        "docs/reports/2026-09-28-windows-verification.md#follow-up-run-20260929-142632-0d849f0"
       ]
     },
     {
@@ -534,11 +577,11 @@
       },
       "status": "QUEUED",
       "addedIn": "claude/friendly-euler-m7hn4e (Session 1 seed)",
-      "lastRun": "20260929-121911-6931061",
+      "lastRun": "20260929-142632-0d849f0",
       "evidence": [
-        "results/20260929-121911-6931061/T021-sling-review/result.json",
-        "results/20260929-121911-6931061/T021-sling-review/run.log",
-        "docs/reports/2026-09-28-windows-verification.md#latest-focused-run-20260929-121911-6931061"
+        "results/20260929-142632-0d849f0/T021-sling-review/result.json",
+        "results/20260929-142632-0d849f0/T021-sling-review/run.log",
+        "docs/reports/2026-09-28-windows-verification.md#follow-up-run-20260929-142632-0d849f0"
       ]
     },
     {
@@ -951,7 +994,9 @@
       "run": {
         "tool": "wbdcheck"
       },
-      "needs": ["LOOP-content-selftest"],
+      "needs": [
+        "LOOP-content-selftest"
+      ],
       "pass": "At least one CE WBD parses, every parsed table field round-trips, and the tool exits 0 with a JSON report.",
       "proves": "The measured CE WBD root has equal-count index-aligned hash and valid structured-target arrays across the successfully opened game archives.",
       "unproven": "The target object's shape, a full WBD roundtrip, and runtime collision pairing.",

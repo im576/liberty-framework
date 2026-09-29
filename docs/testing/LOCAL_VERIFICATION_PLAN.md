@@ -14,9 +14,9 @@
 
 | Kind | Pending | Runs |
 |---|---|---|
-| pc-offline | 13 | automatically (builds and tests that need Windows or the game's files) |
+| pc-offline | 14 | automatically (builds and tests that need Windows or the game's files) |
 | probe | 4 | automatically (read-only questions about the game's files; structure only) |
-| scenario | 20 | automatically (autopilot drives the game; about 2-4 minutes each) |
+| scenario | 21 | automatically (autopilot drives the game; about 2-4 minutes each) |
 | manual | 18 | you play and judge; about 162 minutes in total, grouped below |
 
 Statuses: QUEUED (never run on the current code), PASS, FAIL, ERROR, CRASH, NOT-RUN, NEEDS-REVIEW (a person or the review session must judge screenshots or log errors).
@@ -214,6 +214,8 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 | `SDK-selftest` | T-027 | scenario | autopilot PASS: 'selftest_done passed=N failed=0' | QUEUED |
 | `T028-native-texture-review` | T-028 | scenario | autopilot PASS and the screenshots judged as described | QUEUED |
 | `T031-drawable-roundtrip` | T-031 | pc-offline | exit code 0 and 'roundtrip: ok ... failed=0' (every eligible drawable identical under one buffer order); the JSON report is kept | QUEUED |
+| `T031-multimat-report` | T-031 | pc-offline | report fields match; inspect compiled.geometries and textures for two distinct material groups and readback [] | QUEUED |
+| `T031-multimat-review` | T-031 | scenario | autopilot PASS plus reviewed screenshots: textured sides and red top simultaneously visible, no missing geometry or corrupt material | QUEUED |
 | `T031-lod-post-report` | T-031 | pc-offline | report.json fields match: status ok, drawableWriter structure (not 'template (fallback)'), four LODs | QUEUED |
 | `T031-lod-review` | T-031 | scenario | autopilot PASS and the screenshots judged as described | QUEUED |
 | `SDK-asset-review` | M4 | scenario | autopilot PASS and the screenshots judged | QUEUED |
@@ -255,6 +257,8 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 - `SDK-selftest`: Every Liberty.Sdk service works in game on the new core ABI 5, including the ten raycast/line-of-sight checks. Since the engine audit also: the snapshot driver read from [vehicle+0xF50] (check vehicle-driver), capability refusal, and commands after the ownership and capability changes.
 - `T028-native-texture-review`: The game loads dictionaries written from scratch and draws DXT1; how gta_default treats DXT5 alpha. **Still unproven:** Alpha behaviour is an observation (translucent, cut-out or ignored); any of the three is a valid answer.
 - `T031-drawable-roundtrip`: For every drawable of the game the structure writer can use (layout 0x59 everywhere, own buffers, measurable sphere records): per-geometry patching of several geometries, shaders and LOD models reproduces Rockstar's files; the report says which buffer order (Interleaved or VerticesFirst) and which sphere-record layout the files use. **Still unproven:** Trimming (dropped geometries, models, LOD slots and shaders) and renamed textures have no counterpart in the game's files; the lod-review scenario tests a trimmed build in game.
+- `T031-multimat-report`: The packaged authored fixture uses automatic structure writer selection and passes readback. The report names the real template and both material textures. **Still unproven:** In-game material appearance, culling and placement; tested by T031-multimat-review.
+- `T031-multimat-review`: The game draws the authored crate from the structure writer with separate side and top materials. **Still unproven:** Additional LOD slots, authored collision and the broad drawable roundtrip gate.
 - `T031-lod-post-report`: The "*"/"auto" search found a structure template with four LOD slots in the owner's game, and the four-LOD drawable read back; templateUsed names it. **Still unproven:** That the game loads and switches the LODs (T031-lod-review).
 - `T031-lod-review`: The game loads a drawable written by the structure writer (several LOD models, trimmed template, renamed texture, one graphics page) and which LOD it draws at each distance. **Still unproven:** Which distances the switches happen at is an observation: by drawable +0x50 (12/25/50/100 m), by the game's own rules, or no switching; each is a useful answer. If T031-lod-post-report shows a fallback, every shot is LOD 0.
 - `SDK-asset-review`: The template-mode content pipeline still produces textured, upright, lit props after the T-028 merge.

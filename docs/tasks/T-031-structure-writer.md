@@ -43,6 +43,20 @@ It also records the known skeleton/embedded-dictionary presence flags, since `St
 those templates while the broader builder roundtrip currently includes them. Any eligibility change must retain
 the original counts and explain the compiler's actual supported scope.
 
+**Static-subset result (`3a131d7`):** Windows selftest passed 364/364. Bronx remains 105/187 broad matches and
+82 failures. Excluding presence flags only, static/external-texture templates matched 91/95; four still fail:
+`bx_bay_barriers01`, `bx_eltrain_1`, `bx_eltrain_4`, `el_lights04`. The excluded counts are 81 embedded-only,
+ten skeleton-only and one combined. This is not permission to promote the writer or ignore the original failures.
+Targeted diagnostic layouts of these four are needed before changing allocation or containment rules.
+
+**Two-material runtime fixture:** the existing authored Blender `lf_fx_multimat` fixture successfully compiled
+on CE with automatic `structure` selection using `pc/data/maps/east/bronx_e.img/big_fence2_bxe`. Readback was empty;
+material 0 has 20 vertices/10 triangles and material 1 has four vertices/two triangles. Its two native textures
+are 64x64 and 4x4 DXT1. The fixture is now copied into `content/props/lf_fx_multimat` for the package, with
+`T031-multimat-report` and `T031-multimat-review` queued. In game, run `multimat-review`: the top view must show a
+red lid alongside textured crate sides; the side view checks material assignment and missing/corrupt faces.
+Passing this fixture does not clear multiple LODs, collision or the full roundtrip gate.
+
 Depends on: T-030 (authoring side), T-028 (native texture dictionaries). Session 4 of
 [NEXT_SESSIONS](../workflow/NEXT_SESSIONS.md).
 

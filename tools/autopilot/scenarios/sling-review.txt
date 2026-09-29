@@ -1,12 +1,16 @@
 # W-5 review: both slings and slung long guns in daylight from four sides.
 events on
+await-alive 60000
+expect "autopilot_player_ready" 65
 god on
 wanted 0
 goto east_park
+expect "teleport_done id=east_park" 15
 wait 4000
 # Reassert after scene setup too; ownership alone does not prove the native flags remained set.
 god on
 alive
+pos
 owned autopilot
 expect "line=.owned autopilot. reply=.*invincible=1\b" 10
 time 13 0

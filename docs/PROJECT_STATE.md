@@ -5,23 +5,23 @@ Keep it short: this is a dashboard, not a diary.
 
 ## Current phase
 
-**Latest focused run (2026-09-29, `6931061`):** hot reload passed 24/24 steps and SDK selftest 49/49. Trunk passed
-35/35 with visible navigation, AK-47 storage and menu closure; lid closure is partly obscured. Sling passed scripted
-steps but failed visual review: death scenes, one black frame, then an unarmed respawn. Repeated invincibility requests
-now reapply the native flags without another ownership entry, and sling captures check player survival. Windows
-rebuild/rerun is pending. `LOAD_SCENE` took 3,394 ms in hot reload; performance remains open. The independent install-hash comparison
-confirmed all 42 restored files match their saved copies.
+**Latest focused run (2026-09-29, `0d849f0`):** hot reload passed 24/24 and SDK selftest 49/49 again.
+Sling failed 1/41 steps: its first survival check found a player already dead before scenario setup. Later captures
+show two slung long guns after respawn, away from the intended park. A bounded SDK coroutine now waits for a live
+player before teleport, and the scenario checks teleport completion and survival before screenshots. This rerun is
+pending. All 42 install actions were independently restored with zero mismatches. Trunk navigation, storage and menu
+closure remain proven by `6931061`; the lid was partly obscured. Performance remains open.
 
 **Empty encrypted archives:** Windows decoded all five recurring IMG errors as version 3, count 0, table bytes 0.
 At `0d849f0`, engine/content builds pass, content selftest is 360/360 and verifier simulation is 47/47.
-The WBD probe now opens the empty archives with zero errors; the focused protection/sling rerun is in progress.
+The WBD probe now opens the empty archives with zero errors.
 
-**Drawable placement diagnostic (2026-09-29):** the roundtrip tool now reports page metadata, source/rebuilt buffer
-ranges and byte-class counts in unmodeled graphics spans for up to 25 failures. An opaque-prefix mutation guards
-the diagnostic. Windows `773a528` passed 358 content checks; Bronx remains 105/187 identical. The first 25 failed
-layouts all have embedded dictionaries, which the compiler refuses. Separate static/external-texture subset counts
-now retain the broad totals and failures; their Windows check is pending. Unreadable requested archives fail the gate.
-Writer allocation is unchanged.
+**Drawable diagnostic (`3a131d7`):** Windows content selftest passes 364/364. Bronx retains 105/187 identical,
+82 different and zero archive errors. The static/external-texture subset is 91/95 identical, four failures;
+81 embedded, ten skeleton and one combined case are excluded from that subset, while broad totals remain intact.
+Targeted layouts of the four static failures are next. Writer allocation is unchanged. The authored two-material
+fixture compiles with `structure`, template `bronx_e.img/big_fence2_bxe`, two geometries/textures and empty readback.
+It is now packaged and queued for report and in-game material review; rendering remains unverified.
 
 **Focused runtime follow-up (2026-09-29):** `14010f6` installed and restored; no scenario crashed. Sling scripted
 checks passed, but the images establish one rifle/strap. Hot reload released owned invincibility as designed, then

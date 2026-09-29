@@ -1,0 +1,27 @@
+# T-031: authored two-material crate, automatic structure writer and two native textures.
+await-alive 60000
+expect "autopilot_player_ready" 65
+god on
+wanted 0
+goto east_park
+expect "teleport_done id=east_park" 15
+wait 4000
+god on
+alive
+time 13 0
+weather 1
+spawnprop lf_fx_multimat 2.5 0
+expect "autopilot_prop handle=\d+ model=lf_fx_multimat" 15
+wait 1500
+hud off
+cam prop 120 1.4 1.2
+wait 1500
+alive
+shot multimat_top
+cam prop 180 1.4 0.5
+wait 1500
+alive
+shot multimat_side
+cam off
+hud on
+clear

@@ -72,6 +72,20 @@ copied from the matching source texture; their meaning has not been decoded.
 
 Evidence: `verification-results/results/20260929-121911-6931061/` (published at `335f1ea`).
 
+## Follow-up run: 20260929-142632-0d849f0
+
+- SDK hot reload passed 24/24, with 49/49 selftest and no log errors.
+- Sling failed 1/41: `alive` after setup found the player dead. Wasted/arsenal loss occurred before its first command;
+  later `god on` did not resurrect the player. Respawn happened after the attempted park teleport.
+- Later survival checks report health 100, and the five captured images show two slung long guns. Mac review of front
+  and back-close images confirms a live player, straps and two distinct weapon props, outside the medical center.
+  This establishes those attachments, not a passing scenario or movement/clipping behavior.
+- The scenario now waits for a live player using a bounded SDK coroutine before teleport, expects teleport completion
+  and retains its later survival assertions. The native protection-reset cause remains unknown.
+- Installation restored; independent verification found zero mismatches among all 42 rollback actions.
+
+Evidence: `verification-results/results/20260929-142632-0d849f0/` (including `review.md`).
+
 ## Runtime findings (VERIFIED IN GAME for this run)
 
 - The raycast spike, SDK self-test, engine events, bullet events, exact damage and vehicle events passed. The main raycast scenario's fixed forward ray lost a moving pedestrian before its filtered pass-through check. A targeted rerun using a `rayto` command passed that pedestrian check, but failed three other steps when a nearby object entered the car ray and Steam screenshot capture failed. Those are separate results; a clean raycast regression is still needed.

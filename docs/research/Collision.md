@@ -17,6 +17,8 @@ demonstrated vtable, and found no direct address reference in the scan. Do not d
 use it as a hook address or infer a constructor from it. Resource fixup/type dispatch must establish the mapping
 to current runtime classes. An absent direct reference does not exclude indirect dispatch. The first-word class
 inventory and field measurements remain valid; their runtime interpretation is UNKNOWN.
+Evidence: `verification-results/results/20260929-t032-classword-pe/report.md` records the executable hash,
+PE section ranges and direct-reference scan limits.
 
 ## Claims
 
