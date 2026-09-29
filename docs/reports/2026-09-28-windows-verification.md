@@ -55,6 +55,10 @@ copied from the matching source texture; their meaning has not been decoded.
   The self-test now casts a short line through the spawned test ped's torso instead of starting at the player's feet;
   that targeted change needs a focused Windows `SDK-hot-reload` rerun.
 - Visual review of the published screenshots: the SDK list menu is visible and readable. The sling close-up shows a grayscale death scene with the player on the ground, so it cannot establish the requested weapon placement. The trunk `after_store` and `closed` shots both still show the open radial menu; the log's missing close/choreography events reflect a visible unfinished interaction. These checks need clean reruns after their scenario behavior is corrected.
+  The sling log did contain `holster_sling_attached` after the weapon grant, before the following `select` command. The
+  old scenario looked only after `select`, then waited through a failed 15-second expectation while the player died.
+  The runner now supports `mark` / `expectmarked`, and the sling scenario checks the event from before its weapon
+  grants. This repairs the timing check; the placement screenshots and player survival still require a Windows rerun.
 - The native crate texture is clearly visible on its side screenshot. The alpha panel's checker and red bar appear on both faces, but its screenshots do not put a contrasting object directly behind the checker. They establish texture rendering, not the intended 64/192 alpha blending; that visual check still needs an overlapping backdrop.
 - The trunk run reported frame intervals around 400–845 ms near the missed Backspace action. Its 250 ms injected key may have fallen between input polls; the scenario now holds it for 1,200 ms. This is a test hypothesis until a focused rerun shows a close event and a closed menu.
 
