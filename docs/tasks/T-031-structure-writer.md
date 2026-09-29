@@ -49,6 +49,13 @@ the original counts and explain the compiler's actual supported scope.
 ten skeleton-only and one combined. This is not permission to promote the writer or ignore the original failures.
 Targeted diagnostic layouts of these four are needed before changing allocation or containment rules.
 
+**Four-file layout evidence:** the published `four-failures.json` shows later source pointers at tail buffers;
+all unmodeled ranges in these four have zero `otherBytes` (only zero/0xCD). A fixed block reproduces their earlier
+buffers but misses some later alignments. A per-buffer power-of-two candidate fits only two complete sequences and
+changes valid earlier offsets in the other two; it was rejected as a writer change. Research source page/relocation
+boundaries next. `bx_eltrain_4` also has a separate Z-box containment difference; request numeric source/rebuilt bounds
+before changing tolerances. Evidence: `verification-results/results/20260929-3a131d7-static-subset/`.
+
 **Two-material runtime fixture:** the existing authored Blender `lf_fx_multimat` fixture successfully compiled
 on CE with automatic `structure` selection using `pc/data/maps/east/bronx_e.img/big_fence2_bxe`. Readback was empty;
 material 0 has 20 vertices/10 triangles and material 1 has four vertices/two triangles. Its two native textures

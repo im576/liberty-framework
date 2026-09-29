@@ -34,6 +34,17 @@ All inputs are read from the player's own game files. Nothing from the game is c
 - **Page size:** the game's files size pages from the largest buffer: page shift = `log2(nextPow2(largest buffer)) - 12`.
 - **Buffer placement:** a buffer never straddles an aligned block of `max(4 KB, 8 pages)`; it moves to the next block instead. The index buffer follows the vertices, 16-byte aligned. With both rules, the rebuilt props match byte for byte.
 
+**Scope correction (2026-09-29, T-031):** the fixed-block placement above describes the original matching
+single-geometry sample; it is not established for every multi-geometry drawable. In the Bronx static/external-texture
+subset, 91/95 match and four have tail buffer pointers that the fixed-block model places too early. For example,
+`bx_eltrain_1`'s last index buffer starts at 204,800 in the source and 204,480 in the rebuild; `el_lights04`'s
+index buffer starts at 147,456 rather than 140,624. The measured unmodeled graphics ranges in these four contain
+only zero/0xCD bytes, unlike the embedded-dictionary samples. This supports researching allocation/page boundaries;
+it does not establish that every range is padding. A simple per-buffer next-power-of-two block hypothesis reproduces
+only two of these four offset sequences and moves valid earlier buffers in the other two, so it is not implemented.
+`bx_eltrain_4` also fails drawable Z-box containment and needs a separate numeric bounds diagnostic.
+Evidence: `verification-results/results/20260929-3a131d7-static-subset/four-failures.json` and `report.md`.
+
 ## In-game finding: one graphics page for generated models (2026-09-25)
 
 The first strap build used Rockstar's placement: 12 pages of 2 KB, with the 21 KB vertex buffer at offset 0. In game, part of the strap rendered correctly and the rest became huge planes. So vertex data beyond a page block was not where the pointer arithmetic expected it.
