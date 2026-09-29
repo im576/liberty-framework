@@ -171,6 +171,10 @@ function Get-ToolCommand($Context, $Check) {
             return @{ File = $ps; Arguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', $command); Timeout = 900; Pass = 'selftest: ok passed=\d+ failed=0' }
         }
         'wtdcheck' { return @{ File = $content; Arguments = @('wtdcheck', '--game', $Context.Game) + @($Check.run.archives); Timeout = 1800; Pass = 'failed=0' } }
+        'wbdcheck' {
+            $out = Join-Path $Context.Results ($Check.id + '.json')
+            return @{ File = $content; Arguments = @('wbdcheck', '--game', $Context.Game, '--out', $out); Timeout = 2400; Pass = 'wbdcheck wbd=\d+ ce=[1-9]\d* parsed=\d+ tableRoundTrips=\d+'; Output = $out }
+        }
         'blender-tests' {
             return @{ File = $ps; Arguments = (Get-ScriptArguments (Join-Parts $tools 'blender' 'run-tests.ps1')) + @('-GameDirectory', $Context.Game, '-Blender', $Context.Blender); Timeout = 1800; Pass = 'Blender add-on tests passed' }
         }
@@ -208,6 +212,9 @@ function Invoke-ToolCheck($Context, $Check) {
     $run = Invoke-ChildProcess $command.File $command.Arguments $command.Timeout $log $Context.Repo
     $result = Get-ToolStatus $run $command.Pass
     $result.Evidence = @((Split-Path -Leaf $log))
+    if ($Check.run.tool -eq 'wbdcheck' -and $result.Status -eq 'PASS' -and -not (Test-Path -LiteralPath $command.Output)) {
+        return New-Result 'FAIL' 'wbdcheck wrote no JSON report' @((Split-Path -Leaf $log))
+    }
     if ($Check.kind -ne 'probe' -and $command.Output -and (Test-Path -LiteralPath $command.Output)) { $result.Evidence += (Split-Path -Leaf $command.Output) }
     if ($Check.kind -eq 'probe') {
         $out = $command.Output
@@ -455,7 +462,7 @@ function Get-SimulatedToolCommand($Context, $Check) {
     $timeout = [int](Get-SimProperty $tool 'timeoutSeconds' 60)
     $command = "Write-Output '$($output.Replace("'", "''"))'; Start-Sleep -Seconds $sleep; exit $exit"
     $result = @{ File = (Get-PowerShellPath); Arguments = @('-NoProfile', '-Command', $command); Timeout = $timeout; Pass = [string](Get-SimProperty $tool 'pass' '') }
-    if ($Check.kind -eq 'probe' -or $Check.run.tool -eq 'drawable-roundtrip') {
+    if ($Check.kind -eq 'probe' -or $Check.run.tool -eq 'drawable-roundtrip' -or $Check.run.tool -eq 'wbdcheck') {
         $out = Join-Path $Context.Results ($Check.id + '.json')
         if (Get-SimProperty $tool 'writesReport' $true) { $result.Arguments = @('-NoProfile', '-Command', "Set-Content -LiteralPath '$out' -Value '{""probe"":""simulated""}'; $command") }
         $result.Output = $out

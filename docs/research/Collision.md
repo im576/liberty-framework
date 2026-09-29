@@ -59,9 +59,23 @@ WBD model-name hash table, but neither a hash-to-bounds association nor the runt
 archives could not be opened by the probe. Full names, offsets and counts are in
 `verification-results/results/20260929-a61fdfe-collision-links/`; the report contains no resource bytes.
 
-The next read-only probe should locate the structure that points to the consecutive hash run, compare its candidate
-count with the run length, and locate a parallel bounds-pointer array or entries. A same-name/hash match alone is
-insufficient to select a collision resource for `lf_col_crate`.
+The follow-up read-only probe traced the structure pointing to the consecutive hash run and a parallel target array.
+A same-name/hash match alone was insufficient to select a collision resource for `lf_col_crate`.
+
+**CE WBD table reader (2026-09-29, VERIFIED OFFLINE):** root vtable `0x00695360` uses a hash-array pointer at
+`+0x10` and a structured-target-pointer array at `+0x18`; each has 16-bit count/capacity fields immediately after its
+pointer. In 13 selected WBDs, the counts agree, all 100 hashes match WDR names in the same IMG, and all 100
+same-index targets are valid system pointers. Across the available game archives, the reader parsed all 309 WBDs of
+this root class (3,239 entries), and re-encoding the known root/table fields matched all 309 originals. Of those
+entries, 3,039 hashes match same-IMG WDR names. The target class has six observed vtable values. This is an
+index-aligned **hash-to-structured-target relationship**; calling the targets collision shapes is still an inference.
+The check does not decode or round-trip the pointed-to objects or the unknown remainder of each WBD. Five IMG
+archives remain unreadable by the current archive reader. Evidence:
+`verification-results/results/20260929-70e7fd4-wbd-structure/`.
+
+Next, classify the six pointed-to vtable classes and decode the smallest relevant shape/container using real-file
+cross-checks. A full roundtrip of the relevant resource content and an in-game model-pairing test still precede the
+authored writer.
 
 ## Plan
 

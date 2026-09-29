@@ -1,6 +1,6 @@
 # T-032 — Collision: layout research tooling and borrowed collision
 
-Status: **NEEDS-PLAYTEST** (queued: `PROBE-collision`, `PROBE-bounds-layout`, `T032-collision-borrow-report`,
+Status: **NEEDS-PLAYTEST** (queued: `PROBE-collision`, `PROBE-bounds-layout`, `T032-wbdcheck`, `T032-collision-borrow-report`,
 `T032-collision-borrow`; `T033-world-walk` covers the player)
 
 **Windows result (2026-09-28):** the probes ran, but `propCandidates` was empty on this game install. Automatic
@@ -17,8 +17,15 @@ bounds class and an in-game pairing test are required before authored collision 
 `PROBE-collision-links` has now run as a conservative same-IMG hash scan. It found 3,564 matching words in WBD and
 eight in WBN; `bronx_e.wbd` contains a twelve-word consecutive run of WDR-name hashes. The result supports a WBD
 name-hash table, but it does not associate a key with a bounds object. Evidence:
-`verification-results/results/20260929-a61fdfe-collision-links/`. The next probe should trace the table's owning
-structure, count and parallel bounds references before any reader/writer is attempted.
+`verification-results/results/20260929-a61fdfe-collision-links/`. The follow-up trace established the table's
+owning root pointer/count fields and a parallel structured-target array.
+
+**Table research result:** root class `0x00695360` has equal-count hash and structured-target-pointer arrays. A
+read-only parser checked 309/309 CE WBDs and 3,239 indexed targets; re-encoding the known root/table fields matched
+309/309 originals. This advances the dictionary reader, not the authored collision writer: six pointed-to classes,
+their shapes, the rest of each WBD and runtime pairing remain undecoded. Evidence:
+`verification-results/results/20260929-70e7fd4-wbd-structure/`. Next decode one relevant target class and establish
+a full resource roundtrip before writing an authored shape.
 
 Depends on: T-030 (authored collision shapes), T-027 (engine raycast). Session 5 of
 [NEXT_SESSIONS](../workflow/NEXT_SESSIONS.md).

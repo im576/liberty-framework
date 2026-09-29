@@ -29,6 +29,13 @@ same-IMG WDR names: 3,564 in WBD and eight in WBN. `bronx_e.wbd` has twelve cons
 strongly suggests a WBD name-hash table but does not associate a hash with a bounds object or establish runtime
 collision pairing. Five IMG archives were omitted after parse errors. Evidence:
 `verification-results/results/20260929-a61fdfe-collision-links/`.
+
+**CE WBD table check:** a read-only parser now identifies index-aligned name-hash and structured-target-pointer
+arrays in root class `0x00695360`. It parsed 309/309 WBDs of that class, including 3,239 table entries with valid
+targets, and re-encoded the known table fields identically in all 309. In 13 selected WBDs, all 100 name hashes match
+same-IMG WDRs and their same-index target pointers are valid. Content self-test passed 354/354, including mutation
+checks. This verifies the hash-to-target table structure; it does not decode the target shapes, round-trip the full
+WBD, or prove GTA IV's runtime pairing. Evidence: `verification-results/results/20260929-70e7fd4-wbd-structure/`.
 - The automatic borrowed-collision search therefore found no candidate. `lf_col_crate` and `lf_world_wall` built without a borrowed WBN. Their failed raycasts do not decide whether GTA IV would pair a same-named WBN with a script-created object if one were provided. The static wall did spawn and was visible in its screenshot.
 - `T028-wtdcheck` inspected 79 dictionaries; 68 rebuilt, 67 compared identical, 11 uncompressed dictionaries were skipped, and no parser exception was counted. Its nonzero exit is a real single roundtrip mismatch. The probe also recorded 99 nonzero texture-record `+0x40` words among compressed textures, while the writer emits zero, and all 79 dictionaries used several graphics pages. The native crate and alpha panel visibly rendered in game, but the texture roundtrip claim remains incomplete.
 

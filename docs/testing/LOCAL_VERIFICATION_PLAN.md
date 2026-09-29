@@ -14,7 +14,7 @@
 
 | Kind | Pending | Runs |
 |---|---|---|
-| pc-offline | 12 | automatically (builds and tests that need Windows or the game's files) |
+| pc-offline | 13 | automatically (builds and tests that need Windows or the game's files) |
 | probe | 4 | automatically (read-only questions about the game's files; structure only) |
 | scenario | 21 | automatically (autopilot drives the game; about 2-4 minutes each) |
 | manual | 18 | you play and judge; about 162 minutes in total, grouped below |
@@ -231,6 +231,7 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 | `T026-perf-stress` | T-026 | scenario | autopilot PASS; the review session reads the governor and memory figures | QUEUED |
 | `PROBE-bounds-layout` | T-032 | probe | exit code 0 and a JSON report; the review session reads it | QUEUED |
 | `PROBE-collision-links` | T-032 | probe | exit code 0 and a JSON report; the review session reads it | QUEUED |
+| `T032-wbdcheck` | T-032 | pc-offline | At least one CE WBD parses, every parsed table field round-trips, and the tool exits 0 with a JSON report. | QUEUED |
 | `T032-collision-borrow-report` | T-032 | pc-offline | report.json fields match: the build found a prop candidate and shipped its bounds as lf_col_crate.wbn | QUEUED |
 | `T032-collision-borrow` | T-032 | scenario | autopilot PASS (both rays hit the crate as kind Object) and the screenshot shows the crate | QUEUED |
 | `T033-world-wall-report` | T-033 | pc-offline | report.json fields match | QUEUED |
@@ -288,6 +289,7 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 - `T026-performance-feel`: The owner's perception of frame pacing on the develop build (the perf scenarios measure script cost).
 - `PROBE-bounds-layout`: For each class of collision resource (extension, RSC type, root word): which root words are pointers, small integers (with their values: counts and type codes), floats or zero, the same one level down, and a bound on the root's size. Input for decoding one class before any collision writer (Collision.md plan step 3). **Still unproven:** Field meanings: the review session reads them from the measured layout plus the classes' counts, and writes them down in Collision.md with labels.
 - `PROBE-collision-links`: Whether any 32-bit system words in WBD/WBN resources match Jenkins hashes of WDR names from the same IMG, with names and offsets for targeted structural investigation. **Still unproven:** That a matching word is a dictionary key or that the game pairs that bounds resource with the model at runtime.
+- `T032-wbdcheck`: The measured CE WBD root has equal-count index-aligned hash and valid structured-target arrays across the successfully opened game archives. **Still unproven:** The target object's shape, a full WBD roundtrip, and runtime collision pairing.
 - `T032-collision-borrow-report`: The auto borrow found PROBE-collision's first prop candidate in the owner's game and packaged its bounds resource with the crate (compiled.collision.from names it). **Still unproven:** That the game pairs it with the crate (T032-collision-borrow).
 - `T032-collision-borrow`: Collision.md C4-C6 for this project's archive: a model registered in lf_content.ide gets collision from a same-named bounds resource for a script-created object, and the engine's raycast hits it. **Still unproven:** Player and vehicle collision against it (T033-world-walk); authored collision shapes (need the collision writer).
 - `T033-world-wall-report`: A type-object asset compiles, reads back and is packaged with its borrowed collision.

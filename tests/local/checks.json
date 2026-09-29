@@ -926,6 +926,21 @@
       "addedIn": "codex/pr7-verification-fixes (collision follow-up)"
     },
     {
+      "id": "T032-wbdcheck",
+      "task": "T-032",
+      "title": "CE WBD hash and target table reader",
+      "kind": "pc-offline",
+      "run": {
+        "tool": "wbdcheck"
+      },
+      "pass": "At least one CE WBD parses, every parsed table field round-trips, and the tool exits 0 with a JSON report.",
+      "proves": "The measured CE WBD root has equal-count index-aligned hash and valid structured-target arrays across the successfully opened game archives.",
+      "unproven": "The target object's shape, a full WBD roundtrip, and runtime collision pairing.",
+      "reference": "docs/research/Collision.md",
+      "status": "QUEUED",
+      "addedIn": "codex/pr7-verification-fixes (Session 5b table reader)"
+    },
+    {
       "id": "T032-collision-borrow-report",
       "task": "T-032",
       "title": "lf_col_crate ships a borrowed collision resource",

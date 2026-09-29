@@ -73,7 +73,7 @@ namespace LibertyFramework.Content
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output)));
             File.WriteAllText(output, new JavaScriptSerializer { MaxJsonLength = int.MaxValue }.Serialize(report));
             Console.WriteLine("wbdcheck wbd=" + wbd + " ce=" + ce + " parsed=" + parsed + " tableRoundTrips=" + tableRoundTrips + " entries=" + entries + " sameImgWdr=" + sameImgWdr + " errors=" + errors.Count);
-            return parsed == ce && parsed == tableRoundTrips ? 0 : 1;
+            return ce > 0 && parsed == ce && parsed == tableRoundTrips ? 0 : 1;
         }
 
         private static string Hex(int value) { return "0x" + value.ToString("X"); }

@@ -11,6 +11,8 @@ Keep it short: this is a dashboard, not a diary.
 
 **Collision follow-up (2026-09-29):** `PROBE-collision-links` built and passed 347/347 content self-tests on Windows. It found 3,564 WBD words matching same-IMG WDR name hashes (eight in WBN), including a twelve-word consecutive run in `bronx_e.wbd`. This supports a WBD name-hash table, but Session 5b still needs a proven hash-to-bounds association, a bounds class roundtrip and an in-game pairing test. The read-only report is under `verification-results/results/20260929-a61fdfe-collision-links/`.
 
+**WBD table reader (2026-09-29):** root class `0x00695360` contains index-aligned name-hash and structured-target arrays. The reader validated 309/309 available CE WBDs and 3,239 entries; its known table fields round-tripped in all 309, and the content self-test passed 354/354. Target shapes, full resource roundtrip and runtime collision pairing remain open. Evidence: `verification-results/results/20260929-70e7fd4-wbd-structure/`.
+
 **Integration:** PR #7 is merged into `develop` (`44dbbd0`). Follow-up verification fixes and research are in draft PR #8. Neither the foundation release nor `main` has been promoted.
 
 **Sessions 4b, 5 and 6 (2026-09-26, Claude; [T-031](tasks/T-031-structure-writer.md), [T-032](tasks/T-032-collision.md), [T-033](tasks/T-033-world-objects.md)): offline checks pass; NEEDS-PLAYTEST.**
