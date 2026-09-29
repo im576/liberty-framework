@@ -174,7 +174,9 @@ namespace Liberty.Autopilot
                 // Raycast across the car (vehicle space X = its right): it stops a ray at door height, and blocks a line of
                 // sight unless vehicles are left out of the blockers.
                 yield return Wait.FramesCount(3);
-                Vec3 left = liberty.Vehicles.GetOffsetPosition(car, new Vec3(-3f, 0, 0)), right = liberty.Vehicles.GetOffsetPosition(car, new Vec3(3f, 0, 0));
+                // Keep both ends clear of the nearby pavement edge; the six-metre ray could hit world collision
+                // just before its far endpoint after correctly passing through the car.
+                Vec3 left = liberty.Vehicles.GetOffsetPosition(car, new Vec3(-2.5f, 0, 0)), right = liberty.Vehicles.GetOffsetPosition(car, new Vec3(2.5f, 0, 0));
                 RayHit atCar = liberty.Query.Raycast(left, right, RayMask.All, RayIgnore.Of(player));
                 Check("raycast-vehicle", atCar.IsHit && atCar.Kind == RayEntityKind.Vehicle && atCar.Vehicle == car, atCar + " normal=" + atCar.Normal);
                 bool blocked = !liberty.Query.HasLineOfSight(left, right, RayMask.World | RayMask.Vehicles, RayIgnore.Of(player));
