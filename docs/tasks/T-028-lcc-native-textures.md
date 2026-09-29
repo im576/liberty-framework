@@ -9,6 +9,8 @@ The targeted Windows rerun passed: all 68 compressed dictionaries rebuilt byte-i
 dictionaries skipped (`verification-results/results/20260928-234601-762fd62/`). The probe also found nonzero record `+0x40` pointers and multipage
 graphics in many original files, so their meaning and generated-dictionary behavior remain open. See
 [`2026-09-28-windows-verification.md`](../reports/2026-09-28-windows-verification.md).
+The panel screenshots show its checker and bar but have no contrasting object directly behind the checker, so the
+intended partial transparency still needs a visual test with an overlapping backdrop.
 
 Depends on: M4 content compiler v1 (in game 2026-09-25, `docs/content/README.md`).
 
