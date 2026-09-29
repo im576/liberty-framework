@@ -1,0 +1,16 @@
+{
+  "scenario": "hot-reload",
+  "status": "FAIL",
+  "summary": "FAIL; steps=22 failed=2 logErrors=3 gameAlive=True",
+  "steps": 22,
+  "failedSteps": [
+    "goto east_park => EXCEPTION no reply to cmd_20260929190351737 within 20 s",
+    "expect selftest_done passed=\\d+ failed=0: no new log line in 120 s"
+  ],
+  "screenshots": [],
+  "logErrors": 3,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T19:03:50.7949182Z",
+  "finishedUtc": "2026-09-29T19:06:31.8351045Z"
+}
