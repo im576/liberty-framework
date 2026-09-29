@@ -1,6 +1,9 @@
 # T-024 — Phase 2 gun feel, storage interaction, and performance baseline
 
-Status: **NEEDS-PLAYTEST**. Owner requested the full Phase 2 build for one combined test after installation. Offline build and verifier pass; no agent has run GTA IV.
+Status: **NEEDS-PLAYTEST**. The September 28 Windows queue ran the trunk review, but it did not complete the closing
+choreography. The `after_store` and `closed` screenshots both show the radial menu still open. The run reported
+400–845 ms frames near the interaction, so the scenario now holds Backspace for 1,200 ms to cover multiple frames;
+that check needs a focused clean rerun. This timing change does not establish whether the interaction itself is sound.
 
 ## Changes
 
