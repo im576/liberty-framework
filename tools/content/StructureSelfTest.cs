@@ -334,6 +334,14 @@ namespace LibertyFramework.Content
                 t.Check(Convert.ToInt32(orders["Interleaved+Template"]) == 1 && Convert.ToInt32(orders["VerticesFirst+Template"]) == 1 && Convert.ToInt32(orders["Interleaved+VerticesFirst+Template"]) == 1,
                     "roundtrip report: each multi-geometry order found once, the single-geometry file under all three", string.Join(",", orders.Select(p => p.Key + "=" + p.Value).ToArray()));
                 t.Check(DrawableRoundTrip.Run(new[] { "--game", game, "pc/models/cdimages/missing.img" }) == 1, "an archive that cannot be read proves nothing: exit 1");
+                string incomplete = Path.Combine(game, "roundtrip-incomplete.json");
+                t.Check(DrawableRoundTrip.Run(new[] { "--game", game, "--out", incomplete,
+                    "pc/models/cdimages/test.img", "pc/models/cdimages/missing.img" }) == 1,
+                    "matching drawables plus an unreadable requested archive cannot pass");
+                Dictionary<string, object> partial = json.Deserialize<Dictionary<string, object>>(File.ReadAllText(incomplete));
+                t.Check(Convert.ToInt32(partial["identical"]) == 3 && Convert.ToInt32(partial["failed"]) == 0 &&
+                    ((System.Collections.ArrayList)partial["archiveErrors"]).Count == 1,
+                    "partial roundtrip retains matching evidence and the archive failure");
 
                 t.Check(Probe.Run(new[] { "drawables", "--game", game, "--out", probe }) == 0, "probe drawables exits 0");
                 Dictionary<string, object> d = json.Deserialize<Dictionary<string, object>>(File.ReadAllText(probe));

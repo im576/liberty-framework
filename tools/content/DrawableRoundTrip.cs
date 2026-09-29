@@ -94,9 +94,10 @@ namespace LibertyFramework.Content
 
             foreach (string failure in failures) { Console.WriteLine("  " + failure); }
             foreach (string error in archiveErrors) { Console.WriteLine("  archive " + error); }
-            bool ok = eligible > 0 && failed == 0;
+            // A matching subset cannot prove the requested archive set when another archive was unreadable.
+            bool ok = eligible > 0 && failed == 0 && archiveErrors.Count == 0;
             string summary = "roundtrip: " + (ok ? "ok" : "FAILED") + " drawables=" + drawables + " eligible=" + eligible + " multi=" + multi + " identical=" + identical + " failed=" + failed +
-                " orders[" + string.Join(", ", byOrder.OrderBy(p => p.Key).Select(p => p.Key + "=" + p.Value).ToArray()) + "]" + (eligible == 0 ? " (no eligible drawable: nothing was proven)" : "");
+                " orders[" + string.Join(", ", byOrder.OrderBy(p => p.Key).Select(p => p.Key + "=" + p.Value).ToArray()) + "] archiveErrors=" + archiveErrors.Count + (eligible == 0 ? " (no eligible drawable: nothing was proven)" : "");
             if (output != null)
             {
                 JavaScriptSerializer json = new JavaScriptSerializer { MaxJsonLength = int.MaxValue };

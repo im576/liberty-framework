@@ -29,6 +29,9 @@ ranges report only counts of zero, 0xCD and other bytes; their meaning is not as
 mutation checks that repacking stays a failure and the leading range is identified. Run the queued roundtrip on
 `pc/data/maps/east/bronx_e.img` first, then use its measured gaps and page shifts to choose the next placement test.
 This diagnostic changes no writer allocation policy and awaits the Windows build/self-test/probe.
+The roundtrip exit status also fails when any requested archive is unreadable, even if every eligible drawable in
+the other archives matches. The report retains the partial matches and archive errors; a synthetic mixed valid/missing
+archive test checks this release gate. The five current archive errors need header review before being classified.
 It also records the known skeleton/embedded-dictionary presence flags, since `StructureCompiler.Match` refuses
 those templates while the broader builder roundtrip currently includes them. Any eligibility change must retain
 the original counts and explain the compiler's actual supported scope.
