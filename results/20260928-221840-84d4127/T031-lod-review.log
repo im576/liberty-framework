@@ -1,0 +1,2 @@
+scenario lod-review: PASS; steps=28 failed=0 logErrors=0 gameAlive=True; report <repo>\results-local\20260928-221840-84d4127\_runs\lod-review-20260928-224250
+AUTOPILOT_RESULT <repo>\results-local\20260928-221840-84d4127\_runs\lod-review-20260928-224250\result.json

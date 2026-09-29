@@ -1,0 +1,2 @@
+scenario asset-review: NEEDS-REVIEW; steps=33 failed=0 logErrors=1 gameAlive=True; report <repo>\results-local\20260928-221840-84d4127\_runs\asset-review-20260928-224327
+AUTOPILOT_RESULT <repo>\results-local\20260928-221840-84d4127\_runs\asset-review-20260928-224327\result.json

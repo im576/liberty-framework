@@ -1,0 +1,2 @@
+scenario ui-review: PASS; steps=21 failed=0 logErrors=0 gameAlive=True; report <repo>\results-local\20260928-221840-84d4127\_runs\ui-review-20260928-224855
+AUTOPILOT_RESULT <repo>\results-local\20260928-221840-84d4127\_runs\ui-review-20260928-224855\result.json

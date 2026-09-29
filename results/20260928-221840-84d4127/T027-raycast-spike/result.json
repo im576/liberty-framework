@@ -1,0 +1,13 @@
+{
+  "scenario": "raycast-spike",
+  "status": "PASS",
+  "summary": "PASS; steps=24 failed=0 logErrors=0 gameAlive=True",
+  "steps": 24,
+  "failedSteps": [],
+  "screenshots": [],
+  "logErrors": 0,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:41:30.3291403Z",
+  "finishedUtc": "2026-09-29T05:41:49.3487267Z"
+}

@@ -1,0 +1,65 @@
+Built <repo>\tools\content\bin\LibertyContent.exe from 63 source files
+  name hash: 4 checks
+  dxt1: 8 checks
+  dxt5: 15 checks
+  dxt decoder: 9 checks
+  mip chain: 21 checks
+  wtd writer: 41 checks
+  wtd multi-page: 11 checks
+  wtd errors: 12 checks
+  native texture: 12 checks
+  native source: 8 checks
+  validator: 17 checks
+  manifest: 13 checks
+  capabilities: 3 checks
+  collision import: 23 checks
+  structure rules: 10 checks
+  world object rules: 15 checks
+  report structure: 6 checks
+  fixture matching: 6 checks
+  structure round trip: 10 checks
+  structure bounds records: 12 checks
+  structure trimming: 15 checks
+  structure compiler: 16 checks
+note: IMG key not found in <home>\AppData\Local\Temp\liberty-structure-bfd520d5\GTAIV.exe; encrypted archives will be reported as errors
+roundtrip: ok drawables=3 eligible=3 multi=2 identical=3 failed=0 orders[both (one buffer pair)=1, Interleaved=1, VerticesFirst=1] report=<home>\AppData\Local\Temp\liberty-structure-bfd520d5\roundtrip.json
+note: IMG key not found in <home>\AppData\Local\Temp\liberty-structure-bfd520d5\GTAIV.exe; encrypted archives will be reported as errors
+  archive pc/models/cdimages/missing.img: Could not find file '<home>\AppData\Local\Temp\liberty-structure-bfd520d5\pc\models\cdimages\missing.img'.
+roundtrip: FAILED drawables=0 eligible=0 multi=0 identical=0 failed=0 orders[] (no eligible drawable: nothing was proven)
+note: IMG key not found in <home>\AppData\Local\Temp\liberty-structure-bfd520d5\GTAIV.exe; encrypted archives will be reported as errors
+probe drawables written: <home>\AppData\Local\Temp\liberty-structure-bfd520d5\drawables.json
+  structure commands: 9 checks
+  writer choice: 9 checks
+note: IMG key not found in <home>\AppData\Local\Temp\liberty-structure-ca5bd667\GTAIV.exe; encrypted archives will be reported as errors
+probe collision written: <home>\AppData\Local\Temp\liberty-structure-ca5bd667\collision.json
+  INFO LCC039: collision borrowed at build from */auto: the source prop's own shape, shipped as lf_col_test.wbn (whether the game pairs it with this model is T032-collision-borrow)
+  INFO LCC014: bounds (-0.3, -0.3, 0) .. (0.3, 0.3, 0.6)
+  INFO LCC026: LOD 0: 1 geometry ('crate_wood' 12 triangles, 24 vertices)
+build lf_col_test: ok vertices=24 triangles=12 texture=lf_col_test 256x256 DXT1 levels=7 psnr=37.95dB report=<home>\AppData\Local\Temp\liberty-structure-ca5bd667\build\lf_col_test\report.json
+  INFO LCC039: collision borrowed at build from */auto: the source prop's own shape, shipped as lf_col_test.wbn (whether the game pairs it with this model is T032-collision-borrow)
+  INFO LCC014: bounds (-0.3, -0.3, 0) .. (0.3, 0.3, 0.6)
+  INFO LCC026: LOD 0: 1 geometry ('crate_wood' 12 triangles, 24 vertices)
+build lf_col_test: ok vertices=24 triangles=12 texture=lf_col_test 256x256 DXT1 levels=7 psnr=37.95dB report=<home>\AppData\Local\Temp\liberty-structure-ca5bd667\build\lf_col_test\report.json
+package LibertyContent.img entries=3, lf_content.ide written
+  INFO LCC014: bounds (-0.3, -0.3, 0) .. (0.3, 0.3, 0.6)
+  INFO LCC026: LOD 0: 1 geometry ('crate_wood' 12 triangles, 24 vertices)
+build lf_col_test: ok vertices=24 triangles=12 texture=lf_col_test 256x256 DXT1 levels=7 psnr=37.95dB report=<home>\AppData\Local\Temp\liberty-structure-ca5bd667\build\lf_col_test\report.json
+  collision borrow: 17 checks
+note: IMG key not found in <home>\AppData\Local\Temp\liberty-structure-9f533bec\GTAIV.exe; encrypted archives will be reported as errors
+probe bounds written: <home>\AppData\Local\Temp\liberty-structure-9f533bec\bounds.json
+  bounds probe: 7 checks
+  sample asset: 4 checks
+note: IMG key not found in <home>\AppData\Local\Temp\liberty-probe-f07d0184\GTAIV.exe; encrypted archives will be reported as errors
+probe drawables written: <home>\AppData\Local\Temp\liberty-probe-f07d0184\drawables.json
+note: IMG key not found in <home>\AppData\Local\Temp\liberty-probe-f07d0184\GTAIV.exe; encrypted archives will be reported as errors
+probe collision written: <home>\AppData\Local\Temp\liberty-probe-f07d0184\collision.json
+ERROR GTAIV.exe not found in <home>\AppData\Local\Temp\liberty-probe-f07d0184\missing
+usage: LibertyContent probe drawables|collision|bounds --game <game folder> --out <report.json>
+  probes: 11 checks
+selftest: ok passed=344 failed=0
+  PASS lf_fx_collision
+  PASS lf_fx_lods
+  PASS lf_fx_multigeo
+  PASS lf_fx_multimat
+  PASS lf_fx_world
+fixtures: ok passed=5 failed=0

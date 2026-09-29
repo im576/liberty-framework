@@ -1,0 +1,13 @@
+{
+  "scenario": "engine-events",
+  "status": "PASS",
+  "summary": "PASS; steps=23 failed=0 logErrors=0 gameAlive=True",
+  "steps": 23,
+  "failedSteps": [],
+  "screenshots": [],
+  "logErrors": 0,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:44:02.2916370Z",
+  "finishedUtc": "2026-09-29T05:44:20.8286924Z"
+}

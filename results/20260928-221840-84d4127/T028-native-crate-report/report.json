@@ -1,0 +1,27 @@
+{
+  "asset": "lf_native_crate",
+  "status": "ok",
+  "type": "prop",
+  "writer": { "drawable": "template", "reason": "auto: one material per LOD", "textureMode": "native" },
+  "source": "<repo>\\content\\props\\lf_native_crate\\lf_native_crate.gltf",
+  "template": "pc/models/cdimages/weapons.img/amb_nailgun",
+  "capabilities": { "version": "v1", "maxMaterialsPerLod": 1, "compiledLodLevels": 1, "lodSlots": 4, "maxVerticesPerGeometry": 65535, "shaders": ["gta_default"], "assetTypes": ["prop", "object"], "collisionShapes": [], "lodDistances": false, "collisionBorrow": true },
+  "metadata": {"liberty_asset": "lf_native_crate"},
+  "meshes": 1, "materials": 1, "lods": 1,
+  "structure": {
+    "lods": [
+      { "level": 0, "triangles": 12, "vertices": 24,
+        "geometries": [
+          { "material": "crate_wood", "shader": "gta_default", "textured": true, "alphaMode": "OPAQUE", "meshes": 1, "triangles": 12, "vertices": 24 } ] } ],
+    "lodDistancesMeters": null,
+    "collision": []
+  },
+  "compiled": { "vertices": 24, "triangles": 12, "texture": "bm_amb_nailgun", "textureSize": [256, 256], "textureMode": "native", "textureFormat": "DXT1", "textureLevels": 7, "textureQuality": { "psnrRgbDb": 38.08, "maxErrorRgb": 31 }, "flippedWinding": false, "drawableBytes": 758,
+    "drawableWriter": "template", "templateUsed": "pc/models/cdimages/weapons.img/amb_nailgun", "dictionaryBytes": 6847,
+    "notes": ["native texture dictionary: 256x256 DXT1, 7 mip levels, prototype amb_nailgun.wtd"] },
+  "issues": [
+    { "severity": "info", "code": "LCC014", "message": "bounds (-0.3, -0.3, 0) .. (0.3, 0.3, 0.6)" },
+    { "severity": "info", "code": "LCC026", "message": "LOD 0: 1 geometry ('crate_wood' 12 triangles, 24 vertices)" }
+  ],
+  "readback": []
+}

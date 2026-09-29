@@ -1,0 +1,13 @@
+{
+  "scenario": "vehicle-events",
+  "status": "PASS",
+  "summary": "PASS; steps=13 failed=0 logErrors=0 gameAlive=True",
+  "steps": 13,
+  "failedSteps": [],
+  "screenshots": [],
+  "logErrors": 0,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:45:58.3143214Z",
+  "finishedUtc": "2026-09-29T05:46:09.3000130Z"
+}

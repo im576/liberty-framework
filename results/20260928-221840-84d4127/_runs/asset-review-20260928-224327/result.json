@@ -1,0 +1,19 @@
+{
+  "scenario": "asset-review",
+  "status": "NEEDS-REVIEW",
+  "summary": "NEEDS-REVIEW; steps=33 failed=0 logErrors=1 gameAlive=True",
+  "steps": 33,
+  "failedSteps": [],
+  "screenshots": [
+    "crate_front.jpg",
+    "crate_side.jpg",
+    "crate_top.jpg",
+    "barrel_front.jpg",
+    "barrel_top.jpg"
+  ],
+  "logErrors": 1,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:43:28.3209300Z",
+  "finishedUtc": "2026-09-29T05:44:00.3862571Z"
+}

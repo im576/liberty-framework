@@ -1,0 +1,2 @@
+scenario trunk-review: FAIL; steps=34 failed=2 logErrors=0 gameAlive=True; report <repo>\results-local\20260928-221840-84d4127\_runs\trunk-review-20260928-225052
+AUTOPILOT_RESULT <repo>\results-local\20260928-221840-84d4127\_runs\trunk-review-20260928-225052\result.json

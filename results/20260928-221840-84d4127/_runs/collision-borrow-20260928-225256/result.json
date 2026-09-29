@@ -1,0 +1,18 @@
+{
+  "scenario": "collision-borrow",
+  "status": "FAIL",
+  "summary": "FAIL; steps=20 failed=2 logErrors=0 gameAlive=True",
+  "steps": 20,
+  "failedSteps": [
+    "expect autopilot_rayto target=prop .*mask=All status=Hit kind=Object .*match=True: no new log line in 5 s",
+    "expect autopilot_rayto target=prop .*mask=Objects status=Hit kind=Object .*match=True: no new log line in 5 s"
+  ],
+  "screenshots": [
+    "crate.jpg"
+  ],
+  "logErrors": 0,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:54:05.5273338Z",
+  "finishedUtc": "2026-09-29T05:54:34.2878595Z"
+}

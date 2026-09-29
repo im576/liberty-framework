@@ -1,0 +1,76 @@
+# Scenario world-objects
+
+- Result: FAIL
+- Steps: 16, failed: 1
+- Game alive at end: True
+- Log errors during run: 0
+
+## Failed steps
+- expect world_ray name=test_wall .*status=Hit kind=Object .*match=True: no new log line in 5 s
+
+## Steps
+- god on => invincible True
+- wanted 0 => wanted 0
+- goto east_park => Teleporting to Algonquin East Park Street
+- wait 8000 ms
+- time 13 0 => time 13:00
+- weather 1 => weather 1
+- world => world objects=1 spawned=1 test_wall:handle 12036
+- expect world objects=1 spawned=1 test_wall:handle \d+: OK 2026-09-29T05:54:46.923Z [INFO] command source=file:cmd_20260929055446789.cmd line="world" reply="world objects=1 spawned=1 test_wall:handle 12036"
+- hud off => hud off
+- wait 1500 ms
+- shot wall_ahead -> wall_ahead.jpg
+- hud on => hud on
+- world ray test_wall => world_ray name=test_wall handle=12036 status=Clear kind=World hit_handle=0 distance=0.00 of=3.53 match=False
+- FAILED: expect world_ray name=test_wall .*status=Hit kind=Object .*match=True: no new log line in 5 s
+- raystats => raycast available=True enabled=True installed=1 queries=3 tests=3 hits=0 clears=3 passes=0 inconclusive=0 faults=0
+- expect raycast available=True .*faults=0: OK 2026-09-29T05:54:57.189Z [INFO] command source=file:cmd_20260929055456924.cmd line="raystats" reply="raycast available=True enabled=True installed=1 queries=3 tests=3 hits=0 clears=3 passes=0 inconclusive=0 faults=0"
+
+## Errors
+
+## Log
+    ﻿2026-09-29T05:54:53.784Z [INFO] [autopilot] event PedDamaged handle=2 100->100 bone=0x36A1 by_player=False weapon=15 exact=True type=Bullet amount=60.0 health_lost=0.0 armour_lost=0.0 attacker=6916 vehicle=0 killed=False hit=True at=(-64.256, 674.821, 14.998) dir=(-0.675, -0.738, -0.014)
+    2026-09-29T05:54:53.879Z [INFO] [autopilot] event BulletFired shooter=515 weapon=15 by_player=False from=(-74.994, 654.763, 15.183) to=(-64.356, 674.772, 15.227)
+    2026-09-29T05:54:53.880Z [INFO] [autopilot] event PedDamaged handle=2 100->100 bone=0x4B5 by_player=False weapon=15 exact=True type=Bullet amount=60.0 health_lost=0.0 armour_lost=0.0 attacker=515 vehicle=0 killed=False hit=True at=(-64.356, 674.772, 15.227) dir=(0.469, 0.883, 0.002)
+    2026-09-29T05:54:54.058Z [INFO] [autopilot] event BulletFired shooter=515 weapon=15 by_player=False from=(-75.028, 654.757, 15.193) to=(-67.549, 668.17, 14.737)
+    2026-09-29T05:54:55.043Z [INFO] [autopilot] event BulletFired shooter=515 weapon=15 by_player=False from=(-74.997, 654.766, 15.182) to=(297.586, 1363.51, 16.307)
+    2026-09-29T05:54:55.207Z [INFO] [autopilot] event BulletFired shooter=6404 weapon=15 by_player=False from=(-46.504, 680.702, 15.205) to=(-808.889, 437.489, -8.55)
+    2026-09-29T05:54:55.384Z [INFO] [autopilot] event BulletFired shooter=6404 weapon=15 by_player=False from=(-46.32, 680.713, 15.245) to=(-806.753, 430.483, 4.376)
+    2026-09-29T05:54:55.485Z [INFO] [autopilot] event BulletFired shooter=2307 weapon=15 by_player=False from=(-65.315, 659.419, 15.012) to=(-17.597, 1458.895, 31.945)
+    2026-09-29T05:54:55.536Z [INFO] [autopilot] event BulletFired shooter=6404 weapon=15 by_player=False from=(-46.321, 680.719, 15.235) to=(-46.97, 680.533, 15.235)
+    2026-09-29T05:54:55.537Z [INFO] [autopilot] event VehicleDamaged handle=7682 994->988 engine 994->988
+    2026-09-29T05:54:55.640Z [INFO] [autopilot] event BulletFired shooter=2307 weapon=15 by_player=False from=(-65.231, 660.01, 15.026) to=(-62.912, 755.872, 15.525)
+    2026-09-29T05:54:55.667Z [INFO] [autopilot] event BulletFired shooter=7172 weapon=7 by_player=False from=(-44.542, 668.475, 15.193) to=(-67.077, 675.92, 14.631)
+    2026-09-29T05:54:55.723Z [INFO] [autopilot] event BulletFired shooter=6404 weapon=15 by_player=False from=(-46.329, 680.718, 15.245) to=(-46.967, 680.521, 15.252)
+    2026-09-29T05:54:55.723Z [INFO] [autopilot] event VehicleDamaged handle=7682 988->982 engine 988->982
+    2026-09-29T05:54:55.808Z [INFO] [autopilot] event BulletFired shooter=6660 weapon=15 by_player=False from=(-55.511, 688.502, 15.193) to=(-491.503, 17.253, -1.987)
+    2026-09-29T05:54:55.808Z [INFO] [autopilot] event BulletFired shooter=2307 weapon=15 by_player=False from=(-65.211, 660.568, 15.019) to=(-54.455, 788.597, 13.754)
+    2026-09-29T05:54:55.870Z [INFO] [autopilot] event BulletFired shooter=6404 weapon=15 by_player=False from=(-46.32, 680.698, 15.242) to=(-64.347, 674.731, 15.086)
+    2026-09-29T05:54:55.871Z [INFO] [autopilot] event PedDamaged handle=2 100->100 bone=0x36A1 by_player=False weapon=15 exact=True type=Bullet amount=60.0 health_lost=0.0 armour_lost=0.0 attacker=6404 vehicle=0 killed=False hit=True at=(-64.347, 674.731, 15.086) dir=(-0.949, -0.314, -0.008)
+    2026-09-29T05:54:55.975Z [INFO] [autopilot] event BulletFired shooter=6916 weapon=15 by_player=False from=(-53.025, 687.201, 15.195) to=(-598.409, 101.549, -8.848)
+    2026-09-29T05:54:55.975Z [INFO] [autopilot] event BulletFired shooter=6660 weapon=15 by_player=False from=(-55.332, 688.618, 15.242) to=(-507.511, 27.834, 3.763)
+    2026-09-29T05:54:55.976Z [INFO] [autopilot] event BulletFired shooter=2307 weapon=15 by_player=False from=(-65.156, 661.082, 15.043) to=(-64.348, 674.708, 14.567)
+    2026-09-29T05:54:55.977Z [INFO] [autopilot] event PedDamaged handle=2 100->100 bone=0xFFFFFFFF by_player=False weapon=15 exact=True type=Bullet amount=60.0 health_lost=0.0 armour_lost=0.0 attacker=2307 vehicle=0 killed=False hit=True at=(-64.348, 674.708, 14.567) dir=(0.059, 0.998, -0.035)
+    2026-09-29T05:54:56.011Z [INFO] [autopilot] event BulletFired shooter=7172 weapon=7 by_player=False from=(-44.574, 668.501, 15.207) to=(-107.027, 686.88, 14.06)
+    2026-09-29T05:54:56.046Z [INFO] [autopilot] event BulletFired shooter=6404 weapon=15 by_player=False from=(-46.333, 680.693, 15.244) to=(-67.22, 673.682, 15.023)
+    2026-09-29T05:54:56.047Z [INFO] [autopilot] event BulletFired shooter=515 weapon=15 by_player=False from=(-74.998, 654.767, 15.181) to=(283.972, 1370.6, 12.643)
+    2026-09-29T05:54:56.115Z [INFO] [autopilot] event BulletFired shooter=6916 weapon=15 by_player=False from=(-52.943, 687.124, 15.234) to=(-604.621, 106.91, 5.283)
+    2026-09-29T05:54:56.116Z [INFO] [autopilot] event BulletFired shooter=2307 weapon=15 by_player=False from=(-65.126, 661.518, 15.011) to=(-58.831, 739.842, 13.657)
+    2026-09-29T05:54:56.164Z [INFO] [autopilot] event BulletFired shooter=6660 weapon=15 by_player=False from=(-55.339, 688.622, 15.225) to=(-64.713, 674.949, 14.81)
+    2026-09-29T05:54:56.165Z [INFO] [autopilot] event PedDamaged handle=2 100->100 bone=0x4C1 by_player=False weapon=15 exact=True type=Bullet amount=60.0 health_lost=0.0 armour_lost=0.0 attacker=6660 vehicle=0 killed=False hit=True at=(-64.713, 674.949, 14.81) dir=(-0.565, -0.825, -0.025)
+    2026-09-29T05:54:56.282Z [INFO] [autopilot] event BulletFired shooter=6916 weapon=15 by_player=False from=(-52.943, 687.143, 15.226) to=(-67.065, 671.451, 14.906)
+    2026-09-29T05:54:56.282Z [INFO] [autopilot] event BulletFired shooter=2307 weapon=15 by_player=False from=(-65.125, 662.125, 15.033) to=(-64.352, 674.793, 15.129)
+    2026-09-29T05:54:56.283Z [INFO] [autopilot] event PedDamaged handle=2 100->100 bone=0x4B5 by_player=False weapon=15 exact=True type=Bullet amount=60.0 health_lost=0.0 armour_lost=0.0 attacker=2307 vehicle=0 killed=False hit=True at=(-64.352, 674.793, 15.129) dir=(0.061, 0.998, 0.008)
+    2026-09-29T05:54:56.325Z [INFO] [autopilot] event BulletFired shooter=6660 weapon=15 by_player=False from=(-55.343, 688.615, 15.239) to=(-64.442, 674.945, 15.053)
+    2026-09-29T05:54:56.326Z [INFO] [autopilot] event PedDamaged handle=2 100->100 bone=0x36A1 by_player=False weapon=15 exact=True type=Bullet amount=60.0 health_lost=0.0 armour_lost=0.0 attacker=6660 vehicle=0 killed=False hit=True at=(-64.442, 674.945, 15.053) dir=(-0.554, -0.832, -0.011)
+    2026-09-29T05:54:56.461Z [INFO] [autopilot] event BulletFired shooter=6916 weapon=15 by_player=False from=(-52.951, 687.139, 15.237) to=(-604.882, 107.27, 1.375)
+    2026-09-29T05:54:56.501Z [INFO] [autopilot] event BulletFired shooter=6660 weapon=15 by_player=False from=(-55.329, 688.601, 15.232) to=(-64.125, 674.713, 14.534)
+    2026-09-29T05:54:56.502Z [INFO] [autopilot] event PedDamaged handle=2 100->100 bone=0x4C9 by_player=False weapon=15 exact=True type=Bullet amount=60.0 health_lost=0.0 armour_lost=0.0 attacker=6660 vehicle=0 killed=False hit=True at=(-64.125, 674.713, 14.534) dir=(-0.535, -0.844, -0.042)
+    2026-09-29T05:54:56.586Z [INFO] [autopilot] event BulletFired shooter=6916 weapon=15 by_player=False from=(-52.938, 687.129, 15.231) to=(-67.077, 672.383, 14.287)
+    2026-09-29T05:54:57.009Z [INFO] [autopilot] event BulletFired shooter=515 weapon=15 by_player=False from=(-74.996, 654.766, 15.181) to=(-67.562, 668.466, 14.906)
+    2026-09-29T05:54:57.010Z [INFO] [autopilot] event PedAppeared handle=4102
+    2026-09-29T05:54:57.119Z [INFO] [autopilot] event BulletFired shooter=7172 weapon=7 by_player=False from=(-44.576, 668.507, 15.193) to=(-106.404, 688.803, 13.143)
+    2026-09-29T05:54:57.189Z [INFO] command source=file:cmd_20260929055456924.cmd line="raystats" reply="raycast available=True enabled=True installed=1 queries=3 tests=3 hits=0 clears=3 passes=0 inconclusive=0 faults=0"
+    2026-09-29T05:54:57.229Z [INFO] [autopilot] event BulletFired shooter=515 weapon=15 by_player=False from=(-75.023, 654.764, 15.19) to=(-67.483, 669.691, 14.972)
+    2026-09-29T05:54:57.369Z [INFO] [autopilot] event BulletFired shooter=515 weapon=15 by_player=False from=(-75.025, 654.752, 15.185) to=(286.029, 1369.561, 15.991)
+    2026-09-29T05:54:57.496Z [INFO] [autopilot] event PedRemoved handle=4102

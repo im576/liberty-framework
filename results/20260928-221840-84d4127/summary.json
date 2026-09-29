@@ -1,0 +1,721 @@
+{
+  "schemaVersion": 1,
+  "run": {
+    "id": "20260928-221840-84d4127",
+    "commit": "84d4127",
+    "branch": "codex/pr7-smoke-ray-fix",
+    "mode": "full",
+    "startedUtc": "2026-09-29T05:18:40.7671910Z",
+    "finishedUtc": "2026-09-29T05:55:04.0213479Z",
+    "game": {
+      "version": "1.2.0.59",
+      "exeSha256": "08759A5516F9837920EA504436236BBAB89D0826A8E4D04FF106345177B5345D",
+      "fusionFix": "5.0.1",
+      "scriptHookDotNetSha256": "AB8E7652A53A82C00018EB85D6FB5DB7F47197513F16B5959771B4CA2D8D4D3B"
+    },
+    "install": "restored from <game>\\scripts\\LibertyFramework\\backups\\phase2-20260928-223341",
+    "installBackup": "<game>\\scripts\\LibertyFramework\\backups\\phase2-20260928-223341",
+    "selected": [
+      "LOOP-build",
+      "LOOP-verify",
+      "LOOP-content-selftest",
+      "T028-wtdcheck",
+      "LOOP-blender-tests",
+      "T031-drawable-roundtrip",
+      "PROBE-drawables",
+      "PROBE-collision",
+      "PROBE-bounds-layout",
+      "LOOP-package-install",
+      "T028-native-crate-report",
+      "T028-alpha-panel-report",
+      "T031-lod-post-report",
+      "T032-collision-borrow-report",
+      "T033-world-wall-report",
+      "T027-raycast",
+      "T027-raycast-objects",
+      "T027-raycast-spike",
+      "SDK-selftest",
+      "T028-native-texture-review",
+      "T031-lod-review",
+      "SDK-asset-review",
+      "SDK-engine-events",
+      "SDK-bullet-events",
+      "SDK-exact-damage",
+      "SDK-vehicle-events",
+      "SDK-hot-reload",
+      "SDK-inspector-review",
+      "SDK-ui-review",
+      "T022-gore-review",
+      "T021-sling-review",
+      "T024-trunk-review",
+      "T026-perf-baseline",
+      "T026-perf-stress",
+      "T032-collision-borrow",
+      "T033-world-objects",
+      "T007-confirm-done",
+      "T010-phase1",
+      "T011-gold-finishes",
+      "T013-debug-hit-info",
+      "T014-aim-profiles",
+      "T015-shoulder-swap",
+      "T016-switch-while-aiming",
+      "T017-feel-shake-fov",
+      "T024-gun-feel",
+      "T020-storage-basics",
+      "T024-storage-prompt",
+      "T025-gunsmith",
+      "T020-death-mission-persistence",
+      "T021-holsters",
+      "T022-combat-effects",
+      "T023-lvs-labels",
+      "T026-performance-feel",
+      "T033-world-walk"
+    ]
+  },
+  "counts": {
+    "PASS": 12,
+    "NEEDS-REVIEW": 10,
+    "FAIL": 12,
+    "CRASH": 1,
+    "ERROR": 0,
+    "NOT-RUN": 19
+  },
+  "checks": [
+    {
+      "id": "LOOP-build",
+      "task": "LOOP",
+      "kind": "pc-offline",
+      "title": "Engine, SDK, mods and native core build on Windows",
+      "status": "PASS",
+      "detail": "exit code 0",
+      "evidence": [
+        "LOOP-build.log"
+      ],
+      "seconds": 24
+    },
+    {
+      "id": "LOOP-verify",
+      "task": "LOOP",
+      "kind": "pc-offline",
+      "title": "Full offline verifier against GTAIV.exe and game archives",
+      "status": "PASS",
+      "detail": "exit code 0",
+      "evidence": [
+        "LOOP-verify.log"
+      ],
+      "seconds": 21
+    },
+    {
+      "id": "LOOP-content-selftest",
+      "task": "T-028",
+      "kind": "pc-offline",
+      "title": "Content compiler self-test and authoring fixtures on Windows .NET",
+      "status": "PASS",
+      "detail": "exit code 0",
+      "evidence": [
+        "LOOP-content-selftest.log"
+      ],
+      "seconds": 7
+    },
+    {
+      "id": "T028-wtdcheck",
+      "task": "T-028",
+      "kind": "pc-offline",
+      "title": "Texture dictionary writer rebuilds the game's own dictionaries",
+      "status": "FAIL",
+      "detail": "exit code 1",
+      "evidence": [
+        "T028-wtdcheck.log"
+      ],
+      "seconds": 9
+    },
+    {
+      "id": "LOOP-blender-tests",
+      "task": "T-028",
+      "kind": "pc-offline",
+      "title": "Blender add-on tests with builds against the game",
+      "status": "NOT-RUN",
+      "detail": "Blender is not configured (-Blender <blender.exe> once; it is remembered)",
+      "evidence": [],
+      "seconds": 0
+    },
+    {
+      "id": "T031-drawable-roundtrip",
+      "task": "T-031",
+      "kind": "pc-offline",
+      "title": "Structure writer rebuilds the game's drawables byte for byte",
+      "status": "FAIL",
+      "detail": "exit code 1",
+      "evidence": [
+        "T031-drawable-roundtrip.log",
+        "T031-drawable-roundtrip.json"
+      ],
+      "seconds": 204
+    },
+    {
+      "id": "PROBE-drawables",
+      "task": "RESEARCH",
+      "kind": "probe",
+      "title": "Drawable structure survey: geometries, shaders, LOD slots",
+      "status": "NEEDS-REVIEW",
+      "detail": "report written; the review session reads it",
+      "evidence": [
+        "PROBE-drawables.log",
+        "PROBE-drawables.json"
+      ],
+      "seconds": 172
+    },
+    {
+      "id": "PROBE-collision",
+      "task": "RESEARCH",
+      "kind": "probe",
+      "title": "Collision file inventory: types, locations, headers",
+      "status": "NEEDS-REVIEW",
+      "detail": "report written; the review session reads it",
+      "evidence": [
+        "PROBE-collision.log",
+        "PROBE-collision.json"
+      ],
+      "seconds": 23
+    },
+    {
+      "id": "PROBE-bounds-layout",
+      "task": "T-032",
+      "kind": "probe",
+      "title": "Collision resource layout, measured per class",
+      "status": "NEEDS-REVIEW",
+      "detail": "report written; the review session reads it",
+      "evidence": [
+        "PROBE-bounds-layout.log",
+        "PROBE-bounds-layout.json"
+      ],
+      "seconds": 20
+    },
+    {
+      "id": "LOOP-package-install",
+      "task": "LOOP",
+      "kind": "pc-offline",
+      "title": "Package and install the develop build (backup kept)",
+      "status": "PASS",
+      "detail": "installed; backup <game>\\scripts\\LibertyFramework\\backups\\phase2-20260928-223341",
+      "evidence": [
+        "LOOP-package-install.log",
+        "LOOP-package-install-install.log"
+      ],
+      "seconds": 422
+    },
+    {
+      "id": "T028-native-crate-report",
+      "task": "T-028",
+      "kind": "pc-offline",
+      "title": "Native DXT1 crate compiled and read back",
+      "status": "PASS",
+      "detail": "all expected fields match",
+      "evidence": [
+        "T028-native-crate-report"
+      ],
+      "seconds": 0
+    },
+    {
+      "id": "T028-alpha-panel-report",
+      "task": "T-028",
+      "kind": "pc-offline",
+      "title": "Native DXT5 alpha panel compiled and read back",
+      "status": "PASS",
+      "detail": "all expected fields match",
+      "evidence": [
+        "T028-alpha-panel-report"
+      ],
+      "seconds": 0
+    },
+    {
+      "id": "T031-lod-post-report",
+      "task": "T-031",
+      "kind": "pc-offline",
+      "title": "lf_lod_post compiled by the structure writer",
+      "status": "FAIL",
+      "detail": "compiled.drawableWriter=template (fallback) (expected structure); compiled.lodCount= (expected 4)",
+      "evidence": [
+        "T031-lod-post-report"
+      ],
+      "seconds": 0
+    },
+    {
+      "id": "T032-collision-borrow-report",
+      "task": "T-032",
+      "kind": "pc-offline",
+      "title": "lf_col_crate ships a borrowed collision resource",
+      "status": "FAIL",
+      "detail": "compiled.collision.mode= (expected borrowed); compiled.collision.file= (expected lf_col_crate.wbn)",
+      "evidence": [
+        "T032-collision-borrow-report"
+      ],
+      "seconds": 0
+    },
+    {
+      "id": "T033-world-wall-report",
+      "task": "T-033",
+      "kind": "pc-offline",
+      "title": "lf_world_wall builds as a world object with borrowed collision",
+      "status": "FAIL",
+      "detail": "compiled.collision.mode= (expected borrowed)",
+      "evidence": [
+        "T033-world-wall-report"
+      ],
+      "seconds": 0
+    },
+    {
+      "id": "T027-raycast",
+      "task": "T-027",
+      "kind": "scenario",
+      "title": "Raycast and line of sight in game",
+      "status": "FAIL",
+      "detail": "FAIL; steps=40 failed=1 logErrors=0 gameAlive=True",
+      "evidence": [
+        "T027-raycast.log",
+        "T027-raycast"
+      ],
+      "seconds": 412
+    },
+    {
+      "id": "T027-raycast-objects",
+      "task": "T-027",
+      "kind": "scenario",
+      "title": "Raycast RayMask.Objects against a vanilla prop with collision",
+      "status": "FAIL",
+      "detail": "FAIL; steps=21 failed=5 logErrors=0 gameAlive=True",
+      "evidence": [
+        "T027-raycast-objects.log",
+        "T027-raycast-objects"
+      ],
+      "seconds": 54
+    },
+    {
+      "id": "T027-raycast-spike",
+      "task": "T-027",
+      "kind": "scenario",
+      "title": "Raycast research spike (raw include bits)",
+      "status": "PASS",
+      "detail": "PASS; steps=24 failed=0 logErrors=0 gameAlive=True",
+      "evidence": [
+        "T027-raycast-spike.log",
+        "T027-raycast-spike"
+      ],
+      "seconds": 21
+    },
+    {
+      "id": "SDK-selftest",
+      "task": "T-027",
+      "kind": "scenario",
+      "title": "SDK self-test in game (all services, raycast checks included)",
+      "status": "PASS",
+      "detail": "PASS; steps=13 failed=0 logErrors=0 gameAlive=True",
+      "evidence": [
+        "SDK-selftest.log",
+        "SDK-selftest"
+      ],
+      "seconds": 23
+    },
+    {
+      "id": "T028-native-texture-review",
+      "task": "T-028",
+      "kind": "scenario",
+      "title": "Native texture dictionaries drawn in game",
+      "status": "NEEDS-REVIEW",
+      "detail": "NEEDS-REVIEW; steps=37 failed=0 logErrors=1 gameAlive=True",
+      "evidence": [
+        "T028-native-texture-review.log",
+        "T028-native-texture-review"
+      ],
+      "seconds": 37
+    },
+    {
+      "id": "T031-lod-review",
+      "task": "T-031",
+      "kind": "scenario",
+      "title": "Structure-writer LODs drawn and switched in game",
+      "status": "NEEDS-REVIEW",
+      "detail": "passed; screenshots to judge: lod_6m, lod_18m, lod_38m, lod_75m, lod_130m",
+      "evidence": [
+        "T031-lod-review.log",
+        "T031-lod-review"
+      ],
+      "seconds": 37
+    },
+    {
+      "id": "SDK-asset-review",
+      "task": "M4",
+      "kind": "scenario",
+      "title": "Content pipeline regression: compiled crate and Blender barrel",
+      "status": "NEEDS-REVIEW",
+      "detail": "NEEDS-REVIEW; steps=33 failed=0 logErrors=1 gameAlive=True",
+      "evidence": [
+        "SDK-asset-review.log",
+        "SDK-asset-review"
+      ],
+      "seconds": 34
+    },
+    {
+      "id": "SDK-engine-events",
+      "task": "ADR-0006",
+      "kind": "scenario",
+      "title": "Engine events regression (peds appear, damage, death, removal)",
+      "status": "PASS",
+      "detail": "PASS; steps=23 failed=0 logErrors=0 gameAlive=True",
+      "evidence": [
+        "SDK-engine-events.log",
+        "SDK-engine-events"
+      ],
+      "seconds": 20
+    },
+    {
+      "id": "SDK-bullet-events",
+      "task": "ADR-0006",
+      "kind": "scenario",
+      "title": "BulletFired events regression",
+      "status": "PASS",
+      "detail": "PASS; steps=13 failed=0 logErrors=0 gameAlive=True",
+      "evidence": [
+        "SDK-bullet-events.log",
+        "SDK-bullet-events"
+      ],
+      "seconds": 20
+    },
+    {
+      "id": "SDK-exact-damage",
+      "task": "ADR-0007",
+      "kind": "scenario",
+      "title": "Exact damage hook regression",
+      "status": "PASS",
+      "detail": "PASS; steps=17 failed=0 logErrors=0 gameAlive=True",
+      "evidence": [
+        "SDK-exact-damage.log",
+        "SDK-exact-damage"
+      ],
+      "seconds": 75
+    },
+    {
+      "id": "SDK-vehicle-events",
+      "task": "ADR-0006",
+      "kind": "scenario",
+      "title": "Vehicle events regression",
+      "status": "PASS",
+      "detail": "PASS; steps=13 failed=0 logErrors=0 gameAlive=True",
+      "evidence": [
+        "SDK-vehicle-events.log",
+        "SDK-vehicle-events"
+      ],
+      "seconds": 13
+    },
+    {
+      "id": "SDK-hot-reload",
+      "task": "M5",
+      "kind": "scenario",
+      "title": "Hot reload regression",
+      "status": "FAIL",
+      "detail": "FAIL; steps=22 failed=1 logErrors=1 gameAlive=True",
+      "evidence": [
+        "SDK-hot-reload.log",
+        "SDK-hot-reload"
+      ],
+      "seconds": 132
+    },
+    {
+      "id": "SDK-inspector-review",
+      "task": "M5",
+      "kind": "scenario",
+      "title": "Inspector overlay regression",
+      "status": "NEEDS-REVIEW",
+      "detail": "passed; screenshots to judge: inspector, inspector_after_restart",
+      "evidence": [
+        "SDK-inspector-review.log",
+        "SDK-inspector-review"
+      ],
+      "seconds": 32
+    },
+    {
+      "id": "SDK-ui-review",
+      "task": "M5",
+      "kind": "scenario",
+      "title": "Liberty.Ui menus regression",
+      "status": "NEEDS-REVIEW",
+      "detail": "passed; screenshots to judge: sdk_list_menu, sdk_list_menu_moved, sdk_radial_menu",
+      "evidence": [
+        "SDK-ui-review.log",
+        "SDK-ui-review"
+      ],
+      "seconds": 23
+    },
+    {
+      "id": "T022-gore-review",
+      "task": "T-022",
+      "kind": "scenario",
+      "title": "Gore tests on spawned NPCs",
+      "status": "NEEDS-REVIEW",
+      "detail": "passed; screenshots to judge: arm_cut, leg_cut, head_cut",
+      "evidence": [
+        "T022-gore-review.log",
+        "T022-gore-review"
+      ],
+      "seconds": 44
+    },
+    {
+      "id": "T021-sling-review",
+      "task": "T-021",
+      "kind": "scenario",
+      "title": "Slings and slung long guns",
+      "status": "FAIL",
+      "detail": "FAIL; steps=31 failed=1 logErrors=1 gameAlive=True",
+      "evidence": [
+        "T021-sling-review.log",
+        "T021-sling-review"
+      ],
+      "seconds": 50
+    },
+    {
+      "id": "T024-trunk-review",
+      "task": "T-024",
+      "kind": "scenario",
+      "title": "Trunk choreography and storage wheel",
+      "status": "FAIL",
+      "detail": "FAIL; steps=34 failed=2 logErrors=0 gameAlive=True",
+      "evidence": [
+        "T024-trunk-review.log",
+        "T024-trunk-review"
+      ],
+      "seconds": 62
+    },
+    {
+      "id": "T026-perf-baseline",
+      "task": "T-026",
+      "kind": "scenario",
+      "title": "Performance sample (walking idle with a rifle)",
+      "status": "NEEDS-REVIEW",
+      "detail": "NEEDS-REVIEW; steps=10 failed=0 logErrors=1 gameAlive=True",
+      "evidence": [
+        "T026-perf-baseline.log",
+        "T026-perf-baseline"
+      ],
+      "seconds": 44
+    },
+    {
+      "id": "T026-perf-stress",
+      "task": "T-026",
+      "kind": "scenario",
+      "title": "Performance under load (25 extra peds)",
+      "status": "CRASH",
+      "detail": "CRASH; steps=6 failed=1 logErrors=0 gameAlive=False",
+      "evidence": [
+        "T026-perf-stress.log",
+        "T026-perf-stress"
+      ],
+      "seconds": 16
+    },
+    {
+      "id": "T032-collision-borrow",
+      "task": "T-032",
+      "kind": "scenario",
+      "title": "Borrowed collision on a LibertyContent model stops the engine's ray",
+      "status": "FAIL",
+      "detail": "FAIL; steps=20 failed=2 logErrors=0 gameAlive=True",
+      "evidence": [
+        "T032-collision-borrow.log",
+        "T032-collision-borrow"
+      ],
+      "seconds": 100
+    },
+    {
+      "id": "T033-world-objects",
+      "task": "T-033",
+      "kind": "scenario",
+      "title": "The world mod places a static world object near the player",
+      "status": "FAIL",
+      "detail": "FAIL; steps=16 failed=1 logErrors=0 gameAlive=True",
+      "evidence": [
+        "T033-world-objects.log",
+        "T033-world-objects"
+      ],
+      "seconds": 23
+    },
+    {
+      "id": "T007-confirm-done",
+      "task": "T-007",
+      "kind": "manual",
+      "title": "Confirm the gold weapon identities (IDs 58/59/60)",
+      "status": "NOT-RUN",
+      "detail": "skipped by the owner",
+      "evidence": [],
+      "seconds": 0
+    },
+    {
+      "id": "T010-phase1",
+      "task": "T-010",
+      "kind": "manual",
+      "title": "Phase 1 gunplay checklist",
+      "status": "NOT-RUN",
+      "detail": "skipped by the owner",
+      "evidence": [],
+      "seconds": 0
+    },
+    {
+      "id": "T011-gold-finishes",
+      "task": "T-011",
+      "kind": "manual",
+      "title": "Gold carbine and shotgun finishes",
+      "status": "NOT-RUN",
+      "detail": "skipped by the owner",
+      "evidence": [],
+      "seconds": 0
+    },
+    {
+      "id": "T013-debug-hit-info",
+      "task": "T-013",
+      "kind": "manual",
+      "title": "Debug overlay hit info",
+      "status": "NOT-RUN",
+      "detail": "skipped by the owner",
+      "evidence": [],
+      "seconds": 0
+    },
+    {
+      "id": "T014-aim-profiles",
+      "task": "T-014",
+      "kind": "manual",
+      "title": "Aim profiles (free / vanilla / rejected slowdown)",
+      "status": "NOT-RUN",
+      "detail": "skipped by the owner",
+      "evidence": [],
+      "seconds": 0
+    },
+    {
+      "id": "T015-shoulder-swap",
+      "task": "T-015",
+      "kind": "manual",
+      "title": "Shoulder swap",
+      "status": "NOT-RUN",
+      "detail": "skipped by the owner",
+      "evidence": [],
+      "seconds": 0
+    },
+    {
+      "id": "T016-switch-while-aiming",
+      "task": "T-016",
+      "kind": "manual",
+      "title": "Switch weapons while aiming",
+      "status": "NOT-RUN",
+      "detail": "skipped by the owner",
+      "evidence": [],
+      "seconds": 0
+    },
+    {
+      "id": "T017-feel-shake-fov",
+      "task": "T-017",
+      "kind": "manual",
+      "title": "Per-shot shake and aim FOV",
+      "status": "NOT-RUN",
+      "detail": "skipped by the owner",
+      "evidence": [],
+      "seconds": 0
+    },
+    {
+      "id": "T024-gun-feel",
+      "task": "T-024",
+      "kind": "manual",
+      "title": "Phase 2 gun feel: taps, bursts, spray",
+      "status": "NOT-RUN",
+      "detail": "skipped by the owner",
+      "evidence": [],
+      "seconds": 0
+    },
+    {
+      "id": "T020-storage-basics",
+      "task": "T-020",
+      "kind": "manual",
+      "title": "Arsenal: safehouse, trunk, overflow, ownership",
+      "status": "NOT-RUN",
+      "detail": "skipped by the owner",
+      "evidence": [],
+      "seconds": 0
+    },
+    {
+      "id": "T024-storage-prompt",
+      "task": "T-024",
+      "kind": "manual",
+      "title": "Storage prompt, trunk panel and safehouse storage",
+      "status": "NOT-RUN",
+      "detail": "skipped by the owner",
+      "evidence": [],
+      "seconds": 0
+    },
+    {
+      "id": "T025-gunsmith",
+      "task": "T-025",
+      "kind": "manual",
+      "title": "Physical weapons and gunsmith",
+      "status": "NOT-RUN",
+      "detail": "skipped by the owner",
+      "evidence": [],
+      "seconds": 0
+    },
+    {
+      "id": "T020-death-mission-persistence",
+      "task": "T-020",
+      "kind": "manual",
+      "title": "Arsenal: missions, death, arrest, relaunch, corrupt state",
+      "status": "NOT-RUN",
+      "detail": "skipped by the owner",
+      "evidence": [],
+      "seconds": 0
+    },
+    {
+      "id": "T021-holsters",
+      "task": "T-021",
+      "kind": "manual",
+      "title": "Visible holsters",
+      "status": "NOT-RUN",
+      "detail": "skipped by the owner",
+      "evidence": [],
+      "seconds": 0
+    },
+    {
+      "id": "T022-combat-effects",
+      "task": "T-022",
+      "kind": "manual",
+      "title": "Combat reactions, blood and dismemberment",
+      "status": "NOT-RUN",
+      "detail": "skipped by the owner",
+      "evidence": [],
+      "seconds": 0
+    },
+    {
+      "id": "T023-lvs-labels",
+      "task": "T-023",
+      "kind": "manual",
+      "title": "LVS body-part labels",
+      "status": "NOT-RUN",
+      "detail": "skipped by the owner",
+      "evidence": [],
+      "seconds": 0
+    },
+    {
+      "id": "T026-performance-feel",
+      "task": "T-026",
+      "kind": "manual",
+      "title": "Performance and visuals, by eye",
+      "status": "NOT-RUN",
+      "detail": "skipped by the owner",
+      "evidence": [],
+      "seconds": 0
+    },
+    {
+      "id": "T033-world-walk",
+      "task": "T-033",
+      "kind": "manual",
+      "title": "Walk into the test wall",
+      "status": "NOT-RUN",
+      "detail": "skipped by the owner",
+      "evidence": [],
+      "seconds": 0
+    }
+  ]
+}

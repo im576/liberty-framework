@@ -1,0 +1,2 @@
+scenario vehicle-events: PASS; steps=13 failed=0 logErrors=0 gameAlive=True; report <repo>\results-local\20260928-221840-84d4127\_runs\vehicle-events-20260928-224557
+AUTOPILOT_RESULT <repo>\results-local\20260928-221840-84d4127\_runs\vehicle-events-20260928-224557\result.json

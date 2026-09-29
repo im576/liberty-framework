@@ -1,0 +1,17 @@
+{
+  "scenario": "ui-review",
+  "status": "PASS",
+  "summary": "PASS; steps=21 failed=0 logErrors=0 gameAlive=True",
+  "steps": 21,
+  "failedSteps": [],
+  "screenshots": [
+    "sdk_list_menu.jpg",
+    "sdk_list_menu_moved.jpg",
+    "sdk_radial_menu.jpg"
+  ],
+  "logErrors": 0,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:48:55.9038056Z",
+  "finishedUtc": "2026-09-29T05:49:17.1906593Z"
+}

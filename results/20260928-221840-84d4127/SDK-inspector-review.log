@@ -1,0 +1,2 @@
+scenario inspector-review: PASS; steps=13 failed=0 logErrors=0 gameAlive=True; report <repo>\results-local\20260928-221840-84d4127\_runs\inspector-review-20260928-224822
+AUTOPILOT_RESULT <repo>\results-local\20260928-221840-84d4127\_runs\inspector-review-20260928-224822\result.json

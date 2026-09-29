@@ -1,0 +1,28 @@
+{
+  "asset": "lf_col_crate",
+  "status": "ok",
+  "type": "prop",
+  "writer": { "drawable": "template", "reason": "auto: one material per LOD", "textureMode": "template" },
+  "source": "<repo>\\content\\props\\lf_col_crate\\lf_col_crate.gltf",
+  "template": "pc/models/cdimages/weapons.img/amb_nailgun",
+  "capabilities": { "version": "v1", "maxMaterialsPerLod": 1, "compiledLodLevels": 1, "lodSlots": 4, "maxVerticesPerGeometry": 65535, "shaders": ["gta_default"], "assetTypes": ["prop", "object"], "collisionShapes": [], "lodDistances": false, "collisionBorrow": true },
+  "metadata": {"liberty_asset": "lf_col_crate"},
+  "meshes": 1, "materials": 1, "lods": 1,
+  "structure": {
+    "lods": [
+      { "level": 0, "triangles": 12, "vertices": 24,
+        "geometries": [
+          { "material": "crate_wood", "shader": "gta_default", "textured": true, "alphaMode": "OPAQUE", "meshes": 1, "triangles": 12, "vertices": 24 } ] } ],
+    "lodDistancesMeters": null,
+    "collision": []
+  },
+  "compiled": { "vertices": 24, "triangles": 12, "texture": "bm_amb_nailgun", "textureSize": [256, 256], "textureMode": "template", "textureFormat": "DXT1", "textureLevels": 7, "flippedWinding": false, "drawableBytes": 758,
+    "drawableWriter": "template", "templateUsed": "pc/models/cdimages/weapons.img/amb_nailgun", "dictionaryBytes": 6869,
+    "notes": ["collision search skipped pc/data/maps/generic/lodcull_j.img: Value was invalid.", "collision search skipped pc/data/maps/generic/lodcull_m.img: Value was invalid.", "collision search skipped pc/data/maps/interiors/test/interiors.img: Value was invalid.", "collision search skipped pc/data/maps/leveldes/levelmap.img: Value was invalid.", "collision search skipped TLAD/pc/data/maps/interiors/int_test.img: Value was invalid.", "collision borrow: no drawable with a same-named .wbn in *; built without collision"] },
+  "issues": [
+    { "severity": "info", "code": "LCC039", "message": "collision borrowed at build from */auto: the source prop's own shape, shipped as lf_col_crate.wbn (whether the game pairs it with this model is T032-collision-borrow)" },
+    { "severity": "info", "code": "LCC014", "message": "bounds (-0.3, -0.3, 0) .. (0.3, 0.3, 0.6)" },
+    { "severity": "info", "code": "LCC026", "message": "LOD 0: 1 geometry ('crate_wood' 12 triangles, 24 vertices)" }
+  ],
+  "readback": []
+}

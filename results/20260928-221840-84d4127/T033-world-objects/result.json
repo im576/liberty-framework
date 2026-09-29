@@ -1,0 +1,17 @@
+{
+  "scenario": "world-objects",
+  "status": "FAIL",
+  "summary": "FAIL; steps=16 failed=1 logErrors=0 gameAlive=True",
+  "steps": 16,
+  "failedSteps": [
+    "expect world_ray name=test_wall .*status=Hit kind=Object .*match=True: no new log line in 5 s"
+  ],
+  "screenshots": [
+    "wall_ahead.jpg"
+  ],
+  "logErrors": 0,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:54:36.3511960Z",
+  "finishedUtc": "2026-09-29T05:54:57.6077793Z"
+}

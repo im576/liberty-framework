@@ -1,0 +1,17 @@
+{
+  "scenario": "gore-review",
+  "status": "PASS",
+  "summary": "PASS; steps=39 failed=0 logErrors=0 gameAlive=True",
+  "steps": 39,
+  "failedSteps": [],
+  "screenshots": [
+    "arm_cut.jpg",
+    "leg_cut.jpg",
+    "head_cut.jpg"
+  ],
+  "logErrors": 0,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:49:18.9595151Z",
+  "finishedUtc": "2026-09-29T05:50:01.0514805Z"
+}

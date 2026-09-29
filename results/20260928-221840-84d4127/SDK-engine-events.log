@@ -1,0 +1,2 @@
+scenario engine-events: PASS; steps=23 failed=0 logErrors=0 gameAlive=True; report <repo>\results-local\20260928-221840-84d4127\_runs\engine-events-20260928-224401
+AUTOPILOT_RESULT <repo>\results-local\20260928-221840-84d4127\_runs\engine-events-20260928-224401\result.json

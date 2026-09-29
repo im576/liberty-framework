@@ -1,0 +1,19 @@
+{
+  "scenario": "native-texture-review",
+  "status": "NEEDS-REVIEW",
+  "summary": "NEEDS-REVIEW; steps=37 failed=0 logErrors=1 gameAlive=True",
+  "steps": 37,
+  "failedSteps": [],
+  "screenshots": [
+    "native_crate_front.jpg",
+    "native_crate_side.jpg",
+    "alpha_panel_front.jpg",
+    "alpha_panel_angle.jpg",
+    "alpha_panel_back.jpg"
+  ],
+  "logErrors": 1,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:42:14.7884382Z",
+  "finishedUtc": "2026-09-29T05:42:49.1364768Z"
+}

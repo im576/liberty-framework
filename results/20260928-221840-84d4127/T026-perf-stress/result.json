@@ -1,0 +1,15 @@
+{
+  "scenario": "perf-stress",
+  "status": "CRASH",
+  "summary": "CRASH; steps=6 failed=1 logErrors=0 gameAlive=False",
+  "steps": 6,
+  "failedSteps": [
+    "time 13 0 => EXCEPTION GTA IV exited while a command was pending"
+  ],
+  "screenshots": [],
+  "logErrors": 0,
+  "gameAlive": false,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:52:40.0891781Z",
+  "finishedUtc": "2026-09-29T05:52:51.8114074Z"
+}

@@ -1,0 +1,19 @@
+{
+  "scenario": "lod-review",
+  "status": "PASS",
+  "summary": "PASS; steps=28 failed=0 logErrors=0 gameAlive=True",
+  "steps": 28,
+  "failedSteps": [],
+  "screenshots": [
+    "lod_6m.jpg",
+    "lod_18m.jpg",
+    "lod_38m.jpg",
+    "lod_75m.jpg",
+    "lod_130m.jpg"
+  ],
+  "logErrors": 0,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:42:51.3705909Z",
+  "finishedUtc": "2026-09-29T05:43:26.2989519Z"
+}

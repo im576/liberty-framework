@@ -1,0 +1,10 @@
+﻿2026-09-26T07:33:48.959Z [INFO] atmosphere_started
+2026-09-29T05:52:40.333Z [INFO] command source=file:cmd_20260929055240307.cmd line="events off" reply="event log off"
+2026-09-29T05:52:40.593Z [INFO] T-001 heartbeat probe_label=default
+2026-09-29T05:52:40.861Z [INFO] command source=file:cmd_20260929055240720.cmd line="god on" reply="invincible True"
+2026-09-29T05:52:41.128Z [INFO] command source=file:cmd_20260929055241106.cmd line="wanted 0" reply="wanted 0"
+2026-09-29T05:52:41.697Z [INFO] teleport_start id=east_park target=-64.8,663.4,15 snap=pavement
+2026-09-29T05:52:41.698Z [INFO] command source=file:cmd_20260929055241487.cmd line="goto east_park" reply="Teleporting to Algonquin East Park Street"
+2026-09-29T05:52:42.110Z [INFO] weapon_changed from=14 to=0 profile=vanilla
+2026-09-29T05:52:42.114Z [INFO] [world] world_object removed name=test_wall reason=out of range
+2026-09-29T05:52:42.618Z [INFO] teleport_done id=east_park final=0.0,1417044000.0,2136292000000000000000000000.0

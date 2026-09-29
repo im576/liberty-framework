@@ -1,0 +1,2 @@
+scenario world-objects: FAIL; steps=16 failed=1 logErrors=0 gameAlive=True; report <repo>\results-local\20260928-221840-84d4127\_runs\world-objects-20260928-225435
+AUTOPILOT_RESULT <repo>\results-local\20260928-221840-84d4127\_runs\world-objects-20260928-225435\result.json

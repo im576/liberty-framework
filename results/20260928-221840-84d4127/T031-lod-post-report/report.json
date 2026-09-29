@@ -1,0 +1,39 @@
+{
+  "asset": "lf_lod_post",
+  "status": "ok",
+  "type": "prop",
+  "writer": { "drawable": "structure", "reason": "asset.json", "textureMode": "native" },
+  "source": "<repo>\\content\\props\\lf_lod_post\\lf_lod_post.gltf",
+  "template": "pc/models/cdimages/weapons.img/amb_nailgun",
+  "capabilities": { "version": "v2-structure", "maxMaterialsPerLod": 16, "compiledLodLevels": 4, "lodSlots": 4, "maxVerticesPerGeometry": 65535, "shaders": ["gta_default"], "assetTypes": ["prop", "object"], "collisionShapes": [], "lodDistances": true, "collisionBorrow": true },
+  "metadata": {"liberty_blender": "5.2.2 LTS", "liberty_exporter": "0.6.0", "liberty_source": "unsaved"},
+  "meshes": 4, "materials": 1, "lods": 4,
+  "structure": {
+    "lods": [
+      { "level": 0, "triangles": 188, "vertices": 194,
+        "geometries": [
+          { "material": "lf_lod_post", "shader": "gta_default", "textured": true, "alphaMode": "OPAQUE", "meshes": 1, "triangles": 188, "vertices": 194 } ] },
+      { "level": 1, "triangles": 92, "vertices": 98,
+        "geometries": [
+          { "material": "lf_lod_post", "shader": "gta_default", "textured": true, "alphaMode": "OPAQUE", "meshes": 1, "triangles": 92, "vertices": 98 } ] },
+      { "level": 2, "triangles": 44, "vertices": 50,
+        "geometries": [
+          { "material": "lf_lod_post", "shader": "gta_default", "textured": true, "alphaMode": "OPAQUE", "meshes": 1, "triangles": 44, "vertices": 50 } ] },
+      { "level": 3, "triangles": 20, "vertices": 26,
+        "geometries": [
+          { "material": "lf_lod_post", "shader": "gta_default", "textured": true, "alphaMode": "OPAQUE", "meshes": 1, "triangles": 20, "vertices": 26 } ] } ],
+    "lodDistancesMeters": [12, 25, 50, 100],
+    "collision": []
+  },
+  "compiled": { "vertices": 194, "triangles": 188, "texture": "bm_amb_nailgun", "textureSize": [256, 256], "textureMode": "native", "textureFormat": "DXT1", "textureLevels": 7, "textureQuality": { "psnrRgbDb": 40.94, "maxErrorRgb": 4 }, "flippedWinding": false, "drawableBytes": 2624,
+    "drawableWriter": "template (fallback)", "templateUsed": "pc/models/cdimages/weapons.img/amb_nailgun", "dictionaryBytes": 1138,
+    "notes": ["native texture dictionary: 256x256 DXT1, 7 mip levels, prototype amb_nailgun.wtd", "structure writer: no drawable in * fits (LOD 0: 1 geometry, LOD 1: 1 geometry, LOD 2: 1 geometry, LOD 3: 1 geometry); built with the template writer: LOD 0 only"] },
+  "issues": [
+    { "severity": "info", "code": "LCC014", "message": "bounds (-0.4, -0.4, 0) .. (0.4, 0.4, 3)" },
+    { "severity": "info", "code": "LCC026", "message": "LOD 0: 1 geometry ('lf_lod_post' 188 triangles, 194 vertices)" },
+    { "severity": "info", "code": "LCC026", "message": "LOD 1: 1 geometry ('lf_lod_post' 92 triangles, 98 vertices)" },
+    { "severity": "info", "code": "LCC026", "message": "LOD 2: 1 geometry ('lf_lod_post' 44 triangles, 50 vertices)" },
+    { "severity": "info", "code": "LCC026", "message": "LOD 3: 1 geometry ('lf_lod_post' 20 triangles, 26 vertices)" }
+  ],
+  "readback": []
+}

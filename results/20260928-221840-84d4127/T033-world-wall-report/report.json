@@ -1,0 +1,33 @@
+{
+  "asset": "lf_world_wall",
+  "status": "ok",
+  "type": "object",
+  "writer": { "drawable": "template", "reason": "auto: one material per LOD (extra LODs are written only with textureMode native)", "textureMode": "template" },
+  "source": "<repo>\\content\\objects\\lf_world_wall\\lf_world_wall.gltf",
+  "template": "pc/models/cdimages/weapons.img/amb_nailgun",
+  "capabilities": { "version": "v1", "maxMaterialsPerLod": 1, "compiledLodLevels": 1, "lodSlots": 4, "maxVerticesPerGeometry": 65535, "shaders": ["gta_default"], "assetTypes": ["prop", "object"], "collisionShapes": [], "lodDistances": false, "collisionBorrow": true },
+  "metadata": {"liberty_blender": "5.2.2 LTS", "liberty_exporter": "0.6.0", "liberty_source": "unsaved"},
+  "meshes": 6, "materials": 1, "lods": 2,
+  "structure": {
+    "lods": [
+      { "level": 0, "triangles": 60, "vertices": 120,
+        "geometries": [
+          { "material": "lf_world_wall", "shader": "gta_default", "textured": true, "alphaMode": "OPAQUE", "meshes": 5, "triangles": 60, "vertices": 120 } ] },
+      { "level": 1, "triangles": 12, "vertices": 24,
+        "geometries": [
+          { "material": "lf_world_wall", "shader": "gta_default", "textured": true, "alphaMode": "OPAQUE", "meshes": 1, "triangles": 12, "vertices": 24 } ] } ],
+    "lodDistancesMeters": null,
+    "collision": []
+  },
+  "compiled": { "vertices": 120, "triangles": 60, "texture": "bm_amb_nailgun", "textureSize": [256, 256], "textureMode": "template", "textureFormat": "DXT1", "textureLevels": 7, "flippedWinding": false, "drawableBytes": 1378,
+    "drawableWriter": "template", "templateUsed": "pc/models/cdimages/weapons.img/amb_nailgun", "dictionaryBytes": 9340,
+    "notes": ["texture resampled 128x128 -> 256x256 (template size)", "collision search skipped pc/data/maps/generic/lodcull_j.img: Value was invalid.", "collision search skipped pc/data/maps/generic/lodcull_m.img: Value was invalid.", "collision search skipped pc/data/maps/interiors/test/interiors.img: Value was invalid.", "collision search skipped pc/data/maps/leveldes/levelmap.img: Value was invalid.", "collision search skipped TLAD/pc/data/maps/interiors/int_test.img: Value was invalid.", "collision borrow: no drawable with a same-named .wbn in *; built without collision"] },
+  "issues": [
+    { "severity": "info", "code": "LCC039", "message": "collision borrowed at build from */auto: the source prop's own shape, shipped as lf_world_wall.wbn (whether the game pairs it with this model is T032-collision-borrow)" },
+    { "severity": "info", "code": "LCC014", "message": "bounds (-1.05, -0.2, 0) .. (1.05, 0.2, 1.1)" },
+    { "severity": "info", "code": "LCC026", "message": "LOD 0: 1 geometry ('lf_world_wall' 60 triangles, 120 vertices)" },
+    { "severity": "info", "code": "LCC026", "message": "LOD 1: 1 geometry ('lf_world_wall' 12 triangles, 24 vertices)" },
+    { "severity": "info", "code": "LCC025", "message": "LOD 1 (12 triangles, 1 material) is validated but not compiled by compiler v1 (compiles LOD 0)" }
+  ],
+  "readback": []
+}

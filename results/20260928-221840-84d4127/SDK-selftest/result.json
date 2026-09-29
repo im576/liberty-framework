@@ -1,0 +1,13 @@
+{
+  "scenario": "sdk-selftest",
+  "status": "PASS",
+  "summary": "PASS; steps=13 failed=0 logErrors=0 gameAlive=True",
+  "steps": 13,
+  "failedSteps": [],
+  "screenshots": [],
+  "logErrors": 0,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:41:51.1088821Z",
+  "finishedUtc": "2026-09-29T05:42:12.5474641Z"
+}

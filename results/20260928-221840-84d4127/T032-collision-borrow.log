@@ -1,0 +1,2 @@
+scenario collision-borrow: FAIL; steps=20 failed=2 logErrors=0 gameAlive=True; report <repo>\results-local\20260928-221840-84d4127\_runs\collision-borrow-20260928-225256
+AUTOPILOT_RESULT <repo>\results-local\20260928-221840-84d4127\_runs\collision-borrow-20260928-225256\result.json

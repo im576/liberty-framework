@@ -1,0 +1,2 @@
+scenario raycast-objects: FAIL; steps=21 failed=5 logErrors=0 gameAlive=True; report <repo>\results-local\20260928-221840-84d4127\_runs\raycast-objects-20260928-224036
+AUTOPILOT_RESULT <repo>\results-local\20260928-221840-84d4127\_runs\raycast-objects-20260928-224036\result.json

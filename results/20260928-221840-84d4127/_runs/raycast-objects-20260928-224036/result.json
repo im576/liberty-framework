@@ -1,0 +1,21 @@
+{
+  "scenario": "raycast-objects",
+  "status": "FAIL",
+  "summary": "FAIL; steps=21 failed=5 logErrors=0 gameAlive=True",
+  "steps": 21,
+  "failedSteps": [
+    "spawnprop {probe:PROBE-collision:propCandidates} 3 0 => EXCEPTION PROBE-collision found no value for 'propCandidates' (empty)",
+    "expect autopilot_prop handle=\\d+ model=: no new log line in 20 s",
+    "expect autopilot_rayto target=prop .*mask=All status=Hit kind=Object .*match=True: no new log line in 5 s",
+    "expect autopilot_rayto target=prop .*mask=Objects status=Hit kind=Object .*match=True: no new log line in 5 s",
+    "expect autopilot_rayto target=prop .*mask=World\\|Peds\\|Vehicles status=(Clear|Hit kind=World) .*passed=[1-9]: no new log line in 5 s"
+  ],
+  "screenshots": [
+    "prop.jpg"
+  ],
+  "logErrors": 0,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:40:37.5712492Z",
+  "finishedUtc": "2026-09-29T05:41:28.5768097Z"
+}

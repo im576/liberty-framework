@@ -1,0 +1,16 @@
+{
+  "scenario": "inspector-review",
+  "status": "PASS",
+  "summary": "PASS; steps=13 failed=0 logErrors=0 gameAlive=True",
+  "steps": 13,
+  "failedSteps": [],
+  "screenshots": [
+    "inspector.jpg",
+    "inspector_after_restart.jpg"
+  ],
+  "logErrors": 0,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:48:23.0692204Z",
+  "finishedUtc": "2026-09-29T05:48:53.6946158Z"
+}

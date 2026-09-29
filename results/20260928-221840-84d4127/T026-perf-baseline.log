@@ -1,0 +1,2 @@
+scenario perf-baseline: NEEDS-REVIEW; steps=10 failed=0 logErrors=1 gameAlive=True; report <repo>\results-local\20260928-221840-84d4127\_runs\perf-baseline-20260928-225155
+AUTOPILOT_RESULT <repo>\results-local\20260928-221840-84d4127\_runs\perf-baseline-20260928-225155\result.json

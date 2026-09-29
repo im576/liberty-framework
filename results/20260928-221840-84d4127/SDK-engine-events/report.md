@@ -1,0 +1,219 @@
+# Scenario engine-events
+
+- Result: PASS
+- Steps: 23, failed: 0
+- Game alive at end: True
+- Log errors during run: 0
+
+## Failed steps
+
+## Steps
+- events on => event log on
+- god on => invincible True
+- wanted 0 => wanted 0
+- goto gun_test_range => Teleporting to Gun Test Range (Broker)
+- wait 4000 ms
+- time 12 0 => time 12:00
+- spawn 3 6 => spawning 3 at 6 m
+- wait 3000 ms
+- expect event PedAppeared: OK 2026-09-29T05:44:11.155Z [INFO] [autopilot] event PedAppeared handle=8208
+- peds => peds=30 2:0m/100/player 9995:6m/100 11014:6m/100 10251:6m/100 6670:24.655m/100 6920:26.717m/100 5900:27.744m/100 4614:29.37m/100 7689:35.619m/100 8976:36.402m/100 4360:38.714m/100 8469:39.95m/100
+- hurt 0 30 => hurt 1 by 30
+- wait 500 ms
+- expect event PedDamaged handle=\d+ \d+->\d+: OK 2026-09-29T05:44:15.149Z [INFO] [autopilot] event PedDamaged handle=9995 100->70 bone=0x0 by_player=False weapon=-1 exact=False type=Unknown amount=0.0 health_lost=0.0 armour_lost=0.0 attacker=0 vehicle=0 killed=False hit=False
+- kill 1 => hurt 1 by 1000
+- wait 1000 ms
+- expect event PedDied: OK 2026-09-29T05:44:15.904Z [INFO] [autopilot] event PedDied handle=10251 bone=0xFFFFFFFF by_player=False exact=True type=Bullet killer=0 weapon=7
+- give 14 120 => gave 14
+- wait 800 ms
+- expect event PlayerWeaponChanged: OK 2026-09-29T05:44:17.448Z [INFO] [autopilot] event PlayerWeaponChanged 0->14
+- status => engine 1.1.0 sdk 1.1.0 frame=8699 core=on peds=30 vehicles=9 modules=10/10 coroutines=0 resources=5 raycast=on episode=GTAIV
+- clear => cleared 3
+- wait 1500 ms
+- expect event PedRemoved: OK 2026-09-29T05:44:19.027Z [INFO] [autopilot] event PedRemoved handle=11014
+
+## Errors
+
+## Log
+    ﻿2026-09-26T07:33:48.959Z [INFO] atmosphere_started
+    2026-09-29T05:44:02.191Z [INFO] [autopilot] event PedAppeared handle=11269
+    2026-09-29T05:44:02.715Z [INFO] command source=file:cmd_20260929054402500.cmd line="events on" reply="event log on"
+    2026-09-29T05:44:02.782Z [INFO] [autopilot] event PedAppeared handle=11525
+    2026-09-29T05:44:03.001Z [INFO] command source=file:cmd_20260929054402923.cmd line="god on" reply="invincible True"
+    2026-09-29T05:44:03.508Z [INFO] command source=file:cmd_20260929054403314.cmd line="wanted 0" reply="wanted 0"
+    2026-09-29T05:44:06.582Z [INFO] teleport_start id=gun_test_range target=1041,-568.3,20 snap=pavement
+    2026-09-29T05:44:06.583Z [INFO] command source=file:cmd_20260929054403706.cmd line="goto gun_test_range" reply="Teleporting to Gun Test Range (Broker)"
+    2026-09-29T05:44:06.637Z [INFO] [autopilot] event PedRemoved handle=11525
+    2026-09-29T05:44:06.638Z [INFO] [autopilot] event PedRemoved handle=11013
+    2026-09-29T05:44:06.639Z [INFO] [autopilot] event PedRemoved handle=10761
+    2026-09-29T05:44:06.640Z [INFO] [autopilot] event PedRemoved handle=10504
+    2026-09-29T05:44:06.640Z [INFO] [autopilot] event PedRemoved handle=9484
+    2026-09-29T05:44:06.641Z [INFO] [autopilot] event PedRemoved handle=9233
+    2026-09-29T05:44:06.642Z [INFO] [autopilot] event PedRemoved handle=8975
+    2026-09-29T05:44:06.642Z [INFO] [autopilot] event PedRemoved handle=9743
+    2026-09-29T05:44:06.643Z [INFO] [autopilot] event PedRemoved handle=8719
+    2026-09-29T05:44:06.644Z [INFO] [autopilot] event PedRemoved handle=8467
+    2026-09-29T05:44:06.645Z [INFO] [autopilot] event PedRemoved handle=8206
+    2026-09-29T05:44:06.645Z [INFO] [autopilot] event PedRemoved handle=9994
+    2026-09-29T05:44:06.646Z [INFO] [autopilot] event PedRemoved handle=7946
+    2026-09-29T05:44:06.647Z [INFO] [autopilot] event PedRemoved handle=7688
+    2026-09-29T05:44:06.647Z [INFO] [autopilot] event PedRemoved handle=7176
+    2026-09-29T05:44:06.648Z [INFO] [autopilot] event PedRemoved handle=6669
+    2026-09-29T05:44:06.649Z [INFO] [autopilot] event PedRemoved handle=6413
+    2026-09-29T05:44:06.649Z [INFO] [autopilot] event PedRemoved handle=5899
+    2026-09-29T05:44:06.650Z [INFO] [autopilot] event PedRemoved handle=5644
+    2026-09-29T05:44:06.651Z [INFO] [autopilot] event PedRemoved handle=10250
+    2026-09-29T05:44:06.652Z [INFO] [autopilot] event PedRemoved handle=6154
+    2026-09-29T05:44:06.652Z [INFO] [autopilot] event PedRemoved handle=5130
+    2026-09-29T05:44:06.653Z [INFO] [autopilot] event PedRemoved handle=11269
+    2026-09-29T05:44:06.654Z [INFO] [autopilot] event PedRemoved handle=4613
+    2026-09-29T05:44:06.654Z [INFO] [autopilot] event PedRemoved handle=7431
+    2026-09-29T05:44:06.655Z [INFO] [autopilot] event PedRemoved handle=6919
+    2026-09-29T05:44:06.656Z [INFO] [autopilot] event PedRemoved handle=5383
+    2026-09-29T05:44:06.656Z [INFO] [autopilot] event PedRemoved handle=4871
+    2026-09-29T05:44:06.657Z [INFO] [autopilot] event PedRemoved handle=4359
+    2026-09-29T05:44:06.658Z [INFO] [autopilot] event PedRemoved handle=4103
+    2026-09-29T05:44:06.659Z [INFO] [autopilot] event PedRemoved handle=3846
+    2026-09-29T05:44:06.659Z [INFO] [autopilot] event VehicleRemoved handle=3335
+    2026-09-29T05:44:06.660Z [INFO] [autopilot] event VehicleRemoved handle=2055
+    2026-09-29T05:44:06.661Z [INFO] [autopilot] event VehicleRemoved handle=1799
+    2026-09-29T05:44:06.661Z [INFO] [autopilot] event VehicleRemoved handle=1543
+    2026-09-29T05:44:06.662Z [INFO] [autopilot] event VehicleRemoved handle=9990
+    2026-09-29T05:44:06.663Z [INFO] [autopilot] event VehicleRemoved handle=9734
+    2026-09-29T05:44:06.663Z [INFO] [autopilot] event VehicleRemoved handle=9478
+    2026-09-29T05:44:06.664Z [INFO] [autopilot] event VehicleRemoved handle=9222
+    2026-09-29T05:44:06.665Z [INFO] [autopilot] event VehicleRemoved handle=8966
+    2026-09-29T05:44:06.666Z [INFO] [autopilot] event VehicleRemoved handle=8198
+    2026-09-29T05:44:06.666Z [INFO] [autopilot] event VehicleRemoved handle=7430
+    2026-09-29T05:44:06.667Z [INFO] [autopilot] event VehicleRemoved handle=6918
+    2026-09-29T05:44:06.668Z [INFO] [autopilot] event VehicleRemoved handle=5126
+    2026-09-29T05:44:06.669Z [INFO] [autopilot] event VehicleRemoved handle=2566
+    2026-09-29T05:44:06.669Z [INFO] [autopilot] event VehicleRemoved handle=8709
+    2026-09-29T05:44:06.670Z [INFO] [autopilot] event VehicleRemoved handle=8453
+    2026-09-29T05:44:06.671Z [INFO] [autopilot] event VehicleRemoved handle=7941
+    2026-09-29T05:44:06.672Z [INFO] [autopilot] event VehicleRemoved handle=7685
+    2026-09-29T05:44:06.672Z [INFO] [autopilot] event VehicleRemoved handle=7173
+    2026-09-29T05:44:06.673Z [INFO] [autopilot] event VehicleRemoved handle=6661
+    2026-09-29T05:44:06.674Z [INFO] [autopilot] event VehicleRemoved handle=5893
+    2026-09-29T05:44:06.674Z [INFO] [autopilot] event VehicleRemoved handle=3845
+    2026-09-29T05:44:06.675Z [INFO] [autopilot] event VehicleRemoved handle=3589
+    2026-09-29T05:44:06.676Z [INFO] [autopilot] event VehicleRemoved handle=3077
+    2026-09-29T05:44:06.676Z [INFO] [autopilot] event VehicleRemoved handle=2821
+    2026-09-29T05:44:06.677Z [INFO] [autopilot] event VehicleRemoved handle=2309
+    2026-09-29T05:44:06.677Z [INFO] [autopilot] event VehicleRemoved handle=5636
+    2026-09-29T05:44:06.678Z [INFO] [autopilot] event VehicleRemoved handle=5380
+    2026-09-29T05:44:06.679Z [INFO] [autopilot] event VehicleRemoved handle=4612
+    2026-09-29T05:44:06.679Z [INFO] [autopilot] event VehicleRemoved handle=4356
+    2026-09-29T05:44:06.680Z [INFO] [autopilot] event VehicleRemoved handle=4100
+    2026-09-29T05:44:07.769Z [INFO] teleport_done id=gun_test_range final=1045.1,-563.0,25.6
+    2026-09-29T05:44:08.722Z [INFO] [autopilot] event VehicleAppeared handle=10247
+    2026-09-29T05:44:09.257Z [INFO] [autopilot] event PedAppeared handle=4104
+    2026-09-29T05:44:09.332Z [INFO] [autopilot] event VehicleAppeared handle=5637
+    2026-09-29T05:44:09.357Z [INFO] [autopilot] event PedAppeared handle=4360
+    2026-09-29T05:44:09.447Z [INFO] [autopilot] event PedAppeared handle=4614
+    2026-09-29T05:44:09.478Z [INFO] [autopilot] event VehicleAppeared handle=6406
+    2026-09-29T05:44:09.553Z [INFO] [autopilot] event VehicleAppeared handle=7431
+    2026-09-29T05:44:09.712Z [INFO] [autopilot] event PedAppeared handle=4872
+    2026-09-29T05:44:09.788Z [INFO] [autopilot] event PedAppeared handle=5131
+    2026-09-29T05:44:09.789Z [INFO] [autopilot] event PedAppeared handle=5384
+    2026-09-29T05:44:09.839Z [INFO] [autopilot] event PedAppeared handle=5645
+    2026-09-29T05:44:09.865Z [INFO] [autopilot] event PedAppeared handle=5900
+    2026-09-29T05:44:09.901Z [INFO] [autopilot] event PedAppeared handle=6155
+    2026-09-29T05:44:09.928Z [INFO] [autopilot] event PedAppeared handle=6414
+    2026-09-29T05:44:09.950Z [INFO] [autopilot] event PedAppeared handle=6670
+    2026-09-29T05:44:09.979Z [INFO] [autopilot] event PedAppeared handle=6920
+    2026-09-29T05:44:09.980Z [INFO] [autopilot] event PedAppeared handle=7177
+    2026-09-29T05:44:09.981Z [INFO] [autopilot] event PedAppeared handle=7432
+    2026-09-29T05:44:10.022Z [INFO] [autopilot] event PedAppeared handle=7689
+    2026-09-29T05:44:10.023Z [INFO] [autopilot] event PedAppeared handle=7947
+    2026-09-29T05:44:10.201Z [INFO] T-001 heartbeat probe_label=default
+    2026-09-29T05:44:10.325Z [INFO] [autopilot] event PedAppeared handle=8207
+    2026-09-29T05:44:10.466Z [INFO] [autopilot] event PedAppeared handle=8468
+    2026-09-29T05:44:10.467Z [INFO] [autopilot] event PedAppeared handle=8720
+    2026-09-29T05:44:10.768Z [INFO] command source=file:cmd_20260929054410754.cmd line="time 12 0" reply="time 12:00"
+    2026-09-29T05:44:10.865Z [INFO] [autopilot] event PedRemoved handle=8468
+    2026-09-29T05:44:10.866Z [INFO] [autopilot] event PedRemoved handle=8207
+    2026-09-29T05:44:10.969Z [INFO] [autopilot] event PedRemoved handle=8720
+    2026-09-29T05:44:11.060Z [INFO] [autopilot] event PedRemoved handle=5384
+    2026-09-29T05:44:11.155Z [INFO] [autopilot] event PedAppeared handle=8208
+    2026-09-29T05:44:11.174Z [INFO] [autopilot] event PedAppeared handle=8469
+    2026-09-29T05:44:11.212Z [INFO] [autopilot] event PedAppeared handle=8721
+    2026-09-29T05:44:11.229Z [INFO] [autopilot] event PedAppeared handle=8976
+    2026-09-29T05:44:11.249Z [INFO] [autopilot] event PedAppeared handle=9234
+    2026-09-29T05:44:11.271Z [INFO] [autopilot] event PedAppeared handle=9485
+    2026-09-29T05:44:11.272Z [INFO] [autopilot] event PedAppeared handle=9744
+    2026-09-29T05:44:11.301Z [INFO] command source=file:cmd_20260929054411140.cmd line="spawn 3 6" reply="spawning 3 at 6 m"
+    2026-09-29T05:44:11.349Z [INFO] [autopilot] event PedAppeared handle=9995
+    2026-09-29T05:44:11.384Z [INFO] [autopilot] event PedAppeared handle=10251
+    2026-09-29T05:44:11.385Z [INFO] [autopilot] event PedAppeared handle=10505
+    2026-09-29T05:44:11.386Z [INFO] [autopilot] event PedAppeared handle=10762
+    2026-09-29T05:44:11.415Z [INFO] [autopilot] event PedAppeared handle=11014
+    2026-09-29T05:44:11.416Z [INFO] [autopilot] event PedAppeared handle=11270
+    2026-09-29T05:44:11.417Z [INFO] [autopilot] event PedRemoved handle=6155
+    2026-09-29T05:44:11.418Z [INFO] [autopilot] autopilot_spawned count=3
+    2026-09-29T05:44:11.514Z [INFO] [autopilot] event PedAppeared handle=11526
+    2026-09-29T05:44:11.515Z [INFO] [autopilot] event PedAppeared handle=11780
+    2026-09-29T05:44:11.559Z [INFO] [autopilot] event PedRemoved handle=8721
+    2026-09-29T05:44:11.560Z [INFO] [autopilot] event PedRemoved handle=8208
+    2026-09-29T05:44:11.752Z [INFO] [autopilot] event PedAppeared handle=8722
+    2026-09-29T05:44:11.926Z [INFO] [autopilot] event PedAppeared handle=12035
+    2026-09-29T05:44:12.541Z [INFO] [autopilot] event PedAppeared handle=12290
+    2026-09-29T05:44:12.542Z [INFO] [autopilot] event PedRemoved handle=8722
+    2026-09-29T05:44:13.484Z [INFO] [autopilot] event PedRemoved handle=12035
+    2026-09-29T05:44:13.498Z [INFO] [autopilot] event VehicleAppeared handle=11269
+    2026-09-29T05:44:13.535Z [INFO] [autopilot] event PedAppeared handle=12546
+    2026-09-29T05:44:13.536Z [INFO] [autopilot] event VehicleAppeared handle=11525
+    2026-09-29T05:44:14.541Z [INFO] [autopilot] event VehicleAppeared handle=9479
+    2026-09-29T05:44:14.613Z [INFO] command source=file:cmd_20260929054414585.cmd line="peds" reply="peds=30 2:0m/100/player 9995:6m/100 11014:6m/100 10251:6m/100 6670:24.655m/100 6920:26.717m/100 5900:27.744m/100 4614:29.37m/100 7689:35.619m/100 8976:36.402m/100 4360:38.714m/100 8469:39.95m/100"
+    2026-09-29T05:44:14.836Z [INFO] [autopilot] event VehicleAppeared handle=2310
+    2026-09-29T05:44:15.019Z [INFO] [autopilot] event VehicleAppeared handle=3336
+    2026-09-29T05:44:15.118Z [INFO] command source=file:cmd_20260929054414973.cmd line="hurt 0 30" reply="hurt 1 by 30"
+    2026-09-29T05:44:15.149Z [INFO] [autopilot] event PedDamaged handle=9995 100->70 bone=0x0 by_player=False weapon=-1 exact=False type=Unknown amount=0.0 health_lost=0.0 armour_lost=0.0 attacker=0 vehicle=0 killed=False hit=False
+    2026-09-29T05:44:15.184Z [INFO] [autopilot] event VehicleAppeared handle=6149
+    2026-09-29T05:44:15.715Z [INFO] [autopilot] event VehicleRemoved handle=6149
+    2026-09-29T05:44:15.878Z [INFO] command source=file:cmd_20260929054415868.cmd line="kill 1" reply="hurt 1 by 1000"
+    2026-09-29T05:44:15.903Z [INFO] [autopilot] event PedDamaged handle=10251 -100->-100 bone=0xFFFFFFFF by_player=False weapon=7 exact=True type=Bullet amount=0.3 health_lost=0.0 armour_lost=0.0 attacker=0 vehicle=0 killed=True hit=False
+    2026-09-29T05:44:15.904Z [INFO] [autopilot] event PedDied handle=10251 bone=0xFFFFFFFF by_player=False exact=True type=Bullet killer=0 weapon=7
+    2026-09-29T05:44:16.025Z [INFO] [autopilot] event PedDamaged handle=10251 -100->-100 bone=0x1A4 by_player=False weapon=54 exact=True type=Fall amount=1.4 health_lost=0.0 armour_lost=0.0 attacker=0 vehicle=0 killed=False hit=False
+    2026-09-29T05:44:16.026Z [INFO] [autopilot] event PedRemoved handle=12546
+    2026-09-29T05:44:16.323Z [INFO] [autopilot] event PedRemoved handle=12290
+    2026-09-29T05:44:16.392Z [INFO] [autopilot] event PedAppeared handle=12547
+    2026-09-29T05:44:16.476Z [INFO] [autopilot] event PedRemoved handle=10762
+    2026-09-29T05:44:16.514Z [INFO] [autopilot] event PedDamaged handle=10251 -100->-100 bone=0x4C3 by_player=False weapon=54 exact=True type=Fall amount=0.2 health_lost=0.0 armour_lost=0.0 attacker=0 vehicle=0 killed=False hit=False
+    2026-09-29T05:44:16.569Z [INFO] [autopilot] event VehicleAppeared handle=5381
+    2026-09-29T05:44:16.591Z [INFO] [autopilot] event PedDamaged handle=10251 -100->-100 bone=0x4C1 by_player=False weapon=54 exact=True type=Fall amount=0.7 health_lost=0.0 armour_lost=0.0 attacker=0 vehicle=0 killed=False hit=False
+    2026-09-29T05:44:16.613Z [INFO] [autopilot] event PedDamaged handle=10251 -100->-100 bone=0xFFFFFFFF by_player=False weapon=54 exact=True type=Fall amount=1.6 health_lost=0.0 armour_lost=0.0 attacker=0 vehicle=0 killed=False hit=False
+    2026-09-29T05:44:16.636Z [INFO] [autopilot] event PedDamaged handle=10251 -100->-100 bone=0x4C1 by_player=False weapon=54 exact=True type=Fall amount=2.0 health_lost=0.0 armour_lost=0.0 attacker=0 vehicle=0 killed=False hit=False
+    2026-09-29T05:44:16.708Z [INFO] [autopilot] event PedDamaged handle=10251 -100->-100 bone=0x4C0 by_player=False weapon=54 exact=True type=Fall amount=3.4 health_lost=0.0 armour_lost=0.0 attacker=0 vehicle=0 killed=False hit=False
+    2026-09-29T05:44:16.729Z [INFO] [autopilot] event PedDamaged handle=10251 -100->-100 bone=0x4C0 by_player=False weapon=54 exact=True type=Fall amount=0.3 health_lost=0.0 armour_lost=0.0 attacker=0 vehicle=0 killed=False hit=False
+    2026-09-29T05:44:16.752Z [INFO] [autopilot] event PedAppeared handle=12036
+    2026-09-29T05:44:16.848Z [INFO] [autopilot] event VehicleAppeared handle=5894
+    2026-09-29T05:44:16.928Z [INFO] [autopilot] event VehicleAppeared handle=7942
+    2026-09-29T05:44:17.418Z [INFO] command source=file:cmd_20260929054417280.cmd line="give 14 120" reply="gave 14"
+    2026-09-29T05:44:17.448Z [INFO] [autopilot] event PlayerWeaponChanged 0->14
+    2026-09-29T05:44:17.453Z [INFO] weapon_changed from=0 to=14 profile=vanilla
+    2026-09-29T05:44:17.456Z [INFO] arsenal_gain id=14 owned=False mission=False
+    2026-09-29T05:44:17.505Z [INFO] [autopilot] event PedAppeared handle=12291
+    2026-09-29T05:44:17.572Z [INFO] [autopilot] event ReloadFinished weapon=14 clip_after=30
+    2026-09-29T05:44:17.937Z [INFO] [autopilot] event VehicleRemoved handle=6406
+    2026-09-29T05:44:17.954Z [INFO] [autopilot] event VehicleRemoved handle=7431
+    2026-09-29T05:44:18.188Z [INFO] [autopilot] event VehicleRemoved handle=5894
+    2026-09-29T05:44:18.497Z [INFO] command source=autopilot line="engine" reply="engine 1.1.0 sdk 1.1.0 frame=8699 core=on peds=30 vehicles=9 modules=10/10 coroutines=0 resources=5 raycast=on episode=GTAIV"
+    2026-09-29T05:44:18.498Z [INFO] command source=file:cmd_20260929054418466.cmd line="status" reply="engine 1.1.0 sdk 1.1.0 frame=8699 core=on peds=30 vehicles=9 modules=10/10 coroutines=0 resources=5 raycast=on episode=GTAIV"
+    2026-09-29T05:44:18.553Z [INFO] density frame_ms=33.1 peds=0.82 cars=0.84
+    2026-09-29T05:44:18.996Z [INFO] command source=file:cmd_20260929054418866.cmd line="clear" reply="cleared 3"
+    2026-09-29T05:44:19.025Z [INFO] [autopilot] event PedAppeared handle=10252
+    2026-09-29T05:44:19.026Z [INFO] [autopilot] event PedAppeared handle=10763
+    2026-09-29T05:44:19.027Z [INFO] [autopilot] event PedAppeared handle=11015
+    2026-09-29T05:44:19.027Z [INFO] [autopilot] event PedRemoved handle=11014
+    2026-09-29T05:44:19.028Z [INFO] [autopilot] event PedRemoved handle=9995
+    2026-09-29T05:44:19.029Z [INFO] [autopilot] event PedRemoved handle=10251
+    2026-09-29T05:44:19.029Z [INFO] [autopilot] event VehicleAppeared handle=11014
+    2026-09-29T05:44:19.033Z [INFO] engine_status engine 1.1.0 sdk 1.1.0 frame=8725 core=on peds=30 vehicles=10 modules=10/10 coroutines=0 resources=2 raycast=on episode=GTAIV frame_ms=21.50 p95_ms=34.48 pressure=0.01 private_mb=2255 working_set_mb=2028 address_free_mb=1102 largest_free_block_mb=1051 managed_mb=15 physical_load=89% core_us=95.5
+    2026-09-29T05:44:19.173Z [INFO] performance samples=1096 frame_p50_ms=21 frame_p95_ms=39 frame_p99_ms=95 frames_over_33ms=113 frames_over_50ms=32 gunplay_avg_ms=0.981 gunplay_max_ms=6.299 phase_samples=841 phase_setup_avg_ms=0.831 phase_setup_max_ms=5.900 phase_camera_avg_ms=0.031 phase_camera_max_ms=3.114 phase_bullets_avg_ms=0.002 phase_bullets_max_ms=0.009 phase_weapon_avg_ms=0.017 phase_weapon_max_ms=0.134 phase_hud_avg_ms=0.389 phase_hud_max_ms=0.673
+    2026-09-29T05:44:19.174Z [INFO] performance_scripts costs_ms(avg/max/count@thread) engine.frame=4.572/2814.1/1096@7 total=5011 module.gunplay=0.996/14.7/1096@7 total=1091 tick.gunplay=0.994/14.7/1096@7 total=1090 gp.freeaim=0.657/5.7/841@7 total=552 engine.world=0.291/43.8/1096@7 total=319 module.arsenal=0.452/16.1/649@7 total=293 tick.arsenal=0.451/16.1/649@7 total=293 module.atmosphere=0.243/3.7/1096@7 total=266 tick.atmosphere=0.242/3.7/1096@7 total=265 ar.storage=0.310/8.7/491@7 total=152 gp.index_pad=0.113/0.4/841@7 total=95 ar.safehouse_flags=0.171/4.5/491@7 total=84 module.combat=0.027/1.7/1096@7 total=30 tick.combat=0.026/1.7/1096@7 total=29 cam.handle=0.025/3.1/841@7 total=21 module.devtools=0.028/2.7/649@7 total=18 tick.devtools=0.027/2.7/649@7 total=18 module.holsters=0.045/0.8/356@7 total=16 tick.holsters=0.045/0.8/356@7 total=16 ar.reconcile=0.031/14.2/491@7 total=15 gp.shoulder=0.014/0.1/841@7 total=12 gp.weapon_id=0.013/0.9/841@7 total=11 gp.player=0.012/0.1/841@7 total=10 engine.scheduler=0.009/5.1/1096@7 total=10 gp.cycle=0.008/0.1/841@7 total=7 gp.state=0.006/0.0/841@7 total=5 combat.sample=1.246/1.7/4@7 total=5 module.probe=1.272/1.4/3@7 total=4 gp.shots=0.003/0.1/841@7 total=3 module.world=0.055/1.2/53@7 total=3 cam.aim_key=0.003/0.1/841@7 total=2 cam.find_active=0.002/0.0/841@7 total=2 ar.lvs=0.003/0.3/649@7 total=2 ar.vehicle=0.003/0.0/649@7 total=2 gp.spread=0.002/0.0/841@7 total=2 ar.discover=0.002/0.5/649@7 total=2 combat.dismember=0.001/0.0/1096@7 total=1 module.autopilot=0.000/0.0/1096@7 total=0 ho.carried=0.002/0.0/161@7 total=0 module.weapon-probe=0.000/0.0/1096@7 total=0 combat.blood=0.000/0.0/1096@7 total=0 ho.show=0.002/0.0/161@7 total=0 gp.feel=0.000/0.0/841@7 total=0 combat.pending=0.000/0.0/1096@7 total=0 gp.recoil=0.000/0.0/841@7 total=0 cam.fov=0.001/0.0/74@7 total=0
+    2026-09-29T05:44:19.175Z [INFO] engine_thread_probe ticks=1096 frame_advanced_during_tick=0 ticks_same_frame=0 ticks_next_frame=1094 ticks_after_skipped_frames=2
+    2026-09-29T05:44:19.176Z [INFO] direct_native get_char_health direct=200 shdn=100 match=False direct_us=0.19 shdn_us=26.2
+    2026-09-29T05:44:19.244Z [INFO] [autopilot] event VehicleRemoved handle=5637
+    2026-09-29T05:44:20.194Z [INFO] T-001 heartbeat probe_label=default
+    2026-09-29T05:44:20.638Z [INFO] [autopilot] event VehicleAppeared handle=13060

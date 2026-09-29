@@ -1,0 +1,31 @@
+  pc/data/maps/east/bronx_e.img/agld04_03.wdr: Interleaved: sys+0xC78 sys+0xC88 sys+0xCB8 sys+0xCC8 sys+0xCF8 sys+0xD08; VerticesFirst: sys+0xC78 sys+0xC88 sys+0xCB8 sys+0xCC8 sys+0xCF8 sys+0xD08
+  pc/data/maps/east/bronx_e.img/agld04_09.wdr: Interleaved: sys+0x6B8 sys+0x6C8 sys+0x6F8 sys+0x708 sys+0x738 sys+0x768; VerticesFirst: sys+0x6B8 sys+0x6C8 sys+0x6F8 sys+0x708 sys+0x738 sys+0x768
+  pc/data/maps/east/bronx_e.img/agld04_12.wdr: Interleaved: sys+0x1218 sys+0x1228 sys+0x1258 sys+0x1268 sys+0x1298 sys+0x12A8; VerticesFirst: sys+0x1218 sys+0x1228 sys+0x1258 sys+0x1268 sys+0x1298 sys+0x12A8
+  pc/data/maps/east/bronx_e.img/alleywaybxe.wdr: Interleaved: sys+0xE08 sys+0xE18 sys+0xE48 sys+0xE58 sys+0xE88 sys+0xE98; VerticesFirst: sys+0xE08 sys+0xE18 sys+0xE48 sys+0xE58 sys+0xE88 sys+0xE98
+  pc/data/maps/east/bronx_e.img/bay_bx_dok_tug.wdr: Interleaved: sys+0xD28 sys+0xD38 sys+0xD68 sys+0xD78 sys+0xDA8 sys+0xDB8; VerticesFirst: sys+0xD28 sys+0xD38 sys+0xD68 sys+0xD78 sys+0xDA8 sys+0xDB8
+  pc/data/maps/east/bronx_e.img/bay_bx_glualfa.wdr: Interleaved: sys+0xFA8 sys+0xFB8 sys+0xFE8 sys+0xFF8 sys+0x1028 sys+0x1038; VerticesFirst: sys+0xFA8 sys+0xFB8 sys+0xFE8 sys+0xFF8 sys+0x1028 sys+0x1038
+  pc/data/maps/east/bronx_e.img/bay_bx_glualfa02.wdr: Interleaved: sys+0xB88 sys+0xB98 sys+0xBC8 sys+0xBD8 sys+0xC88 sys+0xC98; VerticesFirst: sys+0xB88 sys+0xB98 sys+0xBC8 sys+0xBD8 sys+0xC48 sys+0xC58
+  pc/data/maps/east/bronx_e.img/bay_det_drt_001.wdr: Interleaved: sys+0x658 sys+0x668 sys+0x698 sys+0x6A8 sys+0x6D8 sys+0x708; VerticesFirst: sys+0x658 sys+0x668 sys+0x698 sys+0x6A8 sys+0x6D8 sys+0x708
+  pc/data/maps/east/bronx_e.img/big_fence2_bxe.wdr: Interleaved: sys+0x7F8 sys+0x808 sys+0x878; VerticesFirst: sys+0x778 sys+0x788 sys+0x7F8 sys+0x808 sys+0x8A8
+  pc/data/maps/east/bronx_e.img/big_fence_bxe.wdr: Interleaved: sys+0x14D8 sys+0x14E8 sys+0x1518 sys+0x1528 sys+0x1558 sys+0x1568; VerticesFirst: sys+0x14D8 sys+0x14E8 sys+0x1518 sys+0x1528 sys+0x1558 sys+0x1568
+  pc/data/maps/east/bronx_e.img/burger_emissiv_ind5.wdr: Interleaved: sys+0x518 sys+0x528 sys+0x558; VerticesFirst: sys+0x518 sys+0x528 sys+0x558
+  pc/data/maps/east/bronx_e.img/bxbaydecal_002.wdr: Interleaved: sys+0x4C8 sys+0x4D8 sys+0x508; VerticesFirst: sys+0x4C8 sys+0x4D8 sys+0x508
+  pc/data/maps/east/bronx_e.img/bxe1_fukd_pcabin.wdr: Interleaved: sys+0x10C8 sys+0x10D8 sys+0x1108 sys+0x1118 sys+0x1148 sys+0x1158; VerticesFirst: sys+0x10C8 sys+0x10D8 sys+0x1108 sys+0x1118 sys+0x1148 sys+0x1158
+  pc/data/maps/east/bronx_e.img/bxe1_fukd_pcabin01.wdr: Interleaved: sys+0xEE8 sys+0xEF8 sys+0xF28 sys+0xF38 sys+0xF68 sys+0xF78; VerticesFirst: sys+0xEE8 sys+0xEF8 sys+0xF28 sys+0xF38 sys+0xF68 sys+0xF78
+  pc/data/maps/east/bronx_e.img/bxegluetasticmore.wdr: Interleaved: sys+0x4D8 sys+0x4E8 sys+0x518; VerticesFirst: sys+0x4D8 sys+0x4E8 sys+0x518
+  pc/data/maps/east/bronx_e.img/bxepinkwds002.wdr: Interleaved: sys+0x5F8 sys+0x608 sys+0x638 sys+0x648 sys+0x678 sys+0x6A8; VerticesFirst: sys+0x5F8 sys+0x608 sys+0x638 sys+0x648 sys+0x678 sys+0x6A8
+  pc/data/maps/east/bronx_e.img/bxe_bay_egenixfnce.wdr: Interleaved: sys+0x7F8 sys+0x808 sys+0x878; VerticesFirst: sys+0x778 sys+0x788 sys+0x7F8 sys+0x808 sys+0x8A8
+  pc/data/maps/east/bronx_e.img/bxe_bxparkeglu.wdr: Interleaved: sys+0x4D8 sys+0x4E8 sys+0x518; VerticesFirst: sys+0x4D8 sys+0x4E8 sys+0x518
+  pc/data/maps/east/bronx_e.img/bxe_cp_emlights.wdr: Interleaved: sys+0x558; VerticesFirst: sys+0x558
+  pc/data/maps/east/bronx_e.img/bxe_cp_floodlight08.wdr: Interleaved: sys+0x838 sys+0x848 sys+0x968; VerticesFirst: sys+0x838 sys+0x848 sys+0x878 sys+0x888 sys+0x998
+  pc/data/maps/east/bronx_e.img/bxe_el_plinth_ind1b.wdr: Interleaved: sys+0x11B8 sys+0x11C8 sys+0x11F8 sys+0x1208 sys+0x1238 sys+0x1248; VerticesFirst: sys+0x11B8 sys+0x11C8 sys+0x11F8 sys+0x1208 sys+0x1238 sys+0x1248
+  pc/data/maps/east/bronx_e.img/bxe_em1_glasssmash.wdr: Interleaved: sys+0x6F8 sys+0x708 sys+0x738; VerticesFirst: sys+0x6F8 sys+0x708 sys+0x738
+  pc/data/maps/east/bronx_e.img/bxe_ind1wall_01.wdr: Interleaved: sys+0x698 sys+0x6A8 sys+0x6D8 sys+0x6E8 sys+0x718 sys+0x748; VerticesFirst: sys+0x698 sys+0x6A8 sys+0x6D8 sys+0x6E8 sys+0x718 sys+0x748
+  pc/data/maps/east/bronx_e.img/bxe_ind4_bllbrd.wdr: Interleaved: sys+0x4C8 sys+0x4D8 sys+0x508; VerticesFirst: sys+0x4C8 sys+0x4D8 sys+0x508
+  pc/data/maps/east/bronx_e.img/bxe_oldpier_01.wdr: Interleaved: sys+0x1118 sys+0x1128 sys+0x1158 sys+0x1168 sys+0x1198 sys+0x11A8; VerticesFirst: sys+0x1118 sys+0x1128 sys+0x1158 sys+0x1168 sys+0x1198 sys+0x11A8
+  archive pc/data/maps/generic/lodcull_j.img: Value was invalid.
+  archive pc/data/maps/generic/lodcull_m.img: Value was invalid.
+  archive pc/data/maps/interiors/test/interiors.img: Value was invalid.
+  archive pc/data/maps/leveldes/levelmap.img: Value was invalid.
+  archive TLAD/pc/data/maps/interiors/int_test.img: Value was invalid.
+roundtrip: FAILED drawables=22814 eligible=12688 multi=6876 identical=5254 failed=7434 orders[both (one buffer pair)=4330, Interleaved=387, VerticesFirst=537] report=<repo>\results-local\20260928-221840-84d4127\T031-drawable-roundtrip.json

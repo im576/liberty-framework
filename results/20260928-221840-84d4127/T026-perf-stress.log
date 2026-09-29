@@ -1,0 +1,2 @@
+scenario perf-stress: CRASH; steps=6 failed=1 logErrors=0 gameAlive=False; report <repo>\results-local\20260928-221840-84d4127\_runs\perf-stress-20260928-225239
+AUTOPILOT_RESULT <repo>\results-local\20260928-221840-84d4127\_runs\perf-stress-20260928-225239\result.json

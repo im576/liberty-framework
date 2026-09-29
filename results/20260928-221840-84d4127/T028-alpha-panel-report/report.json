@@ -1,0 +1,28 @@
+{
+  "asset": "lf_alpha_panel",
+  "status": "ok",
+  "type": "prop",
+  "writer": { "drawable": "template", "reason": "auto: one material per LOD", "textureMode": "native" },
+  "source": "<repo>\\content\\props\\lf_alpha_panel\\lf_alpha_panel.gltf",
+  "template": "pc/models/cdimages/weapons.img/amb_nailgun",
+  "capabilities": { "version": "v1", "maxMaterialsPerLod": 1, "compiledLodLevels": 1, "lodSlots": 4, "maxVerticesPerGeometry": 65535, "shaders": ["gta_default"], "assetTypes": ["prop", "object"], "collisionShapes": [], "lodDistances": false, "collisionBorrow": true },
+  "metadata": {"liberty_asset": "lf_alpha_panel"},
+  "meshes": 1, "materials": 1, "lods": 1,
+  "structure": {
+    "lods": [
+      { "level": 0, "triangles": 12, "vertices": 24,
+        "geometries": [
+          { "material": "alpha_panel", "shader": "gta_default", "textured": true, "alphaMode": "BLEND", "meshes": 1, "triangles": 12, "vertices": 24 } ] } ],
+    "lodDistancesMeters": null,
+    "collision": []
+  },
+  "compiled": { "vertices": 24, "triangles": 12, "texture": "bm_amb_nailgun", "textureSize": [128, 128], "textureMode": "native", "textureFormat": "DXT5", "textureLevels": 6, "textureQuality": { "psnrRgbDb": 45.96, "maxErrorRgb": 3, "psnrAlphaDb": 99.00, "maxErrorAlpha": 0 }, "flippedWinding": false, "drawableBytes": 769,
+    "drawableWriter": "template", "templateUsed": "pc/models/cdimages/weapons.img/amb_nailgun", "dictionaryBytes": 1226,
+    "notes": ["native texture dictionary: 128x128 DXT5, 6 mip levels, prototype amb_nailgun.wtd"] },
+  "issues": [
+    { "severity": "info", "code": "LCC014", "message": "bounds (-0.4, -0.02, 0) .. (0.4, 0.02, 0.8)" },
+    { "severity": "info", "code": "LCC026", "message": "LOD 0: 1 geometry ('alpha_panel' 12 triangles, 24 vertices)" },
+    { "severity": "warning", "code": "LCC020", "message": "material alpha_panel uses alpha mode BLEND; textureMode template writes opaque DXT1, textureMode native writes DXT5 with alpha (whether gta_default draws it translucent is unverified in game)" }
+  ],
+  "readback": []
+}

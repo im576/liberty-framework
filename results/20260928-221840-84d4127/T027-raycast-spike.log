@@ -1,0 +1,2 @@
+scenario raycast-spike: PASS; steps=24 failed=0 logErrors=0 gameAlive=True; report <repo>\results-local\20260928-221840-84d4127\_runs\raycast-spike-20260928-224129
+AUTOPILOT_RESULT <repo>\results-local\20260928-221840-84d4127\_runs\raycast-spike-20260928-224129\result.json

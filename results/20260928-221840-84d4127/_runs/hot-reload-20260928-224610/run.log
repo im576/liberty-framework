@@ -1,0 +1,200 @@
+2026-09-26T07:33:48.959Z [INFO] atmosphere_started
+2026-09-29T05:46:11.141Z [INFO] [autopilot] event BulletFired shooter=5901 weapon=7 by_player=False from=(-81.753, 638.884, 15.157) to=(-77.915, 646.559, 15.065)
+2026-09-29T05:46:11.189Z [INFO] [autopilot] event PedRemoved handle=10508
+2026-09-29T05:46:11.297Z [INFO] [autopilot] event BulletFired shooter=6158 weapon=7 by_player=False from=(-86.883, 637.979, 15.155) to=(-53.755, 694.024, 14.884)
+2026-09-29T05:46:11.333Z [INFO] [autopilot] event PedRemoved handle=9747
+2026-09-29T05:46:11.382Z [INFO] [autopilot] event PedRemoved handle=10768
+2026-09-29T05:46:11.594Z [INFO] [autopilot] event BulletFired shooter=6158 weapon=7 by_player=False from=(-86.887, 637.977, 15.16) to=(-63.14, 678.578, 15.089)
+2026-09-29T05:46:11.641Z [INFO] [autopilot] event PedAppeared handle=10007
+2026-09-29T05:46:11.668Z [INFO] command source=file:cmd_20260929054611522.cmd line="god on" reply="invincible True"
+2026-09-29T05:46:11.695Z [INFO] [autopilot] event PedAppeared handle=10261
+2026-09-29T05:46:11.808Z [INFO] [autopilot] event PedAppeared handle=10509
+2026-09-29T05:46:11.861Z [INFO] [autopilot] event PedAppeared handle=10769
+2026-09-29T05:46:12.188Z [INFO] command source=file:cmd_20260929054611943.cmd line="wanted 0" reply="wanted 0"
+2026-09-29T05:46:12.246Z [INFO] [autopilot] event PedAppeared handle=11532
+2026-09-29T05:46:12.247Z [INFO] [autopilot] event PedAppeared handle=11789
+2026-09-29T05:46:12.247Z [INFO] [autopilot] event PedAppeared handle=12038
+2026-09-29T05:46:12.248Z [INFO] [autopilot] event PedAppeared handle=12295
+2026-09-29T05:46:12.249Z [INFO] [autopilot] event PedAppeared handle=12550
+2026-09-29T05:46:12.249Z [INFO] [autopilot] event PedAppeared handle=12805
+2026-09-29T05:46:12.250Z [INFO] [autopilot] event PedAppeared handle=13060
+2026-09-29T05:46:12.276Z [INFO] [autopilot] event VehicleAppeared handle=3082
+2026-09-29T05:46:12.277Z [INFO] [autopilot] event VehicleAppeared handle=3338
+2026-09-29T05:46:12.363Z [INFO] [autopilot] event PedAppeared handle=13318
+2026-09-29T05:46:12.364Z [INFO] [autopilot] event VehicleAppeared handle=5384
+2026-09-29T05:46:12.741Z [INFO] teleport_start id=east_park target=-64.8,663.4,15 snap=pavement
+2026-09-29T05:46:12.741Z [INFO] command source=file:cmd_20260929054612328.cmd line="goto east_park" reply="Teleporting to Algonquin East Park Street"
+2026-09-29T05:46:12.758Z [INFO] [autopilot] event VehicleAppeared handle=3593
+2026-09-29T05:46:12.759Z [INFO] [autopilot] event VehicleRemoved handle=15878
+2026-09-29T05:46:12.760Z [INFO] [autopilot] event VehicleRemoved handle=13575
+2026-09-29T05:46:12.761Z [INFO] [autopilot] event VehicleRemoved handle=13320
+2026-09-29T05:46:12.966Z [INFO] [autopilot] event PedAppeared handle=13573
+2026-09-29T05:46:12.967Z [INFO] [autopilot] event PedRemoved handle=12805
+2026-09-29T05:46:13.024Z [INFO] [autopilot] event PedAppeared handle=13829
+2026-09-29T05:46:13.025Z [INFO] [autopilot] event PedAppeared handle=14086
+2026-09-29T05:46:13.078Z [INFO] [autopilot] event PedRemoved handle=13060
+2026-09-29T05:46:13.079Z [INFO] [autopilot] event PedRemoved handle=12295
+2026-09-29T05:46:13.080Z [INFO] [autopilot] event PedRemoved handle=12550
+2026-09-29T05:46:13.081Z [INFO] [autopilot] event PedRemoved handle=11532
+2026-09-29T05:46:13.082Z [INFO] [autopilot] event PedRemoved handle=8978
+2026-09-29T05:46:13.138Z [INFO] [autopilot] event PedRemoved handle=12038
+2026-09-29T05:46:13.139Z [INFO] [autopilot] event PedRemoved handle=11789
+2026-09-29T05:46:13.381Z [INFO] [autopilot] event PedRemoved handle=14086
+2026-09-29T05:46:13.440Z [INFO] [autopilot] event PedRemoved handle=13573
+2026-09-29T05:46:13.441Z [INFO] [autopilot] event PedRemoved handle=10769
+2026-09-29T05:46:13.442Z [INFO] [autopilot] event PedRemoved handle=10261
+2026-09-29T05:46:13.443Z [INFO] [autopilot] event PedRemoved handle=10007
+2026-09-29T05:46:13.444Z [INFO] [autopilot] event PedRemoved handle=10509
+2026-09-29T05:46:13.499Z [INFO] [autopilot] event PedRemoved handle=13318
+2026-09-29T05:46:13.558Z [INFO] [autopilot] event PedRemoved handle=13829
+2026-09-29T05:46:13.686Z [INFO] teleport_done id=east_park final=-64.4,674.8,15.5
+2026-09-29T05:46:13.687Z [INFO] T-001 heartbeat probe_label=default
+2026-09-29T05:46:13.741Z [INFO] [autopilot] event PedAppeared handle=4616
+2026-09-29T05:46:13.742Z [INFO] [autopilot] event VehicleAppeared handle=13320
+2026-09-29T05:46:13.742Z [INFO] [autopilot] event VehicleAppeared handle=13575
+2026-09-29T05:46:13.743Z [INFO] [autopilot] event VehicleAppeared handle=15878
+2026-09-29T05:46:13.744Z [INFO] [autopilot] event VehicleRemoved handle=3593
+2026-09-29T05:46:14.391Z [INFO] [autopilot] event BulletFired shooter=5901 weapon=7 by_player=False from=(-81.728, 638.852, 15.043) to=(-53.608, 697.573, 14.384)
+2026-09-29T05:46:14.413Z [INFO] [autopilot] event BulletFired shooter=6158 weapon=7 by_player=False from=(-86.877, 637.956, 15.153) to=(-52.039, 692.938, 13.442)
+2026-09-29T05:46:14.492Z [INFO] [autopilot] event VehicleAppeared handle=4361
+2026-09-29T05:46:14.692Z [INFO] [autopilot] event BulletFired shooter=5901 weapon=7 by_player=False from=(-81.756, 638.883, 15.165) to=(-74.318, 654.977, 14.697)
+2026-09-29T05:46:14.740Z [INFO] [autopilot] event BulletFired shooter=6158 weapon=7 by_player=False from=(-86.889, 637.977, 15.159) to=(-67.549, 669.72, 14.628)
+2026-09-29T05:46:15.011Z [INFO] [autopilot] event BulletFired shooter=5901 weapon=7 by_player=False from=(-81.756, 638.884, 15.156) to=(-74.222, 654.977, 14.71)
+2026-09-29T05:46:15.067Z [INFO] [autopilot] event BulletFired shooter=6158 weapon=7 by_player=False from=(-86.89, 637.977, 15.16) to=(-53.081, 693.621, 15.762)
+2026-09-29T05:46:15.809Z [INFO] [autopilot] event PedRemoved handle=4616
+2026-09-29T05:46:16.120Z [INFO] [autopilot] event BulletFired shooter=5901 weapon=7 by_player=False from=(-81.752, 638.887, 15.154) to=(-67.55, 668.697, 14.875)
+2026-09-29T05:46:16.202Z [INFO] [autopilot] event BulletFired shooter=6158 weapon=7 by_player=False from=(-86.888, 637.977, 15.156) to=(-52.576, 693.312, 15.594)
+2026-09-29T05:46:16.238Z [INFO] [autopilot] event VehicleAppeared handle=2825
+2026-09-29T05:46:16.261Z [INFO] [autopilot] event VehicleAppeared handle=5898
+2026-09-29T05:46:17.131Z [INFO] command source=file:cmd_20260929054616975.cmd line="spawnprop lf_test_crate 2.5 0" reply="spawning prop lf_test_crate"
+2026-09-29T05:46:17.165Z [INFO] [autopilot] autopilot_prop handle=34834 model=lf_test_crate at=(-64.419, 677.334, 13.568)
+2026-09-29T05:46:17.455Z [INFO] [autopilot] event BulletFired shooter=6158 weapon=7 by_player=False from=(-86.887, 637.978, 15.15) to=(-53.517, 693.888, 15.567)
+2026-09-29T05:46:17.455Z [INFO] [autopilot] event BulletFired shooter=5901 weapon=7 by_player=False from=(-81.752, 638.886, 15.155) to=(-53.879, 697.716, 14.866)
+2026-09-29T05:46:17.671Z [INFO] engine_module_stopped devtools released=0 reason=restarting
+2026-09-29T05:46:17.674Z [INFO] devtools_started
+2026-09-29T05:46:17.675Z [INFO] engine_module_started devtools
+2026-09-29T05:46:17.677Z [INFO] engine_module_restarted devtools
+2026-09-29T05:46:17.678Z [INFO] command source=file:cmd_20260929054617403.cmd line="restart devtools" reply="restarted devtools"
+2026-09-29T05:46:17.753Z [INFO] [autopilot] event VehicleAppeared handle=4616
+2026-09-29T05:46:18.151Z [INFO] engine_module_stopped autopilot released=3 reason=reloading
+2026-09-29T05:46:18.156Z [INFO] [autopilot] autopilot_ready sdk=1.1.0 engine=1.1.0 episode=GTAIV
+2026-09-29T05:46:18.157Z [INFO] engine_module_started autopilot
+2026-09-29T05:46:18.158Z [INFO] engine_module_reloaded assembly=Liberty.Autopilot.dll modules=autopilot reloads=1 leaked_kb=54
+2026-09-29T05:46:18.159Z [INFO] command source=file:cmd_20260929054618064.cmd line="reload autopilot" reply="reloaded Liberty.Autopilot.dll: autopilot"
+2026-09-29T05:46:18.592Z [INFO] density frame_ms=34.3 peds=0.75 cars=0.80
+2026-09-29T05:46:18.635Z [INFO] command source=file:cmd_20260929054618456.cmd line="owned autopilot" reply="autopilot: nothing"
+2026-09-29T05:46:18.886Z [INFO] command source=file:cmd_20260929054618849.cmd line="modules" reply="gunplay avg=1.281 max=169.09 int=0 | combat avg=0.087 max=150.29 int=0 | arsenal avg=0.611 max=105.22 int=30 | holsters avg=0.038 max=69.73 int=50 | atmosphere avg=0.216 max=381.62 int=0 | devtools avg=0.025 max=0.03 int=30 | probe avg=1.473 max=12.48 int=10000 | weapon-probe avg=0.001 max=0.04 int=0 | world avg=0.090 max=3.02 int=500 | autopilot avg=0.001 max=0.00 int=0"
+2026-09-29T05:46:19.028Z [INFO] engine_status engine 1.1.0 sdk 1.1.0 frame=12787 core=on peds=4 vehicles=16 modules=10/10 coroutines=0 resources=1 raycast=on episode=GTAIV frame_ms=27.00 p95_ms=58.75 pressure=0.09 private_mb=2276 working_set_mb=2052 address_free_mb=1093 largest_free_block_mb=1041 managed_mb=14 physical_load=89% core_us=66.2
+2026-09-29T05:46:19.198Z [INFO] performance samples=959 frame_p50_ms=24 frame_p95_ms=51 frame_p99_ms=97 frames_over_33ms=160 frames_over_50ms=50 gunplay_avg_ms=1.274 gunplay_max_ms=7.511 phase_samples=959 phase_setup_avg_ms=0.835 phase_setup_max_ms=7.116 phase_camera_avg_ms=0.029 phase_camera_max_ms=1.961 phase_bullets_avg_ms=0.006 phase_bullets_max_ms=0.170 phase_weapon_avg_ms=0.017 phase_weapon_max_ms=0.116 phase_hud_avg_ms=0.386 phase_hud_max_ms=0.582
+2026-09-29T05:46:19.199Z [INFO] performance_scripts costs_ms(avg/max/count@thread) engine.frame=5.181/2163.9/959@7 total=4969 module.gunplay=1.279/7.5/959@7 total=1227 tick.gunplay=1.278/7.5/959@7 total=1225 gp.freeaim=0.658/6.9/959@7 total=631 module.arsenal=0.698/4.6/656@7 total=458 tick.arsenal=0.697/4.6/656@7 total=457 ar.storage=0.489/4.6/656@7 total=321 engine.world=0.322/48.4/959@7 total=309 module.atmosphere=0.180/4.4/959@7 total=172 tick.atmosphere=0.179/4.4/959@7 total=171 ar.safehouse_flags=0.174/2.6/656@7 total=114 gp.index_pad=0.119/0.3/959@7 total=114 module.combat=0.103/3.5/959@7 total=99 tick.combat=0.103/3.5/959@7 total=98 combat.sample=1.153/3.5/66@7 total=76 cam.handle=0.024/1.9/959@7 total=23 module.devtools=0.033/3.7/656@7 total=22 tick.devtools=0.033/3.7/656@7 total=22 module.holsters=0.052/0.6/370@7 total=19 tick.holsters=0.051/0.6/370@7 total=19 gp.shoulder=0.014/0.1/959@7 total=14 gp.player=0.012/0.1/959@7 total=11 gp.weapon_id=0.012/0.1/959@7 total=11 engine.scheduler=0.010/3.1/959@7 total=9 gp.cycle=0.008/0.1/959@7 total=8 gp.state=0.006/0.0/959@7 total=6 module.world=0.069/0.3/54@7 total=4 module.probe=1.230/1.3/3@7 total=4 ar.discover=0.005/1.9/656@7 total=3 cam.aim_key=0.003/0.0/959@7 total=3 cam.find_active=0.003/0.0/959@7 total=2 ar.lvs=0.003/0.3/656@7 total=2 ar.vehicle=0.003/0.0/656@7 total=2 gp.spread=0.002/0.0/959@7 total=2 ar.reconcile=0.003/0.0/656@7 total=2 gp.shots=0.002/0.0/959@7 total=1 ho.carried=0.002/0.0/370@7 total=1 ho.show=0.002/0.0/370@7 total=1 combat.dismember=0.001/0.0/959@7 total=1 module.autopilot=0.000/0.0/959@7 total=0 combat.blood=0.000/0.0/959@7 total=0 module.weapon-probe=0.000/0.0/959@7 total=0 gp.feel=0.000/0.0/959@7 total=0 combat.pending=0.000/0.0/959@7 total=0 cam.fov=0.001/0.0/103@7 total=0 gp.recoil=0.000/0.0/959@7 total=0
+2026-09-29T05:46:19.200Z [INFO] engine_thread_probe ticks=959 frame_advanced_during_tick=0 ticks_same_frame=0 ticks_next_frame=957 ticks_after_skipped_frames=2
+2026-09-29T05:46:19.202Z [INFO] direct_native get_char_health direct=200 shdn=100 match=False direct_us=0.22 shdn_us=57.3
+2026-09-29T05:46:19.391Z [INFO] command source=file:cmd_20260929054619246.cmd line="selftest" reply="selftest started"
+2026-09-29T05:46:19.436Z [INFO] [autopilot] selftest_begin engine=1.1.0 sdk=1.1.0
+2026-09-29T05:46:19.438Z [INFO] [autopilot] selftest world ok from_core=True peds=4 vehicles=16
+2026-09-29T05:46:19.439Z [INFO] [autopilot] selftest player ok ped=2 index=0
+2026-09-29T05:46:19.439Z [INFO] [autopilot] selftest modules ok loaded=10
+2026-09-29T05:46:19.440Z [INFO] [autopilot] selftest perf ok frame_ms=30.9 free_mb=1093 pressure=0.08
+2026-09-29T05:46:19.441Z [INFO] [autopilot] selftest input info pad=False
+2026-09-29T05:46:19.442Z [INFO] [autopilot] selftest episode info GTAIV
+2026-09-29T05:46:19.443Z [INFO] [autopilot] selftest query-ground ok ground=13.56 water=False 0.00
+2026-09-29T05:46:19.444Z [INFO] [autopilot] selftest raycast-available ok
+2026-09-29T05:46:19.445Z [INFO] [autopilot] selftest raycast-ground ok Hit World at (-64.419, 674.834, 13.563) distance 1.51 normal=(-0.054, -0.002, 0.999) ground_z=13.56
+2026-09-29T05:46:19.446Z [INFO] [autopilot] selftest raycast-clear ok Clear
+2026-09-29T05:46:19.447Z [INFO] [autopilot] selftest raycast-invalid ok from == to is refused
+2026-09-29T05:46:19.448Z [INFO] [autopilot] selftest capability-memory ok IMemory refused without memory.patch
+2026-09-29T05:46:19.449Z [INFO] [autopilot] selftest capability-natives ok INatives refused without engine.internal
+2026-09-29T05:46:19.452Z [INFO] [autopilot] selftest config ok <game>\scripts\LibertyFramework\config\autopilot\selftest.json
+2026-09-29T05:46:19.464Z [INFO] [autopilot] selftest state ok
+2026-09-29T05:46:19.466Z [INFO] [autopilot] selftest weapon-model ok model=0xF44C839D slot=2
+2026-09-29T05:46:19.469Z [INFO] [autopilot] selftest weapons ok inventory=2
+2026-09-29T05:46:19.471Z [INFO] [autopilot] selftest prop-create ok handle=35089
+2026-09-29T05:46:19.472Z [INFO] [autopilot] selftest prop-position ok at=(-64.419, 676.334, 15.568)
+2026-09-29T05:46:19.478Z [INFO] weapon_changed from=14 to=7 profile=vanilla
+2026-09-29T05:46:19.503Z [INFO] arsenal_gain id=7 owned=False mission=False
+2026-09-29T05:46:19.630Z [INFO] [autopilot] selftest attach-rotation ok heading_delta=90.0 (90 requested; the game itself takes radians)
+2026-09-29T05:46:19.631Z [INFO] [autopilot] selftest attach-rotation-units info degrees heading_delta=90.0 (90 requested)
+2026-09-29T05:46:19.632Z [INFO] [autopilot] selftest prop-delete ok
+2026-09-29T05:46:19.646Z [INFO] holster_sling_attached slot=LongGun2 model=lf_sling_b bone=Spine2
+2026-09-29T05:46:19.666Z [INFO] [autopilot] selftest ped-spawn ok handle=4874
+2026-09-29T05:46:19.668Z [INFO] [autopilot] selftest ped-health ok health=150
+2026-09-29T05:46:19.801Z [INFO] [autopilot] selftest ped-bone ok head=(-64.422, 678.365, 16.034) origin=(-64.419, 678.334, 15.486)
+2026-09-29T05:46:19.802Z [INFO] [autopilot] selftest ped-weapon ok
+2026-09-29T05:46:19.879Z [INFO] [autopilot] selftest ped-snapshot ok in_snapshot distance=3.6
+2026-09-29T05:46:19.880Z [INFO] [autopilot] selftest query-radius ok peds_within_10m=1
+2026-09-29T05:46:19.881Z [INFO] [autopilot] selftest query-cone ok found=4874
+2026-09-29T05:46:19.882Z [INFO] [autopilot] selftest query-onscreen ok on_screen=True
+2026-09-29T05:46:19.883Z [INFO] [autopilot] selftest raycast-ped FAIL Hit Object 87043 at (-64.419, 675.024, 14.611) distance 0.19
+2026-09-29T05:46:19.883Z [INFO] [autopilot] selftest raycast-pass-through FAIL Hit Object 87043 at (-64.419, 675.024, 14.611) distance 0.19 passed=0 tests=1
+2026-09-29T05:46:19.884Z [INFO] [autopilot] selftest raycast-ignore FAIL Hit Object 87043 at (-64.419, 675.024, 14.611) distance 0.19
+2026-09-29T05:46:19.886Z [INFO] [autopilot] selftest line-of-sight-ped ok
+2026-09-29T05:46:20.375Z [INFO] [autopilot] selftest ped-delete ok
+2026-09-29T05:46:20.460Z [INFO] [autopilot] selftest vehicle-spawn ok handle=5641
+2026-09-29T05:46:20.461Z [INFO] [autopilot] selftest vehicle-engine ok engine=1000 body=1000
+2026-09-29T05:46:20.462Z [INFO] [autopilot] selftest vehicle-offset ok nose=(-70.418, 676.834, 14.243)
+2026-09-29T05:46:20.558Z [INFO] [autopilot] selftest raycast-vehicle ok Hit Vehicle 5641 at (-71.457, 674.827, 14.194) distance 1.49 normal=(-0.926, -0.001, 0.378)
+2026-09-29T05:46:20.559Z [INFO] [autopilot] selftest line-of-sight-vehicle ok blocked=True world_only=Clear passed=1
+2026-09-29T05:46:21.187Z [INFO] [autopilot] selftest vehicle-snapshot ok listed=True appeared_event=True
+2026-09-29T05:46:23.689Z [INFO] T-001 heartbeat probe_label=default
+2026-09-29T05:46:23.745Z [INFO] [autopilot] selftest vehicle-driver ok ped=8472 snapshot_driver=8472 get_driver=8472
+2026-09-29T05:46:23.748Z [INFO] [autopilot] selftest vehicle-delete ok
+2026-09-29T05:46:23.791Z [INFO] [autopilot] selftest vehicle-removed-event ok
+2026-09-29T05:46:23.792Z [INFO] [autopilot] selftest fx-burst info blood_gun_entry=True
+2026-09-29T05:46:23.793Z [INFO] [autopilot] selftest audio-id ok sound=2
+2026-09-29T05:46:23.795Z [INFO] [autopilot] selftest blip ok blip=9568268
+2026-09-29T05:46:24.118Z [INFO] [autopilot] selftest camera-create ok
+2026-09-29T05:46:24.120Z [INFO] [autopilot] selftest game-camera ok fov=45.0 position=(-61.697, 671.222, 15.509)
+2026-09-29T05:46:24.953Z [INFO] camera_already_gone handle=8195 Invalid call to an object that doesn't exist anymore!
+2026-09-29T05:46:26.366Z [INFO] [autopilot] selftest ui-list ok
+2026-09-29T05:46:26.368Z [INFO] [autopilot] selftest ui-list-close ok
+2026-09-29T05:46:27.602Z [INFO] [autopilot] selftest ui-radial ok
+2026-09-29T05:46:27.603Z [INFO] [autopilot] choreography_begin selftest steps=2
+2026-09-29T05:46:27.624Z [INFO] holster_sling_attached slot=LongGun2 model=lf_sling_b bone=Spine2
+2026-09-29T05:46:29.736Z [INFO] [autopilot] choreography_complete selftest
+2026-09-29T05:46:29.775Z [INFO] [autopilot] selftest choreography ok step=1
+2026-09-29T05:46:29.777Z [INFO] [autopilot] selftest_done passed=46 failed=3
+2026-09-29T05:46:33.691Z [INFO] T-001 heartbeat probe_label=default
+2026-09-29T05:46:43.685Z [INFO] T-001 heartbeat probe_label=default
+2026-09-29T05:46:45.246Z [INFO] holsters_removed reason=wasted
+2026-09-29T05:46:45.246Z [ERROR] arsenal_loss_no_safehouse owned weapons cannot be stored
+2026-09-29T05:46:45.247Z [INFO] arsenal_loss reason=wasted id=7 owned=False
+2026-09-29T05:46:45.248Z [INFO] arsenal_loss reason=wasted id=14 owned=False
+2026-09-29T05:46:48.603Z [INFO] density frame_ms=26.9 peds=0.92 cars=0.94
+2026-09-29T05:46:49.030Z [INFO] engine_status engine 1.1.0 sdk 1.1.0 frame=13798 core=on peds=13 vehicles=12 modules=10/10 coroutines=0 resources=1 raycast=on episode=GTAIV frame_ms=20.56 p95_ms=43.30 pressure=0.07 private_mb=2235 working_set_mb=2011 address_free_mb=1092 largest_free_block_mb=1041 managed_mb=14 physical_load=89% core_us=53.9
+2026-09-29T05:46:49.195Z [INFO] performance samples=1013 frame_p50_ms=24 frame_p95_ms=41 frame_p99_ms=62 frames_over_33ms=178 frames_over_50ms=27 gunplay_avg_ms=1.024 gunplay_max_ms=3.847 phase_samples=846 phase_setup_avg_ms=0.782 phase_setup_max_ms=3.225 phase_camera_avg_ms=0.026 phase_camera_max_ms=1.716 phase_bullets_avg_ms=0.009 phase_bullets_max_ms=0.162 phase_weapon_avg_ms=0.018 phase_weapon_max_ms=0.180 phase_hud_avg_ms=0.386 phase_hud_max_ms=0.576
+2026-09-29T05:46:49.196Z [INFO] performance_scripts costs_ms(avg/max/count@thread) engine.frame=2.178/58.4/1013@7 total=2207 module.gunplay=1.034/7.7/1013@7 total=1047 tick.gunplay=1.032/7.7/1013@7 total=1046 gp.freeaim=0.595/2.5/846@7 total=503 module.arsenal=0.644/18.3/690@7 total=444 tick.arsenal=0.643/18.3/690@7 total=444 ar.storage=0.447/3.5/587@7 total=262 module.atmosphere=0.208/2.3/1013@7 total=211 tick.atmosphere=0.207/2.3/1013@7 total=210 engine.scheduler=0.129/53.9/1013@7 total=131 ar.safehouse_flags=0.189/2.2/587@7 total=111 gp.index_pad=0.126/0.3/846@7 total=106 engine.world=0.100/1.2/1013@7 total=102 module.combat=0.084/2.2/1013@7 total=85 tick.combat=0.083/2.2/1013@7 total=84 module.holsters=0.166/15.2/378@7 total=63 tick.holsters=0.165/15.2/378@7 total=63 combat.sample=1.037/2.2/59@7 total=61 ho.show=0.103/14.8/319@7 total=33 cam.handle=0.020/1.7/846@7 total=17 ar.reconcile=0.028/14.6/587@7 total=16 module.devtools=0.024/0.1/690@7 total=16 tick.devtools=0.023/0.1/690@7 total=16 gp.shoulder=0.014/0.2/846@7 total=12 gp.weapon_id=0.012/0.8/846@7 total=10 module.world=0.165/1.0/57@7 total=9 gp.player=0.011/0.1/846@7 total=9 gp.cycle=0.008/0.1/846@7 total=7 gp.state=0.006/0.0/846@7 total=5 module.probe=1.324/1.6/3@7 total=4 ar.discover=0.004/1.2/690@7 total=3 cam.aim_key=0.003/0.1/846@7 total=2 cam.find_active=0.002/0.0/846@7 total=2 ar.lvs=0.003/0.3/690@7 total=2 ar.vehicle=0.003/0.0/690@7 total=2 gp.spread=0.002/0.0/846@7 total=2 gp.shots=0.002/0.0/846@7 total=1 ho.carried=0.002/0.1/319@7 total=1 combat.dismember=0.001/0.0/1013@7 total=1 engine.raycast=0.047/0.1/10@7 total=0 module.autopilot=0.000/0.0/1013@7 total=0 combat.blood=0.000/0.0/1013@7 total=0 module.weapon-probe=0.000/0.0/1013@7 total=0 gp.feel=0.000/0.0/846@7 total=0 combat.pending=0.000/0.0/1013@7 total=0 cam.fov=0.001/0.0/89@7 total=0 gp.recoil=0.000/0.0/846@7 total=0
+2026-09-29T05:46:49.197Z [INFO] engine_thread_probe ticks=1013 frame_advanced_during_tick=0 ticks_same_frame=0 ticks_next_frame=1013 ticks_after_skipped_frames=0
+2026-09-29T05:46:49.199Z [INFO] direct_native get_char_health direct=0 shdn=-100 match=False direct_us=0.20 shdn_us=54.0
+2026-09-29T05:46:54.038Z [INFO] weapon_changed from=7 to=0 profile=vanilla
+2026-09-29T05:46:54.045Z [INFO] T-001 heartbeat probe_label=default
+2026-09-29T05:46:54.046Z [INFO] [world] world_object removed name=test_wall reason=out of range
+2026-09-29T05:47:04.039Z [INFO] T-001 heartbeat probe_label=default
+2026-09-29T05:47:14.051Z [INFO] T-001 heartbeat probe_label=default
+2026-09-29T05:47:18.603Z [INFO] density frame_ms=26.4 peds=0.97 cars=0.97
+2026-09-29T05:47:19.039Z [INFO] engine_status engine 1.1.0 sdk 1.1.0 frame=14978 core=on peds=34 vehicles=35 modules=10/10 coroutines=0 resources=0 raycast=on episode=GTAIV frame_ms=23.37 p95_ms=35.48 pressure=0.00 private_mb=2286 working_set_mb=2062 address_free_mb=1097 largest_free_block_mb=1041 managed_mb=14 physical_load=89% core_us=120.2
+2026-09-29T05:47:19.192Z [INFO] performance samples=1179 frame_p50_ms=21 frame_p95_ms=36 frame_p99_ms=62 frames_over_33ms=136 frames_over_50ms=19 gunplay_avg_ms=1.048 gunplay_max_ms=5.337 phase_samples=1038 phase_setup_avg_ms=0.766 phase_setup_max_ms=2.402 phase_camera_avg_ms=0.023 phase_camera_max_ms=2.938 phase_bullets_avg_ms=0.002 phase_bullets_max_ms=0.017 phase_weapon_avg_ms=0.016 phase_weapon_max_ms=0.105 phase_hud_avg_ms=0.381 phase_hud_max_ms=0.590
+2026-09-29T05:47:19.193Z [INFO] performance_scripts costs_ms(avg/max/count@thread) engine.frame=1.837/12.0/1179@7 total=2166 module.gunplay=1.053/5.3/1179@7 total=1242 tick.gunplay=1.052/5.3/1179@7 total=1240 gp.freeaim=0.591/2.2/1038@7 total=613 module.arsenal=0.502/3.4/700@7 total=352 tick.arsenal=0.502/3.4/700@7 total=351 module.atmosphere=0.221/3.5/1179@7 total=260 tick.atmosphere=0.220/3.5/1179@7 total=259 ar.storage=0.344/3.3/616@7 total=212 engine.world=0.134/1.3/1179@7 total=158 gp.index_pad=0.120/0.3/1038@7 total=125 ar.safehouse_flags=0.172/2.4/616@7 total=106 module.combat=0.021/0.5/1179@7 total=25 tick.combat=0.021/0.5/1179@7 total=24 module.holsters=0.046/0.6/395@7 total=18 tick.holsters=0.045/0.6/395@7 total=18 cam.handle=0.017/2.9/1038@7 total=18 module.devtools=0.023/0.1/700@7 total=16 tick.devtools=0.022/0.1/700@7 total=16 gp.shoulder=0.013/0.1/1038@7 total=13 gp.weapon_id=0.011/0.8/1038@7 total=12 gp.player=0.010/0.1/1038@7 total=10 gp.cycle=0.008/0.1/1038@7 total=8 gp.state=0.006/0.0/1038@7 total=6 module.probe=1.263/1.4/3@7 total=4 gp.shots=0.003/0.0/1038@7 total=4 ar.discover=0.004/1.8/700@7 total=3 module.world=0.049/1.6/55@7 total=3 cam.find_active=0.002/0.0/1038@7 total=2 cam.aim_key=0.002/0.0/1038@7 total=2 ar.vehicle=0.003/0.0/700@7 total=2 gp.spread=0.002/0.0/1038@7 total=2 ar.lvs=0.002/0.2/700@7 total=1 ar.reconcile=0.002/0.0/616@7 total=1 combat.dismember=0.001/0.0/1179@7 total=1 engine.scheduler=0.001/0.0/1179@7 total=1 ho.carried=0.002/0.0/238@7 total=0 module.autopilot=0.000/0.0/1179@7 total=0 ho.show=0.002/0.0/238@7 total=0 combat.blood=0.000/0.0/1179@7 total=0 module.weapon-probe=0.000/0.0/1179@7 total=0 gp.feel=0.000/0.0/1038@7 total=0 combat.pending=0.000/0.0/1179@7 total=0 gp.recoil=0.000/0.0/1038@7 total=0 cam.fov=0.001/0.0/95@7 total=0
+2026-09-29T05:47:19.193Z [INFO] engine_thread_probe ticks=1179 frame_advanced_during_tick=0 ticks_same_frame=0 ticks_next_frame=1178 ticks_after_skipped_frames=1
+2026-09-29T05:47:19.195Z [INFO] direct_native get_char_health direct=200 shdn=100 match=False direct_us=0.19 shdn_us=52.3
+2026-09-29T05:47:24.061Z [INFO] T-001 heartbeat probe_label=default
+2026-09-29T05:47:34.054Z [INFO] T-001 heartbeat probe_label=default
+2026-09-29T05:47:44.069Z [INFO] T-001 heartbeat probe_label=default
+2026-09-29T05:47:48.605Z [INFO] density frame_ms=26.5 peds=0.97 cars=0.97
+2026-09-29T05:47:49.051Z [INFO] engine_status engine 1.1.0 sdk 1.1.0 frame=16212 core=on peds=28 vehicles=32 modules=10/10 coroutines=0 resources=0 raycast=on episode=GTAIV frame_ms=22.92 p95_ms=35.33 pressure=0.00 private_mb=2286 working_set_mb=2062 address_free_mb=1097 largest_free_block_mb=1041 managed_mb=15 physical_load=89% core_us=94.7
+2026-09-29T05:47:49.189Z [INFO] performance samples=1234 frame_p50_ms=21 frame_p95_ms=35 frame_p99_ms=41 frames_over_33ms=149 frames_over_50ms=3 gunplay_avg_ms=1.210 gunplay_max_ms=3.362 phase_samples=1234 phase_setup_avg_ms=0.791 phase_setup_max_ms=2.851 phase_camera_avg_ms=0.021 phase_camera_max_ms=0.811 phase_bullets_avg_ms=0.002 phase_bullets_max_ms=0.040 phase_weapon_avg_ms=0.017 phase_weapon_max_ms=0.171 phase_hud_avg_ms=0.379 phase_hud_max_ms=0.654
+2026-09-29T05:47:49.189Z [INFO] performance_scripts costs_ms(avg/max/count@thread) engine.frame=2.173/9.7/1234@7 total=2681 module.gunplay=1.217/5.8/1234@7 total=1501 tick.gunplay=1.215/5.8/1234@7 total=1499 gp.freeaim=0.610/2.1/1234@7 total=753 module.arsenal=0.743/6.7/762@7 total=566 tick.arsenal=0.742/6.7/762@7 total=566 ar.storage=0.536/5.3/762@7 total=408 module.atmosphere=0.211/3.3/1234@7 total=260 tick.atmosphere=0.210/3.3/1234@7 total=259 engine.world=0.150/1.3/1234@7 total=185 gp.index_pad=0.123/0.4/1234@7 total=152 ar.safehouse_flags=0.178/4.8/762@7 total=136 module.combat=0.023/0.5/1234@7 total=28 tick.combat=0.022/0.5/1234@7 total=27 module.holsters=0.052/0.9/434@7 total=23 tick.holsters=0.051/0.9/434@7 total=22 cam.handle=0.016/0.8/1234@7 total=19 module.devtools=0.023/0.2/762@7 total=18 tick.devtools=0.023/0.2/762@7 total=17 gp.shoulder=0.014/0.2/1234@7 total=17 gp.weapon_id=0.011/0.1/1234@7 total=14 gp.player=0.010/0.1/1234@7 total=13 gp.cycle=0.008/0.1/1234@7 total=10 gp.state=0.006/0.0/1234@7 total=7 gp.shots=0.004/0.1/1234@7 total=4 module.probe=1.292/1.4/3@7 total=4 cam.aim_key=0.003/0.1/1234@7 total=3 cam.find_active=0.003/0.0/1234@7 total=3 gp.spread=0.002/0.0/1234@7 total=2 ar.vehicle=0.003/0.0/762@7 total=2 ar.discover=0.002/0.7/762@7 total=2 ar.lvs=0.002/0.3/762@7 total=2 ar.reconcile=0.001/0.0/762@7 total=1 combat.dismember=0.001/0.0/1234@7 total=1 ho.carried=0.002/0.0/434@7 total=1 engine.scheduler=0.001/0.0/1234@7 total=1 ho.show=0.002/0.0/434@7 total=1 module.autopilot=0.000/0.0/1234@7 total=0 combat.blood=0.000/0.1/1234@7 total=0 module.weapon-probe=0.000/0.0/1234@7 total=0 gp.feel=0.000/0.0/1234@7 total=0 combat.pending=0.000/0.0/1234@7 total=0 gp.recoil=0.000/0.0/1234@7 total=0 cam.fov=0.001/0.0/114@7 total=0 module.world=0.001/0.0/60@7 total=0
+2026-09-29T05:47:49.190Z [INFO] engine_thread_probe ticks=1234 frame_advanced_during_tick=0 ticks_same_frame=0 ticks_next_frame=1234 ticks_after_skipped_frames=0
+2026-09-29T05:47:49.192Z [INFO] direct_native get_char_health direct=200 shdn=100 match=False direct_us=0.20 shdn_us=43.4
+2026-09-29T05:47:54.072Z [INFO] T-001 heartbeat probe_label=default
+2026-09-29T05:48:04.080Z [INFO] T-001 heartbeat probe_label=default
+2026-09-29T05:48:14.081Z [INFO] T-001 heartbeat probe_label=default
+2026-09-29T05:48:18.604Z [INFO] density frame_ms=26.4 peds=0.97 cars=0.97
+2026-09-29T05:48:19.070Z [INFO] engine_status engine 1.1.0 sdk 1.1.0 frame=17415 core=on peds=26 vehicles=36 modules=10/10 coroutines=0 resources=0 raycast=on episode=GTAIV frame_ms=23.00 p95_ms=35.02 pressure=0.00 private_mb=2286 working_set_mb=1820 address_free_mb=1097 largest_free_block_mb=1041 managed_mb=14 physical_load=85% core_us=99.3
+2026-09-29T05:48:19.213Z [INFO] performance samples=1203 frame_p50_ms=22 frame_p95_ms=36 frame_p99_ms=43 frames_over_33ms=186 frames_over_50ms=3 gunplay_avg_ms=1.196 gunplay_max_ms=4.389 phase_samples=1203 phase_setup_avg_ms=0.776 phase_setup_max_ms=3.998 phase_camera_avg_ms=0.021 phase_camera_max_ms=0.662 phase_bullets_avg_ms=0.002 phase_bullets_max_ms=0.038 phase_weapon_avg_ms=0.017 phase_weapon_max_ms=0.181 phase_hud_avg_ms=0.380 phase_hud_max_ms=0.588
+2026-09-29T05:48:19.214Z [INFO] performance_scripts costs_ms(avg/max/count@thread) engine.frame=2.155/9.2/1203@7 total=2592 module.gunplay=1.202/5.4/1203@7 total=1446 tick.gunplay=1.201/5.4/1203@7 total=1444 gp.freeaim=0.597/3.8/1203@7 total=718 module.arsenal=0.723/5.3/765@7 total=553 tick.arsenal=0.722/5.3/765@7 total=552 ar.storage=0.519/4.9/765@7 total=397 module.atmosphere=0.208/3.6/1203@7 total=250 tick.atmosphere=0.207/3.6/1203@7 total=249 engine.world=0.149/2.1/1203@7 total=179 gp.index_pad=0.122/0.3/1203@7 total=146 ar.safehouse_flags=0.174/2.7/765@7 total=133 module.combat=0.023/0.5/1203@7 total=27 tick.combat=0.022/0.5/1203@7 total=26 module.holsters=0.049/0.6/433@7 total=21 tick.holsters=0.048/0.6/433@7 total=21 cam.handle=0.015/0.7/1203@7 total=19 module.devtools=0.023/0.1/765@7 total=18 tick.devtools=0.022/0.1/765@7 total=17 gp.shoulder=0.014/0.2/1203@7 total=17 gp.weapon_id=0.011/0.1/1203@7 total=13 gp.player=0.010/0.1/1203@7 total=12 gp.cycle=0.008/0.1/1203@7 total=10 gp.state=0.006/0.0/1203@7 total=7 gp.shots=0.003/0.0/1203@7 total=4 module.probe=1.219/1.3/3@7 total=4 cam.find_active=0.003/0.0/1203@7 total=3 cam.aim_key=0.002/0.0/1203@7 total=3 ar.discover=0.003/1.0/765@7 total=2 gp.spread=0.002/0.1/1203@7 total=2 ar.vehicle=0.003/0.0/765@7 total=2 ar.lvs=0.003/0.3/765@7 total=2 ar.reconcile=0.002/0.0/765@7 total=1 ho.carried=0.002/0.0/433@7 total=1 combat.dismember=0.001/0.0/1203@7 total=1 engine.scheduler=0.001/0.0/1203@7 total=1 ho.show=0.002/0.0/433@7 total=1 module.autopilot=0.000/0.0/1203@7 total=0 combat.blood=0.000/0.0/1203@7 total=0 module.weapon-probe=0.000/0.0/1203@7 total=0 gp.feel=0.000/0.0/1203@7 total=0 combat.pending=0.000/0.0/1203@7 total=0 gp.recoil=0.000/0.0/1203@7 total=0 cam.fov=0.001/0.0/114@7 total=0 module.world=0.001/0.0/59@7 total=0
+2026-09-29T05:48:19.215Z [INFO] engine_thread_probe ticks=1203 frame_advanced_during_tick=0 ticks_same_frame=0 ticks_next_frame=1203 ticks_after_skipped_frames=0
+2026-09-29T05:48:19.216Z [INFO] direct_native get_char_health direct=200 shdn=100 match=False direct_us=0.23 shdn_us=27.4
+2026-09-29T05:48:19.706Z [INFO] command source=file:cmd_20260929054819655.cmd line="reload devtools" reply="devtools is built into the engine assembly; use restart (or SHDN ReloadScripts for new engine code)"
+2026-09-29T05:48:20.228Z [INFO] command source=file:cmd_20260929054820034.cmd line="hotreload on" reply="hot reload on: <game>\scripts\LibertyFramework\mods reloads=1 leaked_kb=54 limit_mb=32"
+2026-09-29T05:48:20.497Z [INFO] command source=file:cmd_20260929054820425.cmd line="hotreload off" reply="hot reload off: <game>\scripts\LibertyFramework\mods reloads=1 leaked_kb=54 limit_mb=32"
+2026-09-29T05:48:20.991Z [INFO] command source=file:cmd_20260929054820813.cmd line="clear" reply="cleared 0"

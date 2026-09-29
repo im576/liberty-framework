@@ -1,0 +1,21 @@
+{
+  "scenario": "trunk-review",
+  "status": "FAIL",
+  "summary": "FAIL; steps=34 failed=2 logErrors=0 gameAlive=True",
+  "steps": 34,
+  "failedSteps": [
+    "expect choreography_complete trunk: no new log line in 10 s",
+    "expect arsenal_storage_closed: no new log line in 10 s"
+  ],
+  "screenshots": [
+    "trunk_open.jpg",
+    "trunk_wheel_next_segment.jpg",
+    "trunk_after_store.jpg",
+    "trunk_closed.jpg"
+  ],
+  "logErrors": 0,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:50:53.4598813Z",
+  "finishedUtc": "2026-09-29T05:51:53.8126457Z"
+}

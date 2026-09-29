@@ -1,0 +1,2 @@
+scenario native-texture-review: NEEDS-REVIEW; steps=37 failed=0 logErrors=1 gameAlive=True; report <repo>\results-local\20260928-221840-84d4127\_runs\native-texture-review-20260928-224213
+AUTOPILOT_RESULT <repo>\results-local\20260928-221840-84d4127\_runs\native-texture-review-20260928-224213\result.json

@@ -1,0 +1,15 @@
+{
+  "scenario": "hot-reload",
+  "status": "FAIL",
+  "summary": "FAIL; steps=22 failed=1 logErrors=1 gameAlive=True",
+  "steps": 22,
+  "failedSteps": [
+    "expect selftest_done passed=\\d+ failed=0: no new log line in 120 s"
+  ],
+  "screenshots": [],
+  "logErrors": 1,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:46:11.3172587Z",
+  "finishedUtc": "2026-09-29T05:48:21.2584760Z"
+}

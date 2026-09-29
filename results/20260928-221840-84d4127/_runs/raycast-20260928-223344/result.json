@@ -1,0 +1,18 @@
+{
+  "scenario": "raycast",
+  "status": "FAIL",
+  "summary": "FAIL; steps=40 failed=1 logErrors=0 gameAlive=True",
+  "steps": 40,
+  "failedSteps": [
+    "expect ray dir=forward mask=World\\|Vehicles\\|Objects status=(Clear|Hit kind=World) .*passed=[1-9]: no new log line in 5 s"
+  ],
+  "screenshots": [
+    "vehicle.jpg",
+    "ped.jpg"
+  ],
+  "logErrors": 0,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:40:02.5405897Z",
+  "finishedUtc": "2026-09-29T05:40:34.7259898Z"
+}

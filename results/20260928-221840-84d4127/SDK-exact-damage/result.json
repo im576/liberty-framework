@@ -1,0 +1,13 @@
+{
+  "scenario": "exact-damage",
+  "status": "PASS",
+  "summary": "PASS; steps=17 failed=0 logErrors=0 gameAlive=True",
+  "steps": 17,
+  "failedSteps": [],
+  "screenshots": [],
+  "logErrors": 0,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:44:42.9824410Z",
+  "finishedUtc": "2026-09-29T05:45:56.0514437Z"
+}

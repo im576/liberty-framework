@@ -1,0 +1,13 @@
+{
+  "scenario": "bullet-events",
+  "status": "PASS",
+  "summary": "PASS; steps=13 failed=0 logErrors=0 gameAlive=True",
+  "steps": 13,
+  "failedSteps": [],
+  "screenshots": [],
+  "logErrors": 0,
+  "gameAlive": true,
+  "runnerError": "",
+  "startedUtc": "2026-09-29T05:44:22.6367236Z",
+  "finishedUtc": "2026-09-29T05:44:41.0487148Z"
+}
