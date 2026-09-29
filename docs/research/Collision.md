@@ -38,6 +38,14 @@ Next probe: inspect the WBD dictionary's entry names/hashes and its references t
 those entries to IDE object names and runtime object collision. Choose one small, relevant bounds class and prove a
 byte-for-byte round trip before enabling authored shapes. Do not substitute an arbitrary map WBN for a prop's bounds.
 
+The measured CE `.wbd` root class (`0x00695360`, 309 files) has system pointers at root `+0x04`, `+0x10` and `+0x18` in
+every sampled file; root `+0x0C` is always `1`. The pointed words at `+0x18` begin with valid system pointers, while
+`+0x04` begins with zero followed by opaque words. This does **not** identify a dictionary layout yet. A focused
+structure-only probe should list the first few words, pointer validity and candidate entry counts for a small CE map
+WBD, then compare candidate key words with the existing Jenkins hashes of nearby WDR and IDE names. Record matching
+names and offsets without publishing resource bytes. Only after the relationship is demonstrated should a reader name
+those fields and attempt a round trip. The TBoGT root class has a different vtable and needs separate validation.
+
 ## Plan
 
 1. **Inventory (queued):** `PROBE-collision` (`LibertyContent probe collision`) lists which collision-like resources the

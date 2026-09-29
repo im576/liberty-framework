@@ -9,6 +9,12 @@ structure research is now required before Session 5b. The counts, class roots an
 [`Collision.md`](../research/Collision.md#first-windows-probe-results-verified-offline). Do not enable authored
 collision or mark the borrow experiment passed from this run.
 
+**Next research gate:** inspect a small CE map WBD's candidate key and pointer arrays, and compare candidate keys
+with hashes of nearby WDR and IDE model names. The measured root pointer fields are listed in
+[`Collision.md`](../research/Collision.md). The current `auto` rule cannot select a prop from this installation;
+replace it only after the game's actual collision lookup has evidence. A roundtrip reader/writer for one relevant
+bounds class and an in-game pairing test are required before authored collision work.
+
 Depends on: T-030 (authored collision shapes), T-027 (engine raycast). Session 5 of
 [NEXT_SESSIONS](../workflow/NEXT_SESSIONS.md).
 
