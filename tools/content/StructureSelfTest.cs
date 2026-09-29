@@ -66,7 +66,7 @@ namespace LibertyFramework.Content
                 int measured = DrawableStructureBuilder.BoundsRecords(file, file.Models[0]);
                 t.Check(measured == expected, "records mode " + mode + ": measured " + expected + " for two geometries", measured.ToString());
                 t.Check(DrawableStructureBuilder.BoundsRecords(file, file.Models[1]) == 1, "records mode " + mode + ": one record for one geometry");
-                t.Check(DrawableRoundTrip.Check(RscResource.Parse(SyntheticDrawable.Build(spec).Serialize())).Identical.Count == 1, "records mode " + mode + ": round trip identical");
+                t.Check(DrawableRoundTrip.Check(RscResource.Parse(SyntheticDrawable.Build(spec).Serialize())).Identical.SequenceEqual(new[] { DrawableStructureBuilder.GraphicsOrder.Interleaved, DrawableStructureBuilder.GraphicsOrder.Template }), "records mode " + mode + ": round trip identical");
             }
             SyntheticDrawable.Spec broken = TwoLods();
             broken.BreakFirstRecord = true;
