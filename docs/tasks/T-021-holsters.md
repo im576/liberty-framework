@@ -12,6 +12,7 @@ NPC damage after an accepted `god on`. Front/back are death scenes, left is blac
 respawn. Visual result is FAIL. Repeated SDK invincibility requests now reapply native flags while retaining one
 ownership entry. The scenario reasserts after teleport, checks that entry, and requires a live player before every
 capture. The reason the original flags ceased protecting the player remains unknown; the fix needs Windows proof.
+Cleanup is registered before native application so a partial native failure still belongs to the module's ledger.
 Evidence: `verification-results/results/20260929-121911-6931061/T021-sling-review/`.
 
 ## Requirements
