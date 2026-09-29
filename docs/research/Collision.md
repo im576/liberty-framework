@@ -95,6 +95,18 @@ neither establish allocation boundaries nor provide guaranteed size bounds. Evid
 `verification-results/results/20260929-cb1b81f-wbd-nested/`. Next compare constructor/fixup code using this vtable
 against the measured fields, then test any resulting layout across original resources.
 
+## Empty encrypted archives (2026-09-29)
+
+**VERIFIED OFFLINE header decode:** the five recurring errors are `pc/data/maps/generic/lodcull_j.img`,
+`lodcull_m.img`, `pc/data/maps/interiors/test/interiors.img`, `pc/data/maps/leveldes/levelmap.img`, and
+`TLAD/pc/data/maps/interiors/int_test.img`. Each is 2,048 bytes. Using the existing owner-executable key finder
+and 16-round AES decryptor, Windows decoded all five headers as magic `0xA94E2A52`, version 3, entry count 0
+and table size 0. The reader attempted a zero-length `TransformBlock`, which fails on .NET Framework.
+The zero-block guard and synthetic empty encrypted IMG tests await Windows build and real-file reopening.
+Header-decode evidence was captured by the Windows verification chat in turn
+`01a0ee95-20ab-76b0-9a98-670c0267478f`, command `exec-4a3965b7-ff4a-4813-8e18-87dc053aaba8`.
+This explains the five errors; it does not expand the measured bounds corpus or decode any shape.
+
 ## Plan
 
 1. **Inventory (queued):** `PROBE-collision` (`LibertyContent probe collision`) lists which collision-like resources the

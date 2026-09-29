@@ -140,6 +140,8 @@ namespace LibertyFramework.Finishes
         {
             byte[] result = (byte[])data.Clone();
             int length = data.Length / 16 * 16;
+            // Empty encrypted archives have no table blocks. TransformBlock rejects a zero input count on .NET Framework.
+            if (length == 0) { return result; }
             using (RijndaelManaged aes = new RijndaelManaged())
             {
                 aes.Mode = CipherMode.ECB;

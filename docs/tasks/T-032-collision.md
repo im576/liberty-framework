@@ -36,6 +36,11 @@ Its candidate-target gaps use raw aligned words and can contain false positives;
 bounds. No array stride/count was established. Evidence: `verification-results/results/20260929-cb1b81f-wbd-nested/`.
 The next useful gate is static constructor/resource-fixup analysis for this vtable, cross-checked against originals.
 
+**Empty-archive reader fix:** Windows header decryption established that the five omitted IMG files are encrypted
+v3 archives with zero entries and zero table bytes, not unreadable bounds content. `ImgArchive.Decrypt` now returns
+without calling `TransformBlock` when there are no complete AES blocks. Synthetic encrypted empty-archive tests
+cover the path; content build/self-test and reopening the five originals are pending on Windows.
+
 Depends on: T-030 (authored collision shapes), T-027 (engine raycast). Session 5 of
 [NEXT_SESSIONS](../workflow/NEXT_SESSIONS.md).
 

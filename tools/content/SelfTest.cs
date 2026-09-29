@@ -57,6 +57,7 @@ namespace LibertyFramework.Content
             List<KeyValuePair<string, Action<Runner, string>>> groups = new List<KeyValuePair<string, Action<Runner, string>>>
             {
                 Group("name hash", NameHash),
+                Group("empty encrypted IMG", ImgArchiveSelfTest.Run),
                 Group("dxt1", Dxt1),
                 Group("dxt5", Dxt5),
                 Group("dxt decoder", Decoder),
