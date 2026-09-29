@@ -3,6 +3,11 @@
 Liberty rebuilds the capabilities people use IV-SDK / IV-SDK .NET for, independently and for the CE 1.2.0.59 game.
 Those projects are GPL-3.0 and are not copied (AGENTS.md rule 7). This table tracks capability, not API shape.
 
+**September 28 Windows verification:** the initial 54-check queue exposed regressions and unproven M6 behavior.
+The [run report](../reports/2026-09-28-windows-verification.md) supersedes older “Done” claims for the current
+installed build where a newer check failed. In particular, trunk close and the hot-reload follow-up self-test need
+clean reruns, and M6 collision/LOD is still open.
+
 ## Capability parity
 
 | Capability | Liberty status | Where |
@@ -37,7 +42,7 @@ Those projects are GPL-3.0 and are not copied (AGENTS.md rule 7). This table tra
 | **M3 WorldQuery** | snapshot queries (radius/cone of peds and vehicles), ground/water, perception and visibility; engine raycast/line of sight | layer 1 done (`Liberty.Query`, self-test); layer 2 raycast built (ADR-0008, SDK 1.1: `Raycast`, `HasLineOfSight`; ground and peds verified by the spike), autopilot `raycast` + self-test pending on the installed build (T-027) |
 | **M4 Content pipeline 1** | glTF → IR → validators → WDR/WTD (single page) → IMG; read-back verification; preview renders; Blender add-on v0; autopilot asset scenario | **Done 2026-09-25** (`docs/content/README.md`): the glTF test crate compiles, reads back identical, spawns and renders correctly in game (`asset-review`) |
 | **M5 Developer loop** | per-module hot reload (dev), visual inspector | **Done 2026-09-26**: `hot-reload` scenario (the autopilot reloads itself and its self-test passes 38/38), `inspector-review` |
-| **M6 Content pipeline 2** | native texture dictionaries (T-028, built), then multiple materials/geometries, real LOD0-LOD3, collision, static world objects | per-format round trips against the game's own files, plus scenarios |
+| **M6 Content pipeline 2** | native texture dictionaries (T-028, Windows roundtrip 68/68 compressed), then multiple materials/geometries, real LOD0-LOD3, collision, static world objects | Open: WDR roundtrip differences, no four-LOD source template, collision format and in-game interaction unproven; see run report |
 | **Later (deferred)** | skinned meshes (WDD), fragments (WFT), vehicles, animations (WAD), audio | not started; never block mod work |
 
 ## Development plan while the owner is remote (from 2026-09-26)
