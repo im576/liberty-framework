@@ -45,6 +45,14 @@ copied from the matching source texture; their meaning has not been decoded.
 - Visual review of the published screenshots: the SDK list menu is visible and readable. The sling close-up shows a grayscale death scene with the player on the ground, so it cannot establish the requested weapon placement. The trunk `after_store` and `closed` shots both still show the open radial menu; the log's missing close/choreography events reflect a visible unfinished interaction. These checks need clean reruns after their scenario behavior is corrected.
 - The native crate texture is clearly visible on its side screenshot. The alpha panel's checker and red bar appear on both faces, but its screenshots do not put a contrasting object directly behind the checker. They establish texture rendering, not the intended 64/192 alpha blending; that visual check still needs an overlapping backdrop.
 - The trunk run reported frame intervals around 400–845 ms near the missed Backspace action. Its 250 ms injected key may have fallen between input polls; the scenario now holds it for 1,200 ms. This is a test hypothesis until a focused rerun shows a close event and a closed menu.
+
+**Focused trunk rerun (commit `a61fdfe`):** holding Backspace for 1,200 ms produced the close and choreography-complete
+events. The scenario passed 34/34 steps with no log errors and the wheel is absent in the final screenshot. The
+selection and store screenshots still show the same PISTOLS/Glock 17 slot and “Nothing stored in this slot”; the
+250 ms Right/Left/Space presses did not visibly establish navigation or storage. The trunk lid is partly obscured.
+The scenario now holds those three keys for 1,200 ms and explicitly expects `arsenal_store id=14`; that change needs
+another focused in-game run. Evidence: `verification-results/results/20260929-090327-a61fdfe/`. The verifier restored
+all 42 installed-file actions.
 - The stress scenario logged `teleport_done` with coordinates `(0, 1417044000, 2.136292e27)` immediately before GTAIV.exe exited with an access violation. The log supports a corrupt pavement snap reaching the teleport path; it does not prove the precise source of the corrupt value or exclude other crash causes. A guard now rejects nonfinite or nonlocal snap results and falls back to the configured destination. That guard needs a focused Windows rerun.
 
 **Focused stress rerun (commit `762fd62`):** GTA IV stayed alive and the 25-ped scenario completed all 18 steps with

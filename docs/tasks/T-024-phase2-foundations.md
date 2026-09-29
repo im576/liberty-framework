@@ -1,9 +1,10 @@
 # T-024 — Phase 2 gun feel, storage interaction, and performance baseline
 
-Status: **NEEDS-PLAYTEST**. The September 28 Windows queue ran the trunk review, but it did not complete the closing
-choreography. The `after_store` and `closed` screenshots both show the radial menu still open. The run reported
-400–845 ms frames near the interaction, so the scenario now holds Backspace for 1,200 ms to cover multiple frames;
-that check needs a focused clean rerun. This timing change does not establish whether the interaction itself is sound.
+Status: **NEEDS-PLAYTEST**. The September 29 focused Windows rerun completed the trunk close choreography and passed
+34/34 scripted steps. The wheel visibly closes, but the selection and store screenshots still show the same pistol
+slot with nothing stored, and the trunk lid is partly obscured. The scenario now holds Right, Left and Space for
+1,200 ms, as it already does Backspace, and requires an `arsenal_store id=14` log event. That revised selection/store
+check needs a focused in-game run. Evidence: `verification-results/results/20260929-090327-a61fdfe/`.
 
 ## Changes
 
