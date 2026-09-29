@@ -43,6 +43,7 @@ namespace LibertyFramework.Content
                 if (args.Length >= 1 && args[0] == "wbdtrace") { return WbdTrace.Run(args.Skip(1).ToArray()); }
                 if (args.Length >= 1 && args[0] == "wbdcheck") { return WbdDictionaryCheck.Run(args.Skip(1).ToArray()); }
                 if (args.Length >= 1 && args[0] == "wbdtargets") { return WbdTargetProbe.Run(args.Skip(1).ToArray()); }
+                if (args.Length >= 1 && args[0] == "wbdnested") { return WbdNestedProbe.Run(args.Skip(1).ToArray()); }
                 if (args.Length >= 1 && args[0] == "roundtrip") { return DrawableRoundTrip.Run(args.Skip(1).ToArray()); }
                 Console.WriteLine("usage: LibertyContent sample <dir> <name> | validate <asset.json> [--report <file>] | capabilities | fixtures <dir> |");
                 Console.WriteLine("       build <game> <asset.json> <out> |");
