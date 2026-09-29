@@ -1,0 +1,17 @@
+{
+    "scenario":  "hot-reload",
+    "status":  "PASS",
+    "summary":  "PASS; steps=24 failed=0 logErrors=0 gameAlive=True",
+    "steps":  24,
+    "failedSteps":  [
+
+                    ],
+    "screenshots":  [
+
+                    ],
+    "logErrors":  0,
+    "gameAlive":  true,
+    "runnerError":  "",
+    "startedUtc":  "2026-09-29T19:28:46.6454067Z",
+    "finishedUtc":  "2026-09-29T19:29:14.6870019Z"
+}

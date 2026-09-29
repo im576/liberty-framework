@@ -1,0 +1,139 @@
+Built <repo>\sdk\Liberty.Sdk\bin\Liberty.Sdk.dll from 101 source files
+Built <repo>\src\LibertyFramework\bin\Release\LibertyFramework.net.dll from 183 source files
+SHA256 1D734D22868CA49F726424117E3815A18BC1E8CDDD63C3B488CD90C6610AFE75
+Built mod <repo>\mods\Liberty.Autopilot\bin\Liberty.Autopilot.dll from 4 source files
+Built mod <repo>\mods\Liberty.World\bin\Liberty.World.dll from 3 source files
+Built <repo>\native\LibertyCore\bin\LibertyCore.dll
+SHA256 BFB6F411C1352462564F77E8A3BE202C28F1415343A6990C80236AF43D5D4D98
+ok   both natives verified
+ok   a working native returns its result and out slot
+ok   a faulting native returns 0 with its out slot zeroed
+ok   the fault switches the native off
+ok   the fault names the native and its argument
+ok   a faulted native still answers 0
+ok   a faulted native is not invoked again
+ok   verification cannot switch a faulted native back on
+ok   a new handler (a new lc_init) starts clean
+ok   other natives are unaffected
+natives_test passed
+ok   empty segment is clear after one test
+ok   wall hit, distance 10
+ok   passes two peds, stops at the wall
+ok   excluded hits only: clear
+ok   pass budget exhausted: inconclusive with the last excluded hit
+ok   max_passes 0 still reports an accepted first hit
+ok   ignored self and own vehicle, hits the ped beyond
+ok   ignored vehicle passed twice, wall hit
+ok   walk always advances and ends
+ok   a failed test fails the query
+ok   zero-length ray refused without a test
+ok   non-positive step refused
+ok   object excluded when only peds stop the ray
+ray_walk_test passed
+
+RESULT passed=834 failed=0
+vehicle extras: models=80 extras=295 -> <repo>\staging\phase2\_work\vehicle_extras.json
+weapon icons written=19/19
+selftest rebuilt=49 identical=49
+body meshes=26 skeleton bones=90 fk_error=1.5E-007
+lf_sling_a: vertices=584 triangles=576 loop=1.817 m, 36 KB
+lf_sling_b: vertices=584 triangles=576 loop=1.816 m, 36 KB
+lf_sling.wtd: bm_amb_plank 64x512 DXT1 levels=5
+LibertyModels.img entries=3, lf_models.ide written
+Built <repo>\tools\content\bin\LibertyContent.exe from 69 source files
+  name hash: 4 checks
+  dxt1: 8 checks
+  dxt5: 15 checks
+  dxt decoder: 9 checks
+  mip chain: 21 checks
+  wtd writer: 42 checks
+  wtd multi-page: 11 checks
+  wtd errors: 12 checks
+  native texture: 12 checks
+  native source: 8 checks
+  validator: 17 checks
+  manifest: 13 checks
+  capabilities: 3 checks
+  collision import: 23 checks
+  WBD table reader: 7 checks
+  structure rules: 10 checks
+  world object rules: 15 checks
+  report structure: 6 checks
+  fixture matching: 6 checks
+  structure round trip: 10 checks
+  structure bounds records: 12 checks
+  structure trimming: 15 checks
+  structure compiler: 16 checks
+note: IMG key not found in <home>\AppData\Local\Temp\liberty-structure-f1deadf4\GTAIV.exe; encrypted archives will be reported as errors
+roundtrip: ok drawables=3 eligible=3 multi=2 identical=3 failed=0 orders[Interleaved+Template=1, Interleaved+VerticesFirst+Template=1, VerticesFirst+Template=1] report=<home>\AppData\Local\Temp\liberty-structure-f1deadf4\roundtrip.json
+note: IMG key not found in <home>\AppData\Local\Temp\liberty-structure-f1deadf4\GTAIV.exe; encrypted archives will be reported as errors
+  archive pc/models/cdimages/missing.img: Could not find file '<home>\AppData\Local\Temp\liberty-structure-f1deadf4\pc\models\cdimages\missing.img'.
+roundtrip: FAILED drawables=0 eligible=0 multi=0 identical=0 failed=0 orders[] (no eligible drawable: nothing was proven)
+note: IMG key not found in <home>\AppData\Local\Temp\liberty-structure-f1deadf4\GTAIV.exe; encrypted archives will be reported as errors
+probe drawables written: <home>\AppData\Local\Temp\liberty-structure-f1deadf4\drawables.json
+  structure commands: 9 checks
+  writer choice: 9 checks
+note: IMG key not found in <home>\AppData\Local\Temp\liberty-structure-62a8439f\GTAIV.exe; encrypted archives will be reported as errors
+probe collision written: <home>\AppData\Local\Temp\liberty-structure-62a8439f\collision.json
+  INFO LCC039: collision borrowed at build from */auto: the source prop's own shape, shipped as lf_col_test.wbn (whether the game pairs it with this model is T032-collision-borrow)
+  INFO LCC014: bounds (-0.3, -0.3, 0) .. (0.3, 0.3, 0.6)
+  INFO LCC026: LOD 0: 1 geometry ('crate_wood' 12 triangles, 24 vertices)
+build lf_col_test: ok vertices=24 triangles=12 texture=lf_col_test 256x256 DXT1 levels=7 psnr=37.95dB report=<home>\AppData\Local\Temp\liberty-structure-62a8439f\build\lf_col_test\report.json
+  INFO LCC039: collision borrowed at build from */auto: the source prop's own shape, shipped as lf_col_test.wbn (whether the game pairs it with this model is T032-collision-borrow)
+  INFO LCC014: bounds (-0.3, -0.3, 0) .. (0.3, 0.3, 0.6)
+  INFO LCC026: LOD 0: 1 geometry ('crate_wood' 12 triangles, 24 vertices)
+build lf_col_test: ok vertices=24 triangles=12 texture=lf_col_test 256x256 DXT1 levels=7 psnr=37.95dB report=<home>\AppData\Local\Temp\liberty-structure-62a8439f\build\lf_col_test\report.json
+package LibertyContent.img entries=3, lf_content.ide written
+  INFO LCC014: bounds (-0.3, -0.3, 0) .. (0.3, 0.3, 0.6)
+  INFO LCC026: LOD 0: 1 geometry ('crate_wood' 12 triangles, 24 vertices)
+build lf_col_test: ok vertices=24 triangles=12 texture=lf_col_test 256x256 DXT1 levels=7 psnr=37.95dB report=<home>\AppData\Local\Temp\liberty-structure-62a8439f\build\lf_col_test\report.json
+  collision borrow: 17 checks
+note: IMG key not found in <home>\AppData\Local\Temp\liberty-structure-b36bfcf0\GTAIV.exe; encrypted archives will be reported as errors
+probe bounds written: <home>\AppData\Local\Temp\liberty-structure-b36bfcf0\bounds.json
+note: IMG key not found in <home>\AppData\Local\Temp\liberty-structure-b36bfcf0\GTAIV.exe; encrypted archives will be reported as errors
+probe collision-links written: <home>\AppData\Local\Temp\liberty-structure-b36bfcf0\collision-links.json
+  bounds probe: 9 checks
+  sample asset: 4 checks
+note: IMG key not found in <home>\AppData\Local\Temp\liberty-probe-ffb4fe80\GTAIV.exe; encrypted archives will be reported as errors
+probe drawables written: <home>\AppData\Local\Temp\liberty-probe-ffb4fe80\drawables.json
+note: IMG key not found in <home>\AppData\Local\Temp\liberty-probe-ffb4fe80\GTAIV.exe; encrypted archives will be reported as errors
+probe collision written: <home>\AppData\Local\Temp\liberty-probe-ffb4fe80\collision.json
+ERROR GTAIV.exe not found in <home>\AppData\Local\Temp\liberty-probe-ffb4fe80\missing
+usage: LibertyContent probe drawables|collision|bounds|collision-links --game <game folder> --out <report.json>
+  probes: 11 checks
+selftest: ok passed=354 failed=0
+  INFO LCC039: collision borrowed at build from */auto: the source prop's own shape, shipped as lf_world_wall.wbn (whether the game pairs it with this model is T032-collision-borrow)
+  INFO LCC014: bounds (-1.05, -0.2, 0) .. (1.05, 0.2, 1.1)
+  INFO LCC026: LOD 0: 1 geometry ('lf_world_wall' 60 triangles, 120 vertices)
+  INFO LCC026: LOD 1: 1 geometry ('lf_world_wall' 12 triangles, 24 vertices)
+  INFO LCC025: LOD 1 (12 triangles, 1 material) is validated but not compiled by compiler v1 (compiles LOD 0)
+build lf_world_wall: ok vertices=120 triangles=60 texture=bm_amb_nailgun 256x256 DXT1 levels=7 report=<repo>\staging\phase2\_work\content\lf_world_wall\report.json
+  INFO LCC014: bounds (-0.4, -0.02, 0) .. (0.4, 0.02, 0.8)
+  INFO LCC026: LOD 0: 1 geometry ('alpha_panel' 12 triangles, 24 vertices)
+  WARNING LCC020: material alpha_panel uses alpha mode BLEND; textureMode template writes opaque DXT1, textureMode native writes DXT5 with alpha (whether gta_default draws it translucent is unverified in game)
+build lf_alpha_panel: ok vertices=24 triangles=12 texture=bm_amb_nailgun 128x128 DXT5 levels=6 psnr=45.96dB report=<repo>\staging\phase2\_work\content\lf_alpha_panel\report.json
+  INFO LCC014: bounds (-0.301, -0.301, 0) .. (0.301, 0.301, 0.88)
+  INFO LCC026: LOD 0: 1 geometry ('lf_blender_barrel' 576 triangles, 350 vertices)
+  INFO LCC026: LOD 1: 1 geometry ('lf_blender_barrel' 40 triangles, 44 vertices)
+  INFO LCC025: LOD 1 (40 triangles, 1 material) is validated but not compiled by compiler v1 (compiles LOD 0)
+build lf_blender_barrel: ok vertices=350 triangles=576 texture=bm_amb_nailgun 256x256 DXT1 levels=7 report=<repo>\staging\phase2\_work\content\lf_blender_barrel\report.json
+  INFO LCC039: collision borrowed at build from */auto: the source prop's own shape, shipped as lf_col_crate.wbn (whether the game pairs it with this model is T032-collision-borrow)
+  INFO LCC014: bounds (-0.3, -0.3, 0) .. (0.3, 0.3, 0.6)
+  INFO LCC026: LOD 0: 1 geometry ('crate_wood' 12 triangles, 24 vertices)
+build lf_col_crate: ok vertices=24 triangles=12 texture=bm_amb_nailgun 256x256 DXT1 levels=7 report=<repo>\staging\phase2\_work\content\lf_col_crate\report.json
+  INFO LCC014: bounds (-0.4, -0.4, 0) .. (0.4, 0.4, 3)
+  INFO LCC026: LOD 0: 1 geometry ('lf_lod_post' 188 triangles, 194 vertices)
+  INFO LCC026: LOD 1: 1 geometry ('lf_lod_post' 92 triangles, 98 vertices)
+  INFO LCC026: LOD 2: 1 geometry ('lf_lod_post' 44 triangles, 50 vertices)
+  INFO LCC026: LOD 3: 1 geometry ('lf_lod_post' 20 triangles, 26 vertices)
+build lf_lod_post: ok vertices=194 triangles=188 texture=bm_amb_nailgun 256x256 DXT1 levels=7 psnr=40.94dB report=<repo>\staging\phase2\_work\content\lf_lod_post\report.json
+  INFO LCC014: bounds (-0.3, -0.3, 0) .. (0.3, 0.3, 0.6)
+  INFO LCC026: LOD 0: 1 geometry ('crate_wood' 12 triangles, 24 vertices)
+build lf_native_crate: ok vertices=24 triangles=12 texture=bm_amb_nailgun 256x256 DXT1 levels=7 psnr=38.08dB report=<repo>\staging\phase2\_work\content\lf_native_crate\report.json
+  INFO LCC014: bounds (-0.3, -0.3, 0) .. (0.3, 0.3, 0.6)
+  INFO LCC026: LOD 0: 1 geometry ('crate_wood' 12 triangles, 24 vertices)
+build lf_test_crate: ok vertices=24 triangles=12 texture=bm_amb_nailgun 256x256 DXT1 levels=7 report=<repo>\staging\phase2\_work\content\lf_test_crate\report.json
+package LibertyContent.img entries=14, lf_content.ide written
+Phase 2 staged 42 files in <repo>\staging\phase2
+
+

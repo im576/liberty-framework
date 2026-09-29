@@ -1,0 +1,20 @@
+{
+    "scenario":  "trunk-review",
+    "status":  "PASS",
+    "summary":  "PASS; steps=35 failed=0 logErrors=0 gameAlive=True",
+    "steps":  35,
+    "failedSteps":  [
+
+                    ],
+    "screenshots":  [
+                        "trunk_open.jpg",
+                        "trunk_wheel_next_segment.jpg",
+                        "trunk_after_store.jpg",
+                        "trunk_closed.jpg"
+                    ],
+    "logErrors":  0,
+    "gameAlive":  true,
+    "runnerError":  "",
+    "startedUtc":  "2026-09-29T19:29:45.9212032Z",
+    "finishedUtc":  "2026-09-29T19:30:30.9217361Z"
+}

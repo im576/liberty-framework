@@ -1,0 +1,2 @@
+scenario hot-reload: PASS; steps=24 failed=0 logErrors=0 gameAlive=True; report <repo>\results-local\20260929-121911-6931061\_runs\hot-reload-20260929-122605
+AUTOPILOT_RESULT <repo>\results-local\20260929-121911-6931061\_runs\hot-reload-20260929-122605\result.json
