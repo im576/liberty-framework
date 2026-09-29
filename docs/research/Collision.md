@@ -86,6 +86,15 @@ in `verification-results/results/20260929-d4ebc2f-wbd-targets/`. The next decode
 small number of originals, compare allocation relationships across files, and verify the resulting interpretation
 before using it in a writer.
 
+**Nested-pointer sample (2026-09-29, VERIFIED OFFLINE measurements):** all 2,154 targets of class `0x0069C19C`
+have in-range pointer-like words at the four fields above; the first word reached through `+0xE0` is also an
+in-range system-pointer-like word in every sample. Scans at strides 4–64 found one initial such word there and none
+at the other three pointees. This does not establish an array or count. The scan collects candidate targets from
+every aligned word in the system segment: coincidental data can match the pointer encoding. Its gaps therefore
+neither establish allocation boundaries nor provide guaranteed size bounds. Evidence:
+`verification-results/results/20260929-cb1b81f-wbd-nested/`. Next compare constructor/fixup code using this vtable
+against the measured fields, then test any resulting layout across original resources.
+
 ## Plan
 
 1. **Inventory (queued):** `PROBE-collision` (`LibertyContent probe collision`) lists which collision-like resources the

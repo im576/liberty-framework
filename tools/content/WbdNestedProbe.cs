@@ -30,8 +30,8 @@ namespace LibertyFramework.Content
                 int start = (int)(raw - 0x50000000);
                 if (start < 0 || start + 4 > systemSize) { throw new InvalidDataException("nested field out of range"); }
                 Samples++;
-                // Bound a candidate array by the next system pointer target found in the resource.
-                // This is an upper bound only: unreferenced allocations may intervene.
+                // Sample up to the next target of an aligned pointer-like word. Coincidental data can match the
+                // pointer encoding, so this heuristic is not an allocation bound or a measured object size.
                 int index = Array.BinarySearch(pointerTargets, start);
                 if (index < 0) { index = ~index; }
                 while (index < pointerTargets.Length && pointerTargets[index] <= start) { index++; }
@@ -64,9 +64,9 @@ namespace LibertyFramework.Content
                 }
                 if (Examples.Count < 12) { Examples.Add(new { archive, file, model,
                     parent = "0x" + parent.ToString("X"), field = "0x" + field.ToString("X"),
-                    target = "0x" + start.ToString("X"), nextKnownPointerGap = "0x" + gap.ToString("X") }); }
+                    target = "0x" + start.ToString("X"), nextCandidateTargetGap = "0x" + gap.ToString("X") }); }
             }
-            internal object Report() { return new { samples = Samples, nextKnownPointerGap = NextGap,
+            internal object Report() { return new { samples = Samples, nextCandidateTargetGap = NextGap,
                 firstWordClasses = FirstWord, adjacentSmallIntegers = AdjacentCounts,
                 initialSystemPointerRuns = PointerRuns, examples = Examples }; }
         }
@@ -123,6 +123,7 @@ namespace LibertyFramework.Content
             }
             object report = new { question = "What regularities occur behind four common CE WBD target pointers?",
                 rule = "read-only structure measurements; no shape labels, resource bytes or float values",
+                candidateTargetRule = "all aligned in-range pointer-like words; incidental data may match, so gaps do not establish allocation bounds",
                 resources, entries, fields = stats.ToDictionary(p => "0x" + p.Key.ToString("X"), p => p.Value.Report()),
                 errors, skipped };
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output)));

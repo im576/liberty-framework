@@ -31,6 +31,10 @@ a full resource roundtrip before writing an authored shape.
 most common class, `0x0069C19C`, occurs 2,154 times across 298 CE WBDs and has four consistently present system
 pointer fields at offsets `+0x8C`, `+0xB0`, `+0xD0`, and `+0xE0`. These are structural observations, not decoded
 shape fields or object sizes. Evidence: `verification-results/results/20260929-d4ebc2f-wbd-targets/`.
+The nested probe followed these fields in all 2,154 samples; `+0xE0` consistently reaches another pointer-like word.
+Its candidate-target gaps use raw aligned words and can contain false positives; they are not allocation size
+bounds. No array stride/count was established. Evidence: `verification-results/results/20260929-cb1b81f-wbd-nested/`.
+The next useful gate is static constructor/resource-fixup analysis for this vtable, cross-checked against originals.
 
 Depends on: T-030 (authored collision shapes), T-027 (engine raycast). Session 5 of
 [NEXT_SESSIONS](../workflow/NEXT_SESSIONS.md).
