@@ -139,7 +139,7 @@ namespace LibertyFramework.Content
                     DrawableStructureBuilder.Output rebuilt = DrawableStructureBuilder.Build(file, plan);
                     differences = Compare(original, file, rebuilt);
                     if (graphicsDetails && order == DrawableStructureBuilder.GraphicsOrder.Template && differences.Count > 0)
-                    { outcome.GraphicsLayout = DrawableGraphicsLayout.Describe(original, rebuilt); }
+                    { outcome.GraphicsLayout = DrawableGraphicsLayout.Describe(original, file, rebuilt); }
                     if (rebuilt.Resource.Flags == original.Flags) { outcome.FlagsEqual = true; }
                 }
                 catch (Exception error) { differences = new List<string> { "error " + Short(error.Message) }; }

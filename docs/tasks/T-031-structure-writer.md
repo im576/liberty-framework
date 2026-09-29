@@ -29,6 +29,9 @@ ranges report only counts of zero, 0xCD and other bytes; their meaning is not as
 mutation checks that repacking stays a failure and the leading range is identified. Run the queued roundtrip on
 `pc/data/maps/east/bronx_e.img` first, then use its measured gaps and page shifts to choose the next placement test.
 This diagnostic changes no writer allocation policy and awaits the Windows build/self-test/probe.
+It also records the known skeleton/embedded-dictionary presence flags, since `StructureCompiler.Match` refuses
+those templates while the broader builder roundtrip currently includes them. Any eligibility change must retain
+the original counts and explain the compiler's actual supported scope.
 
 Depends on: T-030 (authoring side), T-028 (native texture dictionaries). Session 4 of
 [NEXT_SESSIONS](../workflow/NEXT_SESSIONS.md).

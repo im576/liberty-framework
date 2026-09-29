@@ -16,7 +16,7 @@ namespace LibertyFramework.Content
             internal string Kind;
         }
 
-        internal static Dictionary<string, object> Describe(RscResource source, DrawableStructureBuilder.Output rebuilt)
+        internal static Dictionary<string, object> Describe(RscResource source, DrawableFile file, DrawableStructureBuilder.Output rebuilt)
         {
             List<BufferRange> buffers = new List<BufferRange>();
             int index = 0;
@@ -46,6 +46,7 @@ namespace LibertyFramework.Content
             if (coveredEnd < source.GraphicsSize) { gaps.Add(Gap(source, coveredEnd, source.GraphicsSize - coveredEnd)); }
             return new Dictionary<string, object> {
                 { "source", Header(source) }, { "rebuilt", Header(rebuilt.Resource) },
+                { "hasSkeleton", file.Skeleton != 0 }, { "hasEmbeddedTextureDictionary", file.EmbeddedTextures != 0 },
                 { "buffers", ranges }, { "unmodeledSourceRanges", gaps },
                 { "rule", "ranges and aggregate byte classes only; unmodeled ranges are not assumed to be padding" }
             };
