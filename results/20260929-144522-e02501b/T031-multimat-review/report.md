@@ -1,0 +1,51 @@
+# Scenario multimat-review
+
+- Result: CRASH
+- Steps: 13, failed: 1
+- Game alive at end: False
+- Log errors during run: 0
+
+## Failed steps
+- expect "autopilot_prop handle=\d+ model=lf_fx_multimat" 15 => EXCEPTION game exited while waiting
+
+## Steps
+- launch: engine booted on attempt 3
+- await-alive 60000 => waiting for live player
+- expect autopilot_player_ready: OK 2026-09-29T21:59:55.330Z [INFO] [autopilot] autopilot_player_ready
+- god on => invincible True
+- wanted 0 => wanted 0
+- goto east_park => Teleporting to Algonquin East Park Street
+- expect teleport_done id=east_park: OK 2026-09-29T22:00:02.103Z [INFO] teleport_done id=east_park final=-64.4,674.8,15.5
+- wait 4000 ms
+- god on => invincible True
+- alive => player alive health=100
+- time 13 0 => time 13:00
+- weather 1 => weather 1
+- spawnprop lf_fx_multimat 2.5 0 => spawning prop lf_fx_multimat
+- FAILED: expect "autopilot_prop handle=\d+ model=lf_fx_multimat" 15 => EXCEPTION game exited while waiting
+- game exited; scenario aborted
+
+## Errors
+
+## Log
+    ﻿2026-09-29T05:54:53.784Z [INFO] [autopilot] event PedDamaged handle=2 100->100 bone=0x36A1 by_player=False weapon=15 exact=True type=Bullet amount=60.0 health_lost=0.0 armour_lost=0.0 attacker=6916 vehicle=0 killed=False hit=True at=(-64.256, 674.821, 14.998) dir=(-0.675, -0.738, -0.014)
+    2026-09-29T21:59:55.310Z [INFO] command source=file:cmd_20260929215955120.cmd line="await-alive 60000" reply="waiting for live player"
+    2026-09-29T21:59:55.330Z [INFO] [autopilot] autopilot_player_ready
+    2026-09-29T21:59:55.802Z [INFO] command source=file:cmd_20260929215955571.cmd line="god on" reply="invincible True"
+    2026-09-29T21:59:56.056Z [INFO] command source=file:cmd_20260929215955956.cmd line="wanted 0" reply="wanted 0"
+    2026-09-29T21:59:56.565Z [INFO] teleport_stage id=east_park stage=move begin
+    2026-09-29T21:59:56.569Z [INFO] teleport_stage id=east_park stage=move elapsed_ms=2
+    2026-09-29T21:59:56.570Z [INFO] teleport_stage id=east_park stage=request_collision begin
+    2026-09-29T21:59:56.576Z [INFO] teleport_stage id=east_park stage=request_collision elapsed_ms=5
+    2026-09-29T21:59:56.577Z [INFO] teleport_stage id=east_park stage=load_scene begin
+    2026-09-29T21:59:59.753Z [INFO] teleport_stage id=east_park stage=load_scene elapsed_ms=3176
+    2026-09-29T21:59:59.753Z [INFO] teleport_start id=east_park target=-64.8,663.4,15 snap=pavement
+    2026-09-29T21:59:59.754Z [INFO] command source=file:cmd_20260929215956353.cmd line="goto east_park" reply="Teleporting to Algonquin East Park Street"
+    2026-09-29T22:00:02.103Z [INFO] teleport_done id=east_park final=-64.4,674.8,15.5
+    2026-09-29T22:00:02.461Z [INFO] T-001 heartbeat probe_label=default
+    2026-09-29T22:00:05.152Z [INFO] [world] world_object spawned name=test_wall model=lf_world_wall handle=16644 at=(-64.8, 671.4, 13.558) heading=90
+    2026-09-29T22:00:06.618Z [INFO] command source=file:cmd_20260929220006535.cmd line="god on" reply="invincible True"
+    2026-09-29T22:00:07.134Z [INFO] command source=file:cmd_20260929220006922.cmd line="alive" reply="player alive health=100"
+    2026-09-29T22:00:07.383Z [INFO] command source=file:cmd_20260929220007298.cmd line="time 13 0" reply="time 13:00"
+    2026-09-29T22:00:07.907Z [INFO] command source=file:cmd_20260929220007680.cmd line="weather 1" reply="weather 1"
+    2026-09-29T22:00:08.162Z [INFO] command source=file:cmd_20260929220008072.cmd line="spawnprop lf_fx_multimat 2.5 0" reply="spawning prop lf_fx_multimat"

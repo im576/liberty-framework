@@ -1,0 +1,17 @@
+{
+    "scenario":  "multimat-review",
+    "status":  "CRASH",
+    "summary":  "CRASH; steps=13 failed=1 logErrors=0 gameAlive=False",
+    "steps":  13,
+    "failedSteps":  [
+                        "expect \"autopilot_prop handle=\\d+ model=lf_fx_multimat\" 15 =\u003e EXCEPTION game exited while waiting"
+                    ],
+    "screenshots":  [
+
+                    ],
+    "logErrors":  0,
+    "gameAlive":  false,
+    "runnerError":  "",
+    "startedUtc":  "2026-09-29T21:59:55.0679278Z",
+    "finishedUtc":  "2026-09-29T22:00:19.2103082Z"
+}

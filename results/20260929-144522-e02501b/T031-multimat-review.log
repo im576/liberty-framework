@@ -1,0 +1,4 @@
+attempt 1 failed (seen=False); relaunching
+attempt 2 failed (seen=True); relaunching
+scenario multimat-review: CRASH; steps=13 failed=1 logErrors=0 gameAlive=False; report <repo>\results-local\20260929-144522-e02501b\_runs\multimat-review-20260929-145152
+AUTOPILOT_RESULT <repo>\results-local\20260929-144522-e02501b\_runs\multimat-review-20260929-145152\result.json

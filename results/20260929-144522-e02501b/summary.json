@@ -1,0 +1,100 @@
+{
+    "schemaVersion":  1,
+    "run":  {
+                "id":  "20260929-144522-e02501b",
+                "commit":  "e02501b",
+                "branch":  "codex/pr7-windows-check",
+                "mode":  "full",
+                "startedUtc":  "2026-09-29T21:45:22.7250242Z",
+                "finishedUtc":  "2026-09-29T22:06:39.2547222Z",
+                "game":  {
+                             "version":  "1.2.0.59",
+                             "exeSha256":  "08759A5516F9837920EA504436236BBAB89D0826A8E4D04FF106345177B5345D",
+                             "fusionFix":  "5.0.1",
+                             "scriptHookDotNetSha256":  "AB8E7652A53A82C00018EB85D6FB5DB7F47197513F16B5959771B4CA2D8D4D3B"
+                         },
+                "install":  "restored from <game>\\scripts\\LibertyFramework\\backups\\phase2-20260929-145151",
+                "installBackup":  "<game>\\scripts\\LibertyFramework\\backups\\phase2-20260929-145151",
+                "selected":  [
+                                 "LOOP-package-install",
+                                 "T031-multimat-report",
+                                 "T031-multimat-review",
+                                 "SDK-hot-reload",
+                                 "T021-sling-review"
+                             ]
+            },
+    "counts":  {
+                   "PASS":  3,
+                   "NEEDS-REVIEW":  1,
+                   "FAIL":  0,
+                   "CRASH":  1,
+                   "ERROR":  0,
+                   "NOT-RUN":  0
+               },
+    "checks":  [
+                   {
+                       "id":  "LOOP-package-install",
+                       "task":  "LOOP",
+                       "kind":  "pc-offline",
+                       "title":  "Package and install the develop build (backup kept)",
+                       "status":  "PASS",
+                       "detail":  "installed; backup <game>\\scripts\\LibertyFramework\\backups\\phase2-20260929-145151",
+                       "evidence":  [
+                                        "LOOP-package-install.log",
+                                        "LOOP-package-install-install.log"
+                                    ],
+                       "seconds":  389
+                   },
+                   {
+                       "id":  "T031-multimat-report",
+                       "task":  "T-031",
+                       "kind":  "pc-offline",
+                       "title":  "Two-material fixture compiles with automatic structure selection",
+                       "status":  "PASS",
+                       "detail":  "all expected fields match",
+                       "evidence":  [
+                                        "T031-multimat-report"
+                                    ],
+                       "seconds":  0
+                   },
+                   {
+                       "id":  "T031-multimat-review",
+                       "task":  "T-031",
+                       "kind":  "scenario",
+                       "title":  "Two geometries and material textures drawn in game",
+                       "status":  "CRASH",
+                       "detail":  "CRASH; steps=13 failed=1 logErrors=0 gameAlive=False",
+                       "evidence":  [
+                                        "T031-multimat-review.log",
+                                        "T031-multimat-review"
+                                    ],
+                       "seconds":  510
+                   },
+                   {
+                       "id":  "SDK-hot-reload",
+                       "task":  "M5",
+                       "kind":  "scenario",
+                       "title":  "Hot reload regression",
+                       "status":  "PASS",
+                       "detail":  "PASS; steps=24 failed=0 logErrors=0 gameAlive=True",
+                       "evidence":  [
+                                        "SDK-hot-reload.log",
+                                        "SDK-hot-reload"
+                                    ],
+                       "seconds":  337
+                   },
+                   {
+                       "id":  "T021-sling-review",
+                       "task":  "T-021",
+                       "kind":  "scenario",
+                       "title":  "Slings and slung long guns",
+                       "status":  "NEEDS-REVIEW",
+                       "detail":  "passed; screenshots to judge: front, back, left, right, back_close",
+                       "evidence":  [
+                                        "T021-sling-review.log",
+                                        "T021-sling-review"
+                                    ],
+                       "seconds":  35
+                   }
+               ]
+}

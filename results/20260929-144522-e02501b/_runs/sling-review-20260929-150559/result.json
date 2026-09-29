@@ -1,0 +1,21 @@
+{
+    "scenario":  "sling-review",
+    "status":  "PASS",
+    "summary":  "PASS; steps=45 failed=0 logErrors=0 gameAlive=True",
+    "steps":  45,
+    "failedSteps":  [
+
+                    ],
+    "screenshots":  [
+                        "front.jpg",
+                        "back.jpg",
+                        "left.jpg",
+                        "right.jpg",
+                        "back_close.jpg"
+                    ],
+    "logErrors":  0,
+    "gameAlive":  true,
+    "runnerError":  "",
+    "startedUtc":  "2026-09-29T22:05:59.4841320Z",
+    "finishedUtc":  "2026-09-29T22:06:33.6908538Z"
+}

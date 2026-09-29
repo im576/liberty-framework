@@ -1,0 +1,2 @@
+scenario sling-review: PASS; steps=45 failed=0 logErrors=0 gameAlive=True; report <repo>\results-local\20260929-144522-e02501b\_runs\sling-review-20260929-150559
+AUTOPILOT_RESULT <repo>\results-local\20260929-144522-e02501b\_runs\sling-review-20260929-150559\result.json

@@ -1,0 +1,31 @@
+{
+  "asset": "lf_fx_multimat",
+  "status": "ok",
+  "type": "prop",
+  "writer": { "drawable": "structure", "reason": "auto: LOD 0 has 2 materials", "textureMode": "native" },
+  "source": "<repo>\\content\\props\\lf_fx_multimat\\lf_fx_multimat.gltf",
+  "template": "pc/models/cdimages/weapons.img/amb_nailgun",
+  "capabilities": { "version": "v2-structure", "maxMaterialsPerLod": 16, "compiledLodLevels": 4, "lodSlots": 4, "maxVerticesPerGeometry": 65535, "shaders": ["gta_default"], "assetTypes": ["prop", "object"], "collisionShapes": [], "lodDistances": true, "collisionBorrow": true },
+  "metadata": {"liberty_blender": "5.2.2 LTS", "liberty_exporter": "0.6.0", "liberty_source": "unsaved"},
+  "meshes": 2, "materials": 2, "lods": 1,
+  "structure": {
+    "lods": [
+      { "level": 0, "triangles": 12, "vertices": 24,
+        "geometries": [
+          { "material": "fx_crate", "shader": "gta_default", "textured": true, "alphaMode": "OPAQUE", "meshes": 1, "triangles": 10, "vertices": 20 },
+          { "material": "fx_lid", "shader": "gta_default", "textured": false, "alphaMode": "OPAQUE", "meshes": 1, "triangles": 2, "vertices": 4 } ] } ],
+    "lodDistancesMeters": null,
+    "collision": []
+  },
+  "compiled": { "vertices": 24, "triangles": 12, "texture": "lf_fx_multimat", "textureSize": [64, 64], "textureMode": "native", "textureFormat": "DXT1", "textureLevels": 5, "textureQuality": { "psnrRgbDb": 40.89, "maxErrorRgb": 5 }, "flippedWinding": false, "drawableBytes": 929,
+    "drawableWriter": "structure", "templateUsed": "pc/data/maps/east/bronx_e.img/big_fence2_bxe", "lodCount": 1,
+    "geometries": [{ "lod": 0, "material": 0, "texture": "lf_fx_multimat", "vertices": 20, "triangles": 10 }, { "lod": 0, "material": 1, "texture": "lf_fx_multimat_1", "vertices": 4, "triangles": 2 }],
+    "textures": [{ "name": "lf_fx_multimat", "size": [64, 64], "format": "DXT1", "levels": 5, "psnrRgbDb": 40.89 }, { "name": "lf_fx_multimat_1", "size": [4, 4], "format": "DXT1", "levels": 1, "psnrRgbDb": 42.11 }],
+    "lodDistancesWritten": null, "dictionaryBytes": 1552,
+    "notes": ["template search: pc/data/maps/east/bronx_e.img/big_fence2_bxe fits (244 drawables examined)", "no texture: 4x4 filled with the base colour", "structure writer: template pc/data/maps/east/bronx_e.img/big_fence2_bxe, LOD 0: 2 geometries, 2 textures"] },
+  "issues": [
+    { "severity": "info", "code": "LCC014", "message": "bounds (-0.3, -0.3, 0) .. (0.3, 0.3, 0.6)" },
+    { "severity": "info", "code": "LCC026", "message": "LOD 0: 2 geometries ('fx_crate' 10 triangles, 20 vertices, 'fx_lid' 2 triangles, 4 vertices)" }
+  ],
+  "readback": []
+}
