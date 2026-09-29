@@ -48,6 +48,12 @@ the five originals with zero archive errors. No authored collision has been enab
 Depends on: T-030 (authored collision shapes), T-027 (engine raycast). Session 5 of
 [NEXT_SESSIONS](../workflow/NEXT_SESSIONS.md).
 
+**Next static probe:** the pinned NY bounds declarations linked in [Collision.md](../research/Collision.md#external-layout-lead--hypothesis-pending-ce-probe)
+provide candidate counts, array strides and field meanings matching the four common-class pointers. Probe all common
+class targets for type byte, pointer/count spans and polygon index ranges; retain every invalid case. The candidate
+layout is HYPOTHESIS until owner-file checks establish each field. No reference implementation is imported and no
+authored collision output is enabled.
+
 ## What can and cannot be done before the game's files are read
 
 [Collision.md](../research/Collision.md) sets the order:

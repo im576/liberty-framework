@@ -20,6 +20,32 @@ inventory and field measurements remain valid; their runtime interpretation is U
 Evidence: `verification-results/results/20260929-t032-classword-pe/report.md` records the executable hash,
 PE section ranges and direct-reference scan limits.
 
+## External layout lead — HYPOTHESIS, pending CE probe
+
+Pinned CitizenFX reference: [`phBound.h`](https://github.com/citizenfx/fivem/blob/e60d29ac2d6e894e20ba78d5fdf3c190d976fd2a/code/components/rage-formats-x/include/phBound.h)
+contains explicit NY branches. Its 32-bit declarations suggest the following candidate fields, independently inferred
+for a read-only measurement; these are not CE offsets approved for hooks or writers:
+
+| Relative field | Candidate interpretation | Required owner-file evidence |
+|---|---|---|
+| +0x04 byte | bound kind (Geometry 4, BVH 10, Composite 12) | distribution per serialized class |
+| +0x8C pointer | polygon records | count/span validity and index ranges |
+| +0x90 / +0xA0 float4 | vertex quantum / offset | finite components, reconstructed bounds |
+| +0xB0 pointer | quantized vertices, six bytes each | count/span validity |
+| +0xC8 / +0xCC u32 | vertex / polygon counts | valid arrays across samples |
+| +0xD0 pointer, +0xD8 byte | materials / count | range and per-polygon consistency |
+| +0xE0 pointer | BVH | tree structure and leaf coverage |
+
+The NY polygon candidate is 32 bytes, with signed 16-bit vertex indices beginning at +0x10; its fourth index's role
+remains unknown. The four candidate pointer offsets coincide with the common class's measured fields. Coincidence
+supports probing, not semantic verification.
+
+[`NYBounds.cpp`](https://github.com/citizenfx/fivem/blob/e60d29ac2d6e894e20ba78d5fdf3c190d976fd2a/code/components/rage-formats-x/tests/NYBounds.cpp)
+asserts 128-byte base bounds, 224-byte geometry and 0x58-byte BVH in its NY test configuration. That test uses a
+particular WBN example, not this owner's CE corpus. The first probe must retain invalid counts and test every common
+class target; report numeric metadata only. No reference code is incorporated in Liberty. A reader/writer still needs
+independent field evidence, complete original-resource roundtrip and runtime pairing.
+
 ## Claims
 
 | # | Claim | Label | Source |
