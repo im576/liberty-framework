@@ -17,6 +17,9 @@ Vanilla+ language, shown when relevant instead of permanently covering the scree
 - Liberty elements: health and armour (show on change, damage, low health, combat), ammo clip/reserve (while armed or
   reloading), wanted level (while wanted), interaction prompts (reuse the IV-style help box from the Arsenal).
   Fade in/out timings in config.
+- Owner-directed placement (ART-007 r2): current-weapon silhouette and ammo, with compact health and armour indicators
+  directly below, are anchored at the **top right**. Keep the vanilla radar at the **bottom left**. Preserve the
+  understated GTA IV-era visual language with original artwork; menu panels must not overlap either HUD anchor.
 - Coexists with the reticle (T-043) and weapon wheel (T-045); one shared palette/typography definition in config that
   Slice C will finalise.
 - Controller and keyboard/mouse prompts show the right glyphs/keys.
@@ -27,6 +30,8 @@ Vanilla+ language, shown when relevant instead of permanently covering the scree
   damage, low health, armed, reload, wanted, prompt; screenshots).
 - UI draw ≤ 0.5 ms average (all Liberty UI combined); smallest text ≥ 14 px at 720p virtual.
 - Switching the HUD off in config restores the complete vanilla HUD.
+- Screenshots verify the compact weapon/ammo/health/armour group is at the **top right**, the radar remains
+  **bottom left**, and the weapon wheel/trunk panel does not cover either group. No lower-corner HUD relocation.
 
 ## Human test steps
 

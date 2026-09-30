@@ -110,7 +110,7 @@ Functional first; Slice C gives these screens their final unified look.
 | Combat effects | Extend / Spike | Per-weapon muzzle flash, smoke, casings, sparks, night muzzle light. Material-specific impacts (concrete, wood, glass, metal): **Spike R2** |
 | Weapon wheel | Ready/Extend | Liberty.Ui radial menu; shows the physical loadout (carried slots, equipped, ammo, category, finish), not every owned gun |
 | Trunk UI | Ready/Extend | Loadout ↔ vehicle storage, carried vs stored, ammo, capacity. Moving a gun makes it visibly no longer carried |
-| Basic Liberty HUD | Extend | Our own health/armour/ammo/wanted/prompts drawn by Liberty.Ui, contextual (shown when relevant). IV's radar stays until **Spike R5** |
+| Basic Liberty HUD | Extend | Our own health/armour/ammo/wanted/prompts drawn by Liberty.Ui, contextual (shown when relevant). Owner-directed layout: current weapon, ammo, health and armour form a compact **top-right** group, in the GTA IV-era visual language; do not relocate them to a lower corner. IV's radar stays **bottom-left** until **Spike R5**. Art reference: ART-007 r2 |
 
 ### P1 / Slice B — Visual Remaster & Atmosphere
 
