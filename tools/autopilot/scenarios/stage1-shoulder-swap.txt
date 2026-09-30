@@ -26,6 +26,9 @@ wait 8000
 time 13 0
 world
 expect "world objects=1 spawned=1 test_wall:handle \d+" 10
+# Positive control: the engine ray does hit the test wall's collision proxies from here (so a Clear below means clear, not blind).
+world ray test_wall
+expect "world_ray name=test_wall .*status=Hit" 10
 # The test wall runs along X through (-64.8, 671.4); standing south of it facing east puts it on the left, facing west on the right.
 tp -64.8 671 16.5 270
 wait 2500
