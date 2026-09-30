@@ -13,6 +13,10 @@ overrides older docs.
 - **Stage 1 lane A (T-041 arsenal, T-042 gunplay, T-043 reticles) is done, awaiting playtest (2026-09-30):** six catalog weapons (Glock 17, .44 AutoMag, Street Sweeper, Remington 1100, IMI Uzi, AK-47) on vanilla ids with Liberty profiles behind a catalog gate (`config/weapon-catalog.json` tiers, availability and stats; `stage1Weapons` switch; restricted ids 13/15/16/17 stay vanilla), class targets with a model simulation, range/swap/aim/reticle test commands, per-class reticles (cross, bracket, ring) over the old crosshair. In game: all four lane scenarios pass (run 20260930-134422-33e503f); reticle drawing costs about 0.10 ms per frame (proposal 0.1 ms); delivered first-shot spread sits inside the written cone for pistols, shotguns and the AK. Open: P90/MP5 slot, availability levers without script control (research/WeaponAvailability.md), feel and look sign-off.
 - **Then Phase 3: reverse engineering** toward FiveM-level control (authored collision, structure writing, deeper hooks).
 
+## Stage 1 progress
+
+- **T-044 physical loadout (lane B), NEEDS-PLAYTEST (2026-09-30):** 1 sidearm + 2 long guns (SMGs slung), ammo caps, holster props react in the event frame, outfit classes; in game: 100 vehicle enter/exit cycles with 0 orphaned props, 50 death cycles with 0 lost owned weapons (a death with no known safehouse now goes to an unassigned stash), save/load state identical. Card: [T-044](tasks/T-044-stage1-physical-weapons.md).
+
 ## Cleanup and fixes in progress
 
 **Done 2026-09-29/30 (Claude):**

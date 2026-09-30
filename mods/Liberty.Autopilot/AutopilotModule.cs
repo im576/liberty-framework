@@ -571,6 +571,23 @@ namespace Liberty.Autopilot
             // The game sometimes frees a scripted camera before it is positioned ("object doesn't exist anymore"); one such
             // failure must not stop this module (its release would drop god mode mid-scenario), so the camera is retried.
             bool placed = false;
+            // One camera is moved from shot to shot: creating and destroying dozens of them in one scenario eventually made
+            // the game refuse new ones (T-044 outfit review, 51 shots).
+            if (!camera.IsNone)
+            {
+                try
+                {
+                    Liberty.Cameras.SetPosition(camera, position);
+                    Liberty.Cameras.PointAt(camera, target + new Vec3(0, 0, 0.3f));
+                    Liberty.Cameras.Activate(camera);
+                    placed = true;
+                }
+                catch (Exception error)
+                {
+                    Liberty.Log.Info(this, "autopilot_camera_reuse_failed error=" + error.Message);
+                    CameraOff();
+                }
+            }
             for (int attempt = 1; attempt <= 4 && !placed; attempt++)
             {
                 try
