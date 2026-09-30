@@ -173,6 +173,53 @@
                                         ]
                        }
                    ],
+    "outfitClasses":  [
+                          {
+                              "id":  "bulky",
+                              "component":  1,
+                              "drawables":  [
+                                                0,
+                                                1,
+                                                2,
+                                                3,
+                                                8,
+                                                9,
+                                                14
+                                            ]
+                          }
+                      ],
+    "loadoutPlacements":  [
+                              {
+                                  "slot":  "LongGun1",
+                                  "outfit":  "bulky",
+                                  "bone":  "Spine2",
+                                  "position":  [
+                                                   -0.16,
+                                                   -0.17,
+                                                   0
+                                               ],
+                                  "rotation":  [
+                                                   0,
+                                                   90,
+                                                   0
+                                               ]
+                              },
+                              {
+                                  "slot":  "LongGun2",
+                                  "outfit":  "bulky",
+                                  "bone":  "Spine2",
+                                  "position":  [
+                                                   0.16,
+                                                   -0.17,
+                                                   0
+                                               ],
+                                  "rotation":  [
+                                                   0,
+                                                   -90,
+                                                   0
+                                               ]
+                              }
+                          ],
     "slings":  [
                    {
                        "slot":  "LongGun1",

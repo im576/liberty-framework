@@ -47,6 +47,7 @@ namespace LibertyFramework.Arsenal.Holsters
         private bool cutscenePlaying;
         private bool syncing;
         private int lastHeldWeapon = -1;
+        private readonly Dictionary<int, int[]> savedOutfit = new Dictionary<int, int[]>();
 
         public HolsterController()
         {
@@ -67,7 +68,7 @@ namespace LibertyFramework.Arsenal.Holsters
             Engine.Events.Subscribe<global::Liberty.Sdk.Events.PlayerEnteredVehicle>(this, e => SyncNow());
             Engine.Events.Subscribe<global::Liberty.Sdk.Events.PlayerExitedVehicle>(this, e => SyncNow());
             Engine.Events.Subscribe<global::Liberty.Sdk.Events.CutsceneChanged>(this, e => { cutscenePlaying = e.Playing; SyncNow(); });
-            Engine.Commands.Register(this, "holsters", "holsters [status] | outfits | outfit <component> <drawable> [texture] - visible-loadout state and outfit test", HolsterCommand);
+            Engine.Commands.Register(this, "holsters", "holsters [status] | outfits | outfit <component> <drawable> [texture] | outfit restore - visible-loadout state and outfit test", HolsterCommand);
         }
 
         // A stopped module must not leave props on Niko (mod-off runs and restarts stop it mid-session).
@@ -222,19 +223,33 @@ namespace LibertyFramework.Arsenal.Holsters
                 string line = "holsters_outfit_components model=" + ped.Model.Hash.ToString("X8") + " drawable/texture " + string.Join(" ", parts.ToArray());
                 return line;
             }
+            if (verb == "outfit" && args.Length == 2 && args[1] == "restore")
+            {
+                if (ped == null) { return "no player"; }
+                foreach (KeyValuePair<int, int[]> saved in savedOutfit) { Function.Call("SET_CHAR_COMPONENT_VARIATION", ped, saved.Key, saved.Value[0], saved.Value[1]); }
+                int restored = savedOutfit.Count;
+                savedOutfit.Clear();
+                lastOutfitReadTicks = 0;
+                return "holsters_outfit_restored components=" + restored;
+            }
             if (verb == "outfit")
             {
                 int component, drawable, texture = 0;
                 if (ped == null || args.Length < 3 || !int.TryParse(args[1], out component) || !int.TryParse(args[2], out drawable) ||
                     (args.Length > 3 && !int.TryParse(args[3], out texture)))
                 { return "holsters outfit <component> <drawable> [texture]"; }
+                // The first change of a component remembers what Niko wore so "holsters outfit restore" can put it back.
+                if (!savedOutfit.ContainsKey(component))
+                {
+                    savedOutfit[component] = new int[] { Function.Call<int>("GET_CHAR_DRAWABLE_VARIATION", ped, component), Function.Call<int>("GET_CHAR_TEXTURE_VARIATION", ped, component) };
+                }
                 Function.Call("SET_CHAR_COMPONENT_VARIATION", ped, component, drawable, texture);
                 int now = Function.Call<int>("GET_CHAR_DRAWABLE_VARIATION", ped, component);
                 string line = "holsters_outfit_set component=" + component + " requested=" + drawable + " now=" + now;
                 lastOutfitReadTicks = 0;
                 return line;
             }
-            if (verb != "status") { return "holsters [status] | outfits | outfit <component> <drawable> [texture]"; }
+            if (verb != "status") { return "holsters [status] | outfits | outfit <component> <drawable> [texture] | outfit restore"; }
             int existing = 0;
             List<string> slots = new List<string>();
             foreach (KeyValuePair<BodySlot, GTA.Object> pair in props)

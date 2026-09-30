@@ -23,6 +23,7 @@ namespace LibertyFramework.Models
                 if (args.Length == 5 && args[0] == "export") { return Export(args[1], args[2], args[3], args[4]); }
                 if (args.Length == 3 && args[0] == "selftest") { return SelfTest(args[1], args[2]); }
                 if (args.Length == 4 && args[0] == "sling") { return Sling(args[1], args[2], args[3]); }
+                if (args.Length == 5 && args[0] == "outfits") { return Outfits(args[1], args[2], args[3], args[4]); }
                 Console.WriteLine("usage: LibertyModel survey <game> <img...> | export <game> <img> <model> <out.obj>");
                 return 2;
             }
@@ -170,6 +171,48 @@ namespace LibertyFramework.Models
             ImgArchive.Write(Path.Combine(output, "LibertyModels.img"), files);
             File.WriteAllText(Path.Combine(output, "lf_models.ide"), ide + "end\n" + amat + "end\n");
             Console.WriteLine("LibertyModels.img entries=" + files.Count + ", lf_models.ide written");
+            return 0;
+        }
+
+        // T-044: how far each body drawable (an outfit piece) stands out from the skeleton around one bone, in the bone's
+        // height band: metres behind the bone (where a slung gun sits), in front of it and to its sides. Read-only; prints
+        // structure numbers only. A bulky coat stands out further than a shirt, which is what holster outfit classes group.
+        //   LibertyModel outfits <game> <archive> <model name prefix> <bone name>
+        private static int Outfits(string game, string archivePath, string prefix, string boneName)
+        {
+            ArchiveSource archive = ArchiveSource.Open(game, archivePath);
+            List<string> names = archive.Names.Where(n => n.EndsWith(".wdr", StringComparison.OrdinalIgnoreCase) &&
+                n.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)).OrderBy(n => n).ToList();
+            if (names.Count == 0) { throw new InvalidDataException("no models with prefix " + prefix); }
+            DrawableFile skeletonFile = new DrawableFile(RscResource.Parse(archive.Extract(names[0]), true));
+            Skeleton skeleton = new Skeleton(skeletonFile.View, skeletonFile.Skeleton);
+            Vec3 bone = skeleton.Bones[Bone(skeleton, boneName)].Position;
+            Console.WriteLine("bone " + boneName + " at model-space " + bone.X.ToString("0.000") + " " + bone.Y.ToString("0.000") + " " + bone.Z.ToString("0.000"));
+            Console.WriteLine("model behind_m front_m half_width_m vertices (torso slab: +-0.12 m around the bone height, +-0.18 m either side of it)");
+            foreach (string name in names)
+            {
+                double back = double.NaN, front = double.NaN, side = 0;
+                int count = 0;
+                DrawableFile file = new DrawableFile(RscResource.Parse(archive.Extract(name), true));
+                double minY = double.MaxValue, maxY = double.MinValue;
+                foreach (DrawableModel model in file.Models.Where(m => m.Lod == 0))
+                {
+                    foreach (DrawableGeometry g in model.Geometries)
+                    {
+                        Mesh mesh = file.ReadMesh(g);
+                        foreach (Mesh.Vertex v in mesh.Vertices)
+                        {
+                            if (Math.Abs(v.Z - bone.Z) > 0.12 || Math.Abs(v.X - bone.X) > 0.18) { continue; }
+                            count++;
+                            if (v.Y < minY) { minY = v.Y; }
+                            if (v.Y > maxY) { maxY = v.Y; }
+                            side = Math.Max(side, Math.Abs(v.X - bone.X));
+                        }
+                    }
+                }
+                if (count > 0) { back = bone.Y - minY; front = maxY - bone.Y; }
+                Console.WriteLine(name + " " + back.ToString("0.000") + " " + front.ToString("0.000") + " " + side.ToString("0.000") + " " + count);
+            }
             return 0;
         }
 

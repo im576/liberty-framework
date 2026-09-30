@@ -40,6 +40,16 @@ expectmarked "arsenal_ammo_capped id=14 category=Rifle from=\d+ to=240" 15
 wait 1500
 cycle-weapons 4 7 14 12
 expect "autopilot_weapon_cycles_done switches=12 failures=0 " 120
+# Cost of the three modules with the full loadout carried and nothing else going on (budget: gunplay + arsenal + holsters <= 1.5 ms).
+select 7
+wait 2000
+label loadout_idle
+framestats
+costs
+wait 20000
+perf
+costs
+framestats
 hud off
 select 7
 wait 1500
