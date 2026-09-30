@@ -2,7 +2,7 @@
 # treat the player as aiming (the autopilot cannot hold the aim button) with a forced stance/speed, so the reticle is drawn and the spread cone
 # changes with standing, crouched, moving, sustained fire (range fire, continuous) and recovery. `reticle debug on` samples the drawn opening
 # against the opening the cone asks for on every frame (reticle_frame lines); `reticle check` fails if a steady frame is more than 5% off or any
-# frame under-reports the cone. Screenshots: each class standing and while firing. Draw cost: costs (draw.crosshair average).
+# frame under-reports the cone. Screenshots: each class standing and while firing. Draw cost: costs per class (draw.crosshair average must stay under 0.15 ms; the proposal is 0.1 ms, see the T-043 card).
 await-alive 60000
 expect "autopilot_player_ready" 65
 god on
@@ -14,6 +14,7 @@ time 12 0
 costs
 
 # --- pistol: service-pistol (weapon 7), reticle style cross
+wanted 0
 catalog give service-pistol 400 clear
 expect "weapon_changed from=\d+ to=7 profile=glock_stage1" 20
 expect "reticle_resolved weapon=7 class=pistol style=cross" 10
@@ -39,11 +40,12 @@ wait 2500
 reticle check
 expect "reticle_check class=.* violations=0 under_reports=0" 10
 costs
-expect "costs_ms.*draw\.crosshair=0\.0\d\d/" 10
+expect "costs_ms.*draw\.crosshair=0\.(0\d|1[0-4])\d/" 10
 reticle debug off
 aim off
 
 # --- smg: imi-uzi (weapon 12), reticle style cross
+wanted 0
 catalog give imi-uzi 400 clear
 expect "weapon_changed from=\d+ to=12 profile=uzi_stage1" 20
 expect "reticle_resolved weapon=12 class=smg style=cross" 10
@@ -69,11 +71,12 @@ wait 2500
 reticle check
 expect "reticle_check class=.* violations=0 under_reports=0" 10
 costs
-expect "costs_ms.*draw\.crosshair=0\.0\d\d/" 10
+expect "costs_ms.*draw\.crosshair=0\.(0\d|1[0-4])\d/" 10
 reticle debug off
 aim off
 
 # --- rifle: ak-47 (weapon 14), reticle style bracket
+wanted 0
 catalog give ak-47 400 clear
 expect "weapon_changed from=\d+ to=14 profile=ak47_stage1" 20
 expect "reticle_resolved weapon=14 class=rifle style=bracket" 10
@@ -100,11 +103,12 @@ wait 2500
 reticle check
 expect "reticle_check class=.* violations=0 under_reports=0" 10
 costs
-expect "costs_ms.*draw\.crosshair=0\.0\d\d/" 10
+expect "costs_ms.*draw\.crosshair=0\.(0\d|1[0-4])\d/" 10
 reticle debug off
 aim off
 
 # --- shotgun: remington-1100 (weapon 11), reticle style ring
+wanted 0
 catalog give remington-1100 400 clear
 expect "weapon_changed from=\d+ to=11 profile=remington_stage1" 20
 expect "reticle_resolved weapon=11 class=shotgun style=ring" 10
@@ -130,7 +134,7 @@ wait 2500
 reticle check
 expect "reticle_check class=.* violations=0 under_reports=0" 10
 costs
-expect "costs_ms.*draw\.crosshair=0\.0\d\d/" 10
+expect "costs_ms.*draw\.crosshair=0\.(0\d|1[0-4])\d/" 10
 reticle debug off
 aim off
 

@@ -1393,7 +1393,7 @@
           "reticle_rifle_standing": "AK-47: four corner brackets (crop marks) around a small square",
           "reticle_rifle_moving": "AK-47 with a forced 4 m/s speed: the brackets are wider than standing",
           "reticle_rifle_firing": "AK-47 during sustained fire: the brackets are far apart",
-          "reticle_shotgun_standing": "Remington: a ring of eight dots, clearly wider than any cross",
+          "reticle_shotgun_standing": "Remington: a ring of six dots, clearly wider than any cross",
           "reticle_shotgun_firing": "Remington right after shots: the ring is not smaller than standing"
         }
       },
