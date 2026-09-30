@@ -24,6 +24,7 @@ catalog offer 99999 1.0 little-jacob
 expect "catalog_offer money=99999 progress=1.0 offered=6" 20
 
 # --- 7 Glock 17 (pistol, common)
+wanted 0
 spawn 1 15 0
 expect "autopilot_spawned count=1" 30
 catalog give service-pistol 200 clear
@@ -36,6 +37,7 @@ expect "gunplay_state weapon=7 profile=glock_stage1" 15
 clear
 
 # --- 9 .44 AutoMag (pistol, less common)
+wanted 0
 spawn 1 15 0
 expect "autopilot_spawned count=1" 30
 catalog give combat-pistol 200 clear
@@ -48,6 +50,7 @@ expect "gunplay_state weapon=9 profile=automag_stage1" 15
 clear
 
 # --- 10 Street Sweeper (shotgun, less common)
+wanted 0
 spawn 1 15 0
 expect "autopilot_spawned count=1" 30
 catalog give street-sweeper 200 clear
@@ -60,6 +63,7 @@ expect "gunplay_state weapon=10 profile=sweeper_stage1" 15
 clear
 
 # --- 11 Remington 1100 (shotgun, common)
+wanted 0
 spawn 1 15 0
 expect "autopilot_spawned count=1" 30
 catalog give remington-1100 200 clear
@@ -72,6 +76,7 @@ expect "gunplay_state weapon=11 profile=remington_stage1" 15
 clear
 
 # --- 12 IMI Uzi (SMG, common)
+wanted 0
 spawn 1 15 0
 expect "autopilot_spawned count=1" 30
 catalog give imi-uzi 200 clear
@@ -84,6 +89,7 @@ expect "gunplay_state weapon=12 profile=uzi_stage1" 15
 clear
 
 # --- 14 AK-47 (rifle, rare)
+wanted 0
 spawn 1 15 0
 expect "autopilot_spawned count=1" 30
 catalog give ak-47 200 clear
