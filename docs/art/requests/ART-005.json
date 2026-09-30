@@ -1,7 +1,7 @@
 {
   "id": "ART-005",
   "title": "Muzzle flash side atlas",
-  "status": "requested",
+  "status": "generated",
   "priority": "P0",
   "kind": "decal",
   "prompt": "A 2 by 2 atlas of four realistic firearm muzzle flashes seen from the side, each in its own quarter on a fully transparent background, the (invisible) muzzle at the left edge of each quarter and the flash pointing right. Short, sharp, photographic flash: white-hot core, orange-yellow petals, faint grey smoke wisps; each variant a different shape and size (small to large). No gun, no hands, no background, no glow halo filling the cell, no stylisation.",
@@ -62,6 +62,49 @@
         {
           "path": "art/generated/ART-005/r1/art_005_2.png",
           "sha256": "9d34dc34306739e42ed4f72cda66d04cf6ac6f6a4db1e65796521ad3b97b83db",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ]
+    },
+    {
+      "at": "2026-09-30T06:46:43+00:00",
+      "event": "generated",
+      "revision": 1,
+      "by": "Codex",
+      "notes": "Two fresh generations (_3,_4) from current prompt plus verbatim constraints; four candidates registered with original alpha. _1: long broad flame plumes, dense smoke, origins inset from cell left edges. _2: thick smoke and large flames rather than short sharp flashes, inset origins. _3: dense smoke, oversized lower-right plume nearly fills cell, origins inset. _4: broad grey smoke and long flame shapes, upper-left origin notably inset and larger variants have tight right margins. No post-processing or review decision; model version/seeds unavailable.",
+      "model": "OpenAI image_gen built-in (model/version not exposed)",
+      "prompt": "A 2 by 2 atlas of four realistic firearm muzzle flashes seen from the side, each in its own quarter on a fully transparent background, the (invisible) muzzle at the left edge of each quarter and the flash pointing right. Short, sharp, photographic flash: white-hot core, orange-yellow petals, faint grey smoke wisps; each variant a different shape and size (small to large). No gun, no hands, no background, no glow halo filling the cell, no stylisation.",
+      "files": [
+        {
+          "path": "art/generated/ART-005/r1/art_005_1.png",
+          "sha256": "2511fe5516930c33844f51b77c26f7149cf22ef00b1e1f0a1c52e7a5b2989b75",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-005/r1/art_005_2.png",
+          "sha256": "9d34dc34306739e42ed4f72cda66d04cf6ac6f6a4db1e65796521ad3b97b83db",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-005/r1/art_005_3.png",
+          "sha256": "ccc00a197867fa0ed4d057d9751bdd537f03e8554b1719d88f8f92b6588a111c",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-005/r1/art_005_4.png",
+          "sha256": "31b22b8852a5e515e44bea19fcd8f5e4c4d89cf5bb30d9b9c952483f4574bb10",
           "width": 1254,
           "height": 1254,
           "mode": "RGBA",
