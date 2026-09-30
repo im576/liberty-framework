@@ -1,6 +1,8 @@
 # T-031 — Content compiler structure writer: several geometries, shaders and LODs
 
 Status: **NEEDS-PLAYTEST** (queued: `T031-drawable-roundtrip`, `T031-lod-post-report`, `T031-lod-review`, and the
+
+**In-game bisect (2026-09-29/30, closes this card's open question):** the structure writer's output was spawned in game in three runs. One geometry on a weapon template (`lf_st_weap`) and on the map template `big_fence2_bxe` (`lf_st_map`): **spawn and render**. Two geometries: **crash at spawn** (access violation at a non-module address) with two textures (`lf_fx_multimat`, before and after the solid fill went from 4x4 to 16x16) and with one shared texture (`lf_st_2tex`). So textures, the 4x4 fill and the dictionary writer are cleared; the fault is in writing a second geometry into a template (shader mapping, per-geometry structures or a field the round trip does not cover). Not pursued further: **decision, use one material per model (texture atlas)**; the compiler warns on more than one geometry. The bisect scenario `structure-bisect` is the repro for Phase 3. Materials with identical pixels now share one texture. Multi-LOD is dropped (all sampled game drawables use LOD slot 0). The byte-exact round trip is no longer a release gate.
 extended `PROBE-drawables`)
 
 **Windows result (2026-09-28):** `T031-drawable-roundtrip` failed: 5,254 of 12,688 eligible WDRs rebuilt identically;

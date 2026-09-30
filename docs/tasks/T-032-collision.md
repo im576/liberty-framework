@@ -1,6 +1,8 @@
 # T-032 — Collision: layout research tooling and borrowed collision
 
 Status: **NEEDS-PLAYTEST** (queued: `PROBE-collision`, `PROBE-bounds-layout`, `T032-wbdcheck`, `T032-collision-borrow-report`,
+
+**Decision (2026-09-30): authored collision moves to Phase 3. Fallback verified in game: collision proxies.** `proxy-probe` spawned 24 compact vanilla props with collision on and cast the engine ray at each: 14 stop it (`sexboxdyn2/3` 0.6 m cubes, `BM_ammobox_04a`, `CJ_cola_BOX`/`_2`, `corpbarrier1` 1.8x0.6x0.8, `pris_swtbox` 1.6x1.5x1.3, `KM_MnyMetLocker`, `GB_jukebox01`, `ab_dinerTable`, `LD_RCtable_`, `ab_DinerBench`, `KM_CBTables`, `ah_sintable`), 10 do not (`nkn2_greybox`, `Lev5_HrlRm1crate`, `ET_bollardHydrant`, `BM_baricebox`, `Ret4_GunAmmoBox1`, `bank_safes01`, `XJBM_fridge01`, `Pub_3McFridge`, `ware_table`, `mp_hall_table`). `Liberty.World` places such props hidden (`SET_OBJECT_VISIBLE`) under a custom object via `collisionProxies` in `config/world/objects.json`; the test wall's ray hits the hidden proxy (`T033-world-objects`). Player and vehicle collision use the same physics bounds but are not measured separately. Limits: proxies are fixed shapes (tile several to cover a box), models cannot be scaled.
 `T032-collision-borrow`; `T033-world-walk` covers the player)
 
 **Windows result (2026-09-28):** the probes ran, but `propCandidates` was empty on this game install. Automatic

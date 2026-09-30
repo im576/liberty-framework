@@ -179,6 +179,11 @@ namespace LibertyFramework.Content
                 for (int lod = 0; lod < manifest.LodDistancesMeters.Length && lod < plan.LodDistances.Length; lod++) { plan.LodDistances[lod] = manifest.LodDistancesMeters[lod]; }
                 result.LodDistancesWritten = plan.LodDistances;
             }
+            if (meshes.Values.Any(l => l.Count > 1))
+            {
+                result.Notes.Add("WARNING: more than one geometry per LOD. Every in-game spawn of such a drawable crashed the game (T-031: two materials, " +
+                    "two textures or one shared, 2026-09-29); one geometry per LOD spawned fine. Use one material (a texture atlas) until this is fixed.");
+            }
             result.Drawable = DrawableStructureBuilder.Build(template.File, plan).Resource.Serialize();
 
             TextureDictionaryPrototype prototype = Prototype(game, manifest, result.Notes);

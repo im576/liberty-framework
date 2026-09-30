@@ -6,14 +6,26 @@ overrides older docs.
 
 ## Current phase
 
-- **Phase 1 = Liberty Engine (ending).** Native core, SDK, content pipeline and hot reload exist; the remaining work is
-  cleanup and fixing the open items below.
+- **Phase 1 = Liberty Engine: complete (2026-09-30), except the items under "Known limits".** Native core, SDK, content
+  pipeline and hot reload are verified in game. The full regression pass is queued as the first task of the mod phase.
 - **Next: the first complex mod** built on the engine (uses the SDK and content compiler, gameplay code stays in `mods/`).
 - **Then Phase 3: reverse engineering** toward FiveM-level control (authored collision, structure writing, deeper hooks).
 
 ## Cleanup and fixes in progress
 
-_(lead fills this in)_
+**Done 2026-09-29/30 (Claude):**
+- Repo cleanup: Phase 1/2 docs, task cards and one-shot scripts archived (`docs/archive`, `tools/archive`); side branches tagged `archive/*` and removed.
+- Stalls: both were the blocking `LOAD_SCENE` inside teleport (4-18 s measured). The watchdog now tolerates it (`teleportBlockingWindowMilliseconds`), the time is logged (`player_teleport load_scene_ms`), and the autopilot allows 90 s for `goto`.
+- Collision without authored bounds: **collision proxies** (`IProps.SetVisible`, `collisionProxies` in `config/world/objects.json`). In game, 14 of 24 tested vanilla props stop the engine ray (`proxy-probe`), and the test wall is solid to the ray through two hidden `corpbarrier1` props. Player and vehicle collision are inferred from the shared physics bounds, not measured.
+- Structure writer bisect (in game, 3 runs): one geometry on a weapon template and on a map template spawn fine; two geometries crash at spawn whether they use two textures or one shared. Textures and dictionaries are cleared; the fault is in writing a second geometry (T-031).
+
+## Known limits (carried into the mod phase)
+
+- **One material per model.** Use a texture atlas. Multi-geometry structure drawables crash the game; the compiler warns. Repro: scenario `structure-bisect`, assets `lf_st_2tex`, `lf_fx_multimat`.
+- **No authored collision, no LOD slots 1-3** (Phase 3). Use collision proxies; LOD via separate models or IDE draw distance.
+- **Full regression pass not yet run on this build.** First task of the mod phase: `./tools/verify-local.ps1 -NoManual` (about 1 hour).
+- Startup crash before the ASI loads (Rockstar `MTLX.DLL`, about 1 launch in 3): environmental; the autopilot relaunches.
+- Episodes (TLAD/TBoGT) are not covered by design.
 
 ## Engine components
 
@@ -24,12 +36,12 @@ _(lead fills this in)_
 | Hot reload | Working | Passed 24/24 in the last focused run |
 | Autopilot (`tools/autopilot`) | Working | Claude-driven scenarios launch the game and capture evidence; SDK selftest 49/49 |
 | Content compiler v1 | Working | Single-material drawables plus native textures ([docs/content](content/README.md)) |
-| Structure writer, multi-material | Opt-in, under investigation | First in-game two-material spawn crashed at run e02501b |
-| Collision | Deferred | Authored collision moves to Phase 3. Research: WBD hash-to-target table decoded, shapes not decoded ([research/Collision.md](research/Collision.md)) |
-| World objects (`mods/Liberty.World`) | Partly verified | Placement works; collision via a proxy prop is being verified |
+| Structure writer | Single geometry works in game; multi-geometry crashes | Bisected 2026-09-29, see Known limits |
+| Collision | Proxy props work; authored deferred | Authored collision moves to Phase 3. Research: WBD hash-to-target table decoded, shapes not decoded ([research/Collision.md](research/Collision.md)) |
+| World objects (`mods/Liberty.World`) | Verified in game | Placement plus collision proxies (ray hit on the test wall) |
 | LOD | Decided | All 22,812 sampled game drawables use only LOD slot 0, so multi-LOD-in-drawable is dropped |
 | Gameplay reference modules | Owner-verified (Phase 1) | Gunplay, Arsenal, holsters/slings, trunk, gore; kept as reference mods, not the focus |
-| Performance | Being fixed | `engine.frame` about 2.5 ms; two stalls being fixed ([research/Performance.md](research/Performance.md)) |
+| Performance | Stalls fixed (declared), engine cost low | `engine.frame` about 2.5 ms; teleport blocks 4-18 s by design of `LOAD_SCENE` ([research/Performance.md](research/Performance.md)) |
 
 ## Key decisions (`docs/architecture/decisions/`)
 

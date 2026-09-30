@@ -10,6 +10,8 @@ clean reruns, and M6 collision/LOD is still open.
 
 ## Capability parity
 
+**2026-09-30 status:** M1-M5 done. M6 is closed for Phase 1 with limits: single-material drawables + native textures work; multi-geometry crashes (use an atlas); no LOD slots 1-3; collision via proxy props (authored collision is Phase 3). Episode coverage is dropped by decision. The full regression pass is the first task of the mod phase.
+
 | Capability | Liberty status | Where |
 |---|---|---|
 | **Scripting and modules** | | |

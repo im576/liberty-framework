@@ -1,6 +1,8 @@
 # Collision (bounds) in GTA IV: what is known
 
 **Status (2026-09-26): research not started in this project.** Nothing below is verified here. It sets out what to
+
+**Update (2026-09-30):** authored collision is Phase 3 work. The interim fallback, hidden vanilla props as collision proxies, is verified in game against the engine ray (14 of 24 tested props are solid); see [T-032](../tasks/T-032-collision.md).
 establish before any collision writer is built (roadmap: content compiler step 3, `docs/content/README.md`).
 
 **Update (2026-09-28):** the first Windows inventory and bounds-layout probes ran. See
