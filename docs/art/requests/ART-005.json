@@ -1,7 +1,7 @@
 {
   "id": "ART-005",
   "title": "Muzzle flash side atlas",
-  "status": "generated",
+  "status": "prepped",
   "priority": "P0",
   "kind": "decal",
   "prompt": "A 2 by 2 atlas of four realistic firearm muzzle flashes seen from the side, each in its own quarter on a fully transparent background, the (invisible) muzzle at the left edge of each quarter and the flash pointing right. Short, sharp, photographic flash: white-hot core, orange-yellow petals, faint grey smoke wisps; each variant a different shape and size (small to large). No gun, no hands, no background, no glow halo filling the cell, no stylisation.",
@@ -111,6 +111,42 @@
           "hasAlpha": true
         }
       ]
+    },
+    {
+      "at": "2026-09-30T06:53:54+00:00",
+      "event": "approved",
+      "revision": 1,
+      "by": "claude",
+      "notes": "short realistic side flashes, small to large; pistol/SMG/rifle range",
+      "files": [
+        {
+          "path": "art/approved/ART-005/r1_art_005_1.png",
+          "sha256": "2511fe5516930c33844f51b77c26f7149cf22ef00b1e1f0a1c52e7a5b2989b75",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ],
+      "technicalIssues": null
+    },
+    {
+      "at": "2026-09-30T06:53:58+00:00",
+      "event": "prepped",
+      "revision": 1,
+      "by": "claude",
+      "notes": "final 1024x1024 RGBA; mipmaps and DXT compression are done by the content compiler",
+      "files": [
+        {
+          "path": "art/approved/ART-005/prepped/art_005.png",
+          "sha256": "66ad3ed4cf5e96d24d5ca06ff3bd7b5031ee905cdd9cf7311574b67661c4a735",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ]
     }
-  ]
+  ],
+  "approvedFile": "art/approved/ART-005/r1_art_005_1.png"
 }

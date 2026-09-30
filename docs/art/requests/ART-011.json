@@ -1,7 +1,7 @@
 {
   "id": "ART-011",
   "title": "Grimy storefront glass",
-  "status": "requested",
+  "status": "prepped",
   "priority": "P1",
   "kind": "texture",
   "prompt": "Seamless tileable overlay texture of dirt on a shop window, straight on, on a fully transparent background: faint grey-brown grime concentrated toward the bottom, dried rain streaks running down, smeared wipe marks, a few spots. Mostly transparent in the upper half. No reflections, no background, no text or stickers, must tile seamlessly in both directions.",
@@ -68,6 +68,69 @@
           "hasAlpha": true
         }
       ]
+    },
+    {
+      "at": "2026-09-30T06:53:52+00:00",
+      "event": "generated",
+      "revision": 1,
+      "by": "claude",
+      "notes": "registered the retained r1 candidates the image agent had blocked; reviewed by Claude",
+      "model": null,
+      "prompt": "Seamless tileable overlay texture of dirt on a shop window, straight on, on a fully transparent background: faint grey-brown grime concentrated toward the bottom, dried rain streaks running down, smeared wipe marks, a few spots. Mostly transparent in the upper half. No reflections, no background, no text or stickers, must tile seamlessly in both directions.",
+      "files": [
+        {
+          "path": "art/generated/ART-011/r1/art_011_1.png",
+          "sha256": "fd616785737c616b6c349c4184ae5c56b7101bb2e489c55371bfc5dee5fcba10",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-011/r1/art_011_2.png",
+          "sha256": "a000fef977fdb43ec2a8c5517a4ef9c0be69b52d8c92b3a3c2bc5881a0550f7c",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ]
+    },
+    {
+      "at": "2026-09-30T06:53:56+00:00",
+      "event": "approved",
+      "revision": 1,
+      "by": "claude",
+      "notes": "subtle grime concentrated low, mostly transparent top; real alpha",
+      "files": [
+        {
+          "path": "art/approved/ART-011/r1_art_011_1.png",
+          "sha256": "fd616785737c616b6c349c4184ae5c56b7101bb2e489c55371bfc5dee5fcba10",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ],
+      "technicalIssues": null
+    },
+    {
+      "at": "2026-09-30T06:53:59+00:00",
+      "event": "prepped",
+      "revision": 1,
+      "by": "claude",
+      "notes": "final 512x512 RGBA; mipmaps and DXT compression are done by the content compiler",
+      "files": [
+        {
+          "path": "art/approved/ART-011/prepped/art_011.png",
+          "sha256": "7a950bcd386f9384dd01aa68dd2c28109d6fcfbe88178341c259fbc83641260f",
+          "width": 512,
+          "height": 512,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ]
     }
-  ]
+  ],
+  "approvedFile": "art/approved/ART-011/r1_art_011_1.png"
 }

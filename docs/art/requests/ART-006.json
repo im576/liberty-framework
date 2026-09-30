@@ -1,7 +1,7 @@
 {
   "id": "ART-006",
   "title": "Muzzle flash front frames",
-  "status": "generated",
+  "status": "prepped",
   "priority": "P0",
   "kind": "decal",
   "prompt": "A 2 by 2 atlas of four realistic firearm muzzle flashes seen from directly in front, each centred in its quarter on a fully transparent background: a bright white-hot centre with four to six irregular orange-yellow star petals and faint smoke, different petal counts and sizes per variant. Photographic, short and sharp, no gun, no background, no neon or cartoon shapes.",
@@ -111,6 +111,42 @@
           "hasAlpha": true
         }
       ]
+    },
+    {
+      "at": "2026-09-30T06:53:54+00:00",
+      "event": "approved",
+      "revision": 1,
+      "by": "claude",
+      "notes": "least regular petals of the four; closest to a real front flash",
+      "files": [
+        {
+          "path": "art/approved/ART-006/r1_art_006_4.png",
+          "sha256": "e2a3452c1a2cecfce266d864736ac18ee67ed38c1882ca9eaf6e8d691ea2b5ed",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ],
+      "technicalIssues": null
+    },
+    {
+      "at": "2026-09-30T06:53:58+00:00",
+      "event": "prepped",
+      "revision": 1,
+      "by": "claude",
+      "notes": "final 512x512 RGBA; mipmaps and DXT compression are done by the content compiler",
+      "files": [
+        {
+          "path": "art/approved/ART-006/prepped/art_006.png",
+          "sha256": "2d2f98b54871b9f3800ab944150bdb40b80ca6d66ff65ef8e73bf298be26baa5",
+          "width": 512,
+          "height": 512,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ]
     }
-  ]
+  ],
+  "approvedFile": "art/approved/ART-006/r1_art_006_4.png"
 }

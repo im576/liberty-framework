@@ -1,7 +1,7 @@
 {
   "id": "ART-004",
   "title": "Bullet entry mark decals",
-  "status": "generated",
+  "status": "prepped",
   "priority": "P0",
   "kind": "decal",
   "prompt": "A 2 by 2 atlas of four small realistic bullet entry marks on dark fabric-coloured stains, seen straight on, each centred in its quarter on a fully transparent background: a small dark hole with a torn edge and a soaked blood stain spreading around it, varying size and stain shape. Restrained and forensic, no exposed flesh or gore detail beyond the blood stain. Photographic, no lighting, no shadows.",
@@ -111,6 +111,42 @@
           "hasAlpha": true
         }
       ]
+    },
+    {
+      "at": "2026-09-30T06:53:54+00:00",
+      "event": "approved",
+      "revision": 1,
+      "by": "claude",
+      "notes": "four entry marks on fabric, varied size, restrained",
+      "files": [
+        {
+          "path": "art/approved/ART-004/r1_art_004_2.png",
+          "sha256": "4f4df2cd29c14c21eba718cf2aa5413cee5d4f282fec48fcd4e8fbd41b4a7028",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ],
+      "technicalIssues": null
+    },
+    {
+      "at": "2026-09-30T06:53:57+00:00",
+      "event": "prepped",
+      "revision": 1,
+      "by": "claude",
+      "notes": "final 512x512 RGBA; mipmaps and DXT compression are done by the content compiler",
+      "files": [
+        {
+          "path": "art/approved/ART-004/prepped/art_004.png",
+          "sha256": "9f17180fd598ae6dcdb421f6c6d8e5cbedccb37a9eec301cb6203b7d1cb751e4",
+          "width": 512,
+          "height": 512,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ]
     }
-  ]
+  ],
+  "approvedFile": "art/approved/ART-004/r1_art_004_2.png"
 }

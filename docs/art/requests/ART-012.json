@@ -1,7 +1,7 @@
 {
   "id": "ART-012",
   "title": "Liberty icon family exploration",
-  "status": "generated",
+  "status": "approved",
   "priority": "P1",
   "kind": "concept",
   "prompt": "Icon family exploration sheet for a gritty 2008 crime game remaster: a 6 by 4 grid of simple monochrome icons on a dark charcoal background: side-view weapon silhouettes (compact pistol, revolver, submachine gun, pump shotgun, assault rifle, bat, knife, grenade), and utility icons (health cross, armour vest, ammo box, car trunk, safehouse, phone, cash, wanted star). Consistent line weight, sharp purposeful shapes, off-white on dark with one muted amber accent colour used sparingly. Utilitarian and industrial, no glossy or 3D effects, no text, not GTA V icons.",
@@ -68,6 +68,25 @@
           "hasAlpha": false
         }
       ]
+    },
+    {
+      "at": "2026-09-30T06:53:56+00:00",
+      "event": "approved",
+      "revision": 1,
+      "by": "claude",
+      "notes": "consistent family incl. trunk car and utility icons; reference for the Slice C icon family",
+      "files": [
+        {
+          "path": "art/approved/ART-012/r1_art_012_2.png",
+          "sha256": "0966d71a56bd2f99a0e4913469fe97dc3abaec955037d3da258be080264a52c2",
+          "width": 1536,
+          "height": 1024,
+          "mode": "RGB",
+          "hasAlpha": false
+        }
+      ],
+      "technicalIssues": null
     }
-  ]
+  ],
+  "approvedFile": "art/approved/ART-012/r1_art_012_2.png"
 }

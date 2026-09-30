@@ -1,7 +1,7 @@
 {
   "id": "ART-001",
   "title": "Reticle reference sheet",
-  "status": "generated",
+  "status": "approved",
   "priority": "P0",
   "kind": "concept",
   "prompt": "Design reference sheet of six video-game aiming reticles, arranged in a 3 by 2 grid on a plain very dark charcoal background, flat 2D, orthographic, evenly spaced, each reticle centred in its cell. 1: pistol, a small precise reticle of four short thin ticks around a tiny gap. 2: submachine gun, a wider reticle of four slightly longer broken ticks set further apart. 3: assault rifle, a tight structured reticle with short ticks and small corner brackets. 4: shotgun, a wide circle made of eight small dots suggesting a pellet spread. 5: precision rifle from the hip, a single small dot. 6: heavy weapon, a short horizontal bar with two small side ticks. All lines thin, off-white (#E6E6E6) with a one-pixel near-black outline, one small muted amber (#C8822A) accent element on reticle 3 only. Restrained, gritty, readable, utilitarian, like a late-2000s console crime game remastered today. No glow, no neon, no sci-fi, no text.",
@@ -68,6 +68,25 @@
           "hasAlpha": false
         }
       ]
+    },
+    {
+      "at": "2026-09-30T06:53:53+00:00",
+      "event": "approved",
+      "revision": 1,
+      "by": "claude",
+      "notes": "clean six-reticle sheet, amber accent on the rifle reticle only; reference for T-043",
+      "files": [
+        {
+          "path": "art/approved/ART-001/r1_art_001_2.png",
+          "sha256": "dcb6676386a8031098ce5471274db79add9941b51ab18c1aa6125bd22b2d1406",
+          "width": 1536,
+          "height": 1024,
+          "mode": "RGB",
+          "hasAlpha": false
+        }
+      ],
+      "technicalIssues": null
     }
-  ]
+  ],
+  "approvedFile": "art/approved/ART-001/r1_art_001_2.png"
 }

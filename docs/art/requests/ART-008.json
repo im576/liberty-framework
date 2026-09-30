@@ -1,7 +1,7 @@
 {
   "id": "ART-008",
   "title": "Hove Beach remaster mood target",
-  "status": "generated",
+  "status": "approved",
   "priority": "P1",
   "kind": "concept",
   "prompt": "Street-level photograph of a fictional working-class seaside immigrant neighbourhood in a cold New York-like city, 2008: a wide avenue under an elevated steel subway line on riveted columns, wet asphalt reflecting warm storefront lights, rows of small shops with weathered awnings and hand-painted signs whose lettering is illegible, four-storey brick apartment buildings with fire escapes, grime, graffiti tags on the columns, a few parked mid-2000s sedans, sparse pedestrians in dark winter coats. Heavy overcast late afternoon, light drizzle, cold grey-blue daylight against warm yellow-orange artificial light, dense urban depth. Realistic, melancholic, grounded, like a modern remaster of a 2008 open-world game, not a painting. No readable text, no real brands, no modern phones or cars.",
@@ -68,6 +68,25 @@
           "hasAlpha": false
         }
       ]
+    },
+    {
+      "at": "2026-09-30T06:53:55+00:00",
+      "event": "approved",
+      "revision": 1,
+      "by": "claude",
+      "notes": "benchmark mood for Hove Beach: El line, wet asphalt, warm storefronts against cold overcast",
+      "files": [
+        {
+          "path": "art/approved/ART-008/r1_art_008_1.png",
+          "sha256": "e07d76fed57b75bd827c4185e5efeeb40b54b713fb300c6a1e25120ec1e0a3f1",
+          "width": 1672,
+          "height": 941,
+          "mode": "RGB",
+          "hasAlpha": false
+        }
+      ],
+      "technicalIssues": null
     }
-  ]
+  ],
+  "approvedFile": "art/approved/ART-008/r1_art_008_1.png"
 }

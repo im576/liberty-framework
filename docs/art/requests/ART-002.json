@@ -1,7 +1,7 @@
 {
   "id": "ART-002",
   "title": "Blood spatter decal atlas",
-  "status": "generated",
+  "status": "prepped",
   "priority": "P0",
   "kind": "decal",
   "prompt": "A 2 by 2 atlas of four realistic blood spatter decals seen straight on (orthographic), each centred in its quarter with empty margin, on a fully transparent background. Dark realistic blood: deep red to near-black where thick, thin brownish-red where it has run or dried, fine satellite droplets and a few directional streaks consistent with a gunshot spray, one variant a heavier pool-like splash. Photographic material detail, no surface texture behind the blood, no lighting, no shadows. Grounded forensic realism, not cartoon or horror-movie exaggeration.",
@@ -111,6 +111,42 @@
           "hasAlpha": true
         }
       ]
+    },
+    {
+      "at": "2026-09-30T06:53:53+00:00",
+      "event": "approved",
+      "revision": 1,
+      "by": "claude",
+      "notes": "four varied spatters incl. one heavy; drips suit walls; slight gloss acceptable",
+      "files": [
+        {
+          "path": "art/approved/ART-002/r1_art_002_1.png",
+          "sha256": "b87072cc32434698613b1c26d65d045392c711d7381182fb8457a5413420917e",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ],
+      "technicalIssues": null
+    },
+    {
+      "at": "2026-09-30T06:53:57+00:00",
+      "event": "prepped",
+      "revision": 1,
+      "by": "claude",
+      "notes": "final 1024x1024 RGBA; mipmaps and DXT compression are done by the content compiler",
+      "files": [
+        {
+          "path": "art/approved/ART-002/prepped/art_002.png",
+          "sha256": "2914654fd9caf9399e3c0e4188d70323f13e1f98300e031424c81695732953aa",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ]
     }
-  ]
+  ],
+  "approvedFile": "art/approved/ART-002/r1_art_002_1.png"
 }

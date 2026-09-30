@@ -1,7 +1,7 @@
 {
   "id": "ART-009",
   "title": "Wet asphalt road",
-  "status": "generated",
+  "status": "prepped",
   "priority": "P1",
   "kind": "texture",
   "prompt": "Seamless tileable texture of old city road asphalt, viewed straight down (orthographic), covering the whole image edge to edge, about 3 by 3 metres of road. Dark grey asphalt with fine aggregate, patched repair squares, hairline and wider tar-sealed cracks, oil stains, slight darkening from dampness. Even, flat lighting with no shadows, no highlights, no reflections, no lane markings, no perspective. Must tile seamlessly in both directions.",
@@ -111,6 +111,42 @@
           "hasAlpha": false
         }
       ]
+    },
+    {
+      "at": "2026-09-30T06:53:55+00:00",
+      "event": "approved",
+      "revision": 1,
+      "by": "claude",
+      "notes": "least visible repetition in a 2x2 preview; patch squares still repeat, fix the seam blend in the texture pipeline",
+      "files": [
+        {
+          "path": "art/approved/ART-009/r1_art_009_3.png",
+          "sha256": "7aa37431fc495aa93c57d7e2e726631a92205fc50f91f1dea1ce2142736ed0bb",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGB",
+          "hasAlpha": false
+        }
+      ],
+      "technicalIssues": null
+    },
+    {
+      "at": "2026-09-30T06:53:59+00:00",
+      "event": "prepped",
+      "revision": 1,
+      "by": "claude",
+      "notes": "final 1024x1024 RGB; mipmaps and DXT compression are done by the content compiler",
+      "files": [
+        {
+          "path": "art/approved/ART-009/prepped/art_009.png",
+          "sha256": "ac4e12ebf266ff5368eb13ee6e251d3eb28fb42180efe189334a2ed97387c9e5",
+          "width": 1024,
+          "height": 1024,
+          "mode": "RGB",
+          "hasAlpha": false
+        }
+      ]
     }
-  ]
+  ],
+  "approvedFile": "art/approved/ART-009/r1_art_009_3.png"
 }

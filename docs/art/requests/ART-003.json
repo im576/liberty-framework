@@ -1,7 +1,7 @@
 {
   "id": "ART-003",
   "title": "Blood pool decal",
-  "status": "generated",
+  "status": "prepped",
   "priority": "P0",
   "kind": "decal",
   "prompt": "A single realistic pool of blood seen from directly above (orthographic), centred, irregular organic outline with a few smaller satellite drops, on a fully transparent background. Deep dark red centre, slightly thinner translucent edges, a thin darker dried rim, subtle wet sheen without visible reflections of any environment. Photographic, grounded, no ground texture, no lighting, no shadows.",
@@ -111,6 +111,42 @@
           "hasAlpha": true
         }
       ]
+    },
+    {
+      "at": "2026-09-30T06:53:53+00:00",
+      "event": "approved",
+      "revision": 1,
+      "by": "claude",
+      "notes": "dark centre, irregular edge, satellite drops; some specular gloss, acceptable for a wet pool",
+      "files": [
+        {
+          "path": "art/approved/ART-003/r1_art_003_3.png",
+          "sha256": "9a32bb74d726e95cd8e21331d9d640c506f5fa35a8c8c7e1bb0fe2781ef7de84",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ],
+      "technicalIssues": null
+    },
+    {
+      "at": "2026-09-30T06:53:57+00:00",
+      "event": "prepped",
+      "revision": 1,
+      "by": "claude",
+      "notes": "final 512x512 RGBA; mipmaps and DXT compression are done by the content compiler",
+      "files": [
+        {
+          "path": "art/approved/ART-003/prepped/art_003.png",
+          "sha256": "af3bc450611796484750c4d97b9129a4c0ba17370ed416c0309b9daa1aee316b",
+          "width": 512,
+          "height": 512,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ]
     }
-  ]
+  ],
+  "approvedFile": "art/approved/ART-003/r1_art_003_3.png"
 }

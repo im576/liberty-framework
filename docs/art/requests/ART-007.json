@@ -1,7 +1,7 @@
 {
   "id": "ART-007",
   "title": "Liberty UI style board",
-  "status": "generated",
+  "status": "approved",
   "priority": "P0",
   "kind": "concept",
   "prompt": "A UI style board for Liberty Vanilla+, a grounded GTA IV-era remaster set in a cold, rainy, New York-like city in 2008. The background must read as a remastered 2008 third-person game screenshot: modest angular urban geometry, weathered brick, elevated railway, wet pavement, muted grey-brown grading and warm street lamps, restrained game-rendered lighting rather than a cinematic photorealistic photograph. A generic original player figure may be viewed from behind. Preserve the established screen anchors. In the TOP-RIGHT corner, within a small safe margin, place a compact off-white current-weapon silhouette with the exact ammo text \"17 / 68\" immediately below it; directly underneath, place two thin, compact health and armour indicators, muted sage-green for health and pale desaturated blue-grey for armour. This entire weapon/ammo/health/armour group must be at the TOP RIGHT, never in a lower corner. Keep a small circular radar at the BOTTOM LEFT with simple monochrome street blocks and a player arrow; no compass letters, no labels. In the centre, show a radial weapon selector with exactly six segments: sidearm, two long guns, melee, thrown, and an entirely blank empty segment. Use simple white line-art weapon silhouettes and a restrained muted amber edge on the selected segment. Place a compact two-column carried / vehicle-trunk inventory panel at right-centre, below and clearly separate from the top-right HUD. All other placeholder text must be short illegible lines. Use compact off-white condensed lettering with a thin dark outline, flat crisp monochrome icons, dark translucent grey/black menu surfaces, restrained amber/orange/red accents, sharp edges, minimal decoration and generous spacing. Match the understated, utilitarian GTA IV-era visual language with original artwork. No health crosses or large boxed HUD cards, no decorative distressed texture on UI, no readable text except \"17 / 68\", no game logos, no copied game artwork, no copyrighted characters, no neon gradients, no rounded mobile-app cards, no glossy glass.",
@@ -107,6 +107,25 @@
           "hasAlpha": false
         }
       ]
+    },
+    {
+      "at": "2026-09-30T06:53:55+00:00",
+      "event": "approved",
+      "revision": 2,
+      "by": "claude",
+      "notes": "top-right weapon/ammo/health group, radar bottom left, cleaner wheel and two-column trunk panel; style reference for T-045/T-046/T-049",
+      "files": [
+        {
+          "path": "art/approved/ART-007/r2_art_007_2.png",
+          "sha256": "c21bb40f9be8e6fb92f53ab8d1c414255b04fca16978b282922008d1e9587ffb",
+          "width": 1672,
+          "height": 941,
+          "mode": "RGB",
+          "hasAlpha": false
+        }
+      ],
+      "technicalIssues": null
     }
-  ]
+  ],
+  "approvedFile": "art/approved/ART-007/r2_art_007_2.png"
 }
