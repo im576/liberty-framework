@@ -34,12 +34,12 @@
     {
       "id": "east_park",
       "name": "Algonquin East Park Street",
-      "x": -64.8,
-      "y": 663.4,
-      "z": 15.0,
+      "x": -64.4,
+      "y": 674.8,
+      "z": 15.5,
       "heading": 0.0,
-      "snap": "pavement",
-      "note": "Algonquin; may trigger a wanted level if the island is still locked in your story."
+      "snap": "none",
+      "note": "Algonquin; may trigger a wanted level if the island is still locked in your story. A fixed point: the old pavement snap from y=663.4 landed up to 19 m apart between runs and made the scenarios flaky."
     },
     {
       "id": "city_hall",

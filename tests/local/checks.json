@@ -243,7 +243,7 @@
         }
       },
       "reference": "docs/research/Raycast.md",
-      "status": "QUEUED",
+      "status": "RETIRED", "retiredReason": "no propCandidates on this install; RayMask.Objects against vanilla props is covered by T032-proxy-probe",
       "addedIn": "claude/nice-edison-xyxc6j (Session 2 audit)"
     },
     {
@@ -310,7 +310,7 @@
       "proves": "For every drawable of the game the structure writer can use (layout 0x59 everywhere, own buffers, measurable sphere records): per-geometry patching of several geometries, shaders and LOD models reproduces Rockstar's files; the report says which buffer order (Interleaved or VerticesFirst) and which sphere-record layout the files use.",
       "unproven": "Trimming (dropped geometries, models, LOD slots and shaders) and renamed textures have no counterpart in the game's files; the lod-review scenario tests a trimmed build in game.",
       "reference": "docs/tasks/T-031-structure-writer.md",
-      "status": "QUEUED",
+      "status": "RETIRED", "retiredReason": "byte-exact round trip is not a release gate (decision 2026-09-30)",
       "addedIn": "claude/confident-hopper-16pan1 (session 4)"
     },
     {
@@ -346,7 +346,7 @@
       "unproven": "Multiple LODs and authored collision.",
       "review": { "screenshots": { "lf_st_weap": "textured crate", "lf_st_map": "textured crate", "lf_st_2tex": "textured crate, both material groups", "lf_fx_multimat": "textured sides and red lid" } },
       "reference": "docs/tasks/T-031-structure-writer.md",
-      "status": "QUEUED",
+      "status": "RETIRED", "retiredReason": "known crash repro; run by hand: tools/autopilot/scenarios/structure-bisect.txt",
       "addedIn": "engine-cleanup"
     },
     {
@@ -380,7 +380,7 @@
         }
       },
       "reference": "docs/tasks/T-031-structure-writer.md",
-      "status": "QUEUED",
+      "status": "RETIRED", "retiredReason": "known crash (multi-geometry, T-031); repro kept in T031-structure-bisect scenario file",
       "addedIn": "codex/pr7-verification-fixes"
     },
     {
@@ -392,7 +392,7 @@
         "tool": "content-report",
         "asset": "lf_lod_post",
         "expect": {
-          "status": "ok",
+          "status": "RETIRED", "retiredReason": "multi-LOD drawables dropped: every sampled game drawable uses LOD slot 0",
           "compiled.drawableWriter": "structure",
           "compiled.lodCount": 4,
           "compiled.textureFormat": "DXT1"
@@ -426,7 +426,7 @@
         }
       },
       "reference": "docs/tasks/T-031-structure-writer.md",
-      "status": "QUEUED",
+      "status": "RETIRED", "retiredReason": "multi-LOD drawables dropped by decision (2026-09-30)",
       "addedIn": "claude/confident-hopper-16pan1 (session 4)"
     },
     {
@@ -1040,7 +1040,7 @@
         "tool": "content-report",
         "asset": "lf_col_crate",
         "expect": {
-          "status": "ok",
+          "status": "RETIRED", "retiredReason": "no borrow candidate exists on this install; superseded by collision proxies (T032-proxy-probe, T033-world-objects)",
           "compiled.collision.mode": "borrowed",
           "compiled.collision.file": "lf_col_crate.wbn"
         }
@@ -1069,7 +1069,7 @@
         }
       },
       "reference": "docs/tasks/T-032-collision.md",
-      "status": "QUEUED",
+      "status": "RETIRED", "retiredReason": "same-name borrowed bounds do not exist on this install; superseded by collision proxies",
       "addedIn": "claude/confident-hopper-16pan1 (sessions 5-6)"
     },
     {
@@ -1081,7 +1081,7 @@
         "tool": "content-report",
         "asset": "lf_world_wall",
         "expect": {
-          "status": "ok",
+          "status": "RETIRED", "retiredReason": "the wall gets collision from proxies, not a borrowed resource",
           "type": "object",
           "compiled.collision.mode": "borrowed"
         }

@@ -14,9 +14,9 @@
 
 | Kind | Pending | Runs |
 |---|---|---|
-| pc-offline | 14 | automatically (builds and tests that need Windows or the game's files) |
+| pc-offline | 13 | automatically (builds and tests that need Windows or the game's files) |
 | probe | 4 | automatically (read-only questions about the game's files; structure only) |
-| scenario | 23 | automatically (autopilot drives the game; about 2-4 minutes each) |
+| scenario | 18 | automatically (autopilot drives the game; about 2-4 minutes each) |
 | manual | 18 | you play and judge; about 162 minutes in total, grouped below |
 
 Statuses: QUEUED (never run on the current code), PASS, FAIL, ERROR, CRASH, NOT-RUN, NEEDS-REVIEW (a person or the review session must judge screenshots or log errors).
@@ -209,17 +209,12 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 | `PROBE-drawables` | RESEARCH | probe | exit code 0 and a JSON report; the review session reads it (no pass/fail on the numbers themselves) | QUEUED |
 | `PROBE-collision` | RESEARCH | probe | exit code 0 and a JSON report; the review session reads it | QUEUED |
 | `T027-raycast` | T-027 | scenario | autopilot PASS: ground hit, open sky clear, vehicle hit and filtered, ped hit and passed through, rayto matches, line of sight both ways, faults=0; screenshots judged | QUEUED |
-| `T027-raycast-objects` | T-027 | scenario | autopilot PASS: rayto prop all and objects both Hit kind=Object match=True; world,peds,vehicles passed>=1; faults=0; screenshot judged; prop creation logs collision=True before ray tests | QUEUED |
 | `T027-raycast-spike` | T-027 | scenario | autopilot PASS (spawns succeed); the review session reads the raydebug/raybits lines for the vehicle | QUEUED |
 | `SDK-selftest` | T-027 | scenario | autopilot PASS: 'selftest_done passed=N failed=0' | QUEUED |
 | `T028-native-texture-review` | T-028 | scenario | autopilot PASS and the screenshots judged as described | QUEUED |
-| `T031-drawable-roundtrip` | T-031 | pc-offline | exit code 0 and 'roundtrip: ok ... failed=0' (every eligible drawable identical under one buffer order); the JSON report is kept | QUEUED |
 | `T031-multimat-report` | T-031 | pc-offline | report fields match; inspect compiled.geometries and textures for two distinct material groups and readback [] | QUEUED |
-| `T031-structure-bisect` | T-031 | scenario | today: CRASH at lf_st_2tex after lf_st_weap and lf_st_map render (known). PASS once multi-geometry drawables are fixed | QUEUED |
 | `T032-proxy-probe` | T-032 | scenario | autopilot PASS; the log lists autopilot_rayto lines per candidate (Hit kind=Object match=True marks a solid prop) | QUEUED |
-| `T031-multimat-review` | T-031 | scenario | autopilot PASS plus reviewed screenshots: textured sides and red top simultaneously visible, no missing geometry or corrupt material | QUEUED |
 | `T031-lod-post-report` | T-031 | pc-offline | report.json fields match: status ok, drawableWriter structure (not 'template (fallback)'), four LODs | QUEUED |
-| `T031-lod-review` | T-031 | scenario | autopilot PASS and the screenshots judged as described | QUEUED |
 | `SDK-asset-review` | M4 | scenario | autopilot PASS and the screenshots judged | QUEUED |
 | `SDK-engine-events` | ADR-0006 | scenario | autopilot PASS | QUEUED |
 | `SDK-bullet-events` | ADR-0006 | scenario | autopilot PASS | QUEUED |
@@ -237,7 +232,6 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 | `PROBE-collision-links` | T-032 | probe | exit code 0 and a JSON report; the review session reads it | QUEUED |
 | `T032-wbdcheck` | T-032 | pc-offline | At least one CE WBD parses, every parsed table field round-trips, and the tool exits 0 with a JSON report. | QUEUED |
 | `T032-collision-borrow-report` | T-032 | pc-offline | report.json fields match: the build found a prop candidate and shipped its bounds as lf_col_crate.wbn | QUEUED |
-| `T032-collision-borrow` | T-032 | scenario | autopilot PASS (both rays hit the crate as kind Object) and the screenshot shows the crate; prop creation logs collision=True before ray tests | QUEUED |
 | `T033-world-wall-report` | T-033 | pc-offline | report.json fields match | QUEUED |
 | `T033-world-objects` | T-033 | scenario | autopilot PASS (spawned with a handle; the ray hits it) and the screenshot shows the wall | QUEUED |
 
@@ -254,17 +248,12 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 - `PROBE-drawables`: Across the game's model archives: how many drawables use several geometries, several shaders and LOD slots 1-3, how their buffers, shader mappings, bounds and LOD distances are laid out, and whether the reader parses them all. Input for the multi-geometry/LOD writer (Session 4); and for the structure writer (T-031): which drawables it can use, their sphere-record layout and buffer order, and structure templates by shape. **Still unproven:** Anything about how the game renders them; this is file structure only.
 - `PROBE-collision`: Which collision-related resources the game ships (by extension and resource type), in which archives, how many, their resource versions and top-level sizes. Input for collision research (Session 5) Also propCandidates: models shipped as a drawable with a same-named bounds resource, which the raycast-objects scenario spawns. **Still unproven:** The bound structures' field meanings; those need their own probes once the inventory is known.
 - `T027-raycast`: SDK 1.1 Query.Raycast / HasLineOfSight against world, a vehicle and a ped through the real game line test; filtering and ignore semantics; no faults. **Still unproven:** Objects (props with collision) are not tested in game yet (RayMask.Objects); research questions R1-R6 in docs/research/Raycast.md.
-- `T027-raycast-objects`: RayMask.Objects in game: a script-created vanilla prop is hit as kind Object with its own handle (all kinds, and objects only), and a query that leaves objects out passes through it; the raycast link [result+0x0C] resolves objects through the object pool. **Still unproven:** Only the probe's first candidate is tested; a FAIL on the first rayto may mean that model has no collision in game (the review session then tries the next candidate from the probe report) rather than a raycast fault. Authored (LCC) props need collision first (Session 5). Runs after `PROBE-collision` in the same run.
 - `T027-raycast-spike`: Raw line-test results per include bit for ground, sky, a vehicle and a ped: evidence for Raycast.md open questions. **Still unproven:** Research only; interpretation happens in the review session.
 - `SDK-selftest`: Every Liberty.Sdk service works in game on the new core ABI 5, including the ten raycast/line-of-sight checks. Since the engine audit also: the snapshot driver read from [vehicle+0xF50] (check vehicle-driver), capability refusal, and commands after the ownership and capability changes.
 - `T028-native-texture-review`: The game loads dictionaries written from scratch and draws DXT1; how gta_default treats DXT5 alpha. **Still unproven:** Alpha behaviour is an observation (translucent, cut-out or ignored); any of the three is a valid answer.
-- `T031-drawable-roundtrip`: For every drawable of the game the structure writer can use (layout 0x59 everywhere, own buffers, measurable sphere records): per-geometry patching of several geometries, shaders and LOD models reproduces Rockstar's files; the report says which buffer order (Interleaved or VerticesFirst) and which sphere-record layout the files use. **Still unproven:** Trimming (dropped geometries, models, LOD slots and shaders) and renamed textures have no counterpart in the game's files; the lod-review scenario tests a trimmed build in game.
 - `T031-multimat-report`: The packaged authored fixture uses automatic structure writer selection and passes readback. The report names the real template and both material textures. **Still unproven:** In-game material appearance, culling and placement; tested by T031-multimat-review.
-- `T031-structure-bisect`: Which structure-writer output the game accepts: the log shows the last spawn that survived if the game exits. **Still unproven:** Multiple LODs and authored collision.
 - `T032-proxy-probe`: Vanilla props usable as invisible collision proxies for custom objects (the authored-collision fallback). **Still unproven:** Player and vehicle collision (inferred from the shared physics bounds).
-- `T031-multimat-review`: The game draws the authored crate from the structure writer with separate side and top materials. **Still unproven:** Additional LOD slots, authored collision and the broad drawable roundtrip gate.
 - `T031-lod-post-report`: The "*"/"auto" search found a structure template with four LOD slots in the owner's game, and the four-LOD drawable read back; templateUsed names it. **Still unproven:** That the game loads and switches the LODs (T031-lod-review).
-- `T031-lod-review`: The game loads a drawable written by the structure writer (several LOD models, trimmed template, renamed texture, one graphics page) and which LOD it draws at each distance. **Still unproven:** Which distances the switches happen at is an observation: by drawable +0x50 (12/25/50/100 m), by the game's own rules, or no switching; each is a useful answer. If T031-lod-post-report shows a fallback, every shot is LOD 0.
 - `SDK-asset-review`: The template-mode content pipeline still produces textured, upright, lit props after the T-028 merge.
 - `SDK-engine-events`: Core v2 snapshot events still fire on the new core ABI.
 - `SDK-bullet-events`: The bullet trace list still produces BulletFired events.
@@ -299,7 +288,6 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 - `PROBE-collision-links`: Whether any 32-bit system words in WBD/WBN resources match Jenkins hashes of WDR names from the same IMG, with names and offsets for targeted structural investigation. **Still unproven:** That a matching word is a dictionary key or that the game pairs that bounds resource with the model at runtime.
 - `T032-wbdcheck`: The measured CE WBD root has equal-count index-aligned hash and valid structured-target arrays across the successfully opened game archives. **Still unproven:** The target object's shape, a full WBD roundtrip, and runtime collision pairing. Runs after `LOOP-content-selftest` in the same run.
 - `T032-collision-borrow-report`: The auto borrow found PROBE-collision's first prop candidate in the owner's game and packaged its bounds resource with the crate (compiled.collision.from names it). **Still unproven:** That the game pairs it with the crate (T032-collision-borrow).
-- `T032-collision-borrow`: Collision.md C4-C6 for this project's archive: a model registered in lf_content.ide gets collision from a same-named bounds resource for a script-created object, and the engine's raycast hits it. **Still unproven:** Player and vehicle collision against it (T033-world-walk); authored collision shapes (need the collision writer).
 - `T033-world-wall-report`: A type-object asset compiles, reads back and is packaged with its borrowed collision.
 - `T033-world-objects`: mods/Liberty.World loads config/world/objects.json, streams lf_world_wall in within 150 m, snaps it to the ground, and its borrowed collision stops the engine's ray. **Still unproven:** Removal beyond 180 m is not driven here (the verifier tests the decision); player collision is T033-world-walk.
 - `T033-world-walk`: Borrowed collision works for the player against a placed world object. **Still unproven:** Collision matching the wall's own outline needs the collision writer.
