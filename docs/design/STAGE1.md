@@ -48,8 +48,15 @@ explicit per-asset decision; agents can build pipelines, procedural materials an
 
 ## 4. Scope
 
-**Stage 1 = Broker/Dukes and early-game Liberty City.** This scopes *progression, weapon availability and the
-environment art pass*. Systems (gunplay, gore, UI, HUD, screen effects, audio events) are citywide by nature.
+**Stage 1 = Broker/Dukes and early-game Liberty City.** What that scopes, and what it does not:
+
+- **Broker/Dukes scopes gameplay progression and the deepest environment art pass.** Weapon availability, contacts and
+  the economy slice follow early-game Broker/Dukes, and it receives the most thorough per-street art work.
+- **These are citywide systems, active everywhere from day one:** HUD and UI, gore and violence, combat systems
+  (weapons, gunplay, physical inventory, effects), core lighting/timecycle/weather, screen effects, and ambient audio.
+- **Broker/Dukes is the showcase area for the visual remaster, not the only area that improves.** Citywide texture and
+  material fixes (shared road, sidewalk, glass, emissive and prop textures used across the map) apply everywhere they are
+  used; Broker/Dukes additionally gets the area-specific pass (storefronts, signage, graffiti, facades, interiors).
 
 **Not in Stage 1:** full crime or police overhaul, businesses, heists, the full economy, a full vehicle ownership
 overhaul, all-island progression, TLAD/TBoGT, complete reverse engineering.
@@ -95,8 +102,9 @@ Functional first; Slice C gives these screens their final unified look.
 
 | Feature | Status | Notes / acceptance |
 |---|---|---|
-| Lighting, timecycle, weather | Ready/Extend | Mood timecycle generator and weather director exist; tuned to the target look |
-| Broker/Dukes environment art pass | Extend (pipeline) | Texture/material overrides on existing geometry: roads, sidewalks, storefronts, signage, graffiti, glass, emissive/night textures, selected props, vegetation, visible interiors, visibly broken LOD/material assets. Needs a **texture override pipeline** (replace textures in map dictionaries via FusionFix's update-folder overloading; our WTD writer round-trips 68/68). Accept: before/after captures at fixed spots, VRAM/streaming budget met |
+| Lighting, timecycle, weather (citywide) | Ready/Extend | Mood timecycle generator and weather director exist; tuned to the target look |
+| Citywide texture/material fixes | Extend (pipeline) | Shared textures used across the map (roads, sidewalks, glass, emissives, common props, weak vanilla textures, visibly broken LOD/material assets) improve wherever they appear. Needs a **texture override pipeline** (replace textures in map dictionaries via FusionFix's update-folder overloading; our WTD writer round-trips 68/68) |
+| Broker/Dukes showcase art pass | Extend (pipeline + art) | The deepest pass on existing geometry: area-specific storefronts, signage, graffiti, facades, visible interiors, selected props and vegetation |
 | Weapon materials/textures | Ready/Extend | The finishes pipeline already rewrites weapon texture dictionaries |
 | Blood/wound/decal and muzzle/effect art | Extend / Spike | New textures in the particle/decal dictionaries; where they live and what IV allows: **Spike R3** |
 | Screen effects | Spike | Rain on the lens (droplets, streaks, movement clearing), blood on screen (directional, severe hits), injury (restrained desaturation, vignette, blur, audio muffling). Timecycle modifiers for grading; sprites on the Liberty.Ui canvas. Cost: **Spike R4**. No Call of Duty red overlays |
@@ -115,8 +123,10 @@ Functional first; Slice C gives these screens their final unified look.
 
 ## 8. Research track (parallel)
 
-Research-dependent features stay in the design, but are **not promised** until their spike passes. Each spike ends with
-a written answer (works / works with limits / Phase 3) and, if it works, the smallest documented engine capability.
+**Research-dependent features stay in the long-term design.** They are not removed because they are not Stage 1-ready;
+they are only not *promised for Stage 1* until their spike passes. A spike that fails moves its feature to a later stage
+or Phase 3, never out of the design. Each spike ends with a written answer (works / works with limits / Phase 3) and, if
+it works, the smallest documented engine capability.
 
 | # | Question | Unlocks |
 |---|---|---|
@@ -132,17 +142,85 @@ a written answer (works / works with limits / Phase 3) and, if it works, the sma
 Real Rockstar pause-menu/frontend replacement; real map replacement or integration; deeper audio engine control;
 authored collision; multi-geometry drawables and LOD slots; deeper renderer and internal hooks.
 
-## 10. Performance budget
+## 10. Acceptance criteria and budgets per pillar
 
-Measured with the existing tooling (frame p50/p95/p99, module cost, memory pressure, streaming stalls) at fixed
-Broker/Dukes capture points, against the same scene with the mod off.
+Every number below is a **proposal until the owner confirms it**; once confirmed it lives in `config/` or in the
+scenario that measures it, not in code. "Mod-off" means the same scene, save and settings with Stage 1 disabled.
+Measurement tools already exist: autopilot scenarios, `perf`/`costs` logs (frame p50/p95/p99, per-module cost), the
+watchdog, memory probes and screenshot review. Each criterion gets an autopilot scenario or a named manual check in
+`tests/local/checks.json`.
 
-- Stage 1's total script cost is part of `engine.frame`: target **≤ 3 ms average**, no module above its `moduleBudgetMs`.
-- **Frame p95 no more than 10% worse** than mod-off at each capture point.
-- Art packs ship with a VRAM/streaming report; no pack raises streaming stalls measurably.
-- Gore/effects have hard caps (bodies kept, decals, active effects), set in `config/`.
+**Fixed capture points:** 8 Broker/Dukes spots (day, overcast, night, rain) plus 4 elsewhere in the city (citywide
+systems). Visual and performance comparisons always use these.
 
-These numbers are proposals until the owner confirms them.
+### Pillar 1 — GTA IV first (visual remaster, UI)
+
+| Criterion | Measure | Target |
+|---|---|---|
+| Owner identity check | Side-by-side captures, mod-off vs mod-on, at all 12 capture points | Owner judges every pair "GTA IV, remastered"; any "looks like another game" is a fail |
+| UI design language | Every screen uses only the Liberty UI tokens (palette, fonts, spacing, corner radius) | 100% of screens; token check automated where the UI is data-driven |
+| UI readability | Smallest text at 1280x720 virtual | ≥ 14 px; full navigation with controller **and** keyboard/mouse |
+| UI responsiveness | Menu open to first drawn frame / open animation | ≤ 1 frame / ≤ 200 ms |
+| Art pack quality | Every shipped texture has a full mip chain, a size within its surface class, a recorded source/licence | 100% (tool-verified); 0 unlicensed assets |
+| Showcase coverage | Broker/Dukes capture points with an area-specific art change | 8/8 |
+| Citywide coverage | Shared road/sidewalk/glass/emissive textures replaced where used | Listed per texture in the pack manifest |
+
+Budget: UI draw ≤ **0.5 ms** average; art packs ≤ **+350 MB** VRAM over mod-off (to be confirmed against the owner's
+GPU), and no new streaming hitch > **100 ms** on the scripted Broker/Dukes drive.
+
+### Pillar 2 — Harsh violence (gore, combat effects)
+
+| Criterion | Measure | Target |
+|---|---|---|
+| Exact attribution | Gore/effects driven by exact damage events, never proximity scans | 100% (code review + event log) |
+| Hit response latency | Exact `PedDamaged` to visible entry effect | ≤ 1 engine frame |
+| Severe headshot | Pistol headshot ≤ 10 m on a spawned ped, autopilot trials | severe effect in ≥ 95% |
+| Shotgun trauma | Shotgun hit ≤ 5 m, autopilot trials | trauma/limb effect in ≥ 90%; dismemberment only where reliable (0 floating or flashing limbs in 50 trials) |
+| Contextual effects | Muzzle flash/smoke per weapon class; impact by material once R2 passes | Each Stage 1 weapon has its own configured effect set |
+| Persistent aftermath | Bodies, blood decals/pools, active effects | Hard caps in `config/` (proposal: 10 bodies, 64 decals, 24 active effects); oldest removed first |
+
+Budget: gore + effects **≤ 0.8 ms** average, **≤ 4 ms** peak during the 10-ped firefight scenario; frame p95 in that
+scenario ≤ **+15%** vs mod-off.
+
+### Pillar 3 — Physical world (weapons, gunplay, inventory)
+
+| Criterion | Measure | Target |
+|---|---|---|
+| First-shot accuracy | Aimed, standing, first shot at 25 m on the test range (bullet events) | pistols/SMGs within a configured cone (proposal ≤ 0.5°); owner feel sign-off per class |
+| Burst control | 3-round burst then pause | recovers to the first-shot cone within the weapon's configured recovery time |
+| Sustained fire | 30-round full-auto AK burst | vertical climb within the configured range for that weapon (proposal 6–12°); never "laser" (spread grows every shot) |
+| Shoulder swap | On foot, in cover, near walls (scripted camera scenario) | works in all states; 0 camera clips into walls at the test spots |
+| Visible loadout | Carried weapons visible on the body | 100% on foot; hidden in vehicles and cutscenes; 0 orphaned/floating props after 100 autopilot vehicle enter/exit cycles |
+| Clipping | Front/side/back review for every Stage 1 outfit and weapon class | owner pass on every pair |
+| Inventory integrity | Store/take trunk round trips; death/busted rules; save/load | 100% round trips; 0 lost owned weapons across 50 death cycles; state identical after save/load |
+| Mission compatibility | Main Broker/Dukes story missions | 0 blocked missions; mission-given weapons behave as the game expects |
+
+Budget: gunplay + arsenal + holsters **≤ 1.5 ms** average combined (today about 1.2–1.5 ms), no single frame spike
+> **5 ms** from these modules outside menus.
+
+### Pillar 4 — Dangerous Liberty City (atmosphere, audio, population)
+
+| Criterion | Measure | Target |
+|---|---|---|
+| Ambient events | Scripted city events (screams, arguments, sirens, alarms, distant violence) in Broker/Dukes | configurable rate (proposal: one noticeable event every 60–180 s at night, rarer by day); never two within 20 s |
+| Reaction to violence | Nearby peds after severe violence | panic/scream/flee in ≥ 90% of autopilot trials |
+| Population variety | 60 s at each capture point, snapshot of visible peds (model + variation) | ≥ 8 distinct looks among any 15 visible peds; no identical pair within 10 m |
+| Vehicle variety | Scripted 2-minute Broker/Dukes drive | ≥ 12 distinct models |
+| Density preserved | Ped and traffic density | never below vanilla except the governor under pressure (floor ≥ 0.8) |
+| Lighting/weather | Target look (cold day, overcast, wet, dark readable nights) | owner sign-off at the 12 capture points, day/night/rain |
+
+Budget: atmosphere + ambient audio + population scripts **≤ 0.5 ms** average.
+
+### Pillar 5 — Performance conscious (whole mod)
+
+| Criterion | Target |
+|---|---|
+| Stage 1 script cost inside `engine.frame` | ≤ **3 ms** average at every capture point; no module above its `moduleBudgetMs` |
+| Frame time vs mod-off | p95 ≤ **+10%**, p99 ≤ **+15%** at every capture point |
+| Stalls | none > **1 s** outside teleports and loading; no `engine_stall` in a 1-hour soak |
+| Memory | private bytes growth ≤ **50 MB/hour** in the soak; free address space never below `lowAddressSpaceMegabytes` (600 MB) |
+| Screen effects (after R4) | ≤ **0.5 ms** |
+| Density | no ped/traffic reduction used to meet any budget above |
 
 ## 11. Compatibility
 
@@ -156,6 +234,6 @@ These numbers are proposals until the owner confirms them.
 
 1. One or two long guns carried?
 2. Art sourcing: which surfaces get hand-authored art (artist or per-asset decision) versus procedural/CC0-derived?
-3. Confirm the performance budget in section 10.
+3. Confirm the acceptance criteria and budgets in section 10 (numbers are proposals).
 4. Gore ceiling: executions, NPC suffering and persistence limits.
 5. Order of the Broker/Dukes art pass (which streets and areas first).
