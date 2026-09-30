@@ -40,11 +40,19 @@ blood, inventory, audio, ambience) must read as one product.
 
 ### Asset policy
 
-All art is **original, procedurally generated, permissively licensed (CC0/CC-BY/MIT and similar), or otherwise legally
-usable**, and every non-original source is credited in `third_party/README.md`. No ripped commercial assets
-(AGENTS.md rule 7). Realistic sources: procedural materials (Blender, Material Maker), CC0 libraries (ambientCG, Poly
-Haven) as raw material, and hand-authored art. Hand-painted hero art (signage, graffiti, icons) needs an artist or an
-explicit per-asset decision; agents can build pipelines, procedural materials and variants, not guarantee art quality.
+> **Identity-defining assets are hand-designed; repeatable material surfaces can be procedural or CC0-based.**
+
+- **Hand-designed / original:** signage, graffiti, UI icons, HUD artwork, weapon finishes and decals, blood and wound
+  art, important storefronts, hero props, visually distinctive surfaces, screen-effect art (blood and rain overlays).
+- **Procedural, original photography/material work, or CC0:** asphalt, concrete, brick, generic metal, wood, grime,
+  generic glass, sidewalks, dirt, generic vegetation materials.
+- **Never:** ripped commercial assets (AGENTS.md rule 7). All third-party art and audio needs a licence that allows use
+  in the project, recorded in `third_party/README.md` with its source.
+- **Image generation:** the owner's GPT Image 2.5 subscription is available for concept and source art. Generated
+  images count as original once the owner confirms the provider's terms allow this use; they still go through the
+  same review, tiling, atlasing, mipmap and compression steps, and the prompt and date are recorded per asset. Claude
+  has no direct tool for it in these sessions; the owner runs prompts Claude writes, or a tool is connected later.
+- Agents build the pipelines, procedural materials, variants and prompts; final hero-art quality is an owner sign-off.
 
 ## 4. Scope
 
@@ -91,8 +99,8 @@ Functional first; Slice C gives these screens their final unified look.
 |---|---|---|
 | Weapons and availability | Ready/Extend | Weapon catalog, per-weapon config, WeaponInfo. Tiers: common (cheap/service pistols, revolvers, basic shotguns, Uzi), less common (better pistols/shotguns, MP5-type), rare (AK-type, tactical by circumstance). No snipers/LMGs/P90/military gear as normal Stage 1 availability. Availability comes from the world, contacts and money, never XP |
 | Gunplay tuning | Extend | Per-weapon recoil, first-shot accuracy, burst control, sustained-fire climb, stance/movement influence, caliber differences. Shoulder swap finished (T-015), not recreated. Accept: tuned numbers in `config/`, owner feel sign-off per weapon class |
-| Physical weapons | Extend | Sidearm + visible long gun (second long gun: owner decision), limited equipment and ammunition; the rest in trunk/safehouse. Missing today: hide/show on vehicle entry and cutscenes, per-outfit clipping, draw/holster transitions |
-| Harsh gore | Extend / Spike | Exact-damage driven (no proximity guessing): entry-hit response, bleeding, severe headshots, shotgun and limb trauma, dismemberment where reliable, budgeted persistent aftermath. Blood pools/trails/decals: **Spike R3** |
+| Physical weapons | Extend | **Decided: 2 long guns + 1 sidearm**, one long gun equipped at a time, the other slung and visible (as the sling system already proves); limited equipment and ammunition; the rest in trunk/safehouse. Must handle weapon size, sling/back placement, clipping, outfits, vehicle entry/exit, cutscenes and draw/holster transitions. Carried long guns may be hidden or stowed in vehicles and cutscenes to avoid clipping or animation problems |
+| Harsh gore | Extend / Spike | *"Harsh realism, not gore for gore's sake."* Exact-damage driven (no proximity guessing): severe wounds, strong head and shotgun trauma, caliber-sensitive presentation, limb damage, dismemberment where reliable, bleeding, wounded NPCs crawling/writhing, brief pain behaviour, strong panic nearby, contextual grounded executions only (no finisher system, no arcade or comedic gore). Blood pools, trails and surface blood: **Spike R3** |
 | Combat effects | Extend / Spike | Per-weapon muzzle flash, smoke, casings, sparks, night muzzle light. Material-specific impacts (concrete, wood, glass, metal): **Spike R2** |
 | Weapon wheel | Ready/Extend | Liberty.Ui radial menu; shows the physical loadout (carried slots, equipped, ammo, category, finish), not every owned gun |
 | Trunk UI | Ready/Extend | Loadout ↔ vehicle storage, carried vs stored, ammo, capacity. Moving a gun makes it visibly no longer carried |
@@ -104,7 +112,7 @@ Functional first; Slice C gives these screens their final unified look.
 |---|---|---|
 | Lighting, timecycle, weather (citywide) | Ready/Extend | Mood timecycle generator and weather director exist; tuned to the target look |
 | Citywide texture/material fixes | Extend (pipeline) | Shared textures used across the map (roads, sidewalks, glass, emissives, common props, weak vanilla textures, visibly broken LOD/material assets) improve wherever they appear. Needs a **texture override pipeline** (replace textures in map dictionaries via FusionFix's update-folder overloading; our WTD writer round-trips 68/68) |
-| Broker/Dukes showcase art pass | Extend (pipeline + art) | The deepest pass on existing geometry: area-specific storefronts, signage, graffiti, facades, visible interiors, selected props and vegetation |
+| Broker/Dukes showcase art pass | Extend (pipeline + art) | The deepest pass on existing geometry: area-specific storefronts, signage, graffiti, facades, visible interiors, selected props and vegetation. Order in section 10a; Hove Beach is the benchmark |
 | Weapon materials/textures | Ready/Extend | The finishes pipeline already rewrites weapon texture dictionaries |
 | Blood/wound/decal and muzzle/effect art | Extend / Spike | New textures in the particle/decal dictionaries; where they live and what IV allows: **Spike R3** |
 | Screen effects | Spike | Rain on the lens (droplets, streaks, movement clearing), blood on screen (directional, severe hits), injury (restrained desaturation, vignette, blur, audio muffling). Timecycle modifiers for grading; sprites on the Liberty.Ui canvas. Cost: **Spike R4**. No Call of Duty red overlays |
@@ -165,8 +173,11 @@ systems). Visual and performance comparisons always use these.
 | Showcase coverage | Broker/Dukes capture points with an area-specific art change | 8/8 |
 | Citywide coverage | Shared road/sidewalk/glass/emissive textures replaced where used | Listed per texture in the pack manifest |
 
-Budget: UI draw ≤ **0.5 ms** average; art packs ≤ **+350 MB** VRAM over mod-off (to be confirmed against the owner's
-GPU), and no new streaming hitch > **100 ms** on the scripted Broker/Dukes drive.
+Budget: UI draw ≤ **0.5 ms** average; no new streaming hitch > **100 ms** on the scripted Broker/Dukes drive.
+**VRAM (confirmed, RX 570 8 GB):** normal overhead **+250 to +300 MB** over vanilla; hard ceiling **+350 MB** in the
+worst-case scene (Pillar 5). 350 MB is a ceiling, not a target to fill. Every texture has proper mipmaps and sensible
+compression; no blanket 4K; higher resolution only where it visibly improves the result. VRAM has headroom on this GPU;
+CPU, streaming and frame pacing are the real constraints.
 
 ### Pillar 2 — Harsh violence (gore, combat effects)
 
@@ -177,7 +188,8 @@ GPU), and no new streaming hitch > **100 ms** on the scripted Broker/Dukes drive
 | Severe headshot | Pistol headshot ≤ 10 m on a spawned ped, autopilot trials | severe effect in ≥ 95% |
 | Shotgun trauma | Shotgun hit ≤ 5 m, autopilot trials | trauma/limb effect in ≥ 90%; dismemberment only where reliable (0 floating or flashing limbs in 50 trials) |
 | Contextual effects | Muzzle flash/smoke per weapon class; impact by material once R2 passes | Each Stage 1 weapon has its own configured effect set |
-| Persistent aftermath | Bodies, blood decals/pools, active effects | Hard caps in `config/` (proposal: 10 bodies, 64 decals, 24 active effects); oldest removed first |
+| Persistent aftermath | Bodies, blood decals/pools, active effects | Bodies stay **3–5 minutes** normally; blood may outlast bodies where performance allows. Hard caps in `config/` (proposal: 10 bodies, 64 decals, 24 active effects), distance-based cleanup, adaptive cleanup under performance pressure; oldest removed first. Gameplay performance wins over keeping every body or decal |
+| Suffering and panic | Wounded non-fatal NPCs; nearby peds after severe violence | crawl/writhe/pain behaviour on a configurable share of survivable severe hits; brief, never a scripted loop |
 
 Budget: gore + effects **≤ 0.8 ms** average, **≤ 4 ms** peak during the 10-ped firefight scenario; frame p95 in that
 scenario ≤ **+15%** vs mod-off.
@@ -213,14 +225,37 @@ Budget: atmosphere + ambient audio + population scripts **≤ 0.5 ms** average.
 
 ### Pillar 5 — Performance conscious (whole mod)
 
+**Worst-case scene** (scripted, repeatable): Broker/Dukes, night, rain, normal or high traffic, normal pedestrians, a
+firefight in progress, blood and effects active, Liberty UI/HUD on. Measured in it and at every capture point: average
+frame time, p50, p95, p99, module cost, VRAM, memory pressure, streaming stalls and visible hitching (owner check).
+
 | Criterion | Target |
 |---|---|
+| VRAM over vanilla | normal +250 to +300 MB; **≤ +350 MB** in the worst-case scene |
 | Stage 1 script cost inside `engine.frame` | ≤ **3 ms** average at every capture point; no module above its `moduleBudgetMs` |
 | Frame time vs mod-off | p95 ≤ **+10%**, p99 ≤ **+15%** at every capture point |
 | Stalls | none > **1 s** outside teleports and loading; no `engine_stall` in a 1-hour soak |
 | Memory | private bytes growth ≤ **50 MB/hour** in the soak; free address space never below `lowAddressSpaceMegabytes` (600 MB) |
 | Screen effects (after R4) | ≤ **0.5 ms** |
 | Density | no ped/traffic reduction used to meet any budget above |
+
+## 10a. Environment art-pass order
+
+Broker/Dukes scopes progression and where the deepest art pass happens **first**; citywide systems and shared-texture
+fixes apply everywhere (section 4). Each area is finished to the Hove Beach standard before the next starts.
+
+1. **Hove Beach — the benchmark.** Storefronts, signage, roads, sidewalks, apartment facades, grime, glass,
+   underpasses, lighting, wet streets, night atmosphere, graffiti, street clutter. *If Hove Beach looks like a believable
+   Rockstar remaster, the art direction is working.*
+2. **Firefly Island / Firefly Projects.** Boardwalk, amusement area, neon and emissives, wet surfaces, signs,
+   storefronts, environmental lighting. One of the strongest night showcases.
+3. **Schottler / Rotterdam Hill.** Dense residential and commercial streets, neighbourhood storefronts, road and
+   sidewalk quality, building materials, graffiti, street furniture: the everyday city after the remaster.
+4. **BOABO / downtown Broker.** Industrial-commercial look: concrete, metal, glass, larger roads, facades, clutter,
+   lighting.
+5. **East Hook, docks and industrial areas.** Grime, rusted metal, concrete, industrial lighting, warehouses, night,
+   fog and wet-weather presentation.
+6. **Dukes.** Major roads, East Island City, airport-adjacent areas, commercial corridors, heavily travelled routes.
 
 ## 11. Compatibility
 
@@ -230,10 +265,13 @@ Budget: atmosphere + ambient audio + population scripts **≤ 0.5 ms** average.
 - Liberty Vehicle Services CE is a reference and compatibility target, not a required dependency.
 - Keyboard/mouse and controller both supported.
 
-## 12. Open decisions (owner)
+## 12. Owner decisions (2026-09-30)
 
-1. One or two long guns carried?
-2. Art sourcing: which surfaces get hand-authored art (artist or per-asset decision) versus procedural/CC0-derived?
-3. Confirm the acceptance criteria and budgets in section 10 (numbers are proposals).
-4. Gore ceiling: executions, NPC suffering and persistence limits.
-5. Order of the Broker/Dukes art pass (which streets and areas first).
+1. **Loadout:** 2 long guns + 1 sidearm; one long gun equipped, the other slung (section 7, Slice A).
+2. **Art sourcing:** identity-defining assets hand-designed; repeatable surfaces procedural or CC0 (section 3). GPT Image
+   2.5 available through the owner's subscription.
+3. **VRAM:** RX 570 8 GB; +250 to +300 MB normal, +350 MB hard ceiling in the worst-case scene (Pillars 1 and 5).
+   The other section 10 numbers remain proposals, tuned when their scenarios exist.
+4. **Gore:** very harsh, grounded; suffering, crawling and contextual executions allowed; bodies 3–5 minutes with hard
+   caps and adaptive cleanup (Pillar 2).
+5. **Art-pass order:** Hove Beach first, as the benchmark (section 10a).
