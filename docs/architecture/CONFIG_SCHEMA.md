@@ -93,6 +93,7 @@ Optional `slings[]` (W-5): `slot` (`LongGun1` or `LongGun2`, unique), `model` (a
 | `targetFrameMs` | Optional (33.3). Frame time the governor treats as full pressure's starting point (8–100). |
 | `lowAddressSpaceMegabytes` | Optional (600). Free 32-bit address space below which pressure rises (100–2000). |
 | `watchdogStallMilliseconds` | Optional (5000). An engine frame running longer than this is logged with the running phase and a minidump (1000–60000). |
+| `teleportBlockingWindowMilliseconds` | Optional (60000). Teleports call `LOAD_SCENE`, which blocks the game thread for seconds; the watchdog tolerates a stall this long while one runs (5000–120000). The time is logged as `player_teleport load_scene_ms`. |
 | `adaptiveDensityFloor` | Optional (0 = off). When above 0, the governor lowers ped and vehicle density toward this fraction as `Perf.Pressure` rises (0–1). Off by default because it changes the vanilla population. |
 | `hotReload` | Optional (false). Development: reload a mod assembly in `scripts\LibertyFramework\mods` when its file changes. The change must settle for one poll, and the content hash must differ from the loaded copy. Also switchable at runtime with `lf hotreload on/off`. |
 | `hotReloadPollMs` | Optional (1000). How often the mods folder is checked while hot reload is on (250–10000). |
@@ -210,4 +211,6 @@ The verifier checks the shipped file, and that every `model` it places is an ass
 | `objects[].position` | — | `[x, y, z]` metres: where the model's origin goes |
 | `objects[].headingDegrees` | 0 | 0 = north, counter-clockwise |
 | `objects[].snapToGround` | true | put the origin on the ground under `position` when the game reports a ground height there; `z` is where the search starts |
+| `objects[].collisionProxyModel` | none | a vanilla prop with solid collision, placed hidden at the same spot and heading so the object is solid without authored bounds |
+| `objects[].collisionProxyOffset` | 0,0,0 | proxy offset from the origin in metres along the world axes |
 

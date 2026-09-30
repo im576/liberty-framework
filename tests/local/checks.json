@@ -336,6 +336,33 @@
       "addedIn": "codex/pr7-verification-fixes"
     },
     {
+      "id": "T031-structure-bisect",
+      "task": "T-031",
+      "title": "Structure-writer drawables spawn without crashing (single material on weapon and map templates, then two materials)",
+      "kind": "scenario",
+      "run": { "scenario": "structure-bisect" },
+      "pass": "autopilot PASS: all three spawns confirmed, player alive after each, three screenshots show a textured crate",
+      "proves": "Which structure-writer output the game accepts: the log shows the last spawn that survived if the game exits.",
+      "unproven": "Multiple LODs and authored collision.",
+      "review": { "screenshots": { "lf_st_weap": "textured crate", "lf_st_map": "textured crate", "lf_fx_multimat": "textured sides and red lid" } },
+      "reference": "docs/tasks/T-031-structure-writer.md",
+      "status": "QUEUED",
+      "addedIn": "engine-cleanup"
+    },
+    {
+      "id": "T032-proxy-probe",
+      "task": "T-032",
+      "title": "Collision proxy candidates: which vanilla props stop the engine's ray",
+      "kind": "scenario",
+      "run": { "scenario": "proxy-probe" },
+      "pass": "autopilot PASS; the log lists autopilot_rayto lines per candidate (Hit kind=Object match=True marks a solid prop)",
+      "proves": "Vanilla props usable as invisible collision proxies for custom objects (the authored-collision fallback).",
+      "unproven": "Player and vehicle collision (inferred from the shared physics bounds).",
+      "reference": "docs/research/Collision.md",
+      "status": "QUEUED",
+      "addedIn": "engine-cleanup"
+    },
+    {
       "id": "T031-multimat-review",
       "task": "T-031",
       "title": "Two geometries and material textures drawn in game",

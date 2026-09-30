@@ -1,0 +1,35 @@
+# Bisect of the first structure-writer drawables rendered in game (multimat crashed at spawn, 20260929-164528). In order of least
+# suspicion: single material on a weapon template, single material on the map template, then the two-material asset. The log shows
+# the last spawn that survived if the game exits.
+await-alive 60000
+expect "autopilot_player_ready" 65
+god on
+wanted 0
+goto east_park
+expect "teleport_done id=east_park" 90
+wait 4000
+god on
+alive
+time 13 0
+weather 1
+spawnprop lf_st_weap 2.5 0
+expect "autopilot_prop handle=\d+ model=lf_st_weap" 15
+wait 2500
+alive
+shot lf_st_weap
+clear
+wait 1000
+spawnprop lf_st_map 2.5 0
+expect "autopilot_prop handle=\d+ model=lf_st_map" 15
+wait 2500
+alive
+shot lf_st_map
+clear
+wait 1000
+spawnprop lf_fx_multimat 2.5 0
+expect "autopilot_prop handle=\d+ model=lf_fx_multimat" 15
+wait 2500
+alive
+shot lf_fx_multimat
+clear
+wait 1000

@@ -1,0 +1,14 @@
+{
+    "source":  "lf_test_crate.gltf",
+    "textureMode":  "native",
+    "type":  "prop",
+    "textureDictionary":  "lf_st_map",
+    "template":  {
+                     "model":  "big_fence2_bxe",
+                     "archive":  "pc/data/maps/east/bronx_e.img"
+                 },
+    "drawDistanceMeters":  120,
+    "name":  "lf_st_map",
+    "drawableWriter":  "structure",
+    "schemaVersion":  1
+}

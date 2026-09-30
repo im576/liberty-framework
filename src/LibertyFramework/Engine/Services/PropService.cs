@@ -80,6 +80,8 @@ namespace LibertyFramework.Engine.Services
 
         public void SetCollision(PropRef prop, bool on) { Function.Call("SET_OBJECT_COLLISION", prop.Handle, on); }
 
+        public void SetVisible(PropRef prop, bool visible) { Function.Call("SET_OBJECT_VISIBLE", prop.Handle, visible); }
+
         public void SetFrozen(PropRef prop, bool frozen) { Function.Call("FREEZE_OBJECT_POSITION", prop.Handle, frozen); }
 
         // ATTACH_OBJECT_TO_PED(object, ped, bone, offset xyz, rotation xyz, 0).

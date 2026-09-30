@@ -1,0 +1,132 @@
+# Collision proxy candidates (Collision.md fallback). Each vanilla prop is spawned frozen with collision on 4 m ahead, then the
+# engine raycast (objects only) from the player is tried. A "Hit kind=Object ... match=True" line marks a model whose collision is
+# solid in this game; "not in the game's model index" or "no spawned prop" marks one that cannot be used. No expects: the log is the
+# result (autopilot_rayto / autopilot_prop lines), read by the review. Candidates are compact props from the game's own IDE files.
+events off
+god on
+wanted 0
+goto east_park
+wait 6000
+time 13 0
+clear
+spawnprop sexboxdyn2 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop sexboxdyn3 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop BM_ammobox_04a 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop CJ_cola_BOX 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop CJ_cola_BOX_2 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop corpbarrier1 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop nkn2_greybox 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop Lev5_HrlRm1crate 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop ET_bollardHydrant 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop BM_baricebox 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop pris_swtbox 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop Ret4_GunAmmoBox1 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop bank_safes01 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop KM_MnyMetLocker 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop XJBM_fridge01 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop Pub_3McFridge 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop GB_jukebox01 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop ware_table 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop ab_dinerTable 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop mp_hall_table 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop LD_RCtable_ 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop ab_DinerBench 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop KM_CBTables 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+spawnprop ah_sintable 4 0 on
+wait 1800
+rayto prop objects
+clear
+wait 400
+raystats

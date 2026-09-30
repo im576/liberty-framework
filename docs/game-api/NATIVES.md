@@ -133,3 +133,8 @@ No new natives. `Query.Raycast` / `HasLineOfSight` call the game's internal line
 the core; see [MEMORY.md](MEMORY.md#adr-0008-raycast-2026-09-26) and [Raycast.md](../research/Raycast.md).
 `HasLineOfSight(viewer, target)` also uses the existing ped calls `DOES_CHAR_EXIST`, `IS_CHAR_IN_ANY_CAR`,
 `GET_CAR_CHAR_IS_USING` and SHDN `Ped.GetBonePosition` (`GET_PED_BONE_POSITION`), all already listed above.
+
+## Collision proxies (2026-09-29)
+
+`IProps.SetVisible` calls `SET_OBJECT_VISIBLE` (0x372C7B2A, from FusionFix `natives.ixx`; CE status: pending in-game confirmation by
+the `proxy-probe` scenario). `Liberty.World` uses it to hide a vanilla prop that supplies collision under a custom model.

@@ -68,6 +68,7 @@ namespace Liberty.Autopilot
             Register("menu-close", "close the menus this module opened", a => { int n = menus.Count; foreach (IMenu m in menus) { m.Close(); } menus.Clear(); return "closed " + n; });
             Register("fight", "fight <subject> <subject> - two subjects attack each other (exact damage events)", Fight);
             Register("fire", "fire <subject|all> [ms] - armed subjects shoot at a point beside them (bullet events)", Fire);
+            Register("hideprop", "hideprop [on|off] - hide (default) or show the last spawned prop (collision proxies stay solid)", HideProp);
             Register("rayto", "rayto <subject index|car|prop> [mask: all|world,peds,vehicles,objects] - Query.Raycast from the player to a spawned target", RayTo);
             Register("los", "los <subject index> - Query.HasLineOfSight from the player to a subject (and back)", LineOfSight);
             Liberty.Log.Info(this, "autopilot_ready sdk=" + SdkVersion.Text + " engine=" + Liberty.EngineVersion + " episode=" + Liberty.Episode);
@@ -193,6 +194,17 @@ namespace Liberty.Autopilot
                 Liberty.Log.Info(this, "autopilot_prop handle=" + prop.Handle + " model=" + args[0] + " at=" + at + " collision=" + collision);
             });
             return "spawning prop " + args[0];
+        }
+
+        private string HideProp(string[] args)
+        {
+            props.RemoveAll(p => !Liberty.Props.Exists(p));
+            if (props.Count == 0) { return "no spawned prop"; }
+            bool visible = args.Length > 0 && args[0] == "off";
+            Liberty.Props.SetVisible(props[props.Count - 1], visible);
+            string line = "autopilot_hideprop handle=" + props[props.Count - 1].Handle + " visible=" + visible;
+            Liberty.Log.Info(this, line);
+            return line;
         }
 
         // Behind the car on its long axis (vehicle space: Y forward), facing it, on the ground.

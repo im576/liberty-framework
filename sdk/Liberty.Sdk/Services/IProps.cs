@@ -17,6 +17,8 @@ namespace Liberty.Sdk
         void SetRotation(PropRef prop, Vec3 degrees);
         void SetCollision(PropRef prop, bool on);
         void SetFrozen(PropRef prop, bool frozen);
+        // Hide or show the prop's model; its collision is unaffected (collision proxies rely on that).
+        void SetVisible(PropRef prop, bool visible);
         // Offset in the bone's space (metres), rotation in degrees.
         void AttachToPed(PropRef prop, PedRef ped, Bone bone, Vec3 offset, Vec3 rotation);
         void AttachToVehicle(PropRef prop, VehicleRef vehicle, Vec3 offset, Vec3 rotation);

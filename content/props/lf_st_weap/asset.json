@@ -1,0 +1,14 @@
+{
+    "source":  "lf_test_crate.gltf",
+    "textureMode":  "native",
+    "type":  "prop",
+    "textureDictionary":  "lf_st_weap",
+    "template":  {
+                     "model":  "amb_nailgun",
+                     "archive":  "pc/models/cdimages/weapons.img"
+                 },
+    "drawDistanceMeters":  120,
+    "name":  "lf_st_weap",
+    "drawableWriter":  "structure",
+    "schemaVersion":  1
+}

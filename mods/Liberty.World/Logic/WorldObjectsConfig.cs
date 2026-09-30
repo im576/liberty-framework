@@ -26,6 +26,12 @@ namespace Liberty.World
             // Put the origin on the ground under position (when the game reports a ground height there); position's z
             // is then only where the search starts. False places the origin exactly at position.
             [DataMember(Name = "snapToGround", Order = 4)] public bool SnapToGround;
+            // Collision without authored bounds: a vanilla prop that already has solid collision is placed invisibly at the
+            // same spot and heading (a "collision proxy"). Null/empty = none. The model must be one whose collision fits
+            // the visible object; which models do is established by the proxy-probe scenario, not assumed.
+            [DataMember(Name = "collisionProxyModel", Order = 5, EmitDefaultValue = false)] public string CollisionProxyModel;
+            // Proxy position relative to the object's origin, metres along the world axes (the heading is not applied to it).
+            [DataMember(Name = "collisionProxyOffset", Order = 6, EmitDefaultValue = false)] public float[] CollisionProxyOffset;
 
             public Placement() { SetDefaults(); }
 
@@ -70,7 +76,7 @@ namespace Liberty.World
         private static readonly Regex ModelName = new Regex("^[A-Za-z0-9_]{1,23}$");
         // Limits that keep the config sane, not tuning: the streaming radius stays inside the draw distances the
         // compiler accepts (drawDistanceMeters at most 1500).
-        public const float MaxStreamMeters = 1500, MaxCoordinateMeters = 10000;
+        public const float MaxStreamMeters = 1500, MaxCoordinateMeters = 10000, MaxProxyOffsetMeters = 50;
         public const int MinCheckIntervalMilliseconds = 50, MaxCheckIntervalMilliseconds = 10000;
 
         public static WorldObjectsConfig Defaults() { return new WorldObjectsConfig(); }
@@ -98,6 +104,11 @@ namespace Liberty.World
                     throw new ArgumentException(label + ": position must be three finite coordinates within " + MaxCoordinateMeters.ToString(CultureInfo.InvariantCulture) + " m");
                 }
                 if (float.IsNaN(p.HeadingDegrees) || float.IsInfinity(p.HeadingDegrees)) { throw new ArgumentException(label + ": headingDegrees must be finite"); }
+                if (!string.IsNullOrEmpty(p.CollisionProxyModel) && !ModelName.IsMatch(p.CollisionProxyModel)) { throw new ArgumentException(label + ": collisionProxyModel must be 1-23 letters, digits or _"); }
+                if (p.CollisionProxyOffset != null && (p.CollisionProxyOffset.Length != 3 || p.CollisionProxyOffset.Any(v => float.IsNaN(v) || float.IsInfinity(v) || Math.Abs(v) > MaxProxyOffsetMeters)))
+                {
+                    throw new ArgumentException(label + ": collisionProxyOffset must be three finite offsets within " + MaxProxyOffsetMeters.ToString(CultureInfo.InvariantCulture) + " m");
+                }
             }
         }
     }
