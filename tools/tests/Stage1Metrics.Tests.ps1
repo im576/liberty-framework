@@ -27,7 +27,7 @@ $log = @(
 )
 $records = Get-CommandRecords $log
 Test-That 'command records: every command line in order' ($records.Count -eq 11 -and $records[1].Command -eq 'label s1_test_day' -and $records[4].Reply -match '^frame_ms=')
-$gpu = @([pscustomobject]@{ label = 's1_test_day'; gpuDedicatedMB = 1500.0; privateMB = 1800.0; workingSetMB = 1700.0 }, [pscustomobject]@{ label = 's1_test_day_extra'; gpuDedicatedMB = 1600.0; privateMB = 1900.0; workingSetMB = 1750.0 }, [pscustomobject]@{ label = 'other'; gpuDedicatedMB = 9999.0; privateMB = 1; workingSetMB = 1 })
+$gpu = @([pscustomobject]@{ label = 's1_test_day'; gpuDedicatedMB = 1500.0; privateMB = 1800.0; workingSetMB = 1700.0; systemCpuPercent = 20.0; gameDiskBusyPercent = 8.0 }, [pscustomobject]@{ label = 's1_test_day_extra'; gpuDedicatedMB = 1600.0; privateMB = 1900.0; workingSetMB = 1750.0; systemCpuPercent = 45.0; gameDiskBusyPercent = 97.0 }, [pscustomobject]@{ label = 'other'; gpuDedicatedMB = 9999.0; privateMB = 1; workingSetMB = 1 })
 $sections = @(Get-MeasuredSections $records $gpu)
 Test-That 'sections: one per label' ($sections.Count -eq 2 -and $sections[0].label -eq 's1_test_day' -and $sections[1].label -eq 's1_test_night')
 $day = $sections[0]
@@ -35,6 +35,7 @@ Test-That 'sections: the frame statistics are the last framestats (the first onl
 Test-That 'sections: the first costs after the label only reset the meter' ($day.costs['engine.frame'].avgMs -eq 2.5 -and $day.costs['engine.frame'].count -eq 480)
 Test-That 'sections: perf and pools of the section' ($day.perf.privateMbMax -eq 1650 -and $day.perf.addressFreeMbMin -eq 900 -and $day.pools['peds'] -eq '30/100')
 Test-That 'sections: GPU measurements with the label or "<label>_" only' ($day.gpuSamples -eq 2 -and $day.gpuDedicatedMbMax -eq 1600.0 -and $day.privateMbMax -eq 1900.0)
+Test-That 'sections: the highest PC load during the section is kept (a busy disk explains hitches)' ($day.systemCpuPercentMax -eq 45.0 -and $day.gameDiskBusyPercentMax -eq 97.0 -and -not $day.Contains('gameDiskQueueMax'))
 Test-That 'sections: a label with no frames has no frame statistics, not zeros' ($null -eq $sections[1].frames -and $null -eq $sections[1].p95_ms)
 
 # ---- a report folder
@@ -42,8 +43,9 @@ $report = Join-Path $script:Scratch 'stage1-report-on'
 New-Item -ItemType Directory -Force -Path $report | Out-Null
 [IO.File]::WriteAllText((Join-Path $report 'report.md'), "# Scenario stage1-capture-test`n`n- Result: PASS`n")
 [IO.File]::WriteAllLines((Join-Path $report 'run.log'), ($log + '2026-09-30T10:00:11.000Z [WARN] engine_stall ms=6000'))
-[IO.File]::WriteAllText((Join-Path $report 'measurements.json'), '[ { "label": "s1_test_day", "gpuDedicatedMB": 1500.0, "privateMB": 1800.0, "workingSetMB": 1700.0 } ]')
+[IO.File]::WriteAllText((Join-Path $report 'measurements.json'), '[ { "label": "s1_test_day", "gpuDedicatedMB": 1500.0, "privateMB": 1800.0, "workingSetMB": 1700.0 }, { "label": "s1_test_night", "gpuDedicatedMB": 1520.0, "privateMB": 1810.0, "workingSetMB": 1710.0 } ]')
 $on = Get-ReportSummary $report
+Test-That 'report summary: several GPU measurements are read as separate samples (PowerShell 5.1 JSON arrays)' (@($on.sections | Where-Object { $_.label -eq 's1_test_day' })[0].gpuDedicatedMbMax -eq 1500.0)
 Test-That 'report summary: scenario, condition, stalls and sections' ($on.scenario -eq 'stage1-capture-test' -and $on.condition -eq 'mod-on' -and $on.engineStalls -eq 1 -and @($on.sections).Count -eq 2)
 $offReport = Join-Path $script:Scratch 'stage1-report-off'
 New-Item -ItemType Directory -Force -Path $offReport | Out-Null
@@ -54,6 +56,16 @@ $offLog = $offLog | ForEach-Object { $_ -replace 'p95_ms=19.5 p99_ms=24.0', 'p95
 [IO.File]::WriteAllText((Join-Path $offReport 'measurements.json'), '[ { "label": "s1_test_day", "gpuDedicatedMB": 1200.0, "privateMB": 1700.0, "workingSetMB": 1600.0 } ]')
 $off = Get-ReportSummary $offReport
 Test-That 'report summary: stopping the gameplay modules is mod-off' ($off.condition -eq 'mod-off')
+Test-That 'report summary: an explicit condition wins over the log (engine.json disabledModules runs)' ((Get-ReportSummary $report 'mod-off').condition -eq 'mod-off')
+Test-That 'report summary: no density lines means no density figure, not 1.0' ($null -eq $on.densityMinPeds -and $on.densityLines -eq 0)
+$densityReport = Join-Path $script:Scratch 'stage1-report-density'
+New-Item -ItemType Directory -Force -Path $densityReport | Out-Null
+[IO.File]::WriteAllLines((Join-Path $densityReport 'run.log'), @(
+    '2026-09-30T10:00:00.000Z [INFO] density frame_ms=22.0 peds=1.00 cars=1.00',
+    '2026-09-30T10:00:30.000Z [INFO] density frame_ms=38.0 peds=0.72 cars=0.80',
+    '2026-09-30T10:01:00.000Z [INFO] density frame_ms=30.0 peds=0.90 cars=0.85'))
+$density = Get-ReportSummary $densityReport
+Test-That 'report summary: the lowest density the governor reached is reported' ($density.densityMinPeds -eq 0.72 -and $density.densityMinCars -eq 0.8 -and $density.densityLines -eq 3)
 
 # ---- the script end to end: summarise, then compare (through JSON, as the owner uses it)
 $measure = Join-Path $script:RepoRoot 'tools/perf/Measure-Stage1.ps1'

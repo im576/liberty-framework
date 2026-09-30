@@ -91,7 +91,7 @@ try {
                     $memory.label = $words[1]
                     $memory.utc = [DateTime]::UtcNow.ToString('o')
                     $measurements.Add($memory)
-                    $steps.Add("gpumem $($words[1]): gpu_dedicated_mb=$($memory.gpuDedicatedMB) gpu_shared_mb=$($memory.gpuSharedMB) private_mb=$($memory.privateMB) working_set_mb=$($memory.workingSetMB)")
+                    $steps.Add("gpumem $($words[1]): gpu_dedicated_mb=$($memory.gpuDedicatedMB) gpu_shared_mb=$($memory.gpuSharedMB) private_mb=$($memory.privateMB) working_set_mb=$($memory.workingSetMB) system_cpu_pct=$($memory.systemCpuPercent) game_disk_busy_pct=$($memory.gameDiskBusyPercent) game_disk_queue=$($memory.gameDiskQueue)")
                     if ($null -eq $memory.gpuDedicatedMB) { Add-Failure "gpumem $($words[1]): the GPU counters do not list the game process" }
                 }
                 'key' { $hold = if ($words.Count -gt 2) { [int]$words[2] } else { 80 }; Send-GameKey $words[1] $hold; $steps.Add("key $($words[1]) $hold ms") }

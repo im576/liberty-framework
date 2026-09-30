@@ -39,7 +39,7 @@ function Find-ExpectedLine([string[]] $Lines, [int] $Mark, [string] $Pattern) {
 function Test-CommandFailed([string[]] $Reply) {
     if ($null -eq $Reply -or @($Reply).Count -eq 0) { return $true }
     $text = ($Reply -join "`n")
-    return $text -match '=> (error\b|unknown command|module \S+ is not running)'
+    return $text -match '=> (error\b|unknown command|unknown location|module \S+ is not running)'
 }
 
 # The scenario's final status:

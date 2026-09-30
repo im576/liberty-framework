@@ -278,12 +278,25 @@ function Get-GameMemory {
     $gpu = $null
     try { $gpu = Select-GpuProcessMemory @(Get-CimInstance Win32_PerfFormattedData_GPUPerformanceCounters_GPUProcessMemory -ErrorAction Stop) $process.Id }
     catch { Write-Host "autopilot: GPU counters unavailable ($($_.Exception.Message))" }
+    # How busy the rest of the PC is right now: the game is installed on a hard disk and a build, a scan or another session
+    # touching that disk during a sample shows up as frame hitches that are not the mod's. Recorded so a report can flag it.
+    $cpu = $null; $diskBusy = $null; $diskQueue = $null
+    try {
+        $cpu = [double](Get-CimInstance Win32_PerfFormattedData_PerfOS_Processor -Filter "Name='_Total'" -ErrorAction Stop).PercentProcessorTime
+        $drive = (Split-Path -Qualifier $script:Game)
+        $disk = @(Get-CimInstance Win32_PerfFormattedData_PerfDisk_PhysicalDisk -ErrorAction Stop | Where-Object { $_.Name -match ('^\d+ ' + [regex]::Escape($drive) + '$') }) | Select-Object -First 1
+        if ($disk) { $diskBusy = [double]$disk.PercentDiskTime; $diskQueue = [double]$disk.AvgDiskQueueLength }
+    }
+    catch { Write-Host "autopilot: system load counters unavailable ($($_.Exception.Message))" }
     return [ordered]@{
         processId = $process.Id
         gpuDedicatedMB = $(if ($gpu -and $gpu.Found) { [math]::Round($gpu.DedicatedBytes / 1MB, 1) } else { $null })
         gpuSharedMB = $(if ($gpu -and $gpu.Found) { [math]::Round($gpu.SharedBytes / 1MB, 1) } else { $null })
         privateMB = [math]::Round($process.PrivateMemorySize64 / 1MB, 1)
         workingSetMB = [math]::Round($process.WorkingSet64 / 1MB, 1)
+        systemCpuPercent = $cpu
+        gameDiskBusyPercent = $diskBusy
+        gameDiskQueue = $diskQueue
     }
 }
 

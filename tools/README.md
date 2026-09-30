@@ -36,7 +36,13 @@ close the game before anything that installs or rolls back.
 
 ## Autopilot
 
-`Import-Module tools/autopilot/Autopilot.psm1`, then `Test-Boot`, `Start-GameReady`, `Invoke-EngineCommand`, `Save-Screenshot`. `autopilot/Run-Scenario.ps1 -GameDirectory <GTAIV> -Scenario tools/autopilot/scenarios/<name>.txt -OutputDirectory <runs>` runs one scenario; `Run-Suite.ps1` runs many and exits 1 unless all pass. Each run writes `report.md` and `result.json` and prints `AUTOPILOT_RESULT <path>`; statuses are PASS, NEEDS-REVIEW, FAIL, CRASH, ERROR. Scenario lines are engine commands (`lf help`) plus `wait`, `shot`, `expect`, `key`. Screenshots use Steam F12 (GDI is black under Vulkan). Decision logic: `autopilot/AutopilotLogic.psm1`.
+`Import-Module tools/autopilot/Autopilot.psm1`, then `Test-Boot`, `Start-GameReady`, `Invoke-EngineCommand`, `Save-Screenshot`. `autopilot/Run-Scenario.ps1 -GameDirectory <GTAIV> -Scenario tools/autopilot/scenarios/<name>.txt -OutputDirectory <runs>` runs one scenario; `Run-Suite.ps1` runs many and exits 1 unless all pass. Each run writes `report.md` and `result.json` and prints `AUTOPILOT_RESULT <path>`; statuses are PASS, NEEDS-REVIEW, FAIL, CRASH, ERROR. Scenario lines are engine commands (`lf help`) plus `wait`, `shot`, `expect`, `key`, `mark`/`expectmarked` and `gpumem <label>`. Screenshots use Steam F12 (GDI is black under Vulkan). Decision logic: `autopilot/AutopilotLogic.psm1`.
+
+## Stage 1 measurement (T-040)
+
+- `perf/New-Stage1Scenarios.ps1` writes the six `stage1-*` scenarios from the `s1_*` capture points in `config/devtools/locations.json` (`-Check` verifies they are up to date). `stage1-capture-broker` (8 points) and `stage1-capture-city` (4) visit each point in day/overcast and night/rain, sample 8 s of frame statistics and script costs, then take a clean screenshot; `stage1-worst-case` is the 60 s firefight scene. The `-off` variants stop the Liberty gameplay modules first (mod-off) and restart them at the end.
+- Engine commands they use: `label <name>` (autopilot mod; groups what follows), `framestats` (avg, p50, p95, p99, max, slow frames, stalls since the last call), `perf`, `costs`, `pools`, plus the scenario line `gpumem <label>` (dedicated GPU memory of the GTAIV process from the Windows "GPU Process Memory" counters, private bytes, working set; written to `measurements.json` in the report).
+- `perf/Measure-Stage1.ps1 -Reports <results folder> -Out summary.json` writes one JSON summary per condition; `-On summary.mod-on.json -Off summary.mod-off.json -Markdown compare.md` prints the comparison with the Stage 1 budgets (STAGE1 section 10). Parsing lives in `perf/Stage1Metrics.psm1`, tested by `tests/Stage1Metrics.Tests.ps1`.
 
 ## Ops
 

@@ -403,7 +403,7 @@ namespace LibertyFramework.Gunplay
                 {
                     lastTimingReportTicks = now;
                     RuntimeLog.Info("performance " + tickTimings.ReportAndReset() + " " + phaseTimings.ReportAndReset());
-                    RuntimeLog.Info("performance_scripts " + CostMeter.ReportAndReset());
+                    RuntimeLog.Info("performance_scripts " + CostMeter.ReportAndReset(CostReader.Log));
                     if (threadProbe != null)
                     {
                         RuntimeLog.Info(threadProbe.ReportAndReset());
@@ -924,7 +924,9 @@ namespace LibertyFramework.Gunplay
                 if (config == null) { return; }
                 if (drawCrosshair)
                 {
+                    long drawStart = Stopwatch.GetTimestamp();
                     crosshair.Draw(args.Graphics, config.Crosshair, displayConeDegrees, lastFov, pixelsPerTangent, screenResolution, args.Graphics.FrameTime);
+                    CostMeter.Add("draw.crosshair", drawStart);
                 }
                 if (DebugOverlay) { DrawOverlay(args.Graphics); }
             }

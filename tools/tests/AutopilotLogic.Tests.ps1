@@ -32,6 +32,7 @@ Test-That 'reply error is a failure' (Test-CommandFailed @('ray down => error Nu
 Test-That 'unknown command is a failure' (Test-CommandFailed @('expcet foo => unknown command expcet'))
 Test-That 'command of a stopped module is a failure' (Test-CommandFailed @('spawn 1 => module autopilot is not running'))
 Test-That 'no reply is a failure' (Test-CommandFailed @())
+Test-That 'goto to a location the install does not have is a failure (it used to pass silently)' (Test-CommandFailed @('goto s1_boabo => unknown location; known: gun_test_range,east_park'))
 Test-That 'a reply mentioning errors=0 is not a failure' (-not (Test-CommandFailed @('raystats => raycast available=True errors=0')))
 
 # Scenario status

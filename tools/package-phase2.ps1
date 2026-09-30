@@ -10,6 +10,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
 $game = (Resolve-Path -LiteralPath $GameDirectory).Path
+Import-Module (Join-Path $PSScriptRoot 'PackageMerge.psm1') -Force 3>$null
 $stage = [IO.Path]::GetFullPath((Join-Path $repoRoot 'staging\phase2'))
 if (-not $stage.StartsWith($repoRoot + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Invalid staging path.' }
 if (Test-Path -LiteralPath $stage) { Remove-Item -LiteralPath $stage -Recurse -Force }
@@ -38,6 +39,11 @@ function Stage-File([string] $source, [string] $relativePath, [string] $policy) 
         }
         [IO.File]::WriteAllText($target, ($saved | ConvertTo-Json -Depth 32), (New-Object Text.UTF8Encoding($false)))
     }
+    elseif ($policy -eq 'merge-locations' -and (Test-Path -LiteralPath $installed -PathType Leaf)) {
+        $merge = Merge-LocationFiles (Get-Content -LiteralPath $source -Raw) (Get-Content -LiteralPath $installed -Raw)
+        [IO.File]::WriteAllText($target, $merge.Json, (New-Object Text.UTF8Encoding($false)))
+        if ($merge.Added.Count -gt 0) { Write-Host "locations: added $($merge.Added.Count) to the installed file: $($merge.Added -join ', ')" }
+    }
     elseif ([IO.Path]::GetFullPath($source) -ne [IO.Path]::GetFullPath($target)) {
         Copy-Item -LiteralPath $source -Destination $target
     }
@@ -46,7 +52,7 @@ function Stage-File([string] $source, [string] $relativePath, [string] $policy) 
         path = $relativePath
         sha256 = (Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash
         baseSha256 = $baseSha
-        policy = $(if ($policy -eq 'merge-defaults') { 'replace' } else { $policy })
+        policy = $(if ($policy -eq 'merge-defaults' -or $policy -eq 'merge-locations') { 'replace' } else { $policy })
     }
 }
 
@@ -66,6 +72,8 @@ foreach ($name in @('gunplay.json', 'combat_effects.json', 'weapon-catalog.json'
 }
 Stage-File (Join-Path $repoRoot 'config\arsenal.json') 'scripts\LibertyFramework\config\arsenal.json' 'merge-defaults'
 Stage-File (Join-Path $repoRoot 'config\holsters.json') 'scripts\LibertyFramework\config\holsters.json' 'merge-defaults'
+# T-040: teleport locations (DevTools, the autopilot's `goto`): the owner's file stays, missing ids are appended.
+Stage-File (Join-Path $repoRoot 'config\devtools\locations.json') 'scripts\LibertyFramework\config\devtools\locations.json' 'merge-locations'
 # T-033: where the static world objects stand (read by the world mod, mods/Liberty.World: config\<module id>\objects.json).
 Stage-File (Join-Path $repoRoot 'config\world\objects.json') 'scripts\LibertyFramework\config\world\objects.json' 'replace'
 Get-ChildItem -LiteralPath (Join-Path $repoRoot 'config\presets') -Filter '*.json' | Sort-Object Name | ForEach-Object {

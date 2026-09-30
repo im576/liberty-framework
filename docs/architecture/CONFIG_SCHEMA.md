@@ -53,6 +53,8 @@ Polled every second; a valid change is applied live. DevTools "Save live values"
 
 `{"schemaVersion":1,"locations":[{"id","name","x","y","z","heading","snap","note"}]}`. `snap`: `none` (exact), `pavement` (nearest pavement node), `ground` (ground below z). `gun_test_range` is used by Test Range and is overwritten by "Set Gun Test Range here".
 
+**Stage 1 capture points (T-040).** The ids starting `s1_` are the 12 fixed capture points every Stage 1 visual and performance comparison uses (STAGE1 section 10): 8 in Broker/Dukes (`s1_hove_beach_a`, `s1_hove_beach_b`, `s1_firefly_island`, `s1_rotterdam_hill`, `s1_boabo`, `s1_east_hook`, `s1_dukes_meadow_hills`, `s1_east_island_city`) and 4 elsewhere (`s1_algonquin_star_junction`, `s1_algonquin_chinatown`, `s1_bohan_boulevard`, `s1_alderney_city`), all `snap: "none"`. Coordinates come from the game's own data (vehicle nodes in `common/data/maps/paths.ipl`, zones in `common/data/info.zon`), z is the road surface plus 1 m, heading looks down the road; each `note` names the zone and node. `tools/perf/New-Stage1Scenarios.ps1` builds the `stage1-*` scenarios from these entries in file order (first 8 = Broker/Dukes); moving or adding a point means rerunning it.
+
 ## Build-time: assets/finishes/finishes.json
 
 ## Arsenal: arsenal.json (T-020)

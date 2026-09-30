@@ -116,6 +116,9 @@ function Get-GameMemory {
         gpuSharedMB = Get-SimProperty $memory 'gpuSharedMB' 20.0
         privateMB = Get-SimProperty $memory 'privateMB' 1800.0
         workingSetMB = Get-SimProperty $memory 'workingSetMB' 1700.0
+        systemCpuPercent = Get-SimProperty $memory 'systemCpuPercent' 30.0
+        gameDiskBusyPercent = Get-SimProperty $memory 'gameDiskBusyPercent' 5.0
+        gameDiskQueue = Get-SimProperty $memory 'gameDiskQueue' 0.1
     }
 }
 

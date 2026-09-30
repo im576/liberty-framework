@@ -335,7 +335,7 @@ namespace LibertyFramework.Engine
             Commands.RegisterEngine("engine", "engine status", args => Status());
             Commands.RegisterEngine("modules", "list modules: state, average/max ms, interval, throttles", args => ModulesReport());
             Commands.RegisterEngine("perf", "frame time, pressure and memory", args => PerfReport());
-            Commands.RegisterEngine("costs", "named cost samples since the last call (resets them)", args => CostMeter.ReportAndReset());
+            Commands.RegisterEngine("costs", "named cost samples since the last call of this command (resets them)", args => CostMeter.ReportAndReset(CostReader.Command));
             Commands.RegisterEngine("framestats", "frame time statistics (avg, p50, p95, p99, max, slow frames, stalls) since the last call (resets them)", args => Perf.FrameStatsReportAndReset());
             Commands.RegisterEngine("pools","game pool occupancy (peds, vehicles, objects)", args => PoolsReport());
             Commands.RegisterEngine("natives", "raw native calls made through the SDK, per module", args => Natives.Report());
@@ -887,6 +887,7 @@ namespace LibertyFramework.Engine
         internal void Draw(GraphicsEventArgs args)
         {
             drawing = true;
+            long drawStart = Stopwatch.GetTimestamp();
             try
             {
                 foreach (ModuleRuntime m in drawRuntimes)
@@ -896,10 +897,12 @@ namespace LibertyFramework.Engine
                     try { legacy.RenderLegacy(args); }
                     catch (Exception error) { DrawFailed(m, error); }
                 }
+                long uiStart = Stopwatch.GetTimestamp();
                 Ui.Draw(args, DrawModules);
+                CostMeter.Add("draw.ui", uiStart);
             }
             catch (Exception error) { RuntimeLog.Error("engine_ui_draw_failed error=" + error.Message); }
-            finally { drawing = false; }
+            finally { drawing = false; CostMeter.Add("draw.engine", drawStart); }
         }
 
         private void DrawModules(ICanvas canvas)

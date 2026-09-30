@@ -8,7 +8,10 @@ param(
     # Compare: a mod-on and a mod-off summary JSON -> markdown table with the Stage 1 budget verdicts.
     [string] $On,
     [string] $Off,
-    [string] $Markdown
+    [string] $Markdown,
+    # Label the reports 'mod-on' or 'mod-off' instead of deciding from the log (the scenarios' own `stop gunplay` lines mean
+    # mod-off). Use it for reports of a run made with engine.json disabledModules set, where the scenario stops nothing.
+    [ValidateSet('', 'mod-on', 'mod-off')][string] $Condition = ''
 )
 
 # T-040 measurement summary. The game side is the Stage 1 scenarios (tools/perf/New-Stage1Scenarios.ps1): `framestats`
@@ -41,7 +44,7 @@ if ($folders.Count -eq 0) { throw "no run.log found under: $($Reports -join ', '
 
 $summaries = @()
 foreach ($folder in ($folders | Sort-Object -Unique)) {
-    $summary = Get-ReportSummary $folder
+    $summary = Get-ReportSummary $folder $Condition
     if (@($summary.sections).Count -eq 0) { Write-Host "skipped $folder (no measured section: the scenario has no 'label')"; continue }
     $summaries += , $summary
 }
@@ -56,7 +59,7 @@ foreach ($group in $byCondition) {
         schemaVersion = 1
         condition = $group.Name
         generatedUtc = [DateTime]::UtcNow.ToString('o')
-        scenarios = @($group.Group | ForEach-Object { [ordered]@{ scenario = $_['scenario']; report = $_['reportDirectory']; engineStalls = $_['engineStalls']; logErrors = $_['logErrors'] } })
+        scenarios = @($group.Group | ForEach-Object { [ordered]@{ scenario = $_['scenario']; report = $_['reportDirectory']; engineStalls = $_['engineStalls']; logErrors = $_['logErrors']; densityMinPeds = $_['densityMinPeds']; densityMinCars = $_['densityMinCars'] } })
         budgets = Get-Stage1Budgets
         sections = @($group.Group | ForEach-Object { $_['sections'] })
     }

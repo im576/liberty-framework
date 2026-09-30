@@ -106,6 +106,7 @@ function Get-MeasuredSections([object[]] $Records, [object[]] $Measurements) {
             $last = $section.perfSamples[$section.perfSamples.Count - 1]
             $result.perf = [ordered]@{
                 frameMs = ConvertTo-Number $last['frame_ms']; pressure = ConvertTo-Number $last['pressure']
+                pressureMax = (@($section.perfSamples | ForEach-Object { ConvertTo-Number $_['pressure'] }) | Measure-Object -Maximum).Maximum
                 privateMbMax = (@($section.perfSamples | ForEach-Object { ConvertTo-Number $_['private_mb'] }) | Measure-Object -Maximum).Maximum
                 addressFreeMbMin = (@($section.perfSamples | ForEach-Object { ConvertTo-Number $_['address_free_mb'] }) | Measure-Object -Minimum).Minimum
                 largestFreeBlockMbMin = (@($section.perfSamples | ForEach-Object { ConvertTo-Number $_['largest_free_block_mb'] }) | Measure-Object -Minimum).Minimum
@@ -120,6 +121,11 @@ function Get-MeasuredSections([object[]] $Records, [object[]] $Measurements) {
             $result.gpuDedicatedMbLast = [double]$gpu[$gpu.Count - 1].gpuDedicatedMB
             $result.privateMbMax = ($gpu | ForEach-Object { [double]$_.privateMB } | Measure-Object -Maximum).Maximum
             $result.workingSetMbMax = ($gpu | ForEach-Object { [double]$_.workingSetMB } | Measure-Object -Maximum).Maximum
+            # Load on the rest of the PC while the sample ran (highest of the samples of this section). Absent = not recorded.
+            foreach ($pair in @(@('systemCpuPercent', 'systemCpuPercentMax'), @('gameDiskBusyPercent', 'gameDiskBusyPercentMax'), @('gameDiskQueue', 'gameDiskQueueMax'))) {
+                $values = @($gpu | Where-Object { $null -ne $_.($pair[0]) } | ForEach-Object { [double]$_.($pair[0]) })
+                if ($values.Count -gt 0) { $result[$pair[1]] = ($values | Measure-Object -Maximum).Maximum }
+            }
         }
         $results.Add($result)
     }
@@ -127,7 +133,7 @@ function Get-MeasuredSections([object[]] $Records, [object[]] $Measurements) {
 }
 
 # One report folder -> its summary object (scenario, condition, sections, engine stalls in the log).
-function Get-ReportSummary([string] $ReportDirectory) {
+function Get-ReportSummary([string] $ReportDirectory, [string] $Condition = '') {
     $runLog = Join-Path $ReportDirectory 'run.log'
     if (-not (Test-Path -LiteralPath $runLog)) { throw "no run.log in $ReportDirectory" }
     $lines = @(Get-Content -LiteralPath $runLog)
@@ -139,16 +145,27 @@ function Get-ReportSummary([string] $ReportDirectory) {
     }
     $measurements = @()
     $measurementFile = Join-Path $ReportDirectory 'measurements.json'
-    if (Test-Path -LiteralPath $measurementFile) { $measurements = @(Get-Content -LiteralPath $measurementFile -Raw | ConvertFrom-Json) }
+    # Windows PowerShell 5.1 hands a JSON array on as ONE object; ForEach-Object unrolls it to the measurements.
+    if (Test-Path -LiteralPath $measurementFile) { $measurements = @(Get-Content -LiteralPath $measurementFile -Raw | ConvertFrom-Json | ForEach-Object { $_ }) }
     $records = Get-CommandRecords $lines
-    # Mod-off = the gameplay modules were stopped by the scenario itself.
-    $condition = if (@($records | Where-Object { $_.Command -eq 'stop gunplay' }).Count -gt 0) { 'mod-off' } else { 'mod-on' }
+    # Mod-off = the gameplay modules were stopped by the scenario itself (or the caller says so: engine.json disabledModules).
+    if (-not $Condition) { $Condition = if (@($records | Where-Object { $_.Command -eq 'stop gunplay' }).Count -gt 0) { 'mod-off' } else { 'mod-on' } }
+    # The atmosphere module's density governor lowers ped and car density when frames are slow (atmosphere.json density):
+    # a sample taken while it was below 1.0 measured a thinner city. Its 30 s log lines show the lowest values.
+    $densityPeds = @(); $densityCars = @()
+    foreach ($line in $lines) {
+        $m = [regex]::Match($line, '\bdensity frame_ms=\S+ peds=(?<p>[0-9.]+) cars=(?<c>[0-9.]+)')
+        if ($m.Success) { $densityPeds += ConvertTo-Number $m.Groups['p'].Value; $densityCars += ConvertTo-Number $m.Groups['c'].Value }
+    }
     return [ordered]@{
         scenario = $scenario
-        condition = $condition
+        condition = $Condition
         reportDirectory = (Split-Path -Leaf $ReportDirectory)
         engineStalls = @($lines | Where-Object { $_ -match 'engine_stall' }).Count
         logErrors = @($lines | Where-Object { $_ -match '\[ERROR\]' }).Count
+        densityLines = $densityPeds.Count
+        densityMinPeds = $(if ($densityPeds.Count -gt 0) { ($densityPeds | Measure-Object -Minimum).Minimum } else { $null })
+        densityMinCars = $(if ($densityCars.Count -gt 0) { ($densityCars | Measure-Object -Minimum).Minimum } else { $null })
         sections = @(Get-MeasuredSections $records $measurements)
     }
 }
@@ -197,8 +214,8 @@ function Format-Stage1Comparison($OnSummary, $OffSummary) {
     $budgets = Get-Stage1Budgets
     $none = [pscustomobject]@{ costs = @{} }
     $out = New-Object System.Collections.Generic.List[string]
-    $out.Add('| Section | frame avg ms on / off | p50 on / off | p95 on / off (change) | p99 on / off (change) | max ms on | engine.frame avg ms on / off | GPU MB on / off (change) | private MB on / off | frames >100 ms | stalls >=1 s |')
-    $out.Add('|---|---|---|---|---|---|---|---|---|---|---|')
+    $out.Add('| Section | frame avg ms on / off | p50 on / off | p95 on / off (change) | p99 on / off (change) | max ms on | engine.frame avg ms on / off | GPU MB on / off (change) | private MB on / off | frames >100 ms | stalls >=1 s | PC load on / off: CPU % and game disk busy % |')
+    $out.Add('|---|---|---|---|---|---|---|---|---|---|---|---|')
     foreach ($on in @($OnSummary.sections)) {
         $off = @($OffSummary.sections | Where-Object { $_.label -eq $on.label }) | Select-Object -First 1
         if ($null -eq $off) { $off = $none }
@@ -210,10 +227,11 @@ function Format-Stage1Comparison($OnSummary, $OffSummary) {
         $p95 = (Format-Pair $on.p95_ms $off.p95_ms '0.0') + ' (' + (Format-Percent $on.p95_ms $off.p95_ms) + $(if ($null -ne $p95Change -and $p95Change -gt $budgets.p95IncreasePercent) { ' OVER' } else { '' }) + ')'
         $p99 = (Format-Pair $on.p99_ms $off.p99_ms '0.0') + ' (' + (Format-Percent $on.p99_ms $off.p99_ms) + $(if ($null -ne $p99Change -and $p99Change -gt $budgets.p99IncreasePercent) { ' OVER' } else { '' }) + ')'
         $gpu = (Format-Pair $on.gpuDedicatedMbMax $off.gpuDedicatedMbMax '0') + ' (' + (Format-Delta $on.gpuDedicatedMbMax $off.gpuDedicatedMbMax ' MB') + $(if ($null -ne $vramChange -and $vramChange -gt $budgets.vramOverVanillaMbCeiling) { ' OVER' } else { '' }) + ')'
-        $out.Add(('| {0} | {1} | {2} | {3} | {4} | {5} | {6} | {7} | {8} | {9} | {10} |' -f $on.label,
+        $load = 'CPU ' + (Format-Pair $on.systemCpuPercentMax $off.systemCpuPercentMax '0') + ', disk ' + (Format-Pair $on.gameDiskBusyPercentMax $off.gameDiskBusyPercentMax '0')
+        $out.Add(('| {0} | {1} | {2} | {3} | {4} | {5} | {6} | {7} | {8} | {9} | {10} | {11} |' -f $on.label,
             (Format-Pair $on.avg_ms $off.avg_ms '0.00'), (Format-Pair $on.p50_ms $off.p50_ms '0.0'), $p95, $p99, (Format-Number $on.max_ms '0.0'),
             (Format-Pair $(if ($onCost) { $onCost.avgMs }) $(if ($offCost) { $offCost.avgMs }) '0.000'), $gpu,
-            (Format-Pair $on.privateMbMax $off.privateMbMax '0'), $on.over100, $on.stalls1s))
+            (Format-Pair $on.privateMbMax $off.privateMbMax '0'), $on.over100, $on.stalls1s, $load))
     }
     return $out.ToArray()
 }
