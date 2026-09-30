@@ -1,7 +1,7 @@
 {
   "id": "ART-004",
   "title": "Bullet entry mark decals",
-  "status": "requested",
+  "status": "generated",
   "priority": "P0",
   "kind": "decal",
   "prompt": "A 2 by 2 atlas of four small realistic bullet entry marks on dark fabric-coloured stains, seen straight on, each centred in its quarter on a fully transparent background: a small dark hole with a torn edge and a soaked blood stain spreading around it, varying size and stain shape. Restrained and forensic, no exposed flesh or gore detail beyond the blood stain. Photographic, no lighting, no shadows.",
@@ -62,6 +62,49 @@
         {
           "path": "art/generated/ART-004/r1/art_004_2.png",
           "sha256": "4f4df2cd29c14c21eba718cf2aa5413cee5d4f282fec48fcd4e8fbd41b4a7028",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ]
+    },
+    {
+      "at": "2026-09-30T06:44:27+00:00",
+      "event": "generated",
+      "revision": 1,
+      "by": "Codex",
+      "notes": "Two fresh generations (_3,_4) from current prompt and verbatim constraints; all four candidates registered. _1: shiny blood, shaded fabric folds and pronounced isolated fabric patches. _2: glossy raised drops, shaded folds and different atlas cell coverage. _3: highlighted blood and torn fabric with directional shading; broad cloth cutouts. _4: shaded torn cloth, shiny blood and oversized lower-right patch with tight margins. Real alpha preserved, no post-processing or review decision; version and seeds unavailable.",
+      "model": "OpenAI image_gen built-in (model/version not exposed)",
+      "prompt": "A 2 by 2 atlas of four small realistic bullet entry marks on dark fabric-coloured stains, seen straight on, each centred in its quarter on a fully transparent background: a small dark hole with a torn edge and a soaked blood stain spreading around it, varying size and stain shape. Restrained and forensic, no exposed flesh or gore detail beyond the blood stain. Photographic, no lighting, no shadows.",
+      "files": [
+        {
+          "path": "art/generated/ART-004/r1/art_004_1.png",
+          "sha256": "a5e46003e45957476ca530cedaa360783f587280b4acba5d2bc910781f8e22f8",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-004/r1/art_004_2.png",
+          "sha256": "4f4df2cd29c14c21eba718cf2aa5413cee5d4f282fec48fcd4e8fbd41b4a7028",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-004/r1/art_004_3.png",
+          "sha256": "3e3c23cc9d85006bc1bac0e666ab02a7aff69342a4a4cd3d77c60fd1ba13bcd4",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-004/r1/art_004_4.png",
+          "sha256": "45b3da0e53d139aca3b6135293a328d229d9e614f346c2c6fb3fd70bf7309ca1",
           "width": 1254,
           "height": 1254,
           "mode": "RGBA",
