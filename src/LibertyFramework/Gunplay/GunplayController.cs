@@ -44,6 +44,15 @@ namespace LibertyFramework.Gunplay
         private int lastTimingReportTicks;
         private readonly GunplayConfigStore store;
         // T-041: the weapon catalog decides which vanilla-id weapons the Liberty profiles apply to (Stage1Gate).
+        // T-043 reticle: the style of the held weapon (resolved on the tick, drawn from it), how visible it is, and the truthfulness log.
+        private ResolvedReticle activeReticle;
+        private double reticleOpacity = 1.0;
+        private readonly ReticleTruth reticleTruth = new ReticleTruth();
+        private bool reticleDebug;
+        private double lastReticleLogMilliseconds = double.NegativeInfinity;
+        private int reticleWeaponId = -1;
+        private GunplayConfig reticleConfig;
+        private WeaponCatalog reticleCatalog;
         // Test hooks (`aim` command): pretend the aim button is held and force stance/speed, so the autopilot can check the model and reticle.
         private bool testAiming;
         private bool testCrouched;
@@ -696,7 +705,8 @@ namespace LibertyFramework.Gunplay
 
         protected internal override void OnStart()
         {
-            Engine.Commands.Register(this, "aim", "aim on|off [crouched] [cover] [speed <m/s>] - test hook: act as if the aim button is held, with a forced stance/speed", AimCommand);
+            Engine.Commands.Register(this, "aim", "aim on|off [crouched] [cover] [speed <m/s>] - test hook: act as if the aim button is held, with a forced stance/speed (T-043)", AimCommand);
+            Engine.Commands.Register(this, "reticle", "reticle debug on|off | check | reset | status - log the drawn opening against the cone and check it (T-043)", ReticleCommand);
             Engine.Commands.Register(this, "swap", "swap left|right|toggle|status|probe - shoulder swap without the aim button; probe checks the live camera table (T-042)", SwapCommand);
             Engine.Commands.Register(this, "range",
                 "range start ahead <m> [height m] | start <x> <y> <z> | fire <ms> [mode 1-4] | stop | status - record bullet deviation from an explicit aim point (T-042)", RangeCommand);
@@ -728,6 +738,30 @@ namespace LibertyFramework.Gunplay
             }
             RuntimeLog.Info("aim_test on crouched=" + testCrouched + " cover=" + testCover + " speed=" + (testSpeed.HasValue ? testSpeed.Value.ToString("0.0") : "-"));
             return "aim test on crouched=" + testCrouched + " cover=" + testCover + " speed=" + (testSpeed.HasValue ? testSpeed.Value.ToString("0.0") : "-");
+        }
+
+        private string ReticleCommand(string[] args)
+        {
+            string verb = args.Length > 0 ? args[0].ToLowerInvariant() : "status";
+            if (verb == "debug")
+            {
+                reticleDebug = args.Length > 1 && args[1] == "on";
+                if (reticleDebug) { reticleTruth.Reset(); }
+                RuntimeLog.Info("reticle_debug " + (reticleDebug ? "on" : "off"));
+                return "reticle debug " + (reticleDebug ? "on" : "off");
+            }
+            if (verb == "reset") { reticleTruth.Reset(); return "reticle truth counters reset"; }
+            string text = "class=" + (activeReticle != null ? activeReticle.WeaponClass : "-") + " style=" + (activeReticle != null ? activeReticle.Style : "-") + " drawn=" + drawCrosshair +
+                " samples=" + reticleTruth.Samples + " steady=" + reticleTruth.SteadySamples + " violations=" + reticleTruth.Violations + " under_reports=" + reticleTruth.UnderReports +
+                " worst_error_pct=" + reticleTruth.WorstErrorPercent.ToString("0.00");
+            if (verb == "check")
+            {
+                RuntimeLog.Info("reticle_check " + text);
+                if (reticleTruth.SteadySamples == 0) { return "error: no steady reticle frame was sampled (debug on, aim on, wait) " + text; }
+                if (reticleTruth.Violations > 0 || reticleTruth.UnderReports > 0) { return "error: the drawn reticle disagrees with the cone " + text; }
+                return "reticle ok " + text;
+            }
+            return "reticle " + text;
         }
 
         // `swap left|right|toggle|status|probe` (T-042): pick a shoulder without the aim button and prove the camera table follows.
@@ -771,7 +805,7 @@ namespace LibertyFramework.Gunplay
                     else { return "error: range start ahead <m> [height] | start <x> <y> <z>"; }
                     rangeRecorder.Shots.Clear();
                     rangeRecorder.Reset();
-                    // Shots at the range are aimed shots: the model treats the player as aiming while it runs.
+                    // Shots at the range are aimed shots: the model and reticle treat the player as aiming while it runs.
                     testAiming = true;
                     rangeStartedMilliseconds = Now;
                     RuntimeLog.Info("range_started aim=" + rangeAim.Value + " weapon=" + activeWeaponId + " profile=" + (activeProfile != null ? activeProfile.ProfileName : "vanilla"));
@@ -1102,8 +1136,66 @@ namespace LibertyFramework.Gunplay
             }
             bool gun = IsCrosshairWeapon(ped);
             bool showForWeapon = activeProfile != null || config.Crosshair.ShowForVanillaWeapons;
-            drawCrosshair = replace && gun && showForWeapon && aiming && !LibertyFramework.DevTools.DevToolsMenu.IsOpen &&
+            activeReticle = ResolveReticle(config, ped);
+            ReticleSettings rules = config.Reticles != null && config.Reticles.Enabled ? config.Reticles : null;
+            // Legacy (no reticles section): drawn only while aiming. With it: not aiming is hidden or reduced, a vehicle can hide it.
+            bool visibleByAim = aiming || (rules != null && rules.NotAiming == "reduced");
+            bool hiddenInVehicle = rules != null && rules.HideInVehicle && state.InVehicle;
+            reticleOpacity = aiming || rules == null ? 1.0 : rules.NotAimingOpacity;
+            drawCrosshair = replace && gun && showForWeapon && visibleByAim && !hiddenInVehicle && !activeReticle.IsNone && !LibertyFramework.DevTools.DevToolsMenu.IsOpen &&
                 !Natives.IsPauseMenuActive() && !Natives.IsScreenFadedOut() && Natives.IsPlayerControlOn(Player);
+            if (drawCrosshair && (reticleDebug || (rules != null && rules.DebugLog))) { SampleReticle(); }
+        }
+
+        // The reticle of the held weapon: catalog class (else the inventory slot), style from gunplay.json, cached per weapon and config.
+        private ResolvedReticle ResolveReticle(GunplayConfig config, Ped ped)
+        {
+            int weaponId = (int)ped.Weapons.CurrentType;
+            if (activeReticle == null || weaponId != reticleWeaponId || !ReferenceEquals(config, reticleConfig) || !ReferenceEquals(weaponCatalog, reticleCatalog))
+            {
+                GTA.value.Weapon current = ped.Weapons.Current;
+                string weaponClass = ReticleResolver.ClassOf(weaponCatalog, weaponId, current == null ? "pistol" : SlotClass(current.Slot));
+                activeReticle = ReticleResolver.Resolve(config, weaponClass, weaponId);
+                reticleWeaponId = weaponId;
+                reticleConfig = config;
+                reticleCatalog = weaponCatalog;
+                crosshair.Reset();
+                reticleTruth.Reset();
+                RuntimeLog.Info("reticle_resolved weapon=" + weaponId + " class=" + weaponClass + " style=" + activeReticle.Style + " min_px=" + activeReticle.MinimumGapPixels.ToString("0.#") +
+                    " max_px=" + activeReticle.MaximumGapPixels.ToString("0.#") + " length_px=" + activeReticle.LineLengthPixels.ToString("0.#"));
+            }
+            return activeReticle;
+        }
+
+        // Class of a weapon that is not in the catalog: from its inventory slot (the sniper slot has no reticle of its own: the game's scope).
+        private static string SlotClass(WeaponSlot slot)
+        {
+            switch (slot)
+            {
+                case WeaponSlot.Shotgun: return "shotgun";
+                case WeaponSlot.SMG: return "smg";
+                case WeaponSlot.Rifle: return "rifle";
+                case WeaponSlot.Sniper: return "sniper";
+                case WeaponSlot.Heavy: return "heavy";
+                case WeaponSlot.Thrown: return "thrown";
+                default: return "pistol";
+            }
+        }
+
+        // Frames the drawn opening against the cone (T-043 truthfulness), from values the draw pass left behind.
+        private void SampleReticle()
+        {
+            double now = Now;
+            double target = crosshair.LastTargetPixels;
+            double drawn = crosshair.DisplayedGapPixels;
+            if (target <= 0 || drawn < 0) { return; }
+            bool steady = reticleTruth.Add(now, target, drawn);
+            if (now - lastReticleLogMilliseconds >= 250)
+            {
+                lastReticleLogMilliseconds = now;
+                RuntimeLog.Info("reticle_frame weapon=" + reticleWeaponId + " class=" + activeReticle.WeaponClass + " style=" + activeReticle.Style + " cone=" + displayConeDegrees.ToString("0.000") +
+                    " target_px=" + target.ToString("0.00") + " drawn_px=" + drawn.ToString("0.00") + " steady=" + steady + " state=" + state.Describe());
+            }
         }
 
         private static bool IsCrosshairWeapon(Ped ped)
@@ -1137,7 +1229,8 @@ namespace LibertyFramework.Gunplay
                 if (drawCrosshair)
                 {
                     long drawStart = Stopwatch.GetTimestamp();
-                    crosshair.Draw(args.Graphics, config.Crosshair, displayConeDegrees, lastFov, pixelsPerTangent, screenResolution, args.Graphics.FrameTime);
+                    ResolvedReticle style = activeReticle;
+                    if (style != null) { crosshair.Draw(args.Graphics, style, config.Crosshair.FovAxis, reticleOpacity, displayConeDegrees, lastFov, pixelsPerTangent, screenResolution, args.Graphics.FrameTime); }
                     CostMeter.Add("draw.crosshair", drawStart);
                 }
                 if (DebugOverlay) { DrawOverlay(args.Graphics); }

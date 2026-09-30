@@ -16,8 +16,8 @@
 |---|---|---|
 | pc-offline | 13 | automatically (builds and tests that need Windows or the game's files) |
 | probe | 4 | automatically (read-only questions about the game's files; structure only) |
-| scenario | 27 | automatically (autopilot drives the game; about 2-4 minutes each) |
-| manual | 19 | you play and judge; about 177 minutes in total, grouped below |
+| scenario | 28 | automatically (autopilot drives the game; about 2-4 minutes each) |
+| manual | 20 | you play and judge; about 187 minutes in total, grouped below |
 
 Statuses: QUEUED (never run on the current code), PASS, FAIL, ERROR, CRASH, NOT-RUN, NEEDS-REVIEW (a person or the review session must judge screenshots or log errors).
 
@@ -25,7 +25,7 @@ Statuses: QUEUED (never run on the current code), PASS, FAIL, ERROR, CRASH, NOT-
 
 Do the sessions in order; stop whenever you like. Each check links to its full steps. Answer p (pass), f (fail) or s (skip) when the script asks, and add a note for anything odd.
 
-### Session 1: gunplay and feel (about 70 minutes)
+### Session 1: gunplay and feel (about 80 minutes)
 
 Load a free-roam save, go to the test range (DevTools > TELEPORT). Keep DevTools (L3+R3 or F10) handy.
 
@@ -110,6 +110,18 @@ Load a free-roam save, go to the test range (DevTools > TELEPORT). Keep DevTools
 
 - Pass when: each class reads as right or you name the value to change; no camera clip into a wall at either shoulder
 - Full steps: [docs/tasks/T-042-stage1-gunplay.md#human-test-steps](../../docs/tasks/T-042-stage1-gunplay.md#human-test-steps)
+
+**Look and feel of the weapon-class reticles (keyboard/mouse and controller)** `T043-reticle-look` (T-043, 10 min)
+
+1. DevTools > Weapons: give yourself the Glock 17, IMI Uzi, AK-47 and Remington 1100 (Stage 1 entries) and go to the test range.
+2. Aim with each weapon (LT / right mouse). Glock: a small cross; Uzi: a longer-armed cross; AK-47: four corner brackets; Remington: a ring of dots.
+3. Fire a few shots and a long burst with each: the reticle opens instantly on every shot and closes smoothly; while you run or crouch it changes size with the movement.
+4. Aim with a sniper rifle (give one from DevTools > Weapons if you want): the game's own scope is unchanged.
+5. Check readability on a bright wall and at night (time of day in DevTools), on a controller and on keyboard/mouse.
+6. Tell me for each class: too big, too small, too busy, or right.
+
+- Pass when: each class reads as right or you name the value to change
+- Full steps: [docs/tasks/T-043-stage1-reticles.md#human-test-steps](../../docs/tasks/T-043-stage1-reticles.md#human-test-steps)
 
 ### Session 2: storage, Arsenal and gunsmith (about 41 minutes)
 
@@ -256,6 +268,7 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 | `T041-stage1-arsenal` | T-041 | scenario | autopilot PASS (every expect); the six screenshots judged: the weapon in hand is the catalog weapon | QUEUED |
 | `T042-gunplay-range` | T-042 | scenario | autopilot PASS (catalog sim ok, range_summary for every weapon); the range table (Measure-GunplayRange.ps1) read: first-shot deviation inside the written cone, spread larger in sustained fire than on the first shot | QUEUED |
 | `T042-shoulder-swap` | T-042 | scenario | autopilot PASS (every swap probe live_ok, settled); the `ray left` and `ray right` lines read: no side of a Stage 1 spot is closer than the camera offset (0.475 m) | QUEUED |
+| `T043-stage1-reticles` | T-043 | scenario | autopilot PASS (reticle_resolved per class, reticle check ok per class, draw.crosshair average below 0.1 ms in costs); the screenshots judged: each class reads as its own reticle and the firing frames are visibly wider than the standing ones | QUEUED |
 
 ## What each check proves, and what stays unproven
 
@@ -323,3 +336,5 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 - `T042-gunplay-range`: Every Stage 1 profile meets its class targets in the live model (`catalog sim`: first-shot cone, burst recovery, spread growth and camera climb for automatic weapons), and for each weapon the player's bullets at a point 25 m ahead are recorded (single shots, bursts, continuous fire) with the cone the model wrote for each, for tools/perf/Measure-GunplayRange.ps1.
 - `T042-shoulder-swap`: Forced left/right/toggle slides the game's aim-camera table to -1/+1 and the live table matches (swap probe), the right shoulder is restored at the end, and the engine ray from both sides of the player is logged at the test wall (0.4 to 3 m away, facing both ways) and at four city capture points.
 - `T042-feel-per-class`: Owner sign-off of the per-class starting numbers (config/gunplay.json weapons[], classTargets) and of shoulder swap near walls, which the autopilot cannot aim at.
+- `T043-stage1-reticles`: Each of the four Stage 1 classes (pistol, SMG, rifle, shotgun) is held and shows its configured reticle style while the model treats the player as aiming in four states (standing, crouched, moving, sustained fire and recovery); the drawn opening equals the cone within 5% whenever the cone is steady and never under-reports it (`reticle check`); the average draw cost of the reticle is under 0.1 ms.
+- `T043-reticle-look`: Owner sign-off of the reticle styles and sizes (config/gunplay.json reticles.classes[]), which are looks and feel.

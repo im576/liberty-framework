@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using LibertyFramework.Gunplay.Logic;
 
 namespace LibertyFramework.Gunplay.Profiles
 {
@@ -105,6 +106,8 @@ namespace LibertyFramework.Gunplay.Profiles
                 }
             }
 
+            if (config.Reticles != null) { ValidateReticles(errors, config); }
+
             foreach (TuningParameter parameter in config.Tuning)
             {
                 if (parameter == null || !ProfileParameters.IsKnown(parameter.Key)) { errors.Add("unknown tuning key " + (parameter == null ? "null" : parameter.Key)); continue; }
@@ -157,6 +160,46 @@ namespace LibertyFramework.Gunplay.Profiles
             Positive(errors, owner + " spread.blindFireMultiplier", spread.BlindFireMultiplier);
             Positive(errors, owner + " spread.airborneMultiplier", spread.AirborneMultiplier);
             NonNegative(errors, owner + " spread.pelletPatternDegrees", spread.PelletPatternDegrees);
+        }
+
+        // T-043: the section itself, then every class and weapon entry as it will be drawn (resolved over the base crosshair).
+        private static void ValidateReticles(List<string> errors, GunplayConfig config)
+        {
+            ReticleSettings settings = config.Reticles;
+            if (settings.NotAiming != "hidden" && settings.NotAiming != "reduced") { errors.Add("reticles.notAiming must be hidden or reduced"); }
+            Fraction(errors, "reticles.notAimingOpacity", settings.NotAimingOpacity);
+            if (settings.Classes == null) { errors.Add("reticles.classes is missing"); return; }
+            HashSet<string> classes = new HashSet<string>();
+            foreach (ReticleClassSettings entry in settings.Classes)
+            {
+                if (entry == null || string.IsNullOrEmpty(entry.WeaponClass) || entry.Style == null || !classes.Add(entry.WeaponClass)) { errors.Add("reticles.classes: missing or duplicate class"); continue; }
+                ValidateResolvedReticle(errors, "reticles class " + entry.WeaponClass, ReticleResolver.Resolve(config, entry.WeaponClass, 0), entry.Style);
+            }
+            HashSet<int> weapons = new HashSet<int>();
+            if (settings.Weapons != null)
+            {
+                foreach (ReticleWeaponSettings entry in settings.Weapons)
+                {
+                    if (entry == null || entry.WeaponId < 1 || entry.WeaponId > 127 || !weapons.Add(entry.WeaponId)) { errors.Add("reticles.weapons: bad or duplicate weaponId"); continue; }
+                    if (!string.IsNullOrEmpty(entry.WeaponClass) && !classes.Contains(entry.WeaponClass)) { errors.Add("reticles weapon " + entry.WeaponId + " names unknown class " + entry.WeaponClass); continue; }
+                    ValidateResolvedReticle(errors, "reticles weapon " + entry.WeaponId, ReticleResolver.Resolve(config, entry.WeaponClass, entry.WeaponId), entry.Style);
+                }
+            }
+        }
+
+        private static void ValidateResolvedReticle(List<string> errors, string owner, ResolvedReticle style, ReticleStyleSettings named)
+        {
+            if (Array.IndexOf(ReticleResolver.Styles, style.Style) < 0) { errors.Add(owner + ": style must be one of " + string.Join(", ", ReticleResolver.Styles)); }
+            Positive(errors, owner + " lineLengthPixels", style.LineLengthPixels);
+            Positive(errors, owner + " lineThicknessPixels", style.LineThicknessPixels);
+            NonNegative(errors, owner + " outlinePixels", style.OutlinePixels);
+            NonNegative(errors, owner + " minimumGapPixels", style.MinimumGapPixels);
+            if (style.MaximumGapPixels < style.MinimumGapPixels) { errors.Add(owner + ": maximumGapPixels < minimumGapPixels"); }
+            NonNegative(errors, owner + " centerDotPixels", style.CenterDotPixels);
+            if (style.RingDots < 3 || style.RingDots > 64) { errors.Add(owner + ": ringDots must be 3-64"); }
+            Positive(errors, owner + " gapSmoothingPerSecond", style.GapSmoothingPerSecond);
+            if (named != null && named.ColorArgb != null) { Argb(errors, owner + " colorArgb", named.ColorArgb); }
+            if (named != null && named.OutlineArgb != null) { Argb(errors, owner + " outlineArgb", named.OutlineArgb); }
         }
 
         private static bool ShoulderSwapSettings_IsButton(string name)

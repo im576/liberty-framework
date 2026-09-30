@@ -30,6 +30,9 @@ namespace LibertyFramework.Gunplay.Profiles
         // T-041, optional: null = Stage 1 catalog weapons enabled.
         [DataMember(Name = "stage1Weapons", IsRequired = false, Order = 14)] internal Stage1WeaponSettings Stage1Weapons;
 
+        // T-043, optional: per-class and per-weapon reticles; null = the single `crosshair` for every weapon.
+        [DataMember(Name = "reticles", IsRequired = false, Order = 16)] internal ReticleSettings Reticles;
+
         // T-042, optional: what each Stage 1 weapon class must deliver (measured by GunplaySimulation).
         [DataMember(Name = "classTargets", IsRequired = false, Order = 15)] internal System.Collections.Generic.List<ClassTargetSettings> ClassTargets;
 

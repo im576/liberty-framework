@@ -1373,6 +1373,56 @@
       "reference": "docs/tasks/T-042-stage1-gunplay.md#human-test-steps",
       "status": "QUEUED",
       "addedIn": "stage1/T-042"
+    },
+    {
+      "id": "T043-stage1-reticles",
+      "task": "T-043",
+      "title": "Stage 1 reticles: class styles, truthful opening, draw cost",
+      "kind": "scenario",
+      "run": {
+        "scenario": "stage1-reticles"
+      },
+      "proves": "Each of the four Stage 1 classes (pistol, SMG, rifle, shotgun) is held and shows its configured reticle style while the model treats the player as aiming in four states (standing, crouched, moving, sustained fire and recovery); the drawn opening equals the cone within 5% whenever the cone is steady and never under-reports it (`reticle check`); the average draw cost of the reticle is under 0.1 ms.",
+      "pass": "autopilot PASS (reticle_resolved per class, reticle check ok per class, draw.crosshair average below 0.1 ms in costs); the screenshots judged: each class reads as its own reticle and the firing frames are visibly wider than the standing ones",
+      "review": {
+        "screenshots": {
+          "reticle_pistol_standing": "Glock in hand, aiming stance: a small precise four-arm cross with a tight gap at the centre of the screen",
+          "reticle_pistol_firing": "the same cross while firing: the gap is wider than standing",
+          "reticle_smg_standing": "Uzi: a four-arm cross with longer arms than the pistol's",
+          "reticle_smg_firing": "Uzi while firing continuously: the gap is much wider",
+          "reticle_rifle_standing": "AK-47: four corner brackets (crop marks) around a small square with a centre dot",
+          "reticle_rifle_moving": "AK-47 with a forced 4 m/s speed: the brackets are wider than standing",
+          "reticle_rifle_firing": "AK-47 during sustained fire: the brackets are far apart",
+          "reticle_shotgun_standing": "Remington: a ring of twelve dots with a centre dot, clearly wider than any cross",
+          "reticle_shotgun_firing": "Remington right after shots: the ring is not smaller than standing"
+        }
+      },
+      "reference": "docs/tasks/T-043-stage1-reticles.md#human-test-steps",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-043"
+    },
+    {
+      "id": "T043-reticle-look",
+      "task": "T-043",
+      "session": "gunplay",
+      "minutes": 10,
+      "title": "Look and feel of the weapon-class reticles (keyboard/mouse and controller)",
+      "kind": "manual",
+      "run": {
+        "steps": [
+          "DevTools > Weapons: give yourself the Glock 17, IMI Uzi, AK-47 and Remington 1100 (Stage 1 entries) and go to the test range.",
+          "Aim with each weapon (LT / right mouse). Glock: a small cross; Uzi: a longer-armed cross; AK-47: four corner brackets; Remington: a ring of dots.",
+          "Fire a few shots and a long burst with each: the reticle opens instantly on every shot and closes smoothly; while you run or crouch it changes size with the movement.",
+          "Aim with a sniper rifle (give one from DevTools > Weapons if you want): the game's own scope is unchanged.",
+          "Check readability on a bright wall and at night (time of day in DevTools), on a controller and on keyboard/mouse.",
+          "Tell me for each class: too big, too small, too busy, or right."
+        ]
+      },
+      "proves": "Owner sign-off of the reticle styles and sizes (config/gunplay.json reticles.classes[]), which are looks and feel.",
+      "pass": "each class reads as right or you name the value to change",
+      "reference": "docs/tasks/T-043-stage1-reticles.md#human-test-steps",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-043"
     }
   ]
 }

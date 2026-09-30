@@ -63,7 +63,26 @@
     { "class": "smg", "firstShotConeMaxDegrees": 0.5, "burstShotCount": 3, "burstRecoveryMaxMilliseconds": 800, "recoveryToleranceFraction": 0.1, "sustainedShots": 30, "climbMinDegrees": 4, "climbMaxDegrees": 9 },
     { "class": "rifle", "firstShotConeMaxDegrees": 0.5, "burstShotCount": 3, "burstRecoveryMaxMilliseconds": 800, "recoveryToleranceFraction": 0.1, "sustainedShots": 30, "climbMinDegrees": 6, "climbMaxDegrees": 12 }
   ],
-  "weapons": [
+  "reticles": {
+    "enabled": true,
+    "notAiming": "hidden",
+    "notAimingOpacity": 0.35,
+    "hideInVehicle": false,
+    "debugLog": false,
+    "classes": [
+      { "class": "pistol", "style": { "style": "cross", "lineLengthPixels": 5, "lineThicknessPixels": 2, "minimumGapPixels": 3 } },
+      { "class": "smg", "style": { "style": "cross", "lineLengthPixels": 10, "lineThicknessPixels": 2, "minimumGapPixels": 5, "maximumGapPixels": 200 } },
+      { "class": "rifle", "style": { "style": "bracket", "lineLengthPixels": 8, "lineThicknessPixels": 2, "minimumGapPixels": 4, "centerDotPixels": 2 } },
+      { "class": "shotgun", "style": { "style": "ring", "ringDots": 12, "lineThicknessPixels": 2, "minimumGapPixels": 14, "maximumGapPixels": 240, "centerDotPixels": 2 } },
+      { "class": "heavy", "style": { "style": "cross", "lineLengthPixels": 12, "lineThicknessPixels": 3, "minimumGapPixels": 6 } },
+      { "class": "thrown", "style": { "style": "dot", "centerDotPixels": 3 } },
+      { "class": "sniper", "style": { "style": "none" } }
+    ],
+    "weapons": [
+      { "weaponId": 9, "class": "pistol", "style": { "lineLengthPixels": 4, "lineThicknessPixels": 3 } },
+      { "weaponId": 10, "class": "shotgun", "style": { "ringDots": 16 } }
+    ]
+  },  "weapons": [
     {
       "weaponId": 58,
       "vanillaWeaponId": 7,
