@@ -1,6 +1,6 @@
 # T-041 — Stage 1 arsenal and availability
 
-Status: **READY** · Lane A · Depends on: T-040 (audit) · Design: STAGE1 sections 4-5 (spec), 7 Slice A, 10 Pillar 3
+Status: **READY** (implemented; in-game check not yet run, see Blocked) · Lane A · Depends on: T-040 (audit) · Design: STAGE1 sections 4-5 (spec), 7 Slice A, 10 Pillar 3
 
 ## Goal
 
@@ -32,6 +32,39 @@ outside the catalog stay vanilla; every system can be switched off.
 - Scenario `stage1-arsenal`: gives each catalog weapon, fires it, confirms bullet events and the Liberty profile in the
   log. Vanilla weapons outside the catalog behave as vanilla.
 
+## Progress (2026-09-30, Claude, lane A)
+
+Implemented and offline-verified; the in-game check `T041-stage1-arsenal` has **not passed yet**: the game could not start (see Blocked).
+
+**What was built**
+- `config/weapon-catalog.json`: `tiers[]` (common / less-common / rare / restricted / test), `restrictedClasses[]` (`sniper`, `lmg`, `pdw`, `military`), and per entry `weaponInfoType`, `class`, `tier`, `stage1`, `profile`, `availability` (sources, price, contact, story progress), `stats` and `vanillaStats`. Stage 1 arsenal: Glock 17 (7, pistol, common), .44 AutoMag (9, pistol, less common), Street Sweeper (10, shotgun, less common), Remington 1100 (11, shotgun, common), IMI Uzi (12, SMG, common), AK-47 (14, rifle, rare). Not Stage 1 (restricted, vanilla behaviour): id 13 (the pack's P90 look on the MP5 slot), 15 MG36, 16 M40A1, 17 DSR-1.
+- `config/gunplay.json`: a Liberty profile for each Stage 1 weapon on its **vanilla id** (`catalogId` links it to the catalog); `stage1Weapons.enabled` switches them all off. The gate (`Gunplay/Logic/Stage1Gate.cs`) applies the recoil/spread/reticle model to a vanilla-id weapon only when the catalog lists it as `stage1`; test weapons 58-60 are unchanged. `WeaponInfoTable` validates each catalog id against the loaded WeaponInfo.xml on its own (a wrong id cannot disable the test weapons) and gives the game its own accuracy back when the player switches away.
+- Identity stats: `Merge-WeaponInfoStats` (`tools/PackageMerge.psm1`) writes `stats` into the installed `update\common\data\WeaponInfo.xml` at packaging (`applyWeaponInfoStats: false` writes `vanillaStats`, restoring the game's values). Deliberate changes from the game's own values: Uzi 66 to 85 ms and damage 55 to 45; AK-47 133 to 110 ms. Everything else equals the game's values (caliber differences already exist in them). Starting points for T-042.
+- Availability: `WeaponAvailability` evaluates tier, story progress, contact and price (unknown story progress fails a rule that needs it). What a script can control is in [research/WeaponAvailability.md](../research/WeaponAvailability.md); the rest are open questions below.
+- Commands: `catalog list|give|offer|check` (console and autopilot); DevTools > WEAPONS gets the same "Give" entries in T-042.
+- Verifier: `Stage1ArsenalChecks` (62 checks: class/tier/availability/profile/model/stats per weapon, restricted classes never Stage 1, gate cases, availability cases, bad data refused). Scenario `stage1-arsenal`: gives, holds and fires each Stage 1 weapon at the test range, expects `weapon_changed ... profile=<Liberty profile>`, `BulletFired`, `gunplay_state`, and `catalog check` (catalog, gunplay.json, gate and loaded WeaponInfo.xml agree); controls: restricted weapons, a test weapon and a vanilla weapon stay as they were.
+
+**Evidence**
+- RAN-PASS: build; `tools/verify.ps1` 892 passed 0 failed (1 NOT-RUN: the packaged-XML check needs `staging/phase2`); `Run-Tests.ps1` 168 passed; `checks.py`; `artq.py validate`; `LOOP-package-install` on the PC (package, offline verifier, content self-test, install with backup and restore; the log shows `weaponinfo: 3 stat changes: MICRO_UZI timebetweenshots 66->85; MICRO_UZI base 55->45; AK47 timebetweenshots 133->110`).
+- NOT RUN: `T041-stage1-arsenal` in game (reason below).
+
+## Blocked
+
+The game cannot start on this PC right now: every launch shows the modal **"GTA IV Fatal Error: GTA IV requires a sound card in order to run"** (window title `GTA IV Fatal Error`), because Windows has no active audio playback device (all render endpoints are `Unknown`; the only output that worked earlier was the DualSense controller's speakers, which is no longer connected). The autopilot run of `T041-stage1-arsenal` (run `20260930-072300-bf9cc23`, results-local of the lane A worktree) launched the game five times and was killed after 900 s (`ERROR: scenario killed after 900 s`); the other lanes' runs on the same PC fail the same way. Not a mod fault. Needed: reconnect an audio output (controller, headset, speakers or a monitor with audio), then run
+`./tools/verify-local.ps1 -GameDirectory "C:\Games\Grand Theft Auto IV\GTAIV" -Branch stage1/T-041 -AnyBranch -NoPush -Restore -NoManual -Only LOOP-package-install,T041-stage1-arsenal`.
+
+## Open questions
+
+1. **Id 13** is the MP5 slot, but the installed weapon pack draws a P90 there, and the design excludes P90-type weapons. It is `restricted` now. If you accept the P90 as the "MP5-type" less-common SMG, change its `class` to `smg`, `tier` to `less-common`, `stage1` to true and give it a profile.
+2. The design's "revolver" and "MP5-type" slots have no weapon in the installed pack (ids 7-17 are ten weapons); the rare tier has only the AK-47 ("tactical by circumstance" is not represented). Adding weapons needs FusionFix ExtendedLimits ids and models (ADR-0002 registered three).
+3. Availability: story progress, contacts, Ammu-Nation stock, pickups and ambient NPC loadouts have no verified script control (research note). The tiers rule only Liberty's own offers; the game's own shops still sell every vanilla weapon.
+4. A catalog weapon shares its WeaponInfo entry with every NPC that carries it, so while the player holds a Stage 1 pistol the model's accuracy applies to NPC pistols too (restored on switching away). Acceptable for Stage 1 or gate it further?
+
 ## Human test steps
 
-Fill in when done.
+1. Install the build (the verifier does it, or `tools/install-phase2.ps1`) and start the game with an audio output connected.
+2. Give yourself each Stage 1 weapon with the console command `catalog give service-pistol` (then `combat-pistol`, `street-sweeper`, `remington-1100`, `imi-uzi`, `ak-47`; `catalog list` names them). From T-042 on, DevTools (F10 or L3+R3) > WEAPONS also lists them as "Give ... (Stage 1, <tier>)". Go to the test range (DevTools > TELEPORT), aim and fire: you should see the pack's model for each and the Liberty crosshair opening as you fire.
+3. Compare feel with the vanilla weapon it replaces only through the numbers: the Uzi fires a little slower and hits softer, the AK-47 a little faster; everything else matches the game's own values for now (T-042 tunes handling).
+4. The sniper rifles, the MG36 and the P90-looking SMG (ids 13, 15, 16, 17) still behave exactly as in the game: give one with the console `catalog give m40a1 25 force` if you want to compare.
+5. In `scripts\LibertyFramework\logs\LibertyFramework.log` look for `stage1_gate` (one line per catalog weapon: `gunplay=liberty` for the six, `vanilla` for the others) and `weaponinfo_stage1_validated`.
+6. To switch it all off: set `"stage1Weapons": { "enabled": false }` in `config\gunplay.json` (hot-reloaded) and set `"applyWeaponInfoStats": false` in `config\weapon-catalog.json`, then run the package/install again to put the game's own stats back.
