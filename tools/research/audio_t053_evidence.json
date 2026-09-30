@@ -1,0 +1,869 @@
+{
+  "scope": "VERIFIED OFFLINE observations; no writer or runtime test",
+  "sfx_inventory": [
+    {
+      "name": "ambient_streams.rpf",
+      "bytes": 92450816
+    },
+    {
+      "name": "cutscenes.rpf",
+      "bytes": 847894528
+    },
+    {
+      "name": "general.rpf",
+      "bytes": 1370112
+    },
+    {
+      "name": "gps.rpf",
+      "bytes": 33499136
+    },
+    {
+      "name": "loading.rpf",
+      "bytes": 80709632
+    },
+    {
+      "name": "police_scanner.rpf",
+      "bytes": 11515904
+    },
+    {
+      "name": "radio_adverts.rpf",
+      "bytes": 160940032
+    },
+    {
+      "name": "radio_afro_beat.rpf",
+      "bytes": 116215808
+    },
+    {
+      "name": "radio_babylon.rpf",
+      "bytes": 99127296
+    },
+    {
+      "name": "radio_beat_95.rpf",
+      "bytes": 79673344
+    },
+    {
+      "name": "radio_bobby_konders.rpf",
+      "bytes": 63842304
+    },
+    {
+      "name": "radio_classical_ambient.rpf",
+      "bytes": 59932672
+    },
+    {
+      "name": "radio_dance_mix.rpf",
+      "bytes": 87334912
+    },
+    {
+      "name": "radio_dance_rock.rpf",
+      "bytes": 138438656
+    },
+    {
+      "name": "radio_extratracks.rpf",
+      "bytes": 334030848
+    },
+    {
+      "name": "radio_fusion_fm.rpf",
+      "bytes": 111587328
+    },
+    {
+      "name": "radio_hardcore.rpf",
+      "bytes": 57724928
+    },
+    {
+      "name": "radio_independence.rpf",
+      "bytes": 166051840
+    },
+    {
+      "name": "radio_jazz_nation.rpf",
+      "bytes": 93491200
+    },
+    {
+      "name": "radio_k109_the_studio.rpf",
+      "bytes": 92104704
+    },
+    {
+      "name": "radio_lazlow.rpf",
+      "bytes": 53637120
+    },
+    {
+      "name": "radio_liberty_rock.rpf",
+      "bytes": 216868864
+    },
+    {
+      "name": "radio_meditation.rpf",
+      "bytes": 86798336
+    },
+    {
+      "name": "radio_news.rpf",
+      "bytes": 197193728
+    },
+    {
+      "name": "radio_ny_classics.rpf",
+      "bytes": 46989312
+    },
+    {
+      "name": "radio_plr.rpf",
+      "bytes": 102666240
+    },
+    {
+      "name": "radio_ramjamfm.rpf",
+      "bytes": 81205248
+    },
+    {
+      "name": "radio_san_juan_sounds.rpf",
+      "bytes": 72024064
+    },
+    {
+      "name": "radio_the_vibe.rpf",
+      "bytes": 163248128
+    },
+    {
+      "name": "radio_vcfm.rpf",
+      "bytes": 197046272
+    },
+    {
+      "name": "radio_vladivostok.rpf",
+      "bytes": 107640832
+    },
+    {
+      "name": "radio_weather.rpf",
+      "bytes": 32247808
+    },
+    {
+      "name": "radio_wktt.rpf",
+      "bytes": 103694336
+    },
+    {
+      "name": "resident.rpf",
+      "bytes": 85196800
+    },
+    {
+      "name": "script_ambient.rpf",
+      "bytes": 2539520
+    },
+    {
+      "name": "script_mission.rpf",
+      "bytes": 8755200
+    },
+    {
+      "name": "scripted_speech.rpf",
+      "bytes": 778319872
+    },
+    {
+      "name": "speech.rpf",
+      "bytes": 1601191936
+    },
+    {
+      "name": "streamed_vehicles.rpf",
+      "bytes": 25567232
+    }
+  ],
+  "config_files": [
+    {
+      "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\pc\\audio\\config\\categories.dat15",
+      "bytes": 15934,
+      "sha256": "ce9925c733ec1c6c5bf7bf8de8927ee2cd1ccfd37c674b2c09c300823f5e2219"
+    },
+    {
+      "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\pc\\audio\\config\\curves.dat12",
+      "bytes": 37254,
+      "sha256": "02ddd42d10651168489a523c563fd8cc9a1802589e64c9eb126ec582acbba2e9"
+    },
+    {
+      "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\pc\\audio\\config\\driverSettings.xml",
+      "bytes": 387,
+      "sha256": "350ed16e258c79afb73aa9f1c08a301ecb802812c02f354c15588117dd9cf6d0"
+    },
+    {
+      "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\pc\\audio\\config\\effects.dat11",
+      "bytes": 1314,
+      "sha256": "bc3429e9d641a39f0de5ee06bc2826c3a2bc66203e6109374584d2ffc70178e2"
+    },
+    {
+      "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\pc\\audio\\config\\engineSettings.xml",
+      "bytes": 776,
+      "sha256": "3ce4d8fb4ed4186b60a8a2690931b1bed01f780c7d22091d360d66ce81d1aa21"
+    },
+    {
+      "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\pc\\audio\\config\\game.dat16",
+      "bytes": 268269,
+      "sha256": "69031f82125de0c0545e784287ee89360adf2b60c3f54c588df2b26eee1cd954"
+    },
+    {
+      "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\pc\\audio\\config\\rpf.xml",
+      "bytes": 4256,
+      "sha256": "1f29697440c25baf04a8e078cfc1b9876155c8d6a7cacad28ac9e51e8bb74ca0"
+    },
+    {
+      "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\pc\\audio\\config\\sounds.dat15",
+      "bytes": 1883018,
+      "sha256": "d18e558b0e7ffb38d51e911d529d65fffb0a1f23752971f1d61e98f53c64ea81"
+    },
+    {
+      "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\pc\\audio\\config\\speech.dat",
+      "bytes": 544110,
+      "sha256": "8656a18deb159657b5feaa78b81a566867bb6b9bdffd33e2dabf666707cca1a2"
+    },
+    {
+      "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\pc\\audio\\config\\waveslot_.xml",
+      "bytes": 15690,
+      "sha256": "95910bfe46d32106ce8a008820f3f560567174cbd775798f7786bdd5467018c0"
+    },
+    {
+      "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\pc\\audio\\config\\waveslots.xml",
+      "bytes": 16790,
+      "sha256": "2cb912af62d0d9606715fdc78cba476abf467db53fb962a3125c62b89c00937b"
+    }
+  ],
+  "selected_wave_slots": [
+    {
+      "Name": "FRONTEND_GAME",
+      "MaxHeaderSize": "4096",
+      "LoadType": "BANK",
+      "StaticBank": "RESIDENT\\FRONTEND_GAME",
+      "Size": "4689920"
+    },
+    {
+      "Name": "FRONTEND_MENU",
+      "MaxHeaderSize": "4096",
+      "LoadType": "BANK",
+      "StaticBank": "RESIDENT\\FRONTEND_MENU",
+      "Size": "1525760"
+    },
+    {
+      "Name": "WEAPONS",
+      "MaxHeaderSize": "20480",
+      "LoadType": "BANK",
+      "StaticBank": "RESIDENT\\WEAPONS",
+      "Size": "13174784"
+    }
+  ],
+  "rpf_registration": [
+    {
+      "Name": "resident",
+      "Type": "rpf",
+      "Alias": "resident"
+    }
+  ],
+  "resident_rpf": {
+    "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\pc\\audio\\sfx\\resident.rpf",
+    "bytes": 85196800,
+    "sha256": "6222151567be76db72f05a2043e8c8c34ef312752b0c61a629f369375b8a438b"
+  },
+  "resident_header_u32": [
+    860246098,
+    2048,
+    21,
+    0,
+    4294967295
+  ],
+  "installed_override": {
+    "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\update\\pc\\audio\\sfx\\resident.rpf\\RESIDENT\\WEAPONS",
+    "bytes": 17605310,
+    "sha256": "0ee1da46f55687f6caf1547d56b50fd7a64cfcfb1c703ddfbf31979648d9e3f2"
+  },
+  "override_observed_layout": {
+    "first_u64": 28,
+    "header_end_u64": 19036,
+    "count_u32": 396,
+    "flags_u32": 0,
+    "data_start_u32": 20480,
+    "metadata_start": 6364,
+    "descriptor_metadata_offsets_are_permutation": true,
+    "all_descriptor_lengths_32": true,
+    "all_payload_ranges_in_bounds": true,
+    "distinct_descriptor_hashes": 396,
+    "record_word_8_equals_descriptor_hash_count": 396,
+    "rate_like_u16_distribution": {
+      "32000": 338,
+      "44100": 25,
+      "24000": 33
+    },
+    "final_u32_distribution": {
+      "1": 396
+    },
+    "bytes_equal_twice_sample_like_count": 394,
+    "metadata_word_8_crc32_matches": 0,
+    "last_payload_end": 17605310,
+    "size_exceptions": [
+      {
+        "record_index": 161,
+        "descriptor_hash": "241b77b0",
+        "raw_fields": [
+          6160864,
+          605779888,
+          276550,
+          18553,
+          4294967295,
+          44100,
+          65,
+          255,
+          1
+        ]
+      },
+      {
+        "record_index": 162,
+        "descriptor_hash": "4a01c37c",
+        "raw_fields": [
+          6437926,
+          1241629564,
+          276550,
+          18553,
+          4294967295,
+          44100,
+          65,
+          255,
+          1
+        ]
+      }
+    ]
+  },
+  "uniform_32byte_bank_header_candidates": [
+    {
+      "resident_offset": "0x47a000",
+      "count": 38,
+      "header_end": 1852,
+      "flags": 0,
+      "data_start": 2048
+    },
+    {
+      "resident_offset": "0x654000",
+      "count": 405,
+      "header_end": 19468,
+      "flags": 6,
+      "data_start": 20480
+    },
+    {
+      "resident_offset": "0xeb3000",
+      "count": 274,
+      "header_end": 13180,
+      "flags": 0,
+      "data_start": 14336
+    },
+    {
+      "resident_offset": "0x11b3800",
+      "count": 59,
+      "header_end": 2860,
+      "flags": 0,
+      "data_start": 4096
+    },
+    {
+      "resident_offset": "0x12ee000",
+      "count": 37,
+      "header_end": 1804,
+      "flags": 0,
+      "data_start": 2048
+    },
+    {
+      "resident_offset": "0x14c4000",
+      "count": 58,
+      "header_end": 2812,
+      "flags": 0,
+      "data_start": 4096
+    },
+    {
+      "resident_offset": "0x17f5800",
+      "count": 43,
+      "header_end": 2092,
+      "flags": 0,
+      "data_start": 4096
+    },
+    {
+      "resident_offset": "0x18fa800",
+      "count": 14,
+      "header_end": 700,
+      "flags": 4,
+      "data_start": 2048
+    },
+    {
+      "resident_offset": "0x1975800",
+      "count": 187,
+      "header_end": 9004,
+      "flags": 0,
+      "data_start": 10240
+    },
+    {
+      "resident_offset": "0x1d02000",
+      "count": 396,
+      "header_end": 19036,
+      "flags": 0,
+      "data_start": 20480
+    },
+    {
+      "resident_offset": "0x2992800",
+      "count": 42,
+      "header_end": 2044,
+      "flags": 0,
+      "data_start": 2048
+    },
+    {
+      "resident_offset": "0x2aa8000",
+      "count": 152,
+      "header_end": 7324,
+      "flags": 0,
+      "data_start": 8192
+    },
+    {
+      "resident_offset": "0x3514800",
+      "count": 85,
+      "header_end": 4108,
+      "flags": 0,
+      "data_start": 6144
+    },
+    {
+      "resident_offset": "0x35ff000",
+      "count": 989,
+      "header_end": 47500,
+      "flags": 1,
+      "data_start": 49152
+    },
+    {
+      "resident_offset": "0x49d5000",
+      "count": 24,
+      "header_end": 1180,
+      "flags": 0,
+      "data_start": 2048
+    },
+    {
+      "resident_offset": "0x4c2b800",
+      "count": 44,
+      "header_end": 2140,
+      "flags": 0,
+      "data_start": 4096
+    },
+    {
+      "resident_offset": "0x4da0000",
+      "count": 21,
+      "header_end": 1036,
+      "flags": 0,
+      "data_start": 2048
+    },
+    {
+      "resident_offset": "0x4e5d000",
+      "count": 58,
+      "header_end": 2812,
+      "flags": 0,
+      "data_start": 4096
+    }
+  ],
+  "unique_matching_descriptor_table_offsets": [
+    "0x1d02000"
+  ],
+  "base_candidate_observed_layout": {
+    "first_u64": 28,
+    "header_end_u64": 19036,
+    "count_u32": 396,
+    "flags_u32": 0,
+    "data_start_u32": 20480,
+    "metadata_start": 6364,
+    "descriptor_metadata_offsets_are_permutation": true,
+    "all_descriptor_lengths_32": true,
+    "all_payload_ranges_in_bounds": true,
+    "distinct_descriptor_hashes": 396,
+    "record_word_8_equals_descriptor_hash_count": 396,
+    "rate_like_u16_distribution": {
+      "32000": 347,
+      "44100": 16,
+      "24000": 33
+    },
+    "final_u32_distribution": {
+      "1": 396
+    },
+    "bytes_equal_twice_sample_like_count": 396,
+    "metadata_word_8_crc32_matches": 0,
+    "last_payload_end": 13173944,
+    "size_exceptions": []
+  },
+  "base_candidate_extent_bytes": 13174784,
+  "base_candidate_extent_sha256": "b114df7f265e19eb679f65e7e4461182d2ae7abc6dd674bfa37b49bfa5afe1d5",
+  "comparison": {
+    "identical_header_and_descriptors": true,
+    "changed_records": [
+      {
+        "index": 94,
+        "descriptor_hash": "25520dbb",
+        "base_bytes": 43166,
+        "override_bytes": 278282,
+        "base_rate_like": 44100,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 95,
+        "descriptor_hash": "00e844e8",
+        "base_bytes": 43166,
+        "override_bytes": 273958,
+        "base_rate_like": 44100,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 99,
+        "descriptor_hash": "5f830a0a",
+        "base_bytes": 30162,
+        "override_bytes": 136710,
+        "base_rate_like": 44100,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 100,
+        "descriptor_hash": "7fc24a88",
+        "base_bytes": 30162,
+        "override_bytes": 136710,
+        "base_rate_like": 44100,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 101,
+        "descriptor_hash": "d19c4920",
+        "base_bytes": 16192,
+        "override_bytes": 136710,
+        "base_rate_like": 32000,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 108,
+        "descriptor_hash": "37014725",
+        "base_bytes": 36248,
+        "override_bytes": 197210,
+        "base_rate_like": 44100,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 109,
+        "descriptor_hash": "68b42a96",
+        "base_bytes": 36248,
+        "override_bytes": 197210,
+        "base_rate_like": 44100,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 111,
+        "descriptor_hash": "6e39ab21",
+        "base_bytes": 4000,
+        "override_bytes": 4000,
+        "base_rate_like": 32000,
+        "override_rate_like": 32000
+      },
+      {
+        "index": 112,
+        "descriptor_hash": "98054a89",
+        "base_bytes": 4132,
+        "override_bytes": 4132,
+        "base_rate_like": 32000,
+        "override_rate_like": 32000
+      },
+      {
+        "index": 113,
+        "descriptor_hash": "081471f3",
+        "base_bytes": 3952,
+        "override_bytes": 3952,
+        "base_rate_like": 32000,
+        "override_rate_like": 32000
+      },
+      {
+        "index": 114,
+        "descriptor_hash": "dec5db43",
+        "base_bytes": 4634,
+        "override_bytes": 4634,
+        "base_rate_like": 32000,
+        "override_rate_like": 32000
+      },
+      {
+        "index": 115,
+        "descriptor_hash": "a37cb9fa",
+        "base_bytes": 4674,
+        "override_bytes": 4674,
+        "base_rate_like": 32000,
+        "override_rate_like": 32000
+      },
+      {
+        "index": 116,
+        "descriptor_hash": "e76b05c1",
+        "base_bytes": 4630,
+        "override_bytes": 4630,
+        "base_rate_like": 32000,
+        "override_rate_like": 32000
+      },
+      {
+        "index": 117,
+        "descriptor_hash": "55813131",
+        "base_bytes": 4770,
+        "override_bytes": 4770,
+        "base_rate_like": 32000,
+        "override_rate_like": 32000
+      },
+      {
+        "index": 118,
+        "descriptor_hash": "f50b3b42",
+        "base_bytes": 60004,
+        "override_bytes": 60004,
+        "base_rate_like": 32000,
+        "override_rate_like": 32000
+      },
+      {
+        "index": 119,
+        "descriptor_hash": "16e87efc",
+        "base_bytes": 61808,
+        "override_bytes": 61808,
+        "base_rate_like": 32000,
+        "override_rate_like": 32000
+      },
+      {
+        "index": 122,
+        "descriptor_hash": "cc90ef6f",
+        "base_bytes": 33380,
+        "override_bytes": 128520,
+        "base_rate_like": 44100,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 123,
+        "descriptor_hash": "d3a2fd87",
+        "base_bytes": 33380,
+        "override_bytes": 128520,
+        "base_rate_like": 44100,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 124,
+        "descriptor_hash": "997fba96",
+        "base_bytes": 4068,
+        "override_bytes": 4068,
+        "base_rate_like": 32000,
+        "override_rate_like": 32000
+      },
+      {
+        "index": 127,
+        "descriptor_hash": "8a817111",
+        "base_bytes": 43916,
+        "override_bytes": 252678,
+        "base_rate_like": 44100,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 128,
+        "descriptor_hash": "a297a13d",
+        "base_bytes": 43916,
+        "override_bytes": 252678,
+        "base_rate_like": 44100,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 134,
+        "descriptor_hash": "5846d70f",
+        "base_bytes": 24064,
+        "override_bytes": 308700,
+        "base_rate_like": 32000,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 135,
+        "descriptor_hash": "5d6ae15f",
+        "base_bytes": 24064,
+        "override_bytes": 308700,
+        "base_rate_like": 32000,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 140,
+        "descriptor_hash": "73de9178",
+        "base_bytes": 26648,
+        "override_bytes": 248844,
+        "base_rate_like": 32000,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 141,
+        "descriptor_hash": "2adb7f8f",
+        "base_bytes": 26648,
+        "override_bytes": 248844,
+        "base_rate_like": 32000,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 153,
+        "descriptor_hash": "1cce1a42",
+        "base_bytes": 24494,
+        "override_bytes": 246960,
+        "base_rate_like": 32000,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 154,
+        "descriptor_hash": "e5d7ac5e",
+        "base_bytes": 24048,
+        "override_bytes": 246960,
+        "base_rate_like": 32000,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 161,
+        "descriptor_hash": "241b77b0",
+        "base_bytes": 37106,
+        "override_bytes": 276550,
+        "base_rate_like": 44100,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 162,
+        "descriptor_hash": "4a01c37c",
+        "base_bytes": 37106,
+        "override_bytes": 276550,
+        "base_rate_like": 44100,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 164,
+        "descriptor_hash": "535a7a8c",
+        "base_bytes": 37862,
+        "override_bytes": 183316,
+        "base_rate_like": 44100,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 165,
+        "descriptor_hash": "4e8df0e7",
+        "base_bytes": 37630,
+        "override_bytes": 183316,
+        "base_rate_like": 44100,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 172,
+        "descriptor_hash": "d8c45a6d",
+        "base_bytes": 33804,
+        "override_bytes": 178048,
+        "base_rate_like": 44100,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 173,
+        "descriptor_hash": "8f054700",
+        "base_bytes": 33804,
+        "override_bytes": 178048,
+        "base_rate_like": 44100,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 174,
+        "descriptor_hash": "9a579219",
+        "base_bytes": 4798,
+        "override_bytes": 1770,
+        "base_rate_like": 32000,
+        "override_rate_like": 32000
+      },
+      {
+        "index": 175,
+        "descriptor_hash": "b140bfeb",
+        "base_bytes": 4850,
+        "override_bytes": 1770,
+        "base_rate_like": 32000,
+        "override_rate_like": 32000
+      },
+      {
+        "index": 176,
+        "descriptor_hash": "e7ebad40",
+        "base_bytes": 4728,
+        "override_bytes": 1770,
+        "base_rate_like": 32000,
+        "override_rate_like": 32000
+      },
+      {
+        "index": 177,
+        "descriptor_hash": "ccb376d0",
+        "base_bytes": 4744,
+        "override_bytes": 1770,
+        "base_rate_like": 32000,
+        "override_rate_like": 32000
+      },
+      {
+        "index": 182,
+        "descriptor_hash": "75ccabfb",
+        "base_bytes": 20332,
+        "override_bytes": 222802,
+        "base_rate_like": 32000,
+        "override_rate_like": 44100
+      },
+      {
+        "index": 183,
+        "descriptor_hash": "500ae078",
+        "base_bytes": 20332,
+        "override_bytes": 222802,
+        "base_rate_like": 32000,
+        "override_rate_like": 44100
+      }
+    ],
+    "metadata_word_8_changed_count": 0,
+    "size_unchanged_count": 367
+  },
+  "sounds_observed_identifiers": [
+    {
+      "identifier": "RESIDENT\\WEAPONS",
+      "file_offsets": [
+        "0xd3b38"
+      ]
+    },
+    {
+      "identifier": "AUD_EVENT_HANDGUN_RELOAD_INSERT_CLIP",
+      "file_offsets": [
+        "0xed36e"
+      ]
+    },
+    {
+      "identifier": "AUD_EVENT_AK47_RELOAD_COCK_PULL",
+      "file_offsets": [
+        "0xed2c2"
+      ]
+    },
+    {
+      "identifier": "AUD_EVENT_DEAGLE_RELOAD_INSERT_CLIP",
+      "file_offsets": [
+        "0xed3f6"
+      ]
+    },
+    {
+      "identifier": "DISTANT_GUNSHOTS_GUN_PISTOL",
+      "file_offsets": [
+        "0xe4275",
+        "0xe43bb"
+      ]
+    }
+  ],
+  "reference_source_files": [
+    {
+      "path": "D:\\GTAIV-Reborn-Tools\\sources\\FusionFix\\source\\rpfloader.ixx",
+      "bytes": 46037,
+      "sha256": "0e3bec61835f43fc2412ef8ebe761cfdd44b469fec0b7fb870c3c3282e22b452"
+    },
+    {
+      "path": "D:\\GTAIV-Reborn-Tools\\sources\\FusionFix\\source\\settings.ixx",
+      "bytes": 73324,
+      "sha256": "45ed0a057e77d957069960b977f11d68e360c64fd663c93cfb55a3454fe34374"
+    },
+    {
+      "path": "D:\\GTAIV-Reborn-Tools\\sources\\FusionFix\\source\\fixes.ixx",
+      "bytes": 58504,
+      "sha256": "e6c6874fcbdb5ab6b973c8752b6c435e5bb76874db2055decae680731c2bc5be"
+    },
+    {
+      "path": "D:\\GTAIV-Reborn-Tools\\sources\\FusionFix\\source\\comvars.ixx",
+      "bytes": 100461,
+      "sha256": "6bc7a98356a85294a1b031413060b0cf7638a9a54cc977216d629dbb884b62a0"
+    },
+    {
+      "path": "D:\\GTAIV-Reborn-Tools\\sources\\FusionFix\\source\\dllmain.cpp",
+      "bytes": 5999,
+      "sha256": "c6e691c75e58300513ee238856c0b01bee7b585d1db7e82beb84fabe21ec97af"
+    },
+    {
+      "path": "D:\\GTAIV-Reborn-Tools\\sources\\FusionFix\\LICENSE",
+      "bytes": 35823,
+      "sha256": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809"
+    }
+  ],
+  "installed_fusionfix_ini": {
+    "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\plugins\\GTAIV.EFLC.FusionFix.ini",
+    "bytes": 8184,
+    "sha256": "ddd839a02b7f683aaa0609261ec34a91b9849bb9cf36dc0bca3f3db262f4843b"
+  },
+  "LoadRPF_lines": []
+}
