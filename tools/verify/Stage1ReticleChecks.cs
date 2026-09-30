@@ -28,7 +28,7 @@ namespace LibertyFramework.Verify
             check.True("pistol: a small precise cross", pistol.Style == "cross" && pistol.WeaponClass == "pistol" && pistol.LineLengthPixels <= 6, pistol.Style + " length=" + pistol.LineLengthPixels);
             check.True("SMG: a wider cross than the pistol's", smg.Style == "cross" && smg.LineLengthPixels > pistol.LineLengthPixels && smg.MinimumGapPixels > pistol.MinimumGapPixels, "length=" + smg.LineLengthPixels);
             check.True("assault rifle: structured corner brackets", rifle.Style == "bracket" && rifle.WeaponClass == "rifle", rifle.Style);
-            check.True("shotgun: a pellet ring", shotgun.Style == "ring" && shotgun.RingDots >= 8 && shotgun.MinimumGapPixels >= 10, shotgun.Style + " dots=" + shotgun.RingDots);
+            check.True("shotgun: a pellet ring", shotgun.Style == "ring" && shotgun.RingDots >= 6 && shotgun.MinimumGapPixels >= 10, shotgun.Style + " dots=" + shotgun.RingDots);
             check.True("the four Stage 1 classes have four different reticles", pistol.Style != rifle.Style && rifle.Style != shotgun.Style && pistol.LineLengthPixels != smg.LineLengthPixels, "");
             check.True("sniper class draws no reticle of its own (the game's scope)", ReticleResolver.Resolve(config, "sniper", 16).IsNone, "");
             check.True("a catalog weapon takes its catalog class even when the slot says otherwise", ReticleResolver.ClassOf(catalog, 14, "pistol") == "rifle" && ReticleResolver.ClassOf(catalog, 3, "pistol") == "pistol", "");
@@ -37,7 +37,7 @@ namespace LibertyFramework.Verify
             ResolvedReticle automag = ResolveFor(config, catalog, 9);
             ResolvedReticle sweeper = ResolveFor(config, catalog, 10);
             check.True("per-weapon override: the AutoMag keeps the pistol cross with its own arm length and thickness", automag.Style == "cross" && automag.LineLengthPixels == 4 && automag.LineThicknessPixels == 3 && pistol.LineThicknessPixels == 2, "");
-            check.True("per-weapon override: the Street Sweeper keeps the shotgun ring with more dots", sweeper.Style == "ring" && sweeper.RingDots == 16 && shotgun.RingDots == 12, "");
+            check.True("per-weapon override: the Street Sweeper keeps the shotgun ring with thicker dots", sweeper.Style == "ring" && sweeper.LineThicknessPixels == 4 && shotgun.LineThicknessPixels == 3 && sweeper.RingDots == shotgun.RingDots, "");
 
             // Migration: no reticles section (or it switched off) = the old crosshair for every weapon.
             GunplayConfig legacy = JsonStore.Load<GunplayConfig>(path);

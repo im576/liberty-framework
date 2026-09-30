@@ -72,15 +72,15 @@
     "classes": [
       { "class": "pistol", "style": { "style": "cross", "lineLengthPixels": 5, "lineThicknessPixels": 2, "minimumGapPixels": 3 } },
       { "class": "smg", "style": { "style": "cross", "lineLengthPixels": 10, "lineThicknessPixels": 2, "minimumGapPixels": 5, "maximumGapPixels": 200 } },
-      { "class": "rifle", "style": { "style": "bracket", "lineLengthPixels": 8, "lineThicknessPixels": 2, "minimumGapPixels": 4, "centerDotPixels": 2 } },
-      { "class": "shotgun", "style": { "style": "ring", "ringDots": 12, "lineThicknessPixels": 2, "minimumGapPixels": 14, "maximumGapPixels": 240, "centerDotPixels": 2 } },
+      { "class": "rifle", "style": { "style": "bracket", "lineLengthPixels": 8, "lineThicknessPixels": 2, "outlinePixels": 0, "minimumGapPixels": 4 } },
+      { "class": "shotgun", "style": { "style": "ring", "ringDots": 8, "lineThicknessPixels": 3, "outlinePixels": 0, "minimumGapPixels": 14, "maximumGapPixels": 240 } },
       { "class": "heavy", "style": { "style": "cross", "lineLengthPixels": 12, "lineThicknessPixels": 3, "minimumGapPixels": 6 } },
       { "class": "thrown", "style": { "style": "dot", "centerDotPixels": 3 } },
       { "class": "sniper", "style": { "style": "none" } }
     ],
     "weapons": [
       { "weaponId": 9, "class": "pistol", "style": { "lineLengthPixels": 4, "lineThicknessPixels": 3 } },
-      { "weaponId": 10, "class": "shotgun", "style": { "ringDots": 16 } }
+      { "weaponId": 10, "class": "shotgun", "style": { "lineThicknessPixels": 4 } }
     ]
   },  "weapons": [
     {

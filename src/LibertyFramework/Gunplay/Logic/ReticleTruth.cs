@@ -7,7 +7,7 @@ namespace LibertyFramework.Gunplay.Logic
     internal sealed class ReticleTruth
     {
         internal const double TolerancePercent = 5.0;
-        // The target must have stayed within 1% (or a pixel) for this long before a frame counts.
+        // The target must have stayed within 0.1% (or 0.02 px) for this long before a frame counts: a slowly closing cone is still moving.
         internal const double SteadyMilliseconds = 400;
         private double lastTarget = double.NaN;
         private double steadySince = double.NaN;
@@ -31,7 +31,7 @@ namespace LibertyFramework.Gunplay.Logic
         {
             Samples++;
             if (targetPixels > 0 && drawnPixels < targetPixels * (1.0 - TolerancePercent / 100.0)) { UnderReports++; }
-            bool moved = double.IsNaN(lastTarget) || Math.Abs(targetPixels - lastTarget) > Math.Max(1.0, lastTarget * 0.01);
+            bool moved = double.IsNaN(lastTarget) || Math.Abs(targetPixels - lastTarget) > Math.Max(0.02, lastTarget * 0.001);
             if (moved) { steadySince = nowMilliseconds; }
             lastTarget = targetPixels;
             if (nowMilliseconds - steadySince < SteadyMilliseconds) { return false; }

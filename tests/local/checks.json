@@ -1390,10 +1390,10 @@
           "reticle_pistol_firing": "the same cross while firing: the gap is wider than standing",
           "reticle_smg_standing": "Uzi: a four-arm cross with longer arms than the pistol's",
           "reticle_smg_firing": "Uzi while firing continuously: the gap is much wider",
-          "reticle_rifle_standing": "AK-47: four corner brackets (crop marks) around a small square with a centre dot",
+          "reticle_rifle_standing": "AK-47: four corner brackets (crop marks) around a small square",
           "reticle_rifle_moving": "AK-47 with a forced 4 m/s speed: the brackets are wider than standing",
           "reticle_rifle_firing": "AK-47 during sustained fire: the brackets are far apart",
-          "reticle_shotgun_standing": "Remington: a ring of twelve dots with a centre dot, clearly wider than any cross",
+          "reticle_shotgun_standing": "Remington: a ring of eight dots, clearly wider than any cross",
           "reticle_shotgun_firing": "Remington right after shots: the ring is not smaller than standing"
         }
       },
