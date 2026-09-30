@@ -1,0 +1,13 @@
+﻿diff --git a/tools/content/Program.cs b/tools/content/Program.cs
+index 4a8dceb..a107d90 100644
+--- a/tools/content/Program.cs
++++ b/tools/content/Program.cs
+@@ -44,6 +44,8 @@ namespace LibertyFramework.Content
+                 if (args.Length >= 1 && args[0] == "wbdcheck") { return WbdDictionaryCheck.Run(args.Skip(1).ToArray()); }
+                 if (args.Length >= 1 && args[0] == "wbdtargets") { return WbdTargetProbe.Run(args.Skip(1).ToArray()); }
+                 if (args.Length >= 1 && args[0] == "wbdnested") { return WbdNestedProbe.Run(args.Skip(1).ToArray()); }
++                if (args.Length >= 1 && args[0] == "wbdfields") { return WbdFieldProbe.Run(args.Skip(1).ToArray()); }
++                if (args.Length >= 1 && args[0] == "drawablebounds") { return DrawableBoundsProbe.Run(args.Skip(1).ToArray()); }
+                 if (args.Length >= 1 && args[0] == "roundtrip") { return DrawableRoundTrip.Run(args.Skip(1).ToArray()); }
+                 Console.WriteLine("usage: LibertyContent sample <dir> <name> | validate <asset.json> [--report <file>] | capabilities | fixtures <dir> |");
+                 Console.WriteLine("       build <game> <asset.json> <out> |");

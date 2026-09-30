@@ -1,0 +1,150 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Web.Script.Serialization;
+using LibertyFramework.Finishes;
+
+namespace LibertyFramework.Content
+{
+    // Tests candidate field offsets against original CE WBD resources only.
+    // Names such as polygon/vertex/material are hypotheses from an external NY layout.
+    internal static class WbdFieldProbe
+    {
+        private sealed class SpanStats
+        {
+            internal int Valid, Invalid, ZeroCount, NonzeroCount;
+            internal void Add(uint pointer, uint count, int stride, int systemSize)
+            {
+                if (count == 0) { ZeroCount++; } else { NonzeroCount++; }
+                ulong length = (ulong)count * (uint)stride;
+                bool ok = (pointer & 0xF0000000) == 0x50000000 &&
+                    (ulong)(pointer - 0x50000000) + length <= (ulong)systemSize;
+                if (ok) { Valid++; } else { Invalid++; }
+            }
+            internal object Report() { return new { valid = Valid, invalid = Invalid, zeroCount = ZeroCount, nonzeroCount = NonzeroCount }; }
+        }
+        private sealed class RangeStats
+        {
+            internal int Samples;
+            internal uint Min = uint.MaxValue, Max;
+            internal long Sum;
+            internal void Add(uint value)
+            {
+                Samples++; Min = Math.Min(Min, value); Max = Math.Max(Max, value); Sum += value;
+            }
+            internal object Report() { return new { samples = Samples, min = Samples == 0 ? 0 : Min, max = Max, sum = Sum }; }
+        }
+        private sealed class IndexStats
+        {
+            internal long WithinCount, SentinelMinusOne, Other;
+            internal void Add(short index, uint vertexCount)
+            {
+                if (index >= 0 && index < vertexCount) { WithinCount++; }
+                else if (index == -1) { SentinelMinusOne++; }
+                else { Other++; }
+            }
+            internal object Report() { return new { withinVertexCount = WithinCount, sentinelMinusOne = SentinelMinusOne, other = Other }; }
+        }
+        internal static int Run(string[] args)
+        {
+            int gameAt = Array.IndexOf(args, "--game"), outAt = Array.IndexOf(args, "--out");
+            if (gameAt < 0 || outAt < 0 || gameAt + 1 >= args.Length || outAt + 1 >= args.Length)
+            { Console.WriteLine("usage: wbdfields --game <dir> --out <json>"); return 2; }
+            string game = args[gameAt + 1], output = args[outAt + 1];
+            byte[] key = ImgArchive.FindKey(Path.Combine(game, "GTAIV.exe"));
+            List<string> skipped = new List<string>(), errors = new List<string>();
+            Dictionary<string, int> types = new Dictionary<string, int>();
+            Dictionary<string, Dictionary<string, int>> typesBySerializedClass = new Dictionary<string, Dictionary<string, int>>();
+            RangeStats vertexCounts = new RangeStats(), polygonCounts = new RangeStats(), materialCounts = new RangeStats();
+            SpanStats polygon32 = new SpanStats(), vertex6 = new SpanStats(), material1 = new SpanStats(), material4 = new SpanStats();
+            IndexStats[] indices = Enumerable.Range(0, 4).Select(i => new IndexStats()).ToArray();
+            int resources = 0, entries = 0, polygonRowsChecked = 0, polygonRowsSkipped = 0;
+            List<object> examples = new List<object>();
+            foreach (string relative in Probe.Archives(game, skipped))
+            {
+                try
+                {
+                    ImgArchive archive = ImgArchive.Open(Path.Combine(game, relative), key);
+                    Dictionary<uint, string> names = new Dictionary<uint, string>();
+                    foreach (ImgArchive.Entry e in archive.Entries.Where(e => e.Name.EndsWith(".wdr", StringComparison.OrdinalIgnoreCase)))
+                    { names[TextureNameHash.Compute(Path.GetFileNameWithoutExtension(e.Name))] = Path.GetFileNameWithoutExtension(e.Name); }
+                    foreach (ImgArchive.Entry e in archive.Entries.Where(e => e.Name.EndsWith(".wbd", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        try
+                        {
+                            RscResource resource = RscResource.Parse(archive.Extract(e.Name), true);
+                            if (resource.Type != 32 || BitConverter.ToUInt32(resource.Body, 0) != WbdDictionaryReader.CeVtable) { continue; }
+                            WbdDictionaryReader reader = WbdDictionaryReader.Parse(resource);
+                            resources++;
+                            foreach (WbdDictionaryReader.Entry item in reader.Entries)
+                            {
+                                int location = (int)(item.TargetPointer - 0x50000000);
+                                if (location < 0 || location + 5 > resource.SystemSize) { throw new InvalidDataException("target type byte out of range"); }
+                                string classKey = "0x" + item.TargetVtable.ToString("X8"), typeKey = resource.Body[location + 4].ToString();
+                                Dictionary<string, int> byType;
+                                if (!typesBySerializedClass.TryGetValue(classKey, out byType))
+                                { byType = new Dictionary<string, int>(); typesBySerializedClass[classKey] = byType; }
+                                int tally; byType.TryGetValue(typeKey, out tally); byType[typeKey] = tally + 1;
+                            }
+                            foreach (WbdDictionaryReader.Entry item in reader.Entries.Where(x => x.TargetVtable == 0x0069C19C))
+                            {
+                                int at = (int)(item.TargetPointer - 0x50000000);
+                                if (at < 0 || at + 0xE4 > resource.SystemSize) { throw new InvalidDataException("candidate prefix truncated"); }
+                                byte type = resource.Body[at + 4], materialCount = resource.Body[at + 0xD8];
+                                uint polyCount = BitConverter.ToUInt32(resource.Body, at + 0xCC);
+                                uint vertCount = BitConverter.ToUInt32(resource.Body, at + 0xC8);
+                                uint polyPointer = BitConverter.ToUInt32(resource.Body, at + 0x8C);
+                                uint vertPointer = BitConverter.ToUInt32(resource.Body, at + 0xB0);
+                                uint matPointer = BitConverter.ToUInt32(resource.Body, at + 0xD0);
+                                string typeKey = type.ToString(); int n; types.TryGetValue(typeKey, out n); types[typeKey] = n + 1;
+                                vertexCounts.Add(vertCount); polygonCounts.Add(polyCount); materialCounts.Add(materialCount);
+                                polygon32.Add(polyPointer, polyCount, 32, resource.SystemSize);
+                                vertex6.Add(vertPointer, vertCount, 6, resource.SystemSize);
+                                material1.Add(matPointer, materialCount, 1, resource.SystemSize);
+                                material4.Add(matPointer, materialCount, 4, resource.SystemSize);
+                                bool polygonSpanOk = (polyPointer & 0xF0000000) == 0x50000000 &&
+                                    (ulong)(polyPointer - 0x50000000) + (ulong)polyCount * 32 <= (ulong)resource.SystemSize;
+                                if (polygonSpanOk && polyCount <= 100000)
+                                {
+                                    int p = (int)(polyPointer - 0x50000000);
+                                    for (int row = 0; row < polyCount; row++, p += 32)
+                                    {
+                                        for (int k = 0; k < 4; k++) { indices[k].Add(BitConverter.ToInt16(resource.Body, p + 0x10 + k * 2), vertCount); }
+                                        polygonRowsChecked++;
+                                    }
+                                }
+                                else { polygonRowsSkipped += polyCount > int.MaxValue ? int.MaxValue : (int)polyCount; }
+                                if (examples.Count < 8)
+                                {
+                                    string model; if (!names.TryGetValue(item.NameHash, out model)) { model = "<no same-IMG match>"; }
+                                    examples.Add(new { archive = relative, bounds = e.Name, model, type,
+                                        vertexCount = vertCount, polygonCount = polyCount, materialCount,
+                                        firstIndices = polygonSpanOk && polyCount > 0 ?
+                                            Enumerable.Range(0, 4).Select(k => BitConverter.ToInt16(resource.Body,
+                                                (int)(polyPointer - 0x50000000) + 0x10 + k * 2)).ToArray() : new short[0] });
+                                }
+                                entries++;
+                            }
+                        }
+                        catch (Exception error) { if (errors.Count < 30) { errors.Add(relative + "/" + e.Name + ": " + error.Message); } }
+                    }
+                }
+                catch (Exception error) { if (errors.Count < 30) { errors.Add(relative + ": " + error.Message); } }
+            }
+            object report = new { question = "Do candidate NY bound field offsets fit original CE WBD common-class targets?",
+                rule = "read-only aggregate span/index checks; semantic names remain hypotheses; no mesh or resource bytes",
+                resources, entries, typeByteAt04 = types, typeByteBySerializedClass = typesBySerializedClass,
+                vertexCountAtC8 = vertexCounts.Report(), polygonCountAtCC = polygonCounts.Report(),
+                materialCountByteAtD8 = materialCounts.Report(),
+                polygonPointerAt8CStride32 = polygon32.Report(), vertexPointerAtB0Stride6 = vertex6.Report(),
+                materialPointerAtD0Stride1 = material1.Report(), materialPointerAtD0Stride4 = material4.Report(),
+                polygonRowsChecked, polygonRowsSkipped, candidateIndicesAt10_12_14_16 = indices.Select(x => x.Report()).ToArray(),
+                examples, errors, skipped };
+            Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output)));
+            File.WriteAllText(output, new JavaScriptSerializer { MaxJsonLength = int.MaxValue }.Serialize(report));
+            Console.WriteLine("wbdfields resources=" + resources + " entries=" + entries + " rows=" + polygonRowsChecked + " errors=" + errors.Count);
+            return entries == 2154 && errors.Count == 0 ? 0 : 1;
+        }
+    }
+}
