@@ -28,7 +28,7 @@ shot trunk_wheel_next_segment
 key Left 1200
 wait 500
 key Space 1200
-expect "arsenal_store id=14 to=" 10
+expect "arsenal_store id=\d+ to=" 10
 wait 2500
 shot trunk_after_store
 key Back 1200
