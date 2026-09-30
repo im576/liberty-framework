@@ -188,15 +188,48 @@ namespace Liberty.Autopilot
             int hiddenFailures = 0, restoredFailures = 0, enterTimeouts = 0, leaveTimeouts = 0;
             for (int cycle = 1; cycle <= count; cycle++)
             {
-                Liberty.Tasks.EnterVehicle(player, car, -1);
-                Wait entered = Wait.Until(() => Liberty.World.Player.InVehicle, 20000);
-                yield return entered;
-                if (entered.HasTimedOut)
+                // The scene is the test rig's business, not the loadout's: keep the police away, keep Niko alive and next to a car
+                // that exists (traffic and fights destroy it), and give the enter task two tries before a cycle counts as timed out.
+                Liberty.Player.WantedLevel = 0;
+                Wait alive = Wait.Until(PlayerReady, 120000);
+                yield return alive;
+                player = Liberty.Player.Ped;
+                if (alive.HasTimedOut) { Liberty.Log.Error(this, "autopilot_vehicle_cycle cycle=" + cycle + " no_live_player"); yield break; }
+                if (!Liberty.Vehicles.Exists(car))
+                {
+                    VehicleRef fresh = VehicleRef.None;
+                    bool spawned = false;
+                    Liberty.Vehicles.Spawn(this, "admiral", InFront(4f, 0), Liberty.World.Player.Heading + 90f, v => { fresh = v; spawned = true; });
+                    yield return Wait.Until(() => spawned, 10000);
+                    if (fresh.IsNone) { enterTimeouts++; Liberty.Log.Error(this, "autopilot_vehicle_cycle cycle=" + cycle + " no_car"); continue; }
+                    car = fresh;
+                    cars.Add(fresh);
+                    Liberty.Log.Info(this, "autopilot_vehicle_cycle cycle=" + cycle + " car_replaced handle=" + car.Handle);
+                    yield return Wait.Milliseconds(1500);
+                }
+                bool inCar = false;
+                for (int attempt = 1; attempt <= 2 && !inCar; attempt++)
+                {
+                    if (attempt == 2 || Liberty.World.Player.Position.DistanceTo(Liberty.Vehicles.GetPosition(car)) > 6f)
+                    {
+                        Liberty.Player.Teleport(Liberty.Vehicles.GetOffsetPosition(car, new Vec3(-2f, 0f, 0f)), Liberty.Vehicles.GetHeading(car));
+                        yield return Wait.Milliseconds(1500);
+                    }
+                    Liberty.Tasks.EnterVehicle(player, car, -1);
+                    Wait entered = Wait.Until(() => Liberty.World.Player.InVehicle, 10000);
+                    yield return entered;
+                    inCar = !entered.HasTimedOut;
+                    if (!inCar)
+                    {
+                        PlayerState now = Liberty.World.Player;
+                        Liberty.Log.Info(this, "autopilot_vehicle_cycle cycle=" + cycle + " enter_attempt_failed attempt=" + attempt + " dead=" + now.IsDead +
+                            " control=" + now.HasControl + " car_exists=" + Liberty.Vehicles.Exists(car) + " distance=" + (Liberty.Vehicles.Exists(car) ? Args.F(now.Position.DistanceTo(Liberty.Vehicles.GetPosition(car))) : "n/a"));
+                    }
+                }
+                if (!inCar)
                 {
                     enterTimeouts++;
                     Liberty.Log.Error(this, "autopilot_vehicle_cycle cycle=" + cycle + " enter_timeout");
-                    Liberty.Player.Teleport(Liberty.Vehicles.GetOffsetPosition(car, new Vec3(-2f, 0f, 0f)), Liberty.Vehicles.GetHeading(car));
-                    yield return Wait.Milliseconds(1500);
                     continue;
                 }
                 yield return Wait.FramesCount(6);
