@@ -25,7 +25,7 @@ namespace LibertyFramework.Weapons
         protected internal override void OnStart()
         {
             Engine.Commands.Register(this, "catalog",
-                "catalog [list] | give <catalog id|weapon id> [ammo] [force] [clear] | offer <money> <story progress 0-1|unknown> [contacts,comma|-] [override] | check - Stage 1 arsenal",
+                "catalog [list] | give <catalog id|weapon id> [ammo] [force] [clear] | offer <money> <story progress 0-1|unknown> [contacts,comma|-] [override] | check | sim [catalog id|all] - Stage 1 arsenal",
                 Run);
         }
 
@@ -40,6 +40,7 @@ namespace LibertyFramework.Weapons
                 if (verb == "give") { return Give(catalog, args); }
                 if (verb == "offer") { return Offer(catalog, args); }
                 if (verb == "check") { return Check(catalog); }
+                if (verb == "sim") { return Simulate(catalog, args.Length > 1 ? args[1] : "all"); }
                 return "error: unknown catalog verb " + verb;
             }
             catch (Exception error)
@@ -142,6 +143,35 @@ namespace LibertyFramework.Weapons
             }
             if (problems.Count > 0) { return "error: " + string.Join("; ", problems.ToArray()); }
             return "catalog ok: " + stage1 + " Stage 1 weapons of " + catalog.Entries.Count + " entries; profiles, gate and WeaponInfo.xml agree";
+        }
+
+        // T-042: the live gunplay config and catalog through the spread/recoil model, against each class's targets (same code as the verifier).
+        private static string Simulate(WeaponCatalog catalog, string which)
+        {
+            GunplayController gunplay = GunplayController.Instance;
+            GunplayConfig config = gunplay != null ? gunplay.Config : null;
+            if (config == null) { return "error: gunplay config is not loaded"; }
+            List<string> failures = new List<string>();
+            int count = 0;
+            foreach (WeaponCatalogEntry entry in catalog.Stage1Entries())
+            {
+                if (which != "all" && !string.Equals(which, entry.Id, StringComparison.OrdinalIgnoreCase)) { continue; }
+                ClassTargetSettings target = config.FindClassTarget(entry.WeaponClass);
+                WeaponProfile profile = Stage1Gate.ProfileFor(config, catalog, entry.WeaponId);
+                WeaponStats stats = catalog.ExpectedStats(entry);
+                if (target == null || profile == null || stats == null || !stats.TimeBetweenShotsMilliseconds.HasValue) { failures.Add(entry.Id + ": no class target, profile or fire rate"); continue; }
+                GunplaySimulationResult result = GunplaySimulation.Run(profile, config.Movement, target, stats.TimeBetweenShotsMilliseconds.Value);
+                List<string> problems = GunplaySimulation.Violations(result, target);
+                count++;
+                RuntimeLog.Info("gunplay_sim id=" + entry.Id + " class=" + entry.WeaponClass + " first=" + result.FirstShotConeDegrees.ToString("0.###") +
+                    " burst_peak=" + result.BurstPeakConeDegrees.ToString("0.###") + " recovery_ms=" + result.BurstRecoveryMilliseconds.ToString("0") +
+                    (target.SustainedShots > 0 ? " climb=" + result.ClimbDegrees.ToString("0.##") + " cone_last=" + result.SustainedCones[result.SustainedCones.Length - 1].ToString("0.###") + " grows=" + result.SustainedGrowsEveryShot : "") +
+                    " ok=" + (problems.Count == 0) + (problems.Count > 0 ? " problems=" + string.Join("; ", problems.ToArray()) : ""));
+                foreach (string problem in problems) { failures.Add(entry.Id + ": " + problem); }
+            }
+            if (count == 0 && failures.Count == 0) { return "error: no Stage 1 weapon matches " + which; }
+            if (failures.Count > 0) { return "error: " + string.Join("; ", failures.ToArray()); }
+            return "gunplay sim ok: " + count + " Stage 1 weapons meet their class targets";
         }
 
         private static string StatsDifference(WeaponCatalog catalog, Dictionary<string, WeaponStats> xml, WeaponCatalogEntry entry)

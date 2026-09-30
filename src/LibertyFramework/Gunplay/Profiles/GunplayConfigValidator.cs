@@ -89,6 +89,22 @@ namespace LibertyFramework.Gunplay.Profiles
                 ValidateProfiles(errors, "weapon " + weapon.WeaponId, weapon.Recoil, weapon.Spread);
             }
 
+            if (config.ClassTargets != null)
+            {
+                HashSet<string> classes = new HashSet<string>();
+                foreach (ClassTargetSettings target in config.ClassTargets)
+                {
+                    if (target == null || string.IsNullOrEmpty(target.WeaponClass) || !classes.Add(target.WeaponClass)) { errors.Add("classTargets: missing or duplicate class"); continue; }
+                    string owner = "classTargets " + target.WeaponClass;
+                    Positive(errors, owner + " firstShotConeMaxDegrees", target.FirstShotConeMaxDegrees);
+                    if (target.BurstShotCount < 1 || target.BurstShotCount > 30) { errors.Add(owner + " burstShotCount must be 1-30"); }
+                    Positive(errors, owner + " burstRecoveryMaxMilliseconds", target.BurstRecoveryMaxMilliseconds);
+                    if (!(target.RecoveryToleranceFraction >= 0 && target.RecoveryToleranceFraction <= 1)) { errors.Add(owner + " recoveryToleranceFraction must be 0-1"); }
+                    if (target.SustainedShots < 0 || target.SustainedShots > 200) { errors.Add(owner + " sustainedShots must be 0-200"); }
+                    if (target.SustainedShots > 0 && !(target.ClimbMinDegrees >= 0 && target.ClimbMaxDegrees >= target.ClimbMinDegrees)) { errors.Add(owner + " needs 0 <= climbMinDegrees <= climbMaxDegrees"); }
+                }
+            }
+
             foreach (TuningParameter parameter in config.Tuning)
             {
                 if (parameter == null || !ProfileParameters.IsKnown(parameter.Key)) { errors.Add("unknown tuning key " + (parameter == null ? "null" : parameter.Key)); continue; }

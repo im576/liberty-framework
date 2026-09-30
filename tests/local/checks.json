@@ -1316,6 +1316,63 @@
       "reference": "docs/tasks/T-041-stage1-weapons.md#human-test-steps",
       "status": "QUEUED",
       "addedIn": "stage1/T-041"
+    },
+    {
+      "id": "T042-gunplay-range",
+      "task": "T-042",
+      "title": "Stage 1 gunplay: class targets through the model, and delivered spread at the range",
+      "kind": "scenario",
+      "run": {
+        "scenario": "stage1-gunplay-range"
+      },
+      "proves": "Every Stage 1 profile meets its class targets in the live model (`catalog sim`: first-shot cone, burst recovery, spread growth and camera climb for automatic weapons), and for each weapon the player's bullets at a point 25 m ahead are recorded (single shots, bursts, continuous fire) with the cone the model wrote for each, for tools/perf/Measure-GunplayRange.ps1.",
+      "pass": "autopilot PASS (catalog sim ok, range_summary for every weapon); the range table (Measure-GunplayRange.ps1) read: first-shot deviation inside the written cone, spread larger in sustained fire than on the first shot",
+      "reference": "docs/tasks/T-042-stage1-gunplay.md#human-test-steps",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-042"
+    },
+    {
+      "id": "T042-shoulder-swap",
+      "task": "T-042",
+      "title": "Shoulder swap mechanism and shoulder clearance at wall spots",
+      "kind": "scenario",
+      "run": {
+        "scenario": "stage1-shoulder-swap"
+      },
+      "proves": "Forced left/right/toggle slides the game's aim-camera table to -1/+1 and the live table matches (swap probe), the right shoulder is restored at the end, and the engine ray from both sides of the player is logged at the test wall (0.4 to 3 m away, facing both ways) and at four city capture points.",
+      "pass": "autopilot PASS (every swap probe live_ok, settled); the `ray left` and `ray right` lines read: no side of a Stage 1 spot is closer than the camera offset (0.475 m)",
+      "review": {
+        "screenshots": {
+          "swap_wall_left_0.4": "Niko beside the test wall at East Park, wall about 0.4 m to his left, road and sky behind: the frame is not black or inside the wall"
+        }
+      },
+      "reference": "docs/tasks/T-042-stage1-gunplay.md#human-test-steps",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-042"
+    },
+    {
+      "id": "T042-feel-per-class",
+      "task": "T-042",
+      "session": "gunplay",
+      "minutes": 15,
+      "title": "Feel of each Stage 1 weapon class and the shoulder swap in aim",
+      "kind": "manual",
+      "run": {
+        "steps": [
+          "In game open DevTools > Weapons and give yourself the Glock 17, IMI Uzi, Remington 1100 and AK-47 (the entries marked Stage 1), then go to the test range (DevTools > TELEPORT).",
+          "Pistol: aim (LT/right mouse) and fire single shots, then a fast three-round burst, then pause. Shots should be precise, the crosshair should open on each shot and close within about a second.",
+          "Uzi: hold the trigger for a full magazine. The crosshair should keep growing, the camera should climb steadily but not leave the target within one magazine when you pull down.",
+          "AK-47: hold the trigger for a full 30-round magazine at 25 m. The gun must not be a laser: the shots spread out and the camera climbs about ten degrees (roughly a third of the screen).",
+          "Remington 1100: single shots; each shot should kick hard and the pellets spread.",
+          "Shoulder swap: aim, press LB (or Z) to swap shoulders on foot, in cover, and standing with a wall close to either shoulder; look for the camera passing through the wall.",
+          "Tell me for each class: too weak / right / too strong, and every wall spot where the camera clipped."
+        ]
+      },
+      "proves": "Owner sign-off of the per-class starting numbers (config/gunplay.json weapons[], classTargets) and of shoulder swap near walls, which the autopilot cannot aim at.",
+      "pass": "each class reads as right or you name the value to change; no camera clip into a wall at either shoulder",
+      "reference": "docs/tasks/T-042-stage1-gunplay.md#human-test-steps",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-042"
     }
   ]
 }

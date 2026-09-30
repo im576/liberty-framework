@@ -30,6 +30,16 @@ namespace LibertyFramework.Gunplay.Profiles
         // T-041, optional: null = Stage 1 catalog weapons enabled.
         [DataMember(Name = "stage1Weapons", IsRequired = false, Order = 14)] internal Stage1WeaponSettings Stage1Weapons;
 
+        // T-042, optional: what each Stage 1 weapon class must deliver (measured by GunplaySimulation).
+        [DataMember(Name = "classTargets", IsRequired = false, Order = 15)] internal System.Collections.Generic.List<ClassTargetSettings> ClassTargets;
+
+        internal ClassTargetSettings FindClassTarget(string weaponClass)
+        {
+            if (ClassTargets == null || weaponClass == null) { return null; }
+            foreach (ClassTargetSettings target in ClassTargets) { if (target.WeaponClass == weaponClass) { return target; } }
+            return null;
+        }
+
         internal bool Stage1WeaponsEnabled { get { return Stage1Weapons == null || Stage1Weapons.Enabled; } }
 
         // The registered test weapons (58+), in file order.

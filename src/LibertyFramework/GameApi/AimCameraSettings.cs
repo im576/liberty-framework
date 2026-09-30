@@ -43,6 +43,23 @@ namespace LibertyFramework.GameApi
             return addresses.AimCamSettingsTable + (uint)(index * addresses.AimCamSettingsStride + addresses.AimCamLateralOffset);
         }
 
+        // T-042: the live table against what was applied: every record must hold its original lateral offset times the side factor.
+        internal bool LiveMatchesApplied(out string detail)
+        {
+            int wrong = 0;
+            float worst = 0;
+            for (int index = 0; index < originals.Length; index++)
+            {
+                float live = memory.ReadSingle(Address(index));
+                float expected = (float)(originals[index] * appliedFactor);
+                float error = Math.Abs(live - expected);
+                if (error > 0.002f) { wrong++; }
+                if (error > worst) { worst = error; }
+            }
+            detail = "records=" + originals.Length + " wrong=" + wrong + " worst_error_m=" + worst.ToString("0.0000") + " first_lateral=" + memory.ReadSingle(Address(0)).ToString("0.000");
+            return wrong == 0;
+        }
+
         internal void Apply(double sideFactor)
         {
             sideFactor = Math.Max(-1.0, Math.Min(1.0, sideFactor));

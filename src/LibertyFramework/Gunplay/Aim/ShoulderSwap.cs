@@ -24,6 +24,15 @@ namespace LibertyFramework.Gunplay.Aim
         }
 
         internal bool Left { get { return target < 0; } }
+        internal double Target { get { return target; } }
+        internal double Current { get { return current; } }
+
+        // Test hook (T-042 `swap` command): choose a side without the aim button; the slide then runs in Update as usual.
+        internal void Force(bool left)
+        {
+            target = left ? -1.0 : 1.0;
+            RuntimeLog.Info("shoulder_swap side=" + (left ? "left" : "right") + " forced=true");
+        }
 
         internal void Update(ShoulderSwapSettings config, ControllerInput controller, bool aiming, bool blocked, double deltaSeconds)
         {

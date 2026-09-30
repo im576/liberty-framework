@@ -14,6 +14,7 @@ using LibertyFramework.DevTools.TestRange;
 using LibertyFramework.Gunplay;
 using LibertyFramework.Gunplay.Profiles;
 using LibertyFramework.Weapons;
+using LibertyFramework.Weapons.Logic;
 
 namespace LibertyFramework.DevTools
 {
@@ -105,6 +106,23 @@ namespace LibertyFramework.DevTools
             List<MenuItem> items = new List<MenuItem>();
             GunplayConfig config = Config;
             if (config == null) { items.Add(MenuItem.Info(() => "gunplay.json not loaded; see log")); return items; }
+            // T-041/T-042: the Stage 1 arsenal from the weapon catalog (same as the `catalog give` command).
+            try
+            {
+                WeaponCatalog catalog = JsonStore.Load<WeaponCatalog>(LibertyPaths.WeaponCatalog);
+                foreach (WeaponCatalogEntry entry in catalog.Stage1Entries())
+                {
+                    WeaponCatalogEntry captured = entry;
+                    items.Add(MenuItem.Confirmed("Give " + entry.Label + " (Stage 1, " + entry.Tier + ")", () =>
+                    {
+                        Engine.Weapons.Give(Engine.World.Player.Ped, captured.WeaponId, config.TestRange.AmmoRefillRounds);
+                        Engine.Weapons.Select(Engine.World.Player.Ped, captured.WeaponId);
+                        RuntimeLog.Info("catalog_give id=" + captured.Id + " weapon=" + captured.WeaponId + " source=devtools");
+                        return "Gave " + captured.Label;
+                    }));
+                }
+            }
+            catch (Exception error) { RuntimeLog.Error("devtools_stage1_weapons_failed error=" + error.Message); }
             foreach (WeaponProfile profile in config.TestWeapons())
             {
                 WeaponProfile captured = profile;

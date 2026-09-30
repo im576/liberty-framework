@@ -345,7 +345,7 @@ namespace LibertyFramework.Engine
             Commands.RegisterEngine("restart", "restart <module> - stop it (and its dependents), then start fresh instances", args => RestartCommand(args));
             Commands.RegisterEngine("reload", "reload <module> - load its mod assembly again and swap every module in it (dev)", args => ReloadCommand(args));
             Commands.RegisterEngine("hotreload", "hotreload [on|off] - reload mod assemblies when their file changes (dev)", args => HotReloadCommand(args));
-            Commands.RegisterEngine("ray", "ray down|up|forward [m] [height m] [mask: all|world,peds,vehicles,objects] - Query.Raycast from the player", args => RayCommand(args));
+            Commands.RegisterEngine("ray", "ray down|up|forward|left|right [m] [height m] [mask: all|world,peds,vehicles,objects] - Query.Raycast from the player", args => RayCommand(args));
             Commands.RegisterEngine("raystats", "raycast counters (queries, line tests, hits, passes, faults)", args => RayStatsCommand());
             Commands.RegisterEngine("raydebug", "raydebug down|up|forward [m] [flags hex] [mode] [height m] - raw first hit of one game line test (research)", args => RayDebugCommand(args));
             Commands.RegisterEngine("raybits", "raybits down|up|forward [m] [mode] [height m] - which include bits (0-31) hit, and what (research)", args => RayBitsCommand(args));
@@ -429,7 +429,9 @@ namespace LibertyFramework.Engine
         {
             PlayerState player = World.Player;
             from = player.Position + new Vec3(0, 0, height);
-            Vec3 along = direction == "down" ? new Vec3(0, 0, -1) : direction == "up" ? new Vec3(0, 0, 1) : Vec3.FromHeading(player.Heading);
+            // left/right are the player's own sides (T-042: shoulder clearance); GTA headings increase counter-clockwise, so left = +90.
+            Vec3 along = direction == "down" ? new Vec3(0, 0, -1) : direction == "up" ? new Vec3(0, 0, 1) :
+                direction == "left" ? Vec3.FromHeading(player.Heading + 90f) : direction == "right" ? Vec3.FromHeading(player.Heading - 90f) : Vec3.FromHeading(player.Heading);
             to = from + along * meters;
         }
 

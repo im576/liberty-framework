@@ -16,8 +16,8 @@
 |---|---|---|
 | pc-offline | 13 | automatically (builds and tests that need Windows or the game's files) |
 | probe | 4 | automatically (read-only questions about the game's files; structure only) |
-| scenario | 25 | automatically (autopilot drives the game; about 2-4 minutes each) |
-| manual | 18 | you play and judge; about 162 minutes in total, grouped below |
+| scenario | 27 | automatically (autopilot drives the game; about 2-4 minutes each) |
+| manual | 19 | you play and judge; about 177 minutes in total, grouped below |
 
 Statuses: QUEUED (never run on the current code), PASS, FAIL, ERROR, CRASH, NOT-RUN, NEEDS-REVIEW (a person or the review session must judge screenshots or log errors).
 
@@ -25,7 +25,7 @@ Statuses: QUEUED (never run on the current code), PASS, FAIL, ERROR, CRASH, NOT-
 
 Do the sessions in order; stop whenever you like. Each check links to its full steps. Answer p (pass), f (fail) or s (skip) when the script asks, and add a note for anything odd.
 
-### Session 1: gunplay and feel (about 55 minutes)
+### Session 1: gunplay and feel (about 70 minutes)
 
 Load a free-roam save, go to the test range (DevTools > TELEPORT). Keep DevTools (L3+R3 or F10) handy.
 
@@ -97,6 +97,19 @@ Load a free-roam save, go to the test range (DevTools > TELEPORT). Keep DevTools
 
 - Pass when: props sit where described, follow the body, hide in cars, and never duplicate after reload
 - Full steps: [docs/tasks/T-021-holsters.md#human-test-steps](../../docs/tasks/T-021-holsters.md#human-test-steps)
+
+**Feel of each Stage 1 weapon class and the shoulder swap in aim** `T042-feel-per-class` (T-042, 15 min)
+
+1. In game open DevTools > Weapons and give yourself the Glock 17, IMI Uzi, Remington 1100 and AK-47 (the entries marked Stage 1), then go to the test range (DevTools > TELEPORT).
+2. Pistol: aim (LT/right mouse) and fire single shots, then a fast three-round burst, then pause. Shots should be precise, the crosshair should open on each shot and close within about a second.
+3. Uzi: hold the trigger for a full magazine. The crosshair should keep growing, the camera should climb steadily but not leave the target within one magazine when you pull down.
+4. AK-47: hold the trigger for a full 30-round magazine at 25 m. The gun must not be a laser: the shots spread out and the camera climbs about ten degrees (roughly a third of the screen).
+5. Remington 1100: single shots; each shot should kick hard and the pellets spread.
+6. Shoulder swap: aim, press LB (or Z) to swap shoulders on foot, in cover, and standing with a wall close to either shoulder; look for the camera passing through the wall.
+7. Tell me for each class: too weak / right / too strong, and every wall spot where the camera clipped.
+
+- Pass when: each class reads as right or you name the value to change; no camera clip into a wall at either shoulder
+- Full steps: [docs/tasks/T-042-stage1-gunplay.md#human-test-steps](../../docs/tasks/T-042-stage1-gunplay.md#human-test-steps)
 
 ### Session 2: storage, Arsenal and gunsmith (about 41 minutes)
 
@@ -241,6 +254,8 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 | `T040-capture-city-off` | T-040 | scenario | autopilot PASS (every goto, expect and gpumem step); screenshots judged; the summary (tools/perf/Measure-Stage1.ps1) has frame statistics, costs, perf and GPU memory for every point and condition; the final 'modules' reply shows no module off | QUEUED |
 | `T040-worst-case-off` | T-040 | scenario | autopilot PASS; screenshots judged; the final 'modules' reply shows no module off | QUEUED |
 | `T041-stage1-arsenal` | T-041 | scenario | autopilot PASS (every expect); the six screenshots judged: the weapon in hand is the catalog weapon | QUEUED |
+| `T042-gunplay-range` | T-042 | scenario | autopilot PASS (catalog sim ok, range_summary for every weapon); the range table (Measure-GunplayRange.ps1) read: first-shot deviation inside the written cone, spread larger in sustained fire than on the first shot | QUEUED |
+| `T042-shoulder-swap` | T-042 | scenario | autopilot PASS (every swap probe live_ok, settled); the `ray left` and `ray right` lines read: no side of a Stage 1 spot is closer than the camera offset (0.475 m) | QUEUED |
 
 ## What each check proves, and what stays unproven
 
@@ -305,3 +320,6 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 - `T040-capture-city-off`: Mod-off measurement of the citywide points.
 - `T040-worst-case-off`: The worst case with the Liberty gameplay modules stopped: the reference for the frame-time budget (p95 +10%, p99 +15%) and the VRAM overhead.
 - `T041-stage1-arsenal`: Every Stage 1 catalog weapon is given, held and fired at the test range and the Liberty gunplay profile drives it (weapon_changed profile=, gunplay_state); the catalog, gunplay.json, the gate and the loaded WeaponInfo.xml agree (catalog check); restricted weapons (snipers, MG36, P90-look), a test weapon and a vanilla weapon outside the catalog keep their own behaviour; the availability rules offer only common weapons for $600 at the start and never a restricted weapon.
+- `T042-gunplay-range`: Every Stage 1 profile meets its class targets in the live model (`catalog sim`: first-shot cone, burst recovery, spread growth and camera climb for automatic weapons), and for each weapon the player's bullets at a point 25 m ahead are recorded (single shots, bursts, continuous fire) with the cone the model wrote for each, for tools/perf/Measure-GunplayRange.ps1.
+- `T042-shoulder-swap`: Forced left/right/toggle slides the game's aim-camera table to -1/+1 and the live table matches (swap probe), the right shoulder is restored at the end, and the engine ray from both sides of the player is logged at the test wall (0.4 to 3 m away, facing both ways) and at four city capture points.
+- `T042-feel-per-class`: Owner sign-off of the per-class starting numbers (config/gunplay.json weapons[], classTargets) and of shoulder swap near walls, which the autopilot cannot aim at.

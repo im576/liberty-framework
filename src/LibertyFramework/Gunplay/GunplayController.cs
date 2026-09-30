@@ -44,6 +44,15 @@ namespace LibertyFramework.Gunplay
         private int lastTimingReportTicks;
         private readonly GunplayConfigStore store;
         // T-041: the weapon catalog decides which vanilla-id weapons the Liberty profiles apply to (Stage1Gate).
+        // Test hooks (`aim` command): pretend the aim button is held and force stance/speed, so the autopilot can check the model and reticle.
+        private bool testAiming;
+        private bool testCrouched;
+        private bool testCover;
+        private double? testSpeed;
+        // T-042 range recording: bullet deviation from an explicit aim point (`range` command), not from the camera.
+        private Vec3? rangeAim;
+        private readonly RangeRecorder rangeRecorder = new RangeRecorder();
+        private double rangeStartedMilliseconds;
         private WeaponCatalog weaponCatalog;
         private string weaponCatalogHash;
         private int gateWeaponId = -1;
@@ -117,6 +126,7 @@ namespace LibertyFramework.Gunplay
         private double lastResolutionReadMilliseconds;
         private bool drawFailed;
         private ShoulderSwap shoulderSwap;
+        private AimCameraSettings shoulderSettings;
         private bool feelDisabled;
         private GTA.Camera feelCamera;
         private int feelCameraHandle;
@@ -316,7 +326,7 @@ namespace LibertyFramework.Gunplay
                 }
                 aimCameraActive = aimCam != 0;
                 mark = Stopwatch.GetTimestamp();
-                aiming = (aimCameraActive && !state.InVehicle) || Game.isGameKeyPressed(GameKey.Aim);
+                aiming = (aimCameraActive && !state.InVehicle) || Game.isGameKeyPressed(GameKey.Aim) || testAiming;
                 CostMeter.Add("cam.aim_key", mark);
                 state.Aiming = aiming;
                 if (gameCameraValid)
@@ -475,7 +485,7 @@ namespace LibertyFramework.Gunplay
             freeAim.RecoverFromPreviousSession();
             if (addresses.AimCamSettingsResolved)
             {
-                try { shoulderSwap = new ShoulderSwap(new AimCameraSettings(memory, addresses)); }
+                try { shoulderSettings = new AimCameraSettings(memory, addresses); shoulderSwap = new ShoulderSwap(shoulderSettings); }
                 catch (Exception error) { RuntimeLog.Error("feature_disabled shoulder_swap validation error=" + error.Message); }
             }
 
@@ -618,6 +628,9 @@ namespace LibertyFramework.Gunplay
             state.InCover = !state.InVehicle && Natives.IsInCover(ped);
             state.Airborne = !state.InVehicle && Natives.IsInAir(ped);
             state.Aiming = aiming;
+            if (testCrouched) { state.Crouched = true; }
+            if (testCover) { state.InCover = true; }
+            if (testSpeed.HasValue) { state.SpeedMetersPerSecond = testSpeed.Value; }
         }
 
         private int DetectShots(Ped ped, int weaponId)
@@ -679,6 +692,139 @@ namespace LibertyFramework.Gunplay
             }
         }
 
+        // ---- T-042 range measurement ----
+
+        protected internal override void OnStart()
+        {
+            Engine.Commands.Register(this, "aim", "aim on|off [crouched] [cover] [speed <m/s>] - test hook: act as if the aim button is held, with a forced stance/speed", AimCommand);
+            Engine.Commands.Register(this, "swap", "swap left|right|toggle|status|probe - shoulder swap without the aim button; probe checks the live camera table (T-042)", SwapCommand);
+            Engine.Commands.Register(this, "range",
+                "range start ahead <m> [height m] | start <x> <y> <z> | fire <ms> [mode 1-4] | stop | status - record bullet deviation from an explicit aim point (T-042)", RangeCommand);
+        }
+
+        private string AimCommand(string[] args)
+        {
+            string verb = args.Length > 0 ? args[0].ToLowerInvariant() : "status";
+            if (verb == "off")
+            {
+                testAiming = false; testCrouched = false; testCover = false; testSpeed = null;
+                RuntimeLog.Info("aim_test off");
+                return "aim test off";
+            }
+            if (verb != "on") { return "aim test " + (testAiming ? "on" : "off") + " crouched=" + testCrouched + " cover=" + testCover + " speed=" + (testSpeed.HasValue ? testSpeed.Value.ToString("0.0") : "-"); }
+            testAiming = true; testCrouched = false; testCover = false; testSpeed = null;
+            for (int index = 1; index < args.Length; index++)
+            {
+                if (args[index] == "crouched") { testCrouched = true; }
+                else if (args[index] == "cover") { testCover = true; }
+                else if (args[index] == "speed" && index + 1 < args.Length)
+                {
+                    double speed;
+                    if (!double.TryParse(args[index + 1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out speed)) { return "error: bad speed " + args[index + 1]; }
+                    testSpeed = speed;
+                    index++;
+                }
+                else { return "error: aim on [crouched] [cover] [speed <m/s>]"; }
+            }
+            RuntimeLog.Info("aim_test on crouched=" + testCrouched + " cover=" + testCover + " speed=" + (testSpeed.HasValue ? testSpeed.Value.ToString("0.0") : "-"));
+            return "aim test on crouched=" + testCrouched + " cover=" + testCover + " speed=" + (testSpeed.HasValue ? testSpeed.Value.ToString("0.0") : "-");
+        }
+
+        // `swap left|right|toggle|status|probe` (T-042): pick a shoulder without the aim button and prove the camera table follows.
+        private string SwapCommand(string[] args)
+        {
+            string verb = args.Length > 0 ? args[0].ToLowerInvariant() : "status";
+            if (shoulderSwap == null || shoulderSettings == null) { return "error: shoulder swap is unavailable (aim camera table not validated)"; }
+            if (verb == "left") { shoulderSwap.Force(true); return "swap left requested"; }
+            if (verb == "right") { shoulderSwap.Force(false); return "swap right requested"; }
+            if (verb == "toggle") { shoulderSwap.Force(!shoulderSwap.Left); return "swap " + (shoulderSwap.Left ? "left" : "right") + " requested"; }
+            string detail;
+            bool live = shoulderSettings.LiveMatchesApplied(out detail);
+            bool settled = Math.Abs(shoulderSwap.Current - shoulderSwap.Target) < 0.001 && Math.Abs(shoulderSettings.AppliedFactor - shoulderSwap.Target) < 0.001;
+            string text = "side=" + (shoulderSwap.Left ? "left" : "right") + " target=" + shoulderSwap.Target.ToString("0.00") + " applied=" + shoulderSettings.AppliedFactor.ToString("0.000") +
+                " settled=" + settled + " live_ok=" + live + " " + detail;
+            RuntimeLog.Info("swap_probe " + text);
+            if (verb == "probe" && (!live || !settled)) { return "error: " + text; }
+            return "swap " + text;
+        }
+
+        private string RangeCommand(string[] args)
+        {
+            string verb = args.Length > 0 ? args[0].ToLowerInvariant() : "status";
+            System.Globalization.CultureInfo invariant = System.Globalization.CultureInfo.InvariantCulture;
+            try
+            {
+                if (verb == "start")
+                {
+                    Ped ped = Player.Character;
+                    if (ped == null) { return "error: no player"; }
+                    if (args.Length >= 3 && args[1] == "ahead")
+                    {
+                        double distance = double.Parse(args[2], invariant);
+                        double height = args.Length > 3 ? double.Parse(args[3], invariant) : 0.3;
+                        double heading = ped.Heading * Math.PI / 180.0;
+                        Vector3 position = ped.Position;
+                        // GTA headings: 0 = north (+Y), increasing counter-clockwise.
+                        rangeAim = new Vec3(position.X - Math.Sin(heading) * distance, position.Y + Math.Cos(heading) * distance, position.Z + height);
+                    }
+                    else if (args.Length >= 4) { rangeAim = new Vec3(double.Parse(args[1], invariant), double.Parse(args[2], invariant), double.Parse(args[3], invariant)); }
+                    else { return "error: range start ahead <m> [height] | start <x> <y> <z>"; }
+                    rangeRecorder.Shots.Clear();
+                    rangeRecorder.Reset();
+                    // Shots at the range are aimed shots: the model treats the player as aiming while it runs.
+                    testAiming = true;
+                    rangeStartedMilliseconds = Now;
+                    RuntimeLog.Info("range_started aim=" + rangeAim.Value + " weapon=" + activeWeaponId + " profile=" + (activeProfile != null ? activeProfile.ProfileName : "vanilla"));
+                    return "range aim " + rangeAim.Value;
+                }
+                if (verb == "fire")
+                {
+                    if (!rangeAim.HasValue) { return "error: range start first"; }
+                    int milliseconds = args.Length > 1 ? int.Parse(args[1], invariant) : 1000;
+                    int mode = args.Length > 2 ? int.Parse(args[2], invariant) : 4;
+                    if (mode < 0 || mode > 4 || milliseconds <= 0 || milliseconds > 30000) { return "error: range fire <1-30000 ms> [mode 0-4]"; }
+                    // TASK_SHOOT_AT_COORD(ped, x, y, z, duration ms, mode): 0 aim only, 1 single, 2 single keeping aim, 3 burst, 4 continuous.
+                    GTA.Native.Function.Call("TASK_SHOOT_AT_COORD", Player.Character, (float)rangeAim.Value.X, (float)rangeAim.Value.Y, (float)rangeAim.Value.Z, milliseconds, mode);
+                    RuntimeLog.Info("range_fire ms=" + milliseconds + " mode=" + mode);
+                    return "firing " + milliseconds + " ms in mode " + mode;
+                }
+                if (verb == "stop")
+                {
+                    int count = rangeRecorder.Count;
+                    foreach (string line in rangeRecorder.Summary()) { RuntimeLog.Info("range_summary " + line); }
+                    RuntimeLog.Info("range_stopped shots=" + count + " seconds=" + ((Now - rangeStartedMilliseconds) / 1000.0).ToString("0.0"));
+                    rangeAim = null;
+                    testAiming = false;
+                    return "range stopped: " + count + " shots";
+                }
+                if (verb == "status") { return rangeAim.HasValue ? "range active: " + rangeRecorder.Count + " shots, aim " + rangeAim.Value : "range off"; }
+                return "error: unknown range verb " + verb;
+            }
+            catch (Exception error)
+            {
+                RuntimeLog.Error("range_command_failed verb=" + verb + " error=" + error.Message);
+                return "error: " + error.Message;
+            }
+        }
+
+        // Each of the player's new bullets: deviation from the line to the aim point, against the cone the model had written.
+        private void RecordRange(List<BulletLog.Trace> traces, int weaponId, double now)
+        {
+            if (!rangeAim.HasValue) { return; }
+            double chainReset = activeProfile != null ? activeProfile.Spread.ChainResetMilliseconds : 450;
+            foreach (BulletLog.Trace trace in traces)
+            {
+                Vec3 intended = rangeAim.Value - trace.Start;
+                Vec3 actual = trace.End - trace.Start;
+                if (intended.Length < 0.5 || actual.Length < 0.5) { continue; }
+                double cosine = Math.Max(-1.0, Math.Min(1.0, Vec3.Dot(intended, actual) / (intended.Length * actual.Length)));
+                double deviation = Math.Acos(cosine) * 180.0 / Math.PI;
+                RangeShot shot = rangeRecorder.Add(weaponId, now, deviation, writtenConeDegrees, chainReset);
+                RuntimeLog.Info("range_shot weapon=" + weaponId + " n=" + shot.Index + " gap_ms=" + shot.GapMilliseconds.ToString("0") + " dev=" + deviation.ToString("0.000") +
+                    " cone=" + shot.ConeDegrees.ToString("0.000") + " range_m=" + actual.Length.ToString("0.0") + " state=" + state.Describe());
+            }
+        }
+
         private void AuditBullets(GunplayConfig config, int gameCamera, int weaponId, double now)
         {
             if (bullets == null || playerPed == 0) { return; }
@@ -693,6 +839,7 @@ namespace LibertyFramework.Gunplay
                 }
                 return;
             }
+            if (rangeAim.HasValue) { RecordRange(traces, weaponId, now); }
             if (!gameCameraValid) { return; }
             Vec3 cameraPosition = Natives.CamPosition(gameCamera);
             Vec3 rotation = Natives.CamRotation(gameCamera);
