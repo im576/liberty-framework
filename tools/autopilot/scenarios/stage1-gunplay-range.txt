@@ -17,6 +17,7 @@ catalog sim
 expect "gunplay sim ok: 6 Stage 1 weapons meet their class targets" 20
 
 # --- service-pistol (weapon 7)
+wanted 0
 catalog give service-pistol 400 clear
 expect "weapon_changed from=\d+ to=7 profile=" 20
 wait 1000
@@ -47,6 +48,7 @@ expect "range_summary weapon=7 group=first n=[1-9]" 15
 expect "range_summary weapon=7 group=sustained n=" 15
 
 # --- combat-pistol (weapon 9)
+wanted 0
 catalog give combat-pistol 400 clear
 expect "weapon_changed from=\d+ to=9 profile=" 20
 wait 1000
@@ -77,6 +79,7 @@ expect "range_summary weapon=9 group=first n=[1-9]" 15
 expect "range_summary weapon=9 group=sustained n=" 15
 
 # --- remington-1100 (weapon 11)
+wanted 0
 catalog give remington-1100 400 clear
 expect "weapon_changed from=\d+ to=11 profile=" 20
 wait 1000
@@ -107,6 +110,7 @@ expect "range_summary weapon=11 group=first n=[1-9]" 15
 expect "range_summary weapon=11 group=sustained n=" 15
 
 # --- street-sweeper (weapon 10)
+wanted 0
 catalog give street-sweeper 400 clear
 expect "weapon_changed from=\d+ to=10 profile=" 20
 wait 1000
@@ -137,6 +141,7 @@ expect "range_summary weapon=10 group=first n=[1-9]" 15
 expect "range_summary weapon=10 group=sustained n=" 15
 
 # --- imi-uzi (weapon 12)
+wanted 0
 catalog give imi-uzi 400 clear
 expect "weapon_changed from=\d+ to=12 profile=" 20
 wait 1000
@@ -167,6 +172,7 @@ expect "range_summary weapon=12 group=first n=[1-9]" 15
 expect "range_summary weapon=12 group=sustained n=" 15
 
 # --- ak-47 (weapon 14)
+wanted 0
 catalog give ak-47 400 clear
 expect "weapon_changed from=\d+ to=14 profile=" 20
 wait 1000
