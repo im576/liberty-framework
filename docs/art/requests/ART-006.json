@@ -1,7 +1,7 @@
 {
   "id": "ART-006",
   "title": "Muzzle flash front frames",
-  "status": "requested",
+  "status": "generated",
   "priority": "P0",
   "kind": "decal",
   "prompt": "A 2 by 2 atlas of four realistic firearm muzzle flashes seen from directly in front, each centred in its quarter on a fully transparent background: a bright white-hot centre with four to six irregular orange-yellow star petals and faint smoke, different petal counts and sizes per variant. Photographic, short and sharp, no gun, no background, no neon or cartoon shapes.",
@@ -62,6 +62,49 @@
         {
           "path": "art/generated/ART-006/r1/art_006_2.png",
           "sha256": "1474a8156749302f449432da55e4554638c0687dfba2ca6f97c2738c380c90dd",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ]
+    },
+    {
+      "at": "2026-09-30T06:47:48+00:00",
+      "event": "generated",
+      "revision": 1,
+      "by": "Codex",
+      "notes": "Two fresh generations (_3,_4) from current prompt plus verbatim constraints; four candidates registered with alpha intact. _1: lower-right flash has three petals, smoke dense. _2: lower-right three-petal flash and dense smoke. _3: oversized shapes, upper-left smoke/petal clipped at top-left edge, lower-right appears three-petal; dense smoke. _4: lower-right appears three-petal, long spark streaks and dense smoke, top-right tight right margin. Counts/margins left for reviewer; no post-processing, version/seeds unavailable.",
+      "model": "OpenAI image_gen built-in (model/version not exposed)",
+      "prompt": "A 2 by 2 atlas of four realistic firearm muzzle flashes seen from directly in front, each centred in its quarter on a fully transparent background: a bright white-hot centre with four to six irregular orange-yellow star petals and faint smoke, different petal counts and sizes per variant. Photographic, short and sharp, no gun, no background, no neon or cartoon shapes.",
+      "files": [
+        {
+          "path": "art/generated/ART-006/r1/art_006_1.png",
+          "sha256": "72092252366de8f804e70215c23aa9f939ab4248b55cba75268adab51bb54a0f",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-006/r1/art_006_2.png",
+          "sha256": "1474a8156749302f449432da55e4554638c0687dfba2ca6f97c2738c380c90dd",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-006/r1/art_006_3.png",
+          "sha256": "4bd2e911d132e070b5c6670073d3279c9fd3dd2ef19697c9d955549e3a707393",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-006/r1/art_006_4.png",
+          "sha256": "e2a3452c1a2cecfce266d864736ac18ee67ed38c1882ca9eaf6e8d691ea2b5ed",
           "width": 1254,
           "height": 1254,
           "mode": "RGBA",
