@@ -16,7 +16,7 @@
 |---|---|---|
 | pc-offline | 13 | automatically (builds and tests that need Windows or the game's files) |
 | probe | 4 | automatically (read-only questions about the game's files; structure only) |
-| scenario | 28 | automatically (autopilot drives the game; about 2-4 minutes each) |
+| scenario | 34 | automatically (autopilot drives the game; about 2-4 minutes each) |
 | manual | 20 | you play and judge; about 187 minutes in total, grouped below |
 
 Statuses: QUEUED (never run on the current code), PASS, FAIL, ERROR, CRASH, NOT-RUN, NEEDS-REVIEW (a person or the review session must judge screenshots or log errors).
@@ -269,6 +269,12 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 | `T042-gunplay-range` | T-042 | scenario | autopilot PASS (catalog sim ok, range_summary for every weapon); the range table (Measure-GunplayRange.ps1) read: first-shot deviation inside the written cone, spread larger in sustained fire than on the first shot | QUEUED |
 | `T042-shoulder-swap` | T-042 | scenario | autopilot PASS (every swap probe live_ok, settled); the `ray left` and `ray right` lines read: no side of a Stage 1 spot is closer than the camera offset (0.475 m) | QUEUED |
 | `T043-stage1-reticles` | T-043 | scenario | autopilot PASS (reticle_resolved per class, reticle check ok per class, draw.crosshair average below 0.1 ms in costs); the screenshots judged: each class reads as its own reticle and the firing frames are visibly wider than the standing ones | QUEUED |
+| `T044-loadout-vehicles` | T-044 | scenario | autopilot PASS: the scenario line "autopilot_vehicle_cycles_done cycles=100 hidden_failures=0 restored_failures=0 enter_timeouts=0 leave_timeouts=0 object_growth<=3" is found; screenshots judged | QUEUED |
+| `T044-loadout-weapons` | T-044 | scenario | autopilot PASS: "arsenal_overflow id=10", "arsenal_ammo_capped id=14 ... to=240", "autopilot_weapon_cycles_done switches=12 failures=0" found; screenshots judged | QUEUED |
+| `T044-loadout-deaths-a` | T-044 | scenario | autopilot PASS: "autopilot_death_cycles_done cycles=25 lost_owned=0 failed_cycles=0 timeouts=0" with stored_growth equal to owned_expected (at least 40 of the 50 bought weapons counted as owned), and "arsenal_roundtrip identical=True" found | QUEUED |
+| `T044-loadout-deaths-b` | T-044 | scenario | autopilot PASS: "autopilot_death_cycles_done cycles=25 lost_owned=0 failed_cycles=0 timeouts=0" with stored_growth equal to owned_expected (at least 40 of the 50 bought weapons counted as owned), and "arsenal_roundtrip identical=True" found | QUEUED |
+| `T044-loadout-outfits` | T-044 | scenario | autopilot PASS (every outfit set, every status line with the expected class); the screenshots judged by the owner for clipping | QUEUED |
+| `T044-loadout-review` | T-044 | scenario | autopilot PASS; the screenshots judged by the owner for clipping | QUEUED |
 
 ## What each check proves, and what stays unproven
 
@@ -338,3 +344,9 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 - `T042-feel-per-class`: Owner sign-off of the per-class starting numbers (config/gunplay.json weapons[], classTargets) and of shoulder swap near walls, which the autopilot cannot aim at.
 - `T043-stage1-reticles`: Each of the four Stage 1 classes (pistol, SMG, rifle, shotgun) is held and shows its configured reticle style while the model treats the player as aiming in four states (standing, crouched, moving, sustained fire and recovery); the drawn opening equals the cone within 5% whenever the cone is steady and never under-reports it (`reticle check`); the average draw cost of the reticle is under 0.1 ms.
 - `T043-reticle-look`: Owner sign-off of the reticle styles and sizes (config/gunplay.json reticles.classes[]), which are looks and feel.
+- `T044-loadout-vehicles`: With two long guns and a sidearm carried, both slung guns and both straps are hidden every time Niko is in the car, all are back every time he steps out, and the game's object pool does not grow across 100 cycles (no orphaned or floating props). The car is parked on the Hove Beach road (s1_hove_beach_a).
+- `T044-loadout-weapons`: A third long gun pushes the least recently used one into the car's storage (1 sidearm + 2 long guns), ammunition above the loadout cap is taken back to the cap, and selecting each carried weapon hides its prop and shows the others within a few frames.
+- `T044-loadout-deaths-a`: Across 25 wasted cycles with two bought (owned) weapons each, the stored weapon count grows by exactly the owned weapons carried at death (0 lost; with no safehouse known they go to an unassigned stash), and the arsenal state saved to disk reads back identical.
+- `T044-loadout-deaths-b`: The second 25 wasted cycles (50 in total with part 1): 0 lost owned weapons and an identical state after saving and loading. Runs after `T044-loadout-deaths-a` in the same run.
+- `T044-loadout-outfits`: All 17 upper-body outfits Niko can wear are classified as config/holsters.json says (holster module reports the class), the holster props are re-attached with the class offsets, and front, side and back screenshots exist for each.
+- `T044-loadout-review`: Rifle + shotgun, SMG + rifle and SMG + shotgun are each slung on both body slots without sharing a position, on a slim and on a bulky outfit.
