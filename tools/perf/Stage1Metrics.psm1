@@ -1,4 +1,4 @@
-﻿# Parsing and summarising the Stage 1 measurement scenarios (T-040). Pure functions with no game or Windows dependency,
+# Parsing and summarising the Stage 1 measurement scenarios (T-040). Pure functions with no game or Windows dependency,
 # so the cloud container tests them (tools/tests/Stage1Metrics.Tests.ps1). tools/perf/Measure-Stage1.ps1 is the command line.
 #
 # Input: an autopilot report folder (tools/autopilot/Run-Scenario.ps1): run.log (the engine log lines of the run, including
@@ -63,20 +63,20 @@ function Get-CommandRecords([string[]] $LogLines) {
     $records = New-Object System.Collections.Generic.List[object]
     foreach ($line in @($LogLines)) {
         $m = [regex]::Match($line, $script:CommandLine)
-        if ($m.Success) { $records.Add([pscustomobject]@{ Command = $m.Groups['line'].Value; Reply = $m.Groups['reply'].Value }) }
+        if ($m.Success) { $records.Add([pscustomobject]@{ Command = $m.Groups['line'].Value; Reply = $m.Groups['reply'].Value; Time = $(if ($line.Length -ge 24) { $line.Substring(0, 24) } else { '' }) }) }
     }
     return $records.ToArray()
 }
 
 # One measured section per `label <name>` command: its frame statistics, cost windows, perf samples, last pools and the
 # GPU measurements whose label is the section's label or starts with "<label>_".
-function Get-MeasuredSections([object[]] $Records, [object[]] $Measurements) {
+function Get-MeasuredSections([object[]] $Records, [object[]] $Measurements, [string[]] $InterferenceLines = @()) {
     $sections = New-Object System.Collections.Generic.List[object]
     $current = $null
     foreach ($record in @($Records)) {
         $words = $record.Command -split '\s+'
         if ($words[0] -eq 'label' -and $words.Count -ge 2) {
-            $current = [ordered]@{ label = $words[1]; frameStatsReplies = @(); costWindows = @(); perfSamples = @(); pools = $null }
+            $current = [ordered]@{ label = $words[1]; startTime = $record.Time; frameStatsReplies = @(); costWindows = @(); perfSamples = @(); pools = $null }
             $sections.Add($current)
             continue
         }
@@ -89,8 +89,12 @@ function Get-MeasuredSections([object[]] $Records, [object[]] $Measurements) {
         }
     }
     $results = New-Object System.Collections.Generic.List[object]
-    foreach ($section in $sections) {
+    for ($index = 0; $index -lt $sections.Count; $index++) {
+        $section = $sections[$index]
         $result = [ordered]@{ label = $section.label }
+        # Input that did not come from the scenario, inside this section's window (from its label to the next label).
+        $endTime = if ($index + 1 -lt $sections.Count) { $sections[$index + 1].startTime } else { '9999' }
+        $result.interference = @($InterferenceLines | Where-Object { $_.Length -ge 24 -and [string]::CompareOrdinal($_.Substring(0, 24), $section.startTime) -ge 0 -and [string]::CompareOrdinal($_.Substring(0, 24), $endTime) -lt 0 }).Count
         # The first framestats/costs after the label reset the counters; the sample is what the later calls report.
         $stats = $null
         if ($section.frameStatsReplies.Count -ge 2) { $stats = ConvertFrom-KeyValueReply $section.frameStatsReplies[$section.frameStatsReplies.Count - 1] }
@@ -157,17 +161,31 @@ function Get-ReportSummary([string] $ReportDirectory, [string] $Condition = '') 
         $m = [regex]::Match($line, '\bdensity frame_ms=\S+ peds=(?<p>[0-9.]+) cars=(?<c>[0-9.]+)')
         if ($m.Success) { $densityPeds += ConvertTo-Number $m.Groups['p'].Value; $densityCars += ConvertTo-Number $m.Groups['c'].Value }
     }
+    $interference = @(Get-InterferenceLines $lines $records)
+    $sections = @(Get-MeasuredSections $records $measurements $interference)
     return [ordered]@{
         scenario = $scenario
         condition = $Condition
+        interferenceLines = $interference.Count
+        interferenceFirst = @($interference | Select-Object -First 5 | ForEach-Object { $_.Substring(0, [Math]::Min(160, $_.Length)) })
         reportDirectory = (Split-Path -Leaf $ReportDirectory)
         engineStalls = @($lines | Where-Object { $_ -match 'engine_stall' }).Count
         logErrors = @($lines | Where-Object { $_ -match '\[ERROR\]' }).Count
         densityLines = $densityPeds.Count
         densityMinPeds = $(if ($densityPeds.Count -gt 0) { ($densityPeds | Measure-Object -Minimum).Minimum } else { $null })
         densityMinCars = $(if ($densityCars.Count -gt 0) { ($densityCars | Measure-Object -Minimum).Minimum } else { $null })
-        sections = @(Get-MeasuredSections $records $measurements)
+        sections = $sections
     }
+}
+
+# Log lines showing the player being controlled by something other than the scenario: weapon switches, hits, trunk
+# and menu use, gore tests. The capture scenarios issue no weapon or combat commands, so any such line in one is a person
+# (or another tool) using the game during the measurement, and the section it falls in is not a clean sample. A scenario
+# that spawns or arms subjects legitimately causes some of them: only the storage and menu lines count there.
+function Get-InterferenceLines([string[]] $Lines, [object[]] $Records) {
+    $actors = @($Records | ForEach-Object { ($_.Command -split '\s+')[0] } | Where-Object { $_ -in @('give', 'select', 'spawn', 'fight', 'fire', 'hurt', 'kill', 'gore', 'anim', 'stress') })
+    $pattern = if ($actors.Count -eq 0) { 'weapon_changed|combat_hit|arsenal_storage_open|choreography_begin|ui_input|gore_test|shoulder_swap' } else { 'arsenal_storage_open|choreography_begin trunk|ui_input|gore_test|shoulder_swap' }
+    return @($Lines | Where-Object { $_ -match $pattern -and $_ -notmatch ' command source=' })
 }
 
 # Budgets from STAGE1.md section 10 Pillar 5 (proposals until the owner confirms them; the VRAM one is confirmed).
@@ -214,8 +232,8 @@ function Format-Stage1Comparison($OnSummary, $OffSummary) {
     $budgets = Get-Stage1Budgets
     $none = [pscustomobject]@{ costs = @{} }
     $out = New-Object System.Collections.Generic.List[string]
-    $out.Add('| Section | frame avg ms on / off | p50 on / off | p95 on / off (change) | p99 on / off (change) | max ms on | engine.frame avg ms on / off | GPU MB on / off (change) | private MB on / off | frames >100 ms | stalls >=1 s | PC load on / off: CPU % and game disk busy % |')
-    $out.Add('|---|---|---|---|---|---|---|---|---|---|---|---|')
+    $out.Add('| Section | frame avg ms on / off | p50 on / off | p95 on / off (change) | p99 on / off (change) | max ms on | engine.frame avg ms on / off | GPU MB on / off (change) | private MB on / off | frames >100 ms | stalls >=1 s | PC load on / off: CPU % and game disk busy % | outside input on / off |')
+    $out.Add('|---|---|---|---|---|---|---|---|---|---|---|---|---|')
     foreach ($on in @($OnSummary.sections)) {
         $off = @($OffSummary.sections | Where-Object { $_.label -eq $on.label }) | Select-Object -First 1
         if ($null -eq $off) { $off = $none }
@@ -228,12 +246,12 @@ function Format-Stage1Comparison($OnSummary, $OffSummary) {
         $p99 = (Format-Pair $on.p99_ms $off.p99_ms '0.0') + ' (' + (Format-Percent $on.p99_ms $off.p99_ms) + $(if ($null -ne $p99Change -and $p99Change -gt $budgets.p99IncreasePercent) { ' OVER' } else { '' }) + ')'
         $gpu = (Format-Pair $on.gpuDedicatedMbMax $off.gpuDedicatedMbMax '0') + ' (' + (Format-Delta $on.gpuDedicatedMbMax $off.gpuDedicatedMbMax ' MB') + $(if ($null -ne $vramChange -and $vramChange -gt $budgets.vramOverVanillaMbCeiling) { ' OVER' } else { '' }) + ')'
         $load = 'CPU ' + (Format-Pair $on.systemCpuPercentMax $off.systemCpuPercentMax '0') + ', disk ' + (Format-Pair $on.gameDiskBusyPercentMax $off.gameDiskBusyPercentMax '0')
-        $out.Add(('| {0} | {1} | {2} | {3} | {4} | {5} | {6} | {7} | {8} | {9} | {10} | {11} |' -f $on.label,
+        $out.Add(('| {0} | {1} | {2} | {3} | {4} | {5} | {6} | {7} | {8} | {9} | {10} | {11} | {12} |' -f $on.label,
             (Format-Pair $on.avg_ms $off.avg_ms '0.00'), (Format-Pair $on.p50_ms $off.p50_ms '0.0'), $p95, $p99, (Format-Number $on.max_ms '0.0'),
             (Format-Pair $(if ($onCost) { $onCost.avgMs }) $(if ($offCost) { $offCost.avgMs }) '0.000'), $gpu,
-            (Format-Pair $on.privateMbMax $off.privateMbMax '0'), $on.over100, $on.stalls1s, $load))
+            (Format-Pair $on.privateMbMax $off.privateMbMax '0'), $on.over100, $on.stalls1s, $load, ((Format-Pair $on.interference $off.interference '0') + $(if ($on.interference -gt 0 -or $off.interference -gt 0) { ' NOT CLEAN' } else { '' }))))
     }
     return $out.ToArray()
 }
-Export-ModuleMember -Function ConvertFrom-KeyValueReply, ConvertFrom-CostsReply, Merge-CostWindows, Get-CommandRecords, Get-MeasuredSections, Get-ReportSummary, Get-Stage1Budgets, Format-Stage1Comparison
+Export-ModuleMember -Function ConvertFrom-KeyValueReply, ConvertFrom-CostsReply, Merge-CostWindows, Get-CommandRecords, Get-MeasuredSections, Get-InterferenceLines, Get-ReportSummary, Get-Stage1Budgets, Format-Stage1Comparison
 

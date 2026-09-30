@@ -71,6 +71,8 @@ function New-CaptureScenario([string] $Title, [object[]] $Points, [bool] $ModOff
         $lines.Add("goto $($point.id)")
         # The teleport blocks in LOAD_SCENE (4 to 18 s measured) and logs teleport_done about a second later.
         $lines.Add("expect `"teleport_done id=$($point.id)`" 90")
+        # Algonquin, Bohan and Alderney can raise a wanted level for an armed player on a locked island: clear it.
+        $lines.Add('wanted 0')
         $lines.Add("wait $streamingWaitMs")
         foreach ($condition in $conditions) {
             $label = "$($point.id)_$($condition.Name)"

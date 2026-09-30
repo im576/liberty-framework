@@ -53,13 +53,13 @@
     },
     {
       "id": "s1_hove_beach_a",
-      "name": "Stage 1: Hove Beach, Beachgate side street",
-      "x": 945.6,
-      "y": -529.9,
-      "z": 14.7,
-      "heading": 252.0,
+      "name": "Stage 1: Hove Beach, station street",
+      "x": 1050.1,
+      "y": -568.3,
+      "z": 14.0,
+      "heading": 90.0,
       "snap": "none",
-      "note": "Stage 1 capture point (T-040), Broker/Hove Beach (zone HOBEH, node paths.ipl:16509). Fixed position, never snapped: x/y/z from a vehicle node in the game's common/data/maps/paths.ipl (road surface z + 1 m), zone from common/data/info.zon, heading down the road toward the farthest linked node."
+      "note": "Stage 1 capture point (T-040), Broker/Hove Beach (zone HOBEH, node paths.ipl:15897), the street beside the station and the shop row. Fixed position, never snapped: x/y/z from a vehicle node in the game's common/data/maps/paths.ipl (road surface z + 1 m), zone from common/data/info.zon, heading west along the street. Replaced a service-yard node that faced a blank wall."
     },
     {
       "id": "s1_hove_beach_b",
@@ -77,9 +77,9 @@
       "x": 883.3,
       "y": -654.3,
       "z": 11.6,
-      "heading": 32.0,
+      "heading": 80.0,
       "snap": "none",
-      "note": "Stage 1 capture point (T-040), Broker/Firefly Island (zone FIISL, node paths.ipl:15195). Fixed position, never snapped: x/y/z from a vehicle node in the game's common/data/maps/paths.ipl (road surface z + 1 m), zone from common/data/info.zon, heading down the road toward the farthest linked node."
+      "note": "Stage 1 capture point (T-040), Broker/Firefly Island (zone FIISL, node paths.ipl:15195), the funland edge: heading west so the fairground structures and boardwalk are in view. Fixed position, never snapped: x/y/z from a vehicle node in the game's common/data/maps/paths.ipl (road surface z + 1 m), zone from common/data/info.zon."
     },
     {
       "id": "s1_rotterdam_hill",

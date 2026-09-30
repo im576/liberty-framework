@@ -15,9 +15,10 @@ stop atmosphere
 modules
 expect "line=.modules. reply=.*gunplay\(off.*combat\(off.*arsenal\(off.*holsters\(off.*atmosphere\(off" 10
 
-# Stage 1: Hove Beach, Beachgate side street
+# Stage 1: Hove Beach, station street
 goto s1_hove_beach_a
 expect "teleport_done id=s1_hove_beach_a" 90
+wanted 0
 wait 8000
 time 13 0
 wait 1500
@@ -57,6 +58,7 @@ hud on
 # Stage 1: Hove Beach, inland avenue
 goto s1_hove_beach_b
 expect "teleport_done id=s1_hove_beach_b" 90
+wanted 0
 wait 8000
 time 13 0
 wait 1500
@@ -96,6 +98,7 @@ hud on
 # Stage 1: Firefly Island
 goto s1_firefly_island
 expect "teleport_done id=s1_firefly_island" 90
+wanted 0
 wait 8000
 time 13 0
 wait 1500
@@ -135,6 +138,7 @@ hud on
 # Stage 1: Rotterdam Hill
 goto s1_rotterdam_hill
 expect "teleport_done id=s1_rotterdam_hill" 90
+wanted 0
 wait 8000
 time 13 0
 wait 1500
@@ -174,6 +178,7 @@ hud on
 # Stage 1: BOABO
 goto s1_boabo
 expect "teleport_done id=s1_boabo" 90
+wanted 0
 wait 8000
 time 13 0
 wait 1500
@@ -213,6 +218,7 @@ hud on
 # Stage 1: East Hook
 goto s1_east_hook
 expect "teleport_done id=s1_east_hook" 90
+wanted 0
 wait 8000
 time 13 0
 wait 1500
@@ -252,6 +258,7 @@ hud on
 # Stage 1: Dukes, Meadow Hills road
 goto s1_dukes_meadow_hills
 expect "teleport_done id=s1_dukes_meadow_hills" 90
+wanted 0
 wait 8000
 time 13 0
 wait 1500
@@ -291,6 +298,7 @@ hud on
 # Stage 1: East Island City
 goto s1_east_island_city
 expect "teleport_done id=s1_east_island_city" 90
+wanted 0
 wait 8000
 time 13 0
 wait 1500

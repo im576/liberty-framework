@@ -38,6 +38,21 @@ Test-That 'sections: GPU measurements with the label or "<label>_" only' ($day.g
 Test-That 'sections: the highest PC load during the section is kept (a busy disk explains hitches)' ($day.systemCpuPercentMax -eq 45.0 -and $day.gameDiskBusyPercentMax -eq 97.0 -and -not $day.Contains('gameDiskQueueMax'))
 Test-That 'sections: a label with no frames has no frame statistics, not zeros' ($null -eq $sections[1].frames -and $null -eq $sections[1].p95_ms)
 
+# ---- input from outside the scenario (someone playing during the run)
+$noisy = $log + @(
+    '2026-09-30T10:00:05.000Z [INFO] weapon_changed from=12 to=7 profile=vanilla',
+    '2026-09-30T10:00:06.000Z [INFO] combat_hit region=LeftArm bone=0x4C1 damage=200 weapon=16 dead=False',
+    '2026-09-30T10:00:10.500Z [INFO] arsenal_storage_open id=temporary:00003508')
+$noisyRecords = Get-CommandRecords $noisy
+$found = @(Get-InterferenceLines $noisy $noisyRecords)
+Test-That 'interference: weapon switches, hits and trunk use in a scenario that issues no combat commands' ($found.Count -eq 3)
+$noisySections = @(Get-MeasuredSections $noisyRecords @() $found)
+Test-That 'interference: counted in the section whose window holds the line (label to next label)' ($noisySections[0].interference -eq 2 -and $noisySections[1].interference -eq 1)
+$armed = $noisy + '2026-09-30T10:00:04.000Z [INFO] command source=file:c99 line="give 14 300" reply="gave 14"'
+$armedFound = @(Get-InterferenceLines $armed (Get-CommandRecords $armed))
+Test-That 'interference: a scenario that arms or spawns subjects causes weapon and hit lines itself; only trunk and menu use still counts' ($armedFound.Count -eq 1 -and $armedFound[0] -match 'arsenal_storage_open')
+Test-That 'interference: the clean log has none' ((Get-InterferenceLines $log $records).Count -eq 0)
+
 # ---- a report folder
 $report = Join-Path $script:Scratch 'stage1-report-on'
 New-Item -ItemType Directory -Force -Path $report | Out-Null

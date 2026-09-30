@@ -46,6 +46,9 @@ $summaries = @()
 foreach ($folder in ($folders | Sort-Object -Unique)) {
     $summary = Get-ReportSummary $folder $Condition
     if (@($summary.sections).Count -eq 0) { Write-Host "skipped $folder (no measured section: the scenario has no 'label')"; continue }
+    if ($summary.interferenceLines -gt 0) {
+        Write-Host "WARNING $($summary.scenario): $($summary.interferenceLines) log line(s) show input that did not come from the scenario (someone using the game during the run?); the sections they fall in are marked NOT CLEAN. First: $($summary.interferenceFirst[0])"
+    }
     $summaries += , $summary
 }
 if ($summaries.Count -eq 0) { throw 'none of the reports contains a measured section' }
@@ -59,7 +62,7 @@ foreach ($group in $byCondition) {
         schemaVersion = 1
         condition = $group.Name
         generatedUtc = [DateTime]::UtcNow.ToString('o')
-        scenarios = @($group.Group | ForEach-Object { [ordered]@{ scenario = $_['scenario']; report = $_['reportDirectory']; engineStalls = $_['engineStalls']; logErrors = $_['logErrors']; densityMinPeds = $_['densityMinPeds']; densityMinCars = $_['densityMinCars'] } })
+        scenarios = @($group.Group | ForEach-Object { [ordered]@{ scenario = $_['scenario']; report = $_['reportDirectory']; engineStalls = $_['engineStalls']; logErrors = $_['logErrors']; densityMinPeds = $_['densityMinPeds']; densityMinCars = $_['densityMinCars']; interferenceLines = $_['interferenceLines']; interferenceFirst = $_['interferenceFirst'] } })
         budgets = Get-Stage1Budgets
         sections = @($group.Group | ForEach-Object { $_['sections'] })
     }
