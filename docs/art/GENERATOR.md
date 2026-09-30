@@ -15,5 +15,10 @@ you never edit game code, other requests or approved/rejected art.
    `{"at": <UTC ISO time>, "event": "generated", "revision": <revision>, "by": <you>, "model": <model>,
    "prompt": <the prompt used>, "files": [{"path": <repo-relative path>}]}` and set `status` to `generated`.
 5. Commit only those files and that request change, with the message `ART-NNN r<revision>: generated`, and push.
-6. If a prompt cannot be followed (policy refusal, impossible constraint), do not improvise: add a history entry with
+**You are not the reviewer.** Register every candidate you produce, even imperfect ones (a highlight, an imperfect tile
+seam, a slightly wrong count), and describe the flaws in `--notes`. Claude reviews, fixes what post-processing can fix
+(seamless tiling, alpha cleanup, resizing) or rejects with a revised prompt. Retry once yourself only when a candidate
+is clearly unusable (wrong subject, background not transparent when alpha is required, readable text or logos).
+
+6. If a prompt cannot be followed at all (policy refusal, impossible constraint), do not improvise: add a history entry with
    `"event": "blocked"` and the reason in `notes`, leave `status` as `requested`, commit and push.
