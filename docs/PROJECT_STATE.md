@@ -9,6 +9,7 @@ overrides older docs.
 - **Phase 1 = Liberty Engine: complete (2026-09-30), except the items under "Known limits".** Native core, SDK, content
   pipeline and hot reload are verified in game. The full regression pass ran on 2026-09-30 and passes ([report](reports/2026-09-30-regression.md)).
 - **Next: the first complex mod**, Liberty Vanilla+ Stage 1 ([design](design/STAGE1.md)), built on the engine. Task cards T-040 to T-055 (lanes in [tasks/README.md](tasks/README.md)); art requests ART-001 to ART-012 in the [art queue](art/README.md) (uses the SDK and content compiler, gameplay code stays in `mods/`).
+- **Stage 1 lane 0 (T-040) is done, awaiting playtest (2026-09-30):** [reuse audit](reports/2026-09-29-stage1-reuse-audit.md), 12 capture points, measurement scenarios/tooling (	ools/perf), and the [mod-on/mod-off baseline](reports/2026-09-30-stage1-baseline.md). Headline: the current build already exceeds the gunplay/combat/script-cost budgets, the density governor thins the city to 0.55, and combat effects only react to the player's own violence.
 - **Then Phase 3: reverse engineering** toward FiveM-level control (authored collision, structure writing, deeper hooks).
 
 ## Cleanup and fixes in progress

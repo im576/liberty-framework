@@ -35,6 +35,8 @@ if ($On -or $Off) {
 }
 
 if (-not $Reports) { throw 'pass -Reports <report folders> to summarise, or -On/-Off to compare' }
+# powershell -File passes a comma list as one string.
+$Reports = @($Reports | ForEach-Object { $_ -split ',' } | Where-Object { $_ })
 $folders = New-Object System.Collections.Generic.List[string]
 foreach ($path in $Reports) {
     $root = (Resolve-Path -LiteralPath $path).Path
@@ -54,7 +56,7 @@ foreach ($folder in ($folders | Sort-Object -Unique)) {
 if ($summaries.Count -eq 0) { throw 'none of the reports contains a measured section' }
 
 # One JSON per condition: sections of the same condition are merged (the broker and city scenarios of one mod state).
-$byCondition = $summaries | Group-Object { $_['condition'] }
+$byCondition = @($summaries | Group-Object { $_['condition'] })
 $stem = [IO.Path]::Combine((Split-Path -Parent ([IO.Path]::GetFullPath($Out))), [IO.Path]::GetFileNameWithoutExtension($Out))
 New-Item -ItemType Directory -Force -Path (Split-Path -Parent ([IO.Path]::GetFullPath($Out))) | Out-Null
 foreach ($group in $byCondition) {

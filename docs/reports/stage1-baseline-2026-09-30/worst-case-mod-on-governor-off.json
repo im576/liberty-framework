@@ -1,0 +1,357 @@
+{
+    "schemaVersion":  1,
+    "condition":  "mod-on",
+    "generatedUtc":  "2026-09-30T08:20:38.5454019Z",
+    "scenarios":  [
+                      {
+                          "scenario":  "stage1-worst-case",
+                          "report":  "stage1-worst-case-20260930-011121",
+                          "engineStalls":  0,
+                          "logErrors":  0,
+                          "combatHits":  7,
+                          "ptfxEffects":  22,
+                          "densityMinPeds":  null,
+                          "densityMinCars":  null,
+                          "interferenceLines":  0,
+                          "interferenceFirst":  [
+
+                                                ]
+                      }
+                  ],
+    "budgets":  {
+                    "p95IncreasePercent":  10,
+                    "p99IncreasePercent":  15,
+                    "vramOverVanillaMbCeiling":  350,
+                    "vramOverVanillaMbNormal":  300,
+                    "stage1ScriptCostMs":  3,
+                    "maxStallMs":  1000
+                },
+    "sections":  [
+                     {
+                         "label":  "worst_case",
+                         "interference":  0,
+                         "frames":  1762,
+                         "avg_ms":  49.83,
+                         "p50_ms":  48.6,
+                         "p95_ms":  75.3,
+                         "p99_ms":  113,
+                         "max_ms":  195.3,
+                         "over33":  1533,
+                         "over100":  30,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  3.6919,
+                                                            "maxMs":  157.9,
+                                                            "count":  1633,
+                                                            "totalMs":  6028.8
+                                                        },
+                                       "module.gunplay":  {
+                                                              "avgMs":  1.2909,
+                                                              "maxMs":  8.8,
+                                                              "count":  1633,
+                                                              "totalMs":  2108
+                                                          },
+                                       "tick.gunplay":  {
+                                                            "avgMs":  1.2892,
+                                                            "maxMs":  8.8,
+                                                            "count":  1633,
+                                                            "totalMs":  2105.2
+                                                        },
+                                       "module.arsenal":  {
+                                                              "avgMs":  0.7527,
+                                                              "maxMs":  17.4,
+                                                              "count":  1618,
+                                                              "totalMs":  1217.8
+                                                          },
+                                       "tick.arsenal":  {
+                                                            "avgMs":  0.7519,
+                                                            "maxMs":  17.4,
+                                                            "count":  1618,
+                                                            "totalMs":  1216.5
+                                                        },
+                                       "module.combat":  {
+                                                             "avgMs":  1.1027,
+                                                             "maxMs":  139.4,
+                                                             "count":  1633,
+                                                             "totalMs":  1800.7
+                                                         },
+                                       "tick.combat":  {
+                                                           "avgMs":  1.1017,
+                                                           "maxMs":  139.4,
+                                                           "count":  1633,
+                                                           "totalMs":  1799.1
+                                                       },
+                                       "combat.sample":  {
+                                                             "avgMs":  1.9407,
+                                                             "maxMs":  27.8,
+                                                             "count":  619,
+                                                             "totalMs":  1201.3
+                                                         },
+                                       "gp.freeaim":  {
+                                                          "avgMs":  0.6763,
+                                                          "maxMs":  4.2,
+                                                          "count":  1633,
+                                                          "totalMs":  1104.3
+                                                      },
+                                       "ar.storage":  {
+                                                          "avgMs":  0.4332,
+                                                          "maxMs":  9.2,
+                                                          "count":  1618,
+                                                          "totalMs":  700.9
+                                                      },
+                                       "engine.world":  {
+                                                            "avgMs":  0.1812,
+                                                            "maxMs":  2.8,
+                                                            "count":  1633,
+                                                            "totalMs":  295.9
+                                                        },
+                                       "ar.safehouse_flags":  {
+                                                                  "avgMs":  0.1795,
+                                                                  "maxMs":  2.8,
+                                                                  "count":  1618,
+                                                                  "totalMs":  290.4
+                                                              },
+                                       "ar.reconcile":  {
+                                                            "avgMs":  0.1081,
+                                                            "maxMs":  17.1,
+                                                            "count":  1618,
+                                                            "totalMs":  174.9
+                                                        },
+                                       "module.atmosphere":  {
+                                                                 "avgMs":  0.0873,
+                                                                 "maxMs":  4.1,
+                                                                 "count":  1633,
+                                                                 "totalMs":  142.6
+                                                             },
+                                       "tick.atmosphere":  {
+                                                               "avgMs":  0.0865,
+                                                               "maxMs":  4.1,
+                                                               "count":  1633,
+                                                               "totalMs":  141.3
+                                                           },
+                                       "gp.index_pad":  {
+                                                            "avgMs":  0.0547,
+                                                            "maxMs":  0.2,
+                                                            "count":  1633,
+                                                            "totalMs":  89.3
+                                                        },
+                                       "module.holsters":  {
+                                                               "avgMs":  0.0637,
+                                                               "maxMs":  3,
+                                                               "count":  993,
+                                                               "totalMs":  63.2
+                                                           },
+                                       "tick.holsters":  {
+                                                             "avgMs":  0.063,
+                                                             "maxMs":  3,
+                                                             "count":  993,
+                                                             "totalMs":  62.5
+                                                         },
+                                       "cam.handle":  {
+                                                          "avgMs":  0.0264,
+                                                          "maxMs":  1.8,
+                                                          "count":  1633,
+                                                          "totalMs":  43.1
+                                                      },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.0208,
+                                                               "maxMs":  0.1,
+                                                               "count":  1618,
+                                                               "totalMs":  33.7
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.0203,
+                                                             "maxMs":  0.1,
+                                                             "count":  1618,
+                                                             "totalMs":  32.9
+                                                         },
+                                       "gp.shoulder":  {
+                                                           "avgMs":  0.0183,
+                                                           "maxMs":  0.2,
+                                                           "count":  1633,
+                                                           "totalMs":  29.9
+                                                       },
+                                       "gp.weapon_id":  {
+                                                            "avgMs":  0.0123,
+                                                            "maxMs":  0,
+                                                            "count":  1633,
+                                                            "totalMs":  20
+                                                        },
+                                       "gp.player":  {
+                                                         "avgMs":  0.0098,
+                                                         "maxMs":  0.1,
+                                                         "count":  1633,
+                                                         "totalMs":  16
+                                                     },
+                                       "ho.show":  {
+                                                       "avgMs":  0.014,
+                                                       "maxMs":  0.1,
+                                                       "count":  993,
+                                                       "totalMs":  13.9
+                                                   },
+                                       "module.probe":  {
+                                                            "avgMs":  1.2526,
+                                                            "maxMs":  1.5,
+                                                            "count":  9,
+                                                            "totalMs":  11.3
+                                                        },
+                                       "gp.cycle":  {
+                                                        "avgMs":  0.007,
+                                                        "maxMs":  0,
+                                                        "count":  1633,
+                                                        "totalMs":  11.4
+                                                    },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0.1,
+                                                           "count":  1633,
+                                                           "totalMs":  9.8
+                                                       },
+                                       "gp.state":  {
+                                                        "avgMs":  0.006,
+                                                        "maxMs":  0,
+                                                        "count":  1633,
+                                                        "totalMs":  9.8
+                                                    },
+                                       "ar.lvs":  {
+                                                      "avgMs":  0.0033,
+                                                      "maxMs":  0.3,
+                                                      "count":  1618,
+                                                      "totalMs":  5.3
+                                                  },
+                                       "cam.aim_key":  {
+                                                           "avgMs":  0.003,
+                                                           "maxMs":  0,
+                                                           "count":  1633,
+                                                           "totalMs":  4.9
+                                                       },
+                                       "ar.vehicle":  {
+                                                          "avgMs":  0.003,
+                                                          "maxMs":  0,
+                                                          "count":  1618,
+                                                          "totalMs":  4.9
+                                                      },
+                                       "ar.discover":  {
+                                                           "avgMs":  0.0027,
+                                                           "maxMs":  0.5,
+                                                           "count":  1618,
+                                                           "totalMs":  4.3
+                                                       },
+                                       "cam.find_active":  {
+                                                               "avgMs":  0.0026,
+                                                               "maxMs":  0,
+                                                               "count":  1633,
+                                                               "totalMs":  4.3
+                                                           },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  1633,
+                                                       "totalMs":  3.3
+                                                   },
+                                       "gp.spread":  {
+                                                         "avgMs":  0.002,
+                                                         "maxMs":  0,
+                                                         "count":  1633,
+                                                         "totalMs":  3.3
+                                                     },
+                                       "gp.shots":  {
+                                                        "avgMs":  0.002,
+                                                        "maxMs":  0,
+                                                        "count":  1633,
+                                                        "totalMs":  3.3
+                                                    },
+                                       "ho.carried":  {
+                                                          "avgMs":  0.002,
+                                                          "maxMs":  0,
+                                                          "count":  993,
+                                                          "totalMs":  2
+                                                      },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  1633,
+                                                                "totalMs":  1.6
+                                                            },
+                                       "combat.dismember":  {
+                                                                "avgMs":  0.0773,
+                                                                "maxMs":  30.4,
+                                                                "count":  1633,
+                                                                "totalMs":  126.2
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  1633,
+                                                                "totalMs":  0
+                                                            },
+                                       "combat.blood":  {
+                                                            "avgMs":  0.0984,
+                                                            "maxMs":  4.6,
+                                                            "count":  1633,
+                                                            "totalMs":  160.6
+                                                        },
+                                       "cam.fov":  {
+                                                       "avgMs":  0.001,
+                                                       "maxMs":  0,
+                                                       "count":  292,
+                                                       "totalMs":  0.3
+                                                   },
+                                       "gp.feel":  {
+                                                       "avgMs":  0,
+                                                       "maxMs":  0,
+                                                       "count":  1633,
+                                                       "totalMs":  0
+                                                   },
+                                       "combat.pending":  {
+                                                              "avgMs":  0.1602,
+                                                              "maxMs":  136.5,
+                                                              "count":  1633,
+                                                              "totalMs":  261.6
+                                                          },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  1633,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  155,
+                                                            "totalMs":  0.2
+                                                        },
+                                       "gp.recoil":  {
+                                                         "avgMs":  0,
+                                                         "maxMs":  0,
+                                                         "count":  1633,
+                                                         "totalMs":  0
+                                                     }
+                                   },
+                         "perfSamples":  6,
+                         "perf":  {
+                                      "frameMs":  56.04,
+                                      "pressure":  0.72,
+                                      "pressureMax":  0.83,
+                                      "privateMbMax":  1788,
+                                      "addressFreeMbMin":  1638,
+                                      "largestFreeBlockMbMin":  1602,
+                                      "managedMbMax":  15
+                                  },
+                         "pools":  {
+                                       "peds":  "49/120",
+                                       "vehicles":  "33/140",
+                                       "objects":  "335/1300"
+                                   },
+                         "gpuSamples":  7,
+                         "gpuDedicatedMbMax":  1262.3,
+                         "gpuDedicatedMbLast":  1262.3,
+                         "privateMbMax":  1788.9,
+                         "workingSetMbMax":  1721,
+                         "systemCpuPercentMax":  92,
+                         "gameDiskBusyPercentMax":  4,
+                         "gameDiskQueueMax":  0
+                     }
+                 ]
+}

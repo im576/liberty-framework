@@ -1,0 +1,2653 @@
+{
+    "schemaVersion":  1,
+    "condition":  "mod-off",
+    "generatedUtc":  "2026-09-30T08:21:09.8798423Z",
+    "scenarios":  [
+                      {
+                          "scenario":  "stage1-capture-broker-off",
+                          "report":  "T040-capture-broker-off",
+                          "engineStalls":  0,
+                          "logErrors":  1,
+                          "combatHits":  0,
+                          "ptfxEffects":  0,
+                          "densityMinPeds":  null,
+                          "densityMinCars":  null,
+                          "interferenceLines":  0,
+                          "interferenceFirst":  [
+
+                                                ]
+                      },
+                      {
+                          "scenario":  "stage1-capture-city-off",
+                          "report":  "T040-capture-city-off",
+                          "engineStalls":  0,
+                          "logErrors":  1,
+                          "combatHits":  0,
+                          "ptfxEffects":  0,
+                          "densityMinPeds":  null,
+                          "densityMinCars":  null,
+                          "interferenceLines":  0,
+                          "interferenceFirst":  [
+
+                                                ]
+                      },
+                      {
+                          "scenario":  "stage1-worst-case-off",
+                          "report":  "T040-worst-case-off",
+                          "engineStalls":  0,
+                          "logErrors":  1,
+                          "combatHits":  0,
+                          "ptfxEffects":  0,
+                          "densityMinPeds":  null,
+                          "densityMinCars":  null,
+                          "interferenceLines":  0,
+                          "interferenceFirst":  [
+
+                                                ]
+                      }
+                  ],
+    "budgets":  {
+                    "p95IncreasePercent":  10,
+                    "p99IncreasePercent":  15,
+                    "vramOverVanillaMbCeiling":  350,
+                    "vramOverVanillaMbNormal":  300,
+                    "stage1ScriptCostMs":  3,
+                    "maxStallMs":  1000
+                },
+    "sections":  [
+                     {
+                         "label":  "s1_hove_beach_a_day",
+                         "interference":  0,
+                         "frames":  332,
+                         "avg_ms":  28.44,
+                         "p50_ms":  26.1,
+                         "p95_ms":  42.6,
+                         "p99_ms":  48,
+                         "max_ms":  81.3,
+                         "over33":  68,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.25,
+                                                            "maxMs":  2.6,
+                                                            "count":  323,
+                                                            "totalMs":  80.8
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.147,
+                                                            "maxMs":  2.1,
+                                                            "count":  323,
+                                                            "totalMs":  47.5
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.028,
+                                                               "maxMs":  0.1,
+                                                               "count":  242,
+                                                               "totalMs":  6.8
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.027,
+                                                             "maxMs":  0.1,
+                                                             "count":  242,
+                                                             "totalMs":  6.5
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  323,
+                                                           "totalMs":  1.9
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.287,
+                                                            "maxMs":  1.3,
+                                                            "count":  1,
+                                                            "totalMs":  1.3
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  323,
+                                                       "totalMs":  0.6
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  323,
+                                                                "totalMs":  0.3
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  323,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  323,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  18,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  26.17,
+                                      "pressure":  0.01,
+                                      "pressureMax":  0.01,
+                                      "privateMbMax":  2001,
+                                      "addressFreeMbMin":  1104,
+                                      "largestFreeBlockMbMin":  1051,
+                                      "managedMbMax":  15
+                                  },
+                         "pools":  {
+                                       "peds":  "31/120",
+                                       "vehicles":  "41/140",
+                                       "objects":  "346/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1244.8,
+                         "gpuDedicatedMbLast":  1244.8,
+                         "privateMbMax":  2001.8,
+                         "workingSetMbMax":  1507.6,
+                         "systemCpuPercentMax":  96,
+                         "gameDiskBusyPercentMax":  0,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_hove_beach_a_night",
+                         "interference":  0,
+                         "frames":  268,
+                         "avg_ms":  33.97,
+                         "p50_ms":  31.7,
+                         "p95_ms":  48.4,
+                         "p99_ms":  58.8,
+                         "max_ms":  64.2,
+                         "over33":  107,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.263,
+                                                            "maxMs":  2.8,
+                                                            "count":  278,
+                                                            "totalMs":  73.1
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.143,
+                                                            "maxMs":  0.6,
+                                                            "count":  278,
+                                                            "totalMs":  39.8
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.028,
+                                                               "maxMs":  0.1,
+                                                               "count":  251,
+                                                               "totalMs":  7
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.027,
+                                                             "maxMs":  0.1,
+                                                             "count":  251,
+                                                             "totalMs":  6.8
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  278,
+                                                           "totalMs":  1.7
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.35,
+                                                            "maxMs":  1.4,
+                                                            "count":  1,
+                                                            "totalMs":  1.4
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  278,
+                                                       "totalMs":  0.6
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  278,
+                                                                "totalMs":  0.3
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  278,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  278,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  19,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  35.08,
+                                      "pressure":  0.05,
+                                      "pressureMax":  0.05,
+                                      "privateMbMax":  2001,
+                                      "addressFreeMbMin":  1102,
+                                      "largestFreeBlockMbMin":  1051,
+                                      "managedMbMax":  14
+                                  },
+                         "pools":  {
+                                       "peds":  "32/120",
+                                       "vehicles":  "31/140",
+                                       "objects":  "331/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1244.8,
+                         "gpuDedicatedMbLast":  1244.8,
+                         "privateMbMax":  2002,
+                         "workingSetMbMax":  1507.9,
+                         "systemCpuPercentMax":  82,
+                         "gameDiskBusyPercentMax":  0,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_hove_beach_b_day",
+                         "interference":  0,
+                         "frames":  356,
+                         "avg_ms":  25.35,
+                         "p50_ms":  22.9,
+                         "p95_ms":  38.7,
+                         "p99_ms":  45.4,
+                         "max_ms":  47.7,
+                         "over33":  54,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.254,
+                                                            "maxMs":  3,
+                                                            "count":  367,
+                                                            "totalMs":  93.2
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.158,
+                                                            "maxMs":  0.9,
+                                                            "count":  367,
+                                                            "totalMs":  58
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.029,
+                                                               "maxMs":  0.2,
+                                                               "count":  242,
+                                                               "totalMs":  7
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.028,
+                                                             "maxMs":  0.2,
+                                                             "count":  242,
+                                                             "totalMs":  6.8
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  367,
+                                                           "totalMs":  2.2
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.362,
+                                                            "maxMs":  1.4,
+                                                            "count":  1,
+                                                            "totalMs":  1.4
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  367,
+                                                       "totalMs":  0.7
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  367,
+                                                                "totalMs":  0.4
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  367,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  367,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  18,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  27.68,
+                                      "pressure":  0,
+                                      "pressureMax":  0,
+                                      "privateMbMax":  2077,
+                                      "addressFreeMbMin":  1104,
+                                      "largestFreeBlockMbMin":  1051,
+                                      "managedMbMax":  15
+                                  },
+                         "pools":  {
+                                       "peds":  "47/120",
+                                       "vehicles":  "33/140",
+                                       "objects":  "308/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1244.8,
+                         "gpuDedicatedMbLast":  1244.8,
+                         "privateMbMax":  2077.3,
+                         "workingSetMbMax":  1583.7,
+                         "systemCpuPercentMax":  97,
+                         "gameDiskBusyPercentMax":  0,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_hove_beach_b_night",
+                         "interference":  0,
+                         "frames":  303,
+                         "avg_ms":  30.76,
+                         "p50_ms":  28.7,
+                         "p95_ms":  44.9,
+                         "p99_ms":  49.7,
+                         "max_ms":  58.4,
+                         "over33":  87,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.295,
+                                                            "maxMs":  13.2,
+                                                            "count":  299,
+                                                            "totalMs":  88.2
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.147,
+                                                            "maxMs":  0.9,
+                                                            "count":  299,
+                                                            "totalMs":  44
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.031,
+                                                               "maxMs":  0.1,
+                                                               "count":  234,
+                                                               "totalMs":  7.3
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.03,
+                                                             "maxMs":  0.1,
+                                                             "count":  234,
+                                                             "totalMs":  7
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  299,
+                                                           "totalMs":  1.8
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.319,
+                                                            "maxMs":  1.3,
+                                                            "count":  1,
+                                                            "totalMs":  1.3
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  299,
+                                                       "totalMs":  0.6
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  299,
+                                                                "totalMs":  0.3
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  299,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  299,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.002,
+                                                            "maxMs":  0,
+                                                            "count":  17,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  30.72,
+                                      "pressure":  0.01,
+                                      "pressureMax":  0.01,
+                                      "privateMbMax":  2078,
+                                      "addressFreeMbMin":  1104,
+                                      "largestFreeBlockMbMin":  1051,
+                                      "managedMbMax":  14
+                                  },
+                         "pools":  {
+                                       "peds":  "24/120",
+                                       "vehicles":  "22/140",
+                                       "objects":  "303/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1244.8,
+                         "gpuDedicatedMbLast":  1244.8,
+                         "privateMbMax":  2078.8,
+                         "workingSetMbMax":  1587,
+                         "systemCpuPercentMax":  97,
+                         "gameDiskBusyPercentMax":  3,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_firefly_island_day",
+                         "interference":  0,
+                         "frames":  409,
+                         "avg_ms":  22.47,
+                         "p50_ms":  20.5,
+                         "p95_ms":  34.9,
+                         "p99_ms":  41.1,
+                         "max_ms":  49.9,
+                         "over33":  35,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.195,
+                                                            "maxMs":  2.6,
+                                                            "count":  413,
+                                                            "totalMs":  80.5
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.112,
+                                                            "maxMs":  0.6,
+                                                            "count":  413,
+                                                            "totalMs":  46.3
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.028,
+                                                               "maxMs":  0.1,
+                                                               "count":  247,
+                                                               "totalMs":  6.9
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.027,
+                                                             "maxMs":  0.1,
+                                                             "count":  247,
+                                                             "totalMs":  6.7
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  413,
+                                                           "totalMs":  2.5
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.236,
+                                                            "maxMs":  1.2,
+                                                            "count":  1,
+                                                            "totalMs":  1.2
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  413,
+                                                       "totalMs":  0.8
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  413,
+                                                                "totalMs":  0.4
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  413,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  413,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  18,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  23.54,
+                                      "pressure":  0,
+                                      "pressureMax":  0,
+                                      "privateMbMax":  2136,
+                                      "addressFreeMbMin":  1087,
+                                      "largestFreeBlockMbMin":  1051,
+                                      "managedMbMax":  15
+                                  },
+                         "pools":  {
+                                       "peds":  "25/120",
+                                       "vehicles":  "28/140",
+                                       "objects":  "118/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1244.8,
+                         "gpuDedicatedMbLast":  1244.8,
+                         "privateMbMax":  2136.5,
+                         "workingSetMbMax":  1632.1,
+                         "systemCpuPercentMax":  89,
+                         "gameDiskBusyPercentMax":  5,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_firefly_island_night",
+                         "interference":  0,
+                         "frames":  367,
+                         "avg_ms":  25.03,
+                         "p50_ms":  23,
+                         "p95_ms":  37.6,
+                         "p99_ms":  45,
+                         "max_ms":  48.5,
+                         "over33":  47,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.208,
+                                                            "maxMs":  2.6,
+                                                            "count":  363,
+                                                            "totalMs":  75.5
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.111,
+                                                            "maxMs":  0.7,
+                                                            "count":  363,
+                                                            "totalMs":  40.3
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.029,
+                                                               "maxMs":  0.1,
+                                                               "count":  235,
+                                                               "totalMs":  6.8
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.028,
+                                                             "maxMs":  0.1,
+                                                             "count":  235,
+                                                             "totalMs":  6.6
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  363,
+                                                           "totalMs":  2.2
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.326,
+                                                            "maxMs":  1.3,
+                                                            "count":  1,
+                                                            "totalMs":  1.3
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  363,
+                                                       "totalMs":  0.7
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  363,
+                                                                "totalMs":  0.4
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  363,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  363,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.002,
+                                                            "maxMs":  0,
+                                                            "count":  18,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  22.29,
+                                      "pressure":  0,
+                                      "pressureMax":  0,
+                                      "privateMbMax":  2137,
+                                      "addressFreeMbMin":  1085,
+                                      "largestFreeBlockMbMin":  1051,
+                                      "managedMbMax":  15
+                                  },
+                         "pools":  {
+                                       "peds":  "16/120",
+                                       "vehicles":  "18/140",
+                                       "objects":  "115/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1244.8,
+                         "gpuDedicatedMbLast":  1244.8,
+                         "privateMbMax":  2137.9,
+                         "workingSetMbMax":  1633.6,
+                         "systemCpuPercentMax":  83,
+                         "gameDiskBusyPercentMax":  1,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_rotterdam_hill_day",
+                         "interference":  0,
+                         "frames":  365,
+                         "avg_ms":  25.28,
+                         "p50_ms":  23.4,
+                         "p95_ms":  37.8,
+                         "p99_ms":  43.6,
+                         "max_ms":  46.1,
+                         "over33":  51,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.247,
+                                                            "maxMs":  2.7,
+                                                            "count":  368,
+                                                            "totalMs":  90.9
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.153,
+                                                            "maxMs":  1,
+                                                            "count":  368,
+                                                            "totalMs":  56.3
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.028,
+                                                               "maxMs":  0.1,
+                                                               "count":  242,
+                                                               "totalMs":  6.8
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.027,
+                                                             "maxMs":  0.1,
+                                                             "count":  242,
+                                                             "totalMs":  6.5
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  368,
+                                                           "totalMs":  2.2
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.276,
+                                                            "maxMs":  1.3,
+                                                            "count":  1,
+                                                            "totalMs":  1.3
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  368,
+                                                       "totalMs":  0.7
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  368,
+                                                                "totalMs":  0.4
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  368,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  368,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  19,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  27.1,
+                                      "pressure":  0,
+                                      "pressureMax":  0,
+                                      "privateMbMax":  2233,
+                                      "addressFreeMbMin":  1086,
+                                      "largestFreeBlockMbMin":  1051,
+                                      "managedMbMax":  14
+                                  },
+                         "pools":  {
+                                       "peds":  "32/120",
+                                       "vehicles":  "44/140",
+                                       "objects":  "235/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1244.8,
+                         "gpuDedicatedMbLast":  1244.8,
+                         "privateMbMax":  2233.6,
+                         "workingSetMbMax":  1730.1,
+                         "systemCpuPercentMax":  89,
+                         "gameDiskBusyPercentMax":  0,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_rotterdam_hill_night",
+                         "interference":  0,
+                         "frames":  325,
+                         "avg_ms":  28.73,
+                         "p50_ms":  26.8,
+                         "p95_ms":  42.4,
+                         "p99_ms":  50.6,
+                         "max_ms":  70.7,
+                         "over33":  73,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.25,
+                                                            "maxMs":  2.9,
+                                                            "count":  317,
+                                                            "totalMs":  79.2
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.146,
+                                                            "maxMs":  0.8,
+                                                            "count":  317,
+                                                            "totalMs":  46.3
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.028,
+                                                               "maxMs":  0.1,
+                                                               "count":  231,
+                                                               "totalMs":  6.5
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.027,
+                                                             "maxMs":  0.1,
+                                                             "count":  231,
+                                                             "totalMs":  6.2
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  317,
+                                                           "totalMs":  1.9
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.304,
+                                                            "maxMs":  1.3,
+                                                            "count":  1,
+                                                            "totalMs":  1.3
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  317,
+                                                       "totalMs":  0.6
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  317,
+                                                                "totalMs":  0.3
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  317,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  317,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  17,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  29.72,
+                                      "pressure":  0,
+                                      "pressureMax":  0,
+                                      "privateMbMax":  2233,
+                                      "addressFreeMbMin":  1086,
+                                      "largestFreeBlockMbMin":  1051,
+                                      "managedMbMax":  15
+                                  },
+                         "pools":  {
+                                       "peds":  "31/120",
+                                       "vehicles":  "38/140",
+                                       "objects":  "230/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1244.8,
+                         "gpuDedicatedMbLast":  1244.8,
+                         "privateMbMax":  2233.8,
+                         "workingSetMbMax":  1730.5,
+                         "systemCpuPercentMax":  86,
+                         "gameDiskBusyPercentMax":  5,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_boabo_day",
+                         "interference":  0,
+                         "frames":  448,
+                         "avg_ms":  20.43,
+                         "p50_ms":  18.3,
+                         "p95_ms":  33.2,
+                         "p99_ms":  37.6,
+                         "max_ms":  47.1,
+                         "over33":  21,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.167,
+                                                            "maxMs":  2.7,
+                                                            "count":  451,
+                                                            "totalMs":  75.3
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.088,
+                                                            "maxMs":  0.5,
+                                                            "count":  451,
+                                                            "totalMs":  39.7
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.028,
+                                                               "maxMs":  0.1,
+                                                               "count":  254,
+                                                               "totalMs":  7.1
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.027,
+                                                             "maxMs":  0.1,
+                                                             "count":  254,
+                                                             "totalMs":  6.9
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  451,
+                                                           "totalMs":  2.7
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.34,
+                                                            "maxMs":  1.3,
+                                                            "count":  1,
+                                                            "totalMs":  1.3
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  451,
+                                                       "totalMs":  0.9
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  451,
+                                                                "totalMs":  0.5
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  451,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  451,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  18,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  22.31,
+                                      "pressure":  0,
+                                      "pressureMax":  0,
+                                      "privateMbMax":  2254,
+                                      "addressFreeMbMin":  1094,
+                                      "largestFreeBlockMbMin":  1051,
+                                      "managedMbMax":  15
+                                  },
+                         "pools":  {
+                                       "peds":  "18/120",
+                                       "vehicles":  "15/140",
+                                       "objects":  "250/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1244.8,
+                         "gpuDedicatedMbLast":  1244.8,
+                         "privateMbMax":  2254.2,
+                         "workingSetMbMax":  1706.4,
+                         "systemCpuPercentMax":  86,
+                         "gameDiskBusyPercentMax":  0,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_boabo_night",
+                         "interference":  0,
+                         "frames":  384,
+                         "avg_ms":  23.95,
+                         "p50_ms":  21.8,
+                         "p95_ms":  38.1,
+                         "p99_ms":  43.2,
+                         "max_ms":  50.3,
+                         "over33":  48,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.185,
+                                                            "maxMs":  3,
+                                                            "count":  387,
+                                                            "totalMs":  71.6
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.092,
+                                                            "maxMs":  0.9,
+                                                            "count":  387,
+                                                            "totalMs":  35.6
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.029,
+                                                               "maxMs":  0.2,
+                                                               "count":  247,
+                                                               "totalMs":  7.2
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.028,
+                                                             "maxMs":  0.2,
+                                                             "count":  247,
+                                                             "totalMs":  6.9
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  387,
+                                                           "totalMs":  2.3
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.317,
+                                                            "maxMs":  1.3,
+                                                            "count":  1,
+                                                            "totalMs":  1.3
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  387,
+                                                       "totalMs":  0.8
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  387,
+                                                                "totalMs":  0.4
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  387,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  387,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  18,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  25.73,
+                                      "pressure":  0,
+                                      "pressureMax":  0,
+                                      "privateMbMax":  2251,
+                                      "addressFreeMbMin":  1098,
+                                      "largestFreeBlockMbMin":  1051,
+                                      "managedMbMax":  14
+                                  },
+                         "pools":  {
+                                       "peds":  "17/120",
+                                       "vehicles":  "12/140",
+                                       "objects":  "246/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1244.8,
+                         "gpuDedicatedMbLast":  1244.8,
+                         "privateMbMax":  2251.8,
+                         "workingSetMbMax":  1704,
+                         "systemCpuPercentMax":  88,
+                         "gameDiskBusyPercentMax":  0,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_east_hook_day",
+                         "interference":  0,
+                         "frames":  470,
+                         "avg_ms":  19.62,
+                         "p50_ms":  18.7,
+                         "p95_ms":  25,
+                         "p99_ms":  31.2,
+                         "max_ms":  196.7,
+                         "over33":  3,
+                         "over100":  1,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.208,
+                                                            "maxMs":  2.9,
+                                                            "count":  452,
+                                                            "totalMs":  94
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.126,
+                                                            "maxMs":  0.8,
+                                                            "count":  452,
+                                                            "totalMs":  57
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.03,
+                                                               "maxMs":  0.1,
+                                                               "count":  255,
+                                                               "totalMs":  7.6
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.029,
+                                                             "maxMs":  0.1,
+                                                             "count":  255,
+                                                             "totalMs":  7.4
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0.1,
+                                                           "count":  452,
+                                                           "totalMs":  2.7
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.24,
+                                                            "maxMs":  1.2,
+                                                            "count":  1,
+                                                            "totalMs":  1.2
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  452,
+                                                       "totalMs":  0.9
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  452,
+                                                                "totalMs":  0.5
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  452,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  452,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  18,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  19.25,
+                                      "pressure":  0,
+                                      "pressureMax":  0,
+                                      "privateMbMax":  2255,
+                                      "addressFreeMbMin":  1108,
+                                      "largestFreeBlockMbMin":  1051,
+                                      "managedMbMax":  15
+                                  },
+                         "pools":  {
+                                       "peds":  "28/120",
+                                       "vehicles":  "21/140",
+                                       "objects":  "221/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1244.8,
+                         "gpuDedicatedMbLast":  1244.8,
+                         "privateMbMax":  2255.1,
+                         "workingSetMbMax":  1698.2,
+                         "systemCpuPercentMax":  91,
+                         "gameDiskBusyPercentMax":  0,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_east_hook_night",
+                         "interference":  0,
+                         "frames":  459,
+                         "avg_ms":  19.91,
+                         "p50_ms":  19.6,
+                         "p95_ms":  24.9,
+                         "p99_ms":  29.5,
+                         "max_ms":  42.5,
+                         "over33":  2,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.183,
+                                                            "maxMs":  2.5,
+                                                            "count":  454,
+                                                            "totalMs":  83.1
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.106,
+                                                            "maxMs":  0.6,
+                                                            "count":  454,
+                                                            "totalMs":  48.1
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.028,
+                                                               "maxMs":  0.1,
+                                                               "count":  250,
+                                                               "totalMs":  7
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.027,
+                                                             "maxMs":  0,
+                                                             "count":  250,
+                                                             "totalMs":  6.8
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  454,
+                                                           "totalMs":  2.7
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.251,
+                                                            "maxMs":  1.3,
+                                                            "count":  1,
+                                                            "totalMs":  1.3
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  454,
+                                                       "totalMs":  0.9
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  454,
+                                                                "totalMs":  0.5
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  454,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  454,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  18,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  17.9,
+                                      "pressure":  0,
+                                      "pressureMax":  0,
+                                      "privateMbMax":  2256,
+                                      "addressFreeMbMin":  1108,
+                                      "largestFreeBlockMbMin":  1051,
+                                      "managedMbMax":  15
+                                  },
+                         "pools":  {
+                                       "peds":  "29/120",
+                                       "vehicles":  "10/140",
+                                       "objects":  "220/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1244.8,
+                         "gpuDedicatedMbLast":  1244.8,
+                         "privateMbMax":  2256,
+                         "workingSetMbMax":  1699.2,
+                         "systemCpuPercentMax":  81,
+                         "gameDiskBusyPercentMax":  1,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_dukes_meadow_hills_day",
+                         "interference":  0,
+                         "frames":  387,
+                         "avg_ms":  23.88,
+                         "p50_ms":  21.1,
+                         "p95_ms":  39.1,
+                         "p99_ms":  50.4,
+                         "max_ms":  68.4,
+                         "over33":  45,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.25,
+                                                            "maxMs":  2.8,
+                                                            "count":  392,
+                                                            "totalMs":  98
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.157,
+                                                            "maxMs":  0.8,
+                                                            "count":  392,
+                                                            "totalMs":  61.5
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.029,
+                                                               "maxMs":  0.1,
+                                                               "count":  243,
+                                                               "totalMs":  7
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.028,
+                                                             "maxMs":  0.1,
+                                                             "count":  243,
+                                                             "totalMs":  6.8
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0.1,
+                                                           "count":  392,
+                                                           "totalMs":  2.4
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.407,
+                                                            "maxMs":  1.4,
+                                                            "count":  1,
+                                                            "totalMs":  1.4
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0.1,
+                                                       "count":  392,
+                                                       "totalMs":  0.8
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  392,
+                                                                "totalMs":  0.4
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  392,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  392,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  19,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  25.82,
+                                      "pressure":  0,
+                                      "pressureMax":  0,
+                                      "privateMbMax":  2259,
+                                      "addressFreeMbMin":  1141,
+                                      "largestFreeBlockMbMin":  1051,
+                                      "managedMbMax":  14
+                                  },
+                         "pools":  {
+                                       "peds":  "32/120",
+                                       "vehicles":  "39/140",
+                                       "objects":  "244/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1244.8,
+                         "gpuDedicatedMbLast":  1244.8,
+                         "privateMbMax":  2259.9,
+                         "workingSetMbMax":  1704.5,
+                         "systemCpuPercentMax":  95,
+                         "gameDiskBusyPercentMax":  11,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_dukes_meadow_hills_night",
+                         "interference":  0,
+                         "frames":  422,
+                         "avg_ms":  22.18,
+                         "p50_ms":  19.7,
+                         "p95_ms":  35.4,
+                         "p99_ms":  49.3,
+                         "max_ms":  74.4,
+                         "over33":  32,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.22,
+                                                            "maxMs":  2.7,
+                                                            "count":  421,
+                                                            "totalMs":  92.6
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.141,
+                                                            "maxMs":  0.6,
+                                                            "count":  421,
+                                                            "totalMs":  59.4
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.027,
+                                                               "maxMs":  0.1,
+                                                               "count":  251,
+                                                               "totalMs":  6.8
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.026,
+                                                             "maxMs":  0.1,
+                                                             "count":  251,
+                                                             "totalMs":  6.5
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  421,
+                                                           "totalMs":  2.5
+                                                       },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  421,
+                                                       "totalMs":  0.8
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  421,
+                                                                "totalMs":  0.4
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  421,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  421,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  18,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  22.6,
+                                      "pressure":  0,
+                                      "pressureMax":  0,
+                                      "privateMbMax":  2259,
+                                      "addressFreeMbMin":  1141,
+                                      "largestFreeBlockMbMin":  1051,
+                                      "managedMbMax":  15
+                                  },
+                         "pools":  {
+                                       "peds":  "29/120",
+                                       "vehicles":  "38/140",
+                                       "objects":  "240/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1244.8,
+                         "gpuDedicatedMbLast":  1244.8,
+                         "privateMbMax":  2260,
+                         "workingSetMbMax":  1706.1,
+                         "systemCpuPercentMax":  91,
+                         "gameDiskBusyPercentMax":  0,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_east_island_city_day",
+                         "interference":  0,
+                         "frames":  367,
+                         "avg_ms":  25.03,
+                         "p50_ms":  22.9,
+                         "p95_ms":  38.5,
+                         "p99_ms":  46.3,
+                         "max_ms":  54.3,
+                         "over33":  52,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.236,
+                                                            "maxMs":  2.6,
+                                                            "count":  361,
+                                                            "totalMs":  85.2
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.142,
+                                                            "maxMs":  0.6,
+                                                            "count":  361,
+                                                            "totalMs":  51.3
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.028,
+                                                               "maxMs":  0.1,
+                                                               "count":  231,
+                                                               "totalMs":  6.5
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.027,
+                                                             "maxMs":  0.1,
+                                                             "count":  231,
+                                                             "totalMs":  6.2
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  361,
+                                                           "totalMs":  2.2
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.49,
+                                                            "maxMs":  1.5,
+                                                            "count":  1,
+                                                            "totalMs":  1.5
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  361,
+                                                       "totalMs":  0.7
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  361,
+                                                                "totalMs":  0.4
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  361,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  361,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  19,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  22.87,
+                                      "pressure":  0,
+                                      "pressureMax":  0,
+                                      "privateMbMax":  2252,
+                                      "addressFreeMbMin":  1148,
+                                      "largestFreeBlockMbMin":  1051,
+                                      "managedMbMax":  14
+                                  },
+                         "pools":  {
+                                       "peds":  "35/120",
+                                       "vehicles":  "24/140",
+                                       "objects":  "310/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1244.8,
+                         "gpuDedicatedMbLast":  1244.8,
+                         "privateMbMax":  2252.3,
+                         "workingSetMbMax":  1699.8,
+                         "systemCpuPercentMax":  85,
+                         "gameDiskBusyPercentMax":  1,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_east_island_city_night",
+                         "interference":  0,
+                         "frames":  284,
+                         "avg_ms":  32.64,
+                         "p50_ms":  29.8,
+                         "p95_ms":  52.7,
+                         "p99_ms":  74.1,
+                         "max_ms":  82.5,
+                         "over33":  91,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.29,
+                                                            "maxMs":  10.6,
+                                                            "count":  278,
+                                                            "totalMs":  80.6
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.143,
+                                                            "maxMs":  0.9,
+                                                            "count":  278,
+                                                            "totalMs":  39.8
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.028,
+                                                               "maxMs":  0.1,
+                                                               "count":  234,
+                                                               "totalMs":  6.6
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.027,
+                                                             "maxMs":  0.1,
+                                                             "count":  234,
+                                                             "totalMs":  6.3
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  278,
+                                                           "totalMs":  1.7
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.448,
+                                                            "maxMs":  1.4,
+                                                            "count":  1,
+                                                            "totalMs":  1.4
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  278,
+                                                       "totalMs":  0.6
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  278,
+                                                                "totalMs":  0.3
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  278,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  278,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  18,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  30.65,
+                                      "pressure":  0.04,
+                                      "pressureMax":  0.04,
+                                      "privateMbMax":  2258,
+                                      "addressFreeMbMin":  1147,
+                                      "largestFreeBlockMbMin":  1051,
+                                      "managedMbMax":  15
+                                  },
+                         "pools":  {
+                                       "peds":  "34/120",
+                                       "vehicles":  "23/140",
+                                       "objects":  "317/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1245.1,
+                         "gpuDedicatedMbLast":  1245.1,
+                         "privateMbMax":  2258.7,
+                         "workingSetMbMax":  1708.5,
+                         "systemCpuPercentMax":  82,
+                         "gameDiskBusyPercentMax":  0,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_algonquin_star_junction_day",
+                         "interference":  0,
+                         "frames":  278,
+                         "avg_ms":  33.23,
+                         "p50_ms":  29.2,
+                         "p95_ms":  49.9,
+                         "p99_ms":  87.4,
+                         "max_ms":  164.7,
+                         "over33":  86,
+                         "over100":  2,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.239,
+                                                            "maxMs":  2.8,
+                                                            "count":  272,
+                                                            "totalMs":  65
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.12,
+                                                            "maxMs":  0.9,
+                                                            "count":  272,
+                                                            "totalMs":  32.6
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.028,
+                                                               "maxMs":  0.1,
+                                                               "count":  232,
+                                                               "totalMs":  6.5
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.027,
+                                                             "maxMs":  0.1,
+                                                             "count":  232,
+                                                             "totalMs":  6.3
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  272,
+                                                           "totalMs":  1.6
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.368,
+                                                            "maxMs":  1.4,
+                                                            "count":  1,
+                                                            "totalMs":  1.4
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.003,
+                                                       "maxMs":  0,
+                                                       "count":  272,
+                                                       "totalMs":  0.8
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  272,
+                                                                "totalMs":  0.3
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  272,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  272,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  18,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  30.8,
+                                      "pressure":  0.18,
+                                      "pressureMax":  0.18,
+                                      "privateMbMax":  2260,
+                                      "addressFreeMbMin":  1075,
+                                      "largestFreeBlockMbMin":  1047,
+                                      "managedMbMax":  14
+                                  },
+                         "pools":  {
+                                       "peds":  "19/120",
+                                       "vehicles":  "31/140",
+                                       "objects":  "178/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1285.4,
+                         "gpuDedicatedMbLast":  1285.4,
+                         "privateMbMax":  2260.4,
+                         "workingSetMbMax":  1800.2,
+                         "systemCpuPercentMax":  86,
+                         "gameDiskBusyPercentMax":  0,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_algonquin_star_junction_night",
+                         "interference":  0,
+                         "frames":  266,
+                         "avg_ms":  35.32,
+                         "p50_ms":  31,
+                         "p95_ms":  54.4,
+                         "p99_ms":  114.8,
+                         "max_ms":  140.5,
+                         "over33":  109,
+                         "over100":  4,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.25,
+                                                            "maxMs":  2.6,
+                                                            "count":  260,
+                                                            "totalMs":  65
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.131,
+                                                            "maxMs":  0.6,
+                                                            "count":  260,
+                                                            "totalMs":  34.1
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.027,
+                                                               "maxMs":  0.1,
+                                                               "count":  221,
+                                                               "totalMs":  6
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.026,
+                                                             "maxMs":  0,
+                                                             "count":  221,
+                                                             "totalMs":  5.7
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  260,
+                                                           "totalMs":  1.6
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.22,
+                                                            "maxMs":  1.2,
+                                                            "count":  1,
+                                                            "totalMs":  1.2
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  260,
+                                                       "totalMs":  0.5
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  260,
+                                                                "totalMs":  0.3
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  260,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  260,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  18,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  28.73,
+                                      "pressure":  0.3,
+                                      "pressureMax":  0.3,
+                                      "privateMbMax":  2280,
+                                      "addressFreeMbMin":  1073,
+                                      "largestFreeBlockMbMin":  1045,
+                                      "managedMbMax":  15
+                                  },
+                         "pools":  {
+                                       "peds":  "23/120",
+                                       "vehicles":  "51/140",
+                                       "objects":  "184/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1285.4,
+                         "gpuDedicatedMbLast":  1285.4,
+                         "privateMbMax":  2280.2,
+                         "workingSetMbMax":  1820.5,
+                         "systemCpuPercentMax":  77,
+                         "gameDiskBusyPercentMax":  0,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_algonquin_chinatown_day",
+                         "interference":  0,
+                         "frames":  335,
+                         "avg_ms":  27.64,
+                         "p50_ms":  25.3,
+                         "p95_ms":  42.4,
+                         "p99_ms":  53.3,
+                         "max_ms":  62.3,
+                         "over33":  64,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.168,
+                                                            "maxMs":  2.6,
+                                                            "count":  328,
+                                                            "totalMs":  55.1
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.072,
+                                                            "maxMs":  0.5,
+                                                            "count":  328,
+                                                            "totalMs":  23.6
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.027,
+                                                               "maxMs":  0.1,
+                                                               "count":  233,
+                                                               "totalMs":  6.3
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.026,
+                                                             "maxMs":  0.1,
+                                                             "count":  233,
+                                                             "totalMs":  6.1
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0.1,
+                                                           "count":  328,
+                                                           "totalMs":  2
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.285,
+                                                            "maxMs":  1.3,
+                                                            "count":  1,
+                                                            "totalMs":  1.3
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  328,
+                                                       "totalMs":  0.7
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  328,
+                                                                "totalMs":  0.3
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  328,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  328,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  18,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  26.24,
+                                      "pressure":  0,
+                                      "pressureMax":  0,
+                                      "privateMbMax":  2313,
+                                      "addressFreeMbMin":  1073,
+                                      "largestFreeBlockMbMin":  1029,
+                                      "managedMbMax":  15
+                                  },
+                         "pools":  {
+                                       "peds":  "27/120",
+                                       "vehicles":  "6/140",
+                                       "objects":  "613/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1285.4,
+                         "gpuDedicatedMbLast":  1285.4,
+                         "privateMbMax":  2313.3,
+                         "workingSetMbMax":  1847.8,
+                         "systemCpuPercentMax":  85,
+                         "gameDiskBusyPercentMax":  0,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_algonquin_chinatown_night",
+                         "interference":  0,
+                         "frames":  328,
+                         "avg_ms":  27.54,
+                         "p50_ms":  24.5,
+                         "p95_ms":  42.9,
+                         "p99_ms":  68,
+                         "max_ms":  92.7,
+                         "over33":  61,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.177,
+                                                            "maxMs":  2.9,
+                                                            "count":  337,
+                                                            "totalMs":  59.6
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.078,
+                                                            "maxMs":  0.8,
+                                                            "count":  337,
+                                                            "totalMs":  26.3
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.028,
+                                                               "maxMs":  0.4,
+                                                               "count":  235,
+                                                               "totalMs":  6.6
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.027,
+                                                             "maxMs":  0.4,
+                                                             "count":  235,
+                                                             "totalMs":  6.3
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  337,
+                                                           "totalMs":  2
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.259,
+                                                            "maxMs":  1.3,
+                                                            "count":  1,
+                                                            "totalMs":  1.3
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  337,
+                                                       "totalMs":  0.7
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  337,
+                                                                "totalMs":  0.3
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  337,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  337,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  19,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  28.57,
+                                      "pressure":  0.03,
+                                      "pressureMax":  0.03,
+                                      "privateMbMax":  2329,
+                                      "addressFreeMbMin":  1073,
+                                      "largestFreeBlockMbMin":  1029,
+                                      "managedMbMax":  14
+                                  },
+                         "pools":  {
+                                       "peds":  "31/120",
+                                       "vehicles":  "7/140",
+                                       "objects":  "611/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1285.4,
+                         "gpuDedicatedMbLast":  1285.4,
+                         "privateMbMax":  2329.5,
+                         "workingSetMbMax":  1863.9,
+                         "systemCpuPercentMax":  86,
+                         "gameDiskBusyPercentMax":  0,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_bohan_boulevard_day",
+                         "interference":  0,
+                         "frames":  465,
+                         "avg_ms":  19.67,
+                         "p50_ms":  17.2,
+                         "p95_ms":  33.2,
+                         "p99_ms":  43.2,
+                         "max_ms":  77,
+                         "over33":  23,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.222,
+                                                            "maxMs":  2.6,
+                                                            "count":  456,
+                                                            "totalMs":  101.2
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.147,
+                                                            "maxMs":  0.6,
+                                                            "count":  456,
+                                                            "totalMs":  67
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.029,
+                                                               "maxMs":  0.7,
+                                                               "count":  254,
+                                                               "totalMs":  7.4
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.028,
+                                                             "maxMs":  0.7,
+                                                             "count":  254,
+                                                             "totalMs":  7.1
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  456,
+                                                           "totalMs":  2.7
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.291,
+                                                            "maxMs":  1.3,
+                                                            "count":  1,
+                                                            "totalMs":  1.3
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  456,
+                                                       "totalMs":  0.9
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  456,
+                                                                "totalMs":  0.5
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  456,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  456,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  18,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  19.35,
+                                      "pressure":  0,
+                                      "pressureMax":  0,
+                                      "privateMbMax":  2311,
+                                      "addressFreeMbMin":  1077,
+                                      "largestFreeBlockMbMin":  1029,
+                                      "managedMbMax":  14
+                                  },
+                         "pools":  {
+                                       "peds":  "48/120",
+                                       "vehicles":  "35/140",
+                                       "objects":  "88/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1285.4,
+                         "gpuDedicatedMbLast":  1285.4,
+                         "privateMbMax":  2327.7,
+                         "workingSetMbMax":  1837.9,
+                         "systemCpuPercentMax":  93,
+                         "gameDiskBusyPercentMax":  2,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_bohan_boulevard_night",
+                         "interference":  0,
+                         "frames":  442,
+                         "avg_ms":  20.88,
+                         "p50_ms":  18.6,
+                         "p95_ms":  33.8,
+                         "p99_ms":  38,
+                         "max_ms":  44.2,
+                         "over33":  25,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.245,
+                                                            "maxMs":  2.8,
+                                                            "count":  437,
+                                                            "totalMs":  107.1
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.163,
+                                                            "maxMs":  0.8,
+                                                            "count":  437,
+                                                            "totalMs":  71.2
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.028,
+                                                               "maxMs":  0.1,
+                                                               "count":  257,
+                                                               "totalMs":  7.2
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.027,
+                                                             "maxMs":  0.1,
+                                                             "count":  257,
+                                                             "totalMs":  6.9
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  437,
+                                                           "totalMs":  2.6
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.336,
+                                                            "maxMs":  1.3,
+                                                            "count":  1,
+                                                            "totalMs":  1.3
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  437,
+                                                       "totalMs":  0.9
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  437,
+                                                                "totalMs":  0.4
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  437,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  437,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.002,
+                                                            "maxMs":  0,
+                                                            "count":  19,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  19.82,
+                                      "pressure":  0,
+                                      "pressureMax":  0,
+                                      "privateMbMax":  2311,
+                                      "addressFreeMbMin":  1079,
+                                      "largestFreeBlockMbMin":  1029,
+                                      "managedMbMax":  14
+                                  },
+                         "pools":  {
+                                       "peds":  "38/120",
+                                       "vehicles":  "39/140",
+                                       "objects":  "85/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1285.4,
+                         "gpuDedicatedMbLast":  1285.4,
+                         "privateMbMax":  2312,
+                         "workingSetMbMax":  1825.5,
+                         "systemCpuPercentMax":  89,
+                         "gameDiskBusyPercentMax":  0,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_alderney_city_day",
+                         "interference":  0,
+                         "frames":  575,
+                         "avg_ms":  15.7,
+                         "p50_ms":  15,
+                         "p95_ms":  21.3,
+                         "p99_ms":  25.6,
+                         "max_ms":  40,
+                         "over33":  1,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.106,
+                                                            "maxMs":  2.7,
+                                                            "count":  593,
+                                                            "totalMs":  62.9
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.048,
+                                                            "maxMs":  0.8,
+                                                            "count":  593,
+                                                            "totalMs":  28.5
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.024,
+                                                               "maxMs":  0,
+                                                               "count":  289,
+                                                               "totalMs":  6.9
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.023,
+                                                             "maxMs":  0,
+                                                             "count":  289,
+                                                             "totalMs":  6.6
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  593,
+                                                           "totalMs":  3.6
+                                                       },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  593,
+                                                       "totalMs":  1.2
+                                                   },
+                                       "module.probe":  {
+                                                            "avgMs":  1.323,
+                                                            "maxMs":  1.3,
+                                                            "count":  1,
+                                                            "totalMs":  1.3
+                                                        },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  593,
+                                                                "totalMs":  0.6
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  593,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  593,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  18,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  15.02,
+                                      "pressure":  0,
+                                      "pressureMax":  0,
+                                      "privateMbMax":  1690,
+                                      "addressFreeMbMin":  1200,
+                                      "largestFreeBlockMbMin":  1045,
+                                      "managedMbMax":  15
+                                  },
+                         "pools":  {
+                                       "peds":  "1/120",
+                                       "vehicles":  "8/140",
+                                       "objects":  "376/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1285.4,
+                         "gpuDedicatedMbLast":  1285.4,
+                         "privateMbMax":  1690.3,
+                         "workingSetMbMax":  1184.8,
+                         "systemCpuPercentMax":  96,
+                         "gameDiskBusyPercentMax":  0,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "s1_alderney_city_night",
+                         "interference":  0,
+                         "frames":  638,
+                         "avg_ms":  14.16,
+                         "p50_ms":  13.6,
+                         "p95_ms":  18.6,
+                         "p99_ms":  27.2,
+                         "max_ms":  40.7,
+                         "over33":  3,
+                         "over100":  0,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.099,
+                                                            "maxMs":  2.5,
+                                                            "count":  660,
+                                                            "totalMs":  65.3
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.046,
+                                                            "maxMs":  0.6,
+                                                            "count":  660,
+                                                            "totalMs":  30.4
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.025,
+                                                               "maxMs":  0.1,
+                                                               "count":  290,
+                                                               "totalMs":  7.2
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.024,
+                                                             "maxMs":  0.1,
+                                                             "count":  290,
+                                                             "totalMs":  7
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  660,
+                                                           "totalMs":  4
+                                                       },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  660,
+                                                       "totalMs":  1.3
+                                                   },
+                                       "module.probe":  {
+                                                            "avgMs":  1.16,
+                                                            "maxMs":  1.2,
+                                                            "count":  1,
+                                                            "totalMs":  1.2
+                                                        },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  660,
+                                                                "totalMs":  0.7
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  660,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  660,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  18,
+                                                            "totalMs":  0
+                                                        }
+                                   },
+                         "perfSamples":  1,
+                         "perf":  {
+                                      "frameMs":  12.71,
+                                      "pressure":  0,
+                                      "pressureMax":  0,
+                                      "privateMbMax":  1648,
+                                      "addressFreeMbMin":  1199,
+                                      "largestFreeBlockMbMin":  1045,
+                                      "managedMbMax":  14
+                                  },
+                         "pools":  {
+                                       "peds":  "1/120",
+                                       "vehicles":  "8/140",
+                                       "objects":  "376/1300"
+                                   },
+                         "gpuSamples":  2,
+                         "gpuDedicatedMbMax":  1285.4,
+                         "gpuDedicatedMbLast":  1285.4,
+                         "privateMbMax":  1648.8,
+                         "workingSetMbMax":  1165.1,
+                         "systemCpuPercentMax":  92,
+                         "gameDiskBusyPercentMax":  0,
+                         "gameDiskQueueMax":  0
+                     },
+                     {
+                         "label":  "worst_case",
+                         "interference":  0,
+                         "frames":  2139,
+                         "avg_ms":  38.1,
+                         "p50_ms":  35.2,
+                         "p95_ms":  58.9,
+                         "p99_ms":  91,
+                         "max_ms":  290.4,
+                         "over33":  1247,
+                         "over100":  17,
+                         "stalls1s":  0,
+                         "costs":  {
+                                       "engine.frame":  {
+                                                            "avgMs":  0.3699,
+                                                            "maxMs":  16.7,
+                                                            "count":  2108,
+                                                            "totalMs":  779.8
+                                                        },
+                                       "engine.world":  {
+                                                            "avgMs":  0.1532,
+                                                            "maxMs":  2.8,
+                                                            "count":  2108,
+                                                            "totalMs":  322.9
+                                                        },
+                                       "module.devtools":  {
+                                                               "avgMs":  0.0283,
+                                                               "maxMs":  0.3,
+                                                               "count":  1940,
+                                                               "totalMs":  55
+                                                           },
+                                       "tick.devtools":  {
+                                                             "avgMs":  0.0272,
+                                                             "maxMs":  0.3,
+                                                             "count":  1940,
+                                                             "totalMs":  52.7
+                                                         },
+                                       "draw.engine":  {
+                                                           "avgMs":  0.006,
+                                                           "maxMs":  0,
+                                                           "count":  2108,
+                                                           "totalMs":  12.6
+                                                       },
+                                       "module.probe":  {
+                                                            "avgMs":  1.2903,
+                                                            "maxMs":  1.4,
+                                                            "count":  8,
+                                                            "totalMs":  10.3
+                                                        },
+                                       "draw.ui":  {
+                                                       "avgMs":  0.002,
+                                                       "maxMs":  0,
+                                                       "count":  2108,
+                                                       "totalMs":  4.2
+                                                   },
+                                       "engine.scheduler":  {
+                                                                "avgMs":  0.001,
+                                                                "maxMs":  0,
+                                                                "count":  2108,
+                                                                "totalMs":  2.1
+                                                            },
+                                       "module.autopilot":  {
+                                                                "avgMs":  0,
+                                                                "maxMs":  0,
+                                                                "count":  2108,
+                                                                "totalMs":  0
+                                                            },
+                                       "module.weapon-probe":  {
+                                                                   "avgMs":  0,
+                                                                   "maxMs":  0,
+                                                                   "count":  2108,
+                                                                   "totalMs":  0
+                                                               },
+                                       "module.world":  {
+                                                            "avgMs":  0.001,
+                                                            "maxMs":  0,
+                                                            "count":  155,
+                                                            "totalMs":  0.2
+                                                        }
+                                   },
+                         "perfSamples":  6,
+                         "perf":  {
+                                      "frameMs":  46.15,
+                                      "pressure":  0.26,
+                                      "pressureMax":  0.55,
+                                      "privateMbMax":  2082,
+                                      "addressFreeMbMin":  1109,
+                                      "largestFreeBlockMbMin":  1045,
+                                      "managedMbMax":  15
+                                  },
+                         "pools":  {
+                                       "peds":  "50/120",
+                                       "vehicles":  "26/140",
+                                       "objects":  "331/1300"
+                                   },
+                         "gpuSamples":  7,
+                         "gpuDedicatedMbMax":  1285.4,
+                         "gpuDedicatedMbLast":  1285.4,
+                         "privateMbMax":  2082.5,
+                         "workingSetMbMax":  1598.2,
+                         "systemCpuPercentMax":  89,
+                         "gameDiskBusyPercentMax":  54,
+                         "gameDiskQueueMax":  0
+                     }
+                 ]
+}

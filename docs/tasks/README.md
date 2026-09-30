@@ -23,7 +23,7 @@ in-game checks passing (or `DONE`); owner sign-offs can come later.
 | D | [T-049](T-049-stage1-hud.md) | Basic Liberty HUD |
 | R | [T-050](T-050-r2-hit-material.md), [T-051](T-051-r3-blood-decals.md), [T-052](T-052-r4-screen-effect-cost.md), [T-053](T-053-r1-weapon-audio.md), [T-054](T-054-r5-custom-radar.md), [T-055](T-055-r6-frontend-hooks.md) | Research spikes R2, R3, R4, R1, R5, R6 (in that priority) |
 
-All Stage 1 cards start `READY`.
+All Stage 1 cards start `READY`; T-040 is `NEEDS-PLAYTEST` (2026-09-30), so lanes A to D and R may start.
 
 ## Active cards (engine phase)
 
