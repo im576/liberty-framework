@@ -41,6 +41,33 @@
       "revision": 1,
       "by": "claude",
       "prompt": "A 2 by 2 atlas of four realistic blood spatter decals seen straight on (orthographic), each centred in its quarter with empty margin, on a fully transparent background. Dark realistic blood: deep red to near-black where thick, thin brownish-red where it has run or dried, fine satellite droplets and a few directional streaks consistent with a gunshot spray, one variant a heavier pool-like splash. Photographic material detail, no surface texture behind the blood, no lighting, no shadows. Grounded forensic realism, not cartoon or horror-movie exaggeration."
+    },
+    {
+      "at": "2026-09-30T04:43:45+00:00",
+      "event": "blocked",
+      "revision": 1,
+      "by": "Codex",
+      "notes": "Two independent generations from the exact prompt plus all verbatim constraints produced prominent white specular highlights and shaded raised droplets, conflicting with no lighting/no shadows. No prompt substitution or approval performed. Failed candidates retained for provenance. Built-in model/version and seeds are not exposed.",
+      "model": "OpenAI image_gen built-in (model/version not exposed)",
+      "prompt": "A 2 by 2 atlas of four realistic blood spatter decals seen straight on (orthographic), each centred in its quarter with empty margin, on a fully transparent background. Dark realistic blood: deep red to near-black where thick, thin brownish-red where it has run or dried, fine satellite droplets and a few directional streaks consistent with a gunshot spray, one variant a heavier pool-like splash. Photographic material detail, no surface texture behind the blood, no lighting, no shadows. Grounded forensic realism, not cartoon or horror-movie exaggeration.",
+      "files": [
+        {
+          "path": "art/generated/ART-002/r1/art_002_1.png",
+          "sha256": "b87072cc32434698613b1c26d65d045392c711d7381182fb8457a5413420917e",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-002/r1/art_002_2.png",
+          "sha256": "5889ed937296240ef1ff515b1ca1218698b1bfb131e569af2348ed593d976a0d",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ]
     }
   ]
 }
