@@ -274,7 +274,7 @@ fixes apply everywhere (section 4). Each area is finished to the Hove Beach stan
 
 ## 12. Owner decisions (2026-09-30)
 
-1. **Loadout:** 2 long guns + 1 sidearm; one long gun equipped, the other slung (section 7, Slice A).
+1. **Loadout:** 2 long guns + 1 sidearm; one long gun equipped, the other slung (section 7, Slice A). SMGs (Uzi, MP5) count as long guns.
 2. **Art sourcing:** identity-defining assets hand-designed; repeatable surfaces procedural or CC0 (section 3). GPT Image
    2.5 available through the owner's subscription.
 3. **VRAM:** RX 570 8 GB; +250 to +300 MB normal, +350 MB hard ceiling in the worst-case scene (Pillars 1 and 5).

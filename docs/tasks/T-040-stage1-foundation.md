@@ -52,6 +52,12 @@ Deviation from the card: mod-off uses `stop <module>` for gunplay, combat, arsen
 
 Evidence: RAN-PASS: `tools/tests/Run-Tests.ps1` (160), `checks.py validate`, build, `package-phase2` (includes the offline verifier and the content self-test), and the six T040 scenarios (no failed step; NEEDS-REVIEW because their screenshots are queued for a person, and for the `-off` ones also the one `skeleton_collapse_engine_failed` log error that `restart combat` causes, audit F14). The content self-test failed once on a flaky check (`bounds probe: float values are never reported`, a `"1.5"` text match in `CollisionSelfTest.cs:130` that a timestamp can trigger) and passed on rerun; not fixed here. NEEDS OWNER: whether each capture point is representative, and visible hitching.
 
+## Owner answers (2026-09-30)
+
+- Q1: **SMGs (Uzi, MP5) are long guns** in the 2+1 loadout.
+- Q4: **no baseline rerun**; the existing baseline stands.
+- Q2 and Q3: pending.
+
 ## Open questions
 
 1. Should SMGs (Uzi, MP5) count as sidearms or long guns in the 2+1 loadout (F4)? Today they are sidearms.
