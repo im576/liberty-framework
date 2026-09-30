@@ -7,7 +7,7 @@ overrides older docs.
 ## Current phase
 
 - **Phase 1 = Liberty Engine: complete (2026-09-30), except the items under "Known limits".** Native core, SDK, content
-  pipeline and hot reload are verified in game. The full regression pass is queued as the first task of the mod phase.
+  pipeline and hot reload are verified in game. The full regression pass ran on 2026-09-30 and passes ([report](reports/2026-09-30-regression.md)).
 - **Next: the first complex mod** built on the engine (uses the SDK and content compiler, gameplay code stays in `mods/`).
 - **Then Phase 3: reverse engineering** toward FiveM-level control (authored collision, structure writing, deeper hooks).
 
@@ -23,7 +23,7 @@ overrides older docs.
 
 - **One material per model.** Use a texture atlas. Multi-geometry structure drawables crash the game; the compiler warns. Repro: scenario `structure-bisect`, assets `lf_st_2tex`, `lf_fx_multimat`.
 - **No authored collision, no LOD slots 1-3** (Phase 3). Use collision proxies; LOD via separate models or IDE draw distance.
-- **Full regression pass not yet run on this build.** First task of the mod phase: `./tools/verify-local.ps1 -NoManual` (about 1 hour).
+- **Manual gameplay checks (18) not run**: do them as one owner sitting when convenient; the automated regression passed ([report](reports/2026-09-30-regression.md)).
 - Startup crash before the ASI loads (Rockstar `MTLX.DLL`, about 1 launch in 3): environmental; the autopilot relaunches.
 - Episodes (TLAD/TBoGT) are not covered by design.
 
