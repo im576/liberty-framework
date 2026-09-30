@@ -23,6 +23,8 @@ outside the catalog stay vanilla; every system can be switched off.
   progress / money / contact), write the rest as open questions. No XP bars.
 - A DevTools/autopilot command to list the catalog and give any catalog weapon (for tests).
 
+**Owner decision (2026-09-30):** keep every catalog weapon, including the P90-type, MG36 and snipers. They are excluded from normal Stage 1 availability but must be obtainable at any time from the DevTools/mod menu (a give entry per weapon). SMGs (Uzi, MP5) are long guns.
+
 ## Acceptance
 
 - Every Stage 1 weapon has a catalog entry (class, tier, availability rule, profile, model) and the verifier checks it.

@@ -56,7 +56,8 @@ Evidence: RAN-PASS: `tools/tests/Run-Tests.ps1` (160), `checks.py validate`, bui
 
 - Q1: **SMGs (Uzi, MP5) are long guns** in the 2+1 loadout.
 - Q4: **no baseline rerun**; the existing baseline stands.
-- Q2 and Q3: pending.
+- Q2: **no population thinning.** The atmosphere density governor is off (`config/atmosphere.json` `density.enabled: false`); performance must come from other optimizations, never from emptying the city.
+- Q3: **keep every weapon** (P90, MG36, snipers). They stay out of normal Stage 1 availability (shops, pickups, NPC drops) but are always obtainable from the DevTools/mod menu.
 
 ## Open questions
 

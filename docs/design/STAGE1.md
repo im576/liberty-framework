@@ -225,7 +225,7 @@ Budget: gunplay + arsenal + holsters **≤ 1.5 ms** average combined (today abou
 | Reaction to violence | Nearby peds after severe violence | panic/scream/flee in ≥ 90% of autopilot trials |
 | Population variety | 60 s at each capture point, snapshot of visible peds (model + variation) | ≥ 8 distinct looks among any 15 visible peds; no identical pair within 10 m |
 | Vehicle variety | Scripted 2-minute Broker/Dukes drive | ≥ 12 distinct models |
-| Density preserved | Ped and traffic density | never below vanilla except the governor under pressure (floor ≥ 0.8) |
+| Density preserved | Ped and traffic density | never below vanilla; the density governor is off (owner decision 2026-09-30) |
 | Lighting/weather | Target look (cold day, overcast, wet, dark readable nights) | owner sign-off at the 12 capture points, day/night/rain |
 
 Budget: atmosphere + ambient audio + population scripts **≤ 0.5 ms** average.
@@ -282,3 +282,5 @@ fixes apply everywhere (section 4). Each area is finished to the Hove Beach stan
 4. **Gore:** very harsh, grounded; suffering, crawling and contextual executions allowed; bodies 3–5 minutes with hard
    caps and adaptive cleanup (Pillar 2).
 5. **Art-pass order:** Hove Beach first, as the benchmark (section 10a).
+6. **Population:** no automatic thinning of peds or traffic for performance; find other optimizations (density governor off).
+7. **Excluded weapons** (P90-type, MG36, snipers) stay in the game, out of normal Stage 1 availability, always obtainable from the DevTools/mod menu.
