@@ -1,6 +1,6 @@
 # T-042 — Stage 1 gunplay tuning and shoulder swap
 
-Status: **READY** (implemented; in-game checks not yet run, see Blocked) · Lane A · Depends on: T-041 · Design: STAGE1 section 7 Slice A "Gunplay tuning", 10 Pillar 3
+Status: **NEEDS-PLAYTEST** · Lane A · Depends on: T-041 · Design: STAGE1 section 7 Slice A "Gunplay tuning", 10 Pillar 3
 
 ## Goal
 
@@ -28,7 +28,7 @@ new code only where the model lacks a needed input.
 
 ## Progress (2026-09-30, Claude, lane A)
 
-Implemented and offline-verified; the in-game checks `T042-gunplay-range` and `T042-shoulder-swap` have **not run**: the game could not start (see Blocked). Built on `stage1/T-041` (which is not merged for the same reason).
+Implemented; offline checks and the in-game checks `T042-gunplay-range` and `T042-shoulder-swap` pass (run `20260930-134422-33e503f`, branch tip of `stage1/T-043`, which contains this task). Built on T-041.
 
 **What was built**
 - **Class targets** (`config/gunplay.json` `classTargets[]`, validated): per class (pistol, shotgun, smg, rifle) the first-shot cone (proposal 0.5 deg), burst shots and the time to recover to the first-shot cone, sustained shots (30 for automatic classes) and the camera climb range (rifle 6-12 deg as proposed, SMG 4-9 deg). All are proposals until the owner confirms them.
@@ -49,15 +49,11 @@ Implemented and offline-verified; the in-game checks `T042-gunplay-range` and `T
 - DevTools > WEAPONS lists the Stage 1 arsenal ("Give ... (Stage 1, tier)").
 
 **Evidence**
-- RAN-PASS: build; `tools/verify.ps1` 912 passed 0 failed (new section "Stage 1 gunplay": every profile meets its class targets, and the negative cases fail as they should); `Run-Tests.ps1` 175 passed (the range log parser included); `checks.py`.
-- NOT RUN: `T042-gunplay-range`, `T042-shoulder-swap` in game (reason below). The range scenario's key question, whether bullets fired by the game's shoot-at-coordinate task honour the accuracy the spread model writes, is unanswered; if they do not, only `catalog sim` (the model) stays as the first-shot/burst/climb evidence and the feel check decides.
+- RAN-PASS offline: build; `tools/verify.ps1` 943 passed 0 failed (section "Stage 1 gunplay": every profile meets its class targets, and the negative cases fail as they should); `Run-Tests.ps1` 175 passed (the range log parser included); `checks.py`.
+- RAN-PASS in game: `catalog sim` ("gunplay sim ok: 6 Stage 1 weapons meet their class targets", the live config through the model); `T042-gunplay-range` (188 steps, 0 failed): all six weapons fired at the point 25 m ahead in single shots, bursts and continuous fire; `T042-shoulder-swap` (0 failed): four `swap probe` replies `settled=True live_ok=True records=15 wrong=0` (right, left, right, left via toggle; the game's 15-record aim-camera table followed -1/+1 exactly and was restored to `first_lateral=0.475`), plus the final restore to the right shoulder, and a positive control (`world ray test_wall` hit).
+- Delivered spread of the range run (bullets fired by the game's shoot-at-coordinate task, deviation in degrees from the line to the aim point; the cone is what the model wrote): first shots Glock mean 0.28 (cone 0.30, 70% inside), AutoMag 0.32 (0.35, 70%), Street Sweeper 0.29 (0.45, 75%), Remington 0.22 (0.40, 100%), AK-47 0.29 (0.40, 64%), Uzi 0.80 (0.45, 25%, 4 shots). Bursts and sustained fire are noisier than the written cone for the automatic weapons (Uzi sustained mean 6.2 deg against a cone of 2.1; AK-47 2.6 against 1.0): the shoot-at-coordinate task does honour the accuracy the model writes for single shots (pistols, shotguns, rifle first shots sit inside it) but it is not a player aiming, and its own aim wobble dominates sustained fire. The table is in the run folder (`range.md`); the sustained-fire behaviour of a real player is the owner's feel check. Climb is not measured in game (the recoil kick needs the aim camera): it is the model's number above.
+- Shoulder clearance (`ray left|right`, 4 m, 0.5 m up, at the test wall 0.4 to 3 m away facing both ways and at four capture points): every ray replied `Clear`. That does **not** show the camera cannot clip: the positive control hit the wall only when aimed at the wall itself, so these side rays at those spots prove nothing either way. Shoulder swap in the aim camera near walls stays a manual check.
 - NEEDS OWNER: feel per weapon class and shoulder swap near walls with the real aim camera (`T042-feel-per-class`).
-
-## Blocked
-
-Same cause as T-041: the game cannot start (fatal error "GTA IV requires a sound card in order to run", no active audio output). Needed: reconnect an audio output, then
-`./tools/verify-local.ps1 -GameDirectory "C:\Games\Grand Theft Auto IV\GTAIV" -Branch stage1/T-042 -AnyBranch -NoPush -Restore -NoManual -Only LOOP-package-install,T041-stage1-arsenal,T042-gunplay-range,T042-shoulder-swap`.
-
 ## Open questions
 
 1. The class targets are the design's proposals (0.5 deg, 6-12 deg AK climb) plus my own for burst recovery time (800 ms pistol/SMG/rifle, 1500 ms shotgun) and SMG climb (4-9 deg). Confirm or change them in `classTargets`.
