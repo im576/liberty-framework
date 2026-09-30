@@ -16,3 +16,42 @@ Test-That 'locations merge: a one-entry result is still a JSON array' ($single.J
 $threw = $false
 try { Merge-LocationFiles '{ "schemaVersion": 2, "locations": [] }' $installed | Out-Null } catch { $threw = $true }
 Test-That 'locations merge: a different schemaVersion is refused, not merged' $threw
+
+# Merge-WeaponInfoStats (T-041): the catalog's identity stats reach WeaponInfo.xml, and only them.
+$weaponXml = @'
+<?xml version="1.0" encoding="utf-8"?>
+<weaponinfo version="1">
+  <weapon type="PISTOL">
+    <data slot="HANDGUN" firetype="INSTANT_HIT" clipsize="17" ammomax="425" timebetweenshots="333">
+      <damage base="60" networkplayermod="3.0" />
+      <aiming accuracy="0.5" />
+    </data>
+    <assets model="w_glock"></assets>
+  </weapon>
+  <weapon type="MICRO_UZI">
+    <data slot="SMG" firetype="INSTANT_HIT" clipsize="30" ammomax="300" timebetweenshots="66">
+      <damage base="55" networkplayermod="3.0" />
+      <aiming accuracy="0.55" />
+    </data>
+    <assets model="w_uzi"></assets>
+  </weapon>
+</weaponinfo>
+'@
+$statsCatalog = '{ "schemaVersion": 1, "applyWeaponInfoStats": true, "entries": [ { "id": "service-pistol", "stage1": true, "weaponInfoType": "PISTOL", "stats": { "timeBetweenShotsMilliseconds": 333, "damageBase": 60, "clipSize": 17, "ammoMax": 425 }, "vanillaStats": { "timeBetweenShotsMilliseconds": 333, "damageBase": 60, "clipSize": 17, "ammoMax": 425 } }, { "id": "imi-uzi", "stage1": true, "weaponInfoType": "MICRO_UZI", "stats": { "timeBetweenShotsMilliseconds": 85, "damageBase": 45 }, "vanillaStats": { "timeBetweenShotsMilliseconds": 66, "damageBase": 55 } }, { "id": "gold", "stage1": false, "weaponInfoType": "LF_GOLD_PISTOL", "stats": { "damageBase": 1 } } ] }'
+$patched = Merge-WeaponInfoStats $statsCatalog $weaponXml
+$patchedDocument = [xml]$patched.Xml
+$uzi = $patchedDocument.SelectSingleNode("/weaponinfo/weapon[@type='MICRO_UZI']")
+$pistol = $patchedDocument.SelectSingleNode("/weaponinfo/weapon[@type='PISTOL']")
+Test-That 'weaponinfo stats: the catalog values are written into the weapon entry' ($uzi.data.timebetweenshots -eq '85' -and $uzi.data.damage.base -eq '45') $patched.Xml
+Test-That 'weaponinfo stats: fields the catalog does not set stay as they were' ($uzi.data.clipsize -eq '30' -and $uzi.data.ammomax -eq '300' -and $uzi.data.aiming.accuracy -eq '0.55' -and $uzi.data.damage.networkplayermod -eq '3.0')
+Test-That 'weaponinfo stats: an entry that already matches is not reported' ($patched.Changes.Count -eq 2 -and $pistol.data.timebetweenshots -eq '333')
+Test-That 'weaponinfo stats: a non-Stage 1 catalog entry is never written' ($patched.Xml -notmatch 'LF_GOLD_PISTOL')
+Test-That 'weaponinfo stats: the file stays UTF-8 with its whitespace' ($patched.Xml.StartsWith('<?xml version="1.0" encoding="utf-8"?>') -and $patched.Xml -match '\r?\n  <weapon type="MICRO_UZI">')
+$again = Merge-WeaponInfoStats $statsCatalog $patched.Xml
+Test-That 'weaponinfo stats: applying twice changes nothing and returns the text unchanged' ($again.Changes.Count -eq 0 -and $again.Xml -ceq $patched.Xml)
+$off = Merge-WeaponInfoStats ($statsCatalog -replace '"applyWeaponInfoStats": true', '"applyWeaponInfoStats": false') $patched.Xml
+$offUzi = ([xml]$off.Xml).SelectSingleNode("/weaponinfo/weapon[@type='MICRO_UZI']")
+Test-That 'weaponinfo stats: switched off, the game''s own values come back' ($offUzi.data.timebetweenshots -eq '66' -and $offUzi.data.damage.base -eq '55')
+$missingWeapon = $false
+try { Merge-WeaponInfoStats ($statsCatalog -replace 'MICRO_UZI', 'NO_SUCH_GUN') $weaponXml | Out-Null } catch { $missingWeapon = $true }
+Test-That 'weaponinfo stats: a catalog weapon the XML lacks is an error, not a silent skip' $missingWeapon

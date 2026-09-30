@@ -1292,6 +1292,30 @@
       "reference": "docs/tasks/T-040-stage1-foundation.md#human-test-steps",
       "status": "QUEUED",
       "addedIn": "stage1/T-040"
+    },
+    {
+      "id": "T041-stage1-arsenal",
+      "task": "T-041",
+      "title": "Stage 1 arsenal: catalog, profiles, gate and availability in game",
+      "kind": "scenario",
+      "run": {
+        "scenario": "stage1-arsenal"
+      },
+      "proves": "Every Stage 1 catalog weapon is given, held and fired at the test range and the Liberty gunplay profile drives it (weapon_changed profile=, gunplay_state); the catalog, gunplay.json, the gate and the loaded WeaponInfo.xml agree (catalog check); restricted weapons (snipers, MG36, P90-look), a test weapon and a vanilla weapon outside the catalog keep their own behaviour; the availability rules offer only common weapons for $600 at the start and never a restricted weapon.",
+      "pass": "autopilot PASS (every expect); the six screenshots judged: the weapon in hand is the catalog weapon",
+      "review": {
+        "screenshots": {
+          "stage1_arsenal_service-pistol": "Glock 17 in Niko's hand at the test range (the installed weapon-pack model, not the vanilla one)",
+          "stage1_arsenal_combat-pistol": "the .44 AutoMag in hand",
+          "stage1_arsenal_street-sweeper": "the Street Sweeper in hand",
+          "stage1_arsenal_remington-1100": "the Remington 1100 in hand",
+          "stage1_arsenal_imi-uzi": "the IMI Uzi in hand",
+          "stage1_arsenal_ak-47": "the AK-47 in hand"
+        }
+      },
+      "reference": "docs/tasks/T-041-stage1-weapons.md#human-test-steps",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-041"
     }
   ]
 }

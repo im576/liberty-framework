@@ -105,12 +105,12 @@ namespace LibertyFramework.DevTools
             List<MenuItem> items = new List<MenuItem>();
             GunplayConfig config = Config;
             if (config == null) { items.Add(MenuItem.Info(() => "gunplay.json not loaded; see log")); return items; }
-            foreach (WeaponProfile profile in config.Weapons)
+            foreach (WeaponProfile profile in config.TestWeapons())
             {
                 WeaponProfile captured = profile;
                 items.Add(MenuItem.Confirmed("Give " + profile.Label + " (ID " + profile.WeaponId + ")", () => TestWeaponActions.Select(Player, captured, true)));
             }
-            foreach (WeaponProfile profile in config.Weapons)
+            foreach (WeaponProfile profile in config.TestWeapons())
             {
                 WeaponProfile captured = profile;
                 items.Add(MenuItem.Confirmed("Give vanilla " + profile.Label.Replace("Gold ", "").ToLowerInvariant() + " (ID " + profile.VanillaWeaponId + ")",

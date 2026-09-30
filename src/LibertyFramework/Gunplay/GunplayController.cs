@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -19,13 +19,14 @@ using LibertyFramework.Gunplay.Profiles;
 using LibertyFramework.Gunplay.Recoil;
 using LibertyFramework.Gunplay.Spread;
 using LibertyFramework.Weapons;
+using LibertyFramework.Weapons.Logic;
 
 namespace LibertyFramework.Gunplay
 {
     // Per-frame gunplay loop. Order each frame:
     //   shots (clip delta) -> audit last frame's real bullets -> spread model -> write accuracy
     //   -> recoil step -> aim-camera write -> reticle hide / crosshair draw.
-    // Only registered test weapons (config weapons 58+) get spread/recoil; free aim and the
+    // Only registered test weapons (config weapons 58+) and the Stage 1 catalog weapons (T-041, Stage1Gate) get spread/recoil; free aim and the
     // crosshair apply universally while their toggles are on. Every engine write is undone on unload.
     [global::Liberty.Sdk.Module("gunplay", Order = 10, Capabilities = new[] { global::Liberty.Sdk.Capabilities.EngineInternal }, Description = "Gunplay: free aim, recoil, spread, crosshair")]
     public sealed class GunplayController : LibertyFramework.Engine.Module
@@ -42,6 +43,13 @@ namespace LibertyFramework.Gunplay
         private readonly GunplayPhaseTimings phaseTimings = new GunplayPhaseTimings();
         private int lastTimingReportTicks;
         private readonly GunplayConfigStore store;
+        // T-041: the weapon catalog decides which vanilla-id weapons the Liberty profiles apply to (Stage1Gate).
+        private WeaponCatalog weaponCatalog;
+        private string weaponCatalogHash;
+        private int gateWeaponId = -1;
+        private GunplayConfig gateConfig;
+        private WeaponCatalog gateCatalog;
+        private WeaponProfile gateProfile;
         private readonly ControllerInput controller = new ControllerInput();
         private readonly RecoilSolver recoil = new RecoilSolver(Environment.TickCount);
         private readonly SpreadModel spread = new SpreadModel();
@@ -152,6 +160,9 @@ namespace LibertyFramework.Gunplay
         }
 
         internal GunplayConfig Config { get { return store.Active; } }
+
+        // T-041: whether the spread model can drive this weapon's accuracy (its WeaponInfo entry was proven against WeaponInfo.xml).
+        internal bool CanControlSpread(int weaponId) { return weaponInfo != null && weaponInfo.CanWrite(weaponId); }
         internal GunplayConfigStore Store { get { return store; } }
         internal SpreadCalibrator Calibrator { get { return calibrator; } }
         internal bool Initialized { get { return initialized; } }
@@ -202,6 +213,7 @@ namespace LibertyFramework.Gunplay
                     lastConfigPollMilliseconds = now;
                     store.Poll(false);
                     config = store.Active;
+                    PollCatalog(config);
                 }
                 if (config.FreeAim.Profile != configuredAimProfile || config.FreeAim.EnabledOnStartup != configuredAimStartup)
                 {
@@ -261,7 +273,7 @@ namespace LibertyFramework.Gunplay
                     lastAttachmentBloomMultiplier = 1.0;
                 }
                 activeWeaponId = weaponId;
-                activeProfile = config.FindWeapon(weaponId);
+                activeProfile = ResolveProfile(config, weaponId);
 
                 CostMeter.Add("gp.weapon_id", probe); probe = Stopwatch.GetTimestamp();
                 SampleState(ped);
@@ -423,6 +435,7 @@ namespace LibertyFramework.Gunplay
         {
             initialized = true;
             Stopwatch timer = Stopwatch.StartNew();
+            PollCatalog(config);
             try
             {
                 // ADR-0006: one memory scan per session, owned by the engine (it also maps the direct-native handlers
@@ -474,13 +487,16 @@ namespace LibertyFramework.Gunplay
                     string xmlPath = WeaponInfoXml.ActivePath(LibertyPaths.GameDirectory);
                     Dictionary<string, float> xml = WeaponInfoXml.ReadAccuracies(xmlPath);
                     Dictionary<int, float> expected = new Dictionary<int, float>();
+                    Dictionary<int, float> stage1Expected = new Dictionary<int, float>();
                     foreach (WeaponProfile weapon in config.Weapons)
                     {
                         float accuracy;
-                        if (xml.TryGetValue(weapon.WeaponInfoName, out accuracy)) { expected[weapon.WeaponId] = accuracy; }
+                        if (!xml.TryGetValue(weapon.WeaponInfoName, out accuracy)) { continue; }
+                        if (weapon.IsTestWeapon) { expected[weapon.WeaponId] = accuracy; } else { stage1Expected[weapon.WeaponId] = accuracy; }
                     }
-                    RuntimeLog.Info("weaponinfo_xml path=" + xmlPath + " test_entries=" + expected.Count);
+                    RuntimeLog.Info("weaponinfo_xml path=" + xmlPath + " test_entries=" + expected.Count + " stage1_entries=" + stage1Expected.Count);
                     weaponInfo.Validate(expected);
+                    if (stage1Expected.Count > 0) { weaponInfo.ValidateExtra(stage1Expected); }
                 }
                 catch (Exception error)
                 {
@@ -509,10 +525,59 @@ namespace LibertyFramework.Gunplay
             freeAim.Update(player, playerIndex, config.FreeAim);
         }
 
+        // The Liberty profile of a held weapon after the Stage 1 gate, or null (vanilla). Cached per weapon, config and catalog.
+        private WeaponProfile ResolveProfile(GunplayConfig config, int weaponId)
+        {
+            if (weaponId != gateWeaponId || !ReferenceEquals(config, gateConfig) || !ReferenceEquals(weaponCatalog, gateCatalog))
+            {
+                gateProfile = Stage1Gate.ProfileFor(config, weaponCatalog, weaponId);
+                gateWeaponId = weaponId;
+                gateConfig = config;
+                gateCatalog = weaponCatalog;
+            }
+            return gateProfile;
+        }
+
+        // weapon-catalog.json is read again when it changes; a broken file keeps the last good catalog.
+        private void PollCatalog(GunplayConfig config)
+        {
+            try
+            {
+                if (!File.Exists(LibertyPaths.WeaponCatalog)) { return; }
+                byte[] bytes = JsonStore.ReadBytes(LibertyPaths.WeaponCatalog);
+                string hash = JsonStore.Hash(bytes);
+                if (hash == weaponCatalogHash) { return; }
+                weaponCatalogHash = hash;
+                WeaponCatalog candidate = JsonStore.Parse<WeaponCatalog>(bytes);
+                candidate.Validate();
+                weaponCatalog = candidate;
+                LogStage1Gate(config);
+            }
+            catch (Exception error) { RuntimeLog.Error("weapon_catalog_rejected error=" + error.Message + " (gunplay keeps the last valid catalog)"); }
+        }
+
+        // One line per catalog weapon: whether the gunplay gate lets its Liberty profile apply (evidence for T-041).
+        private void LogStage1Gate(GunplayConfig config)
+        {
+            if (weaponCatalog == null || config == null) { return; }
+            foreach (WeaponCatalogEntry entry in weaponCatalog.Entries)
+            {
+                if (entry.WeaponId >= 58 && !entry.Stage1) { continue; }
+                WeaponProfile profile = config.FindWeapon(entry.WeaponId);
+                bool allowed = Stage1Gate.Allows(config, weaponCatalog, profile);
+                RuntimeLog.Info("stage1_gate id=" + entry.Id + " weapon=" + entry.WeaponId + " class=" + (entry.WeaponClass ?? "-") + " tier=" + (entry.Tier ?? "-") +
+                    " stage1=" + entry.Stage1 + " profile=" + (profile != null ? profile.ProfileName : "none") + " gunplay=" + (allowed ? "liberty" : "vanilla"));
+            }
+        }
+
         private void OnWeaponChanged(int weaponId, GunplayConfig config)
         {
-            RuntimeLog.Info("weapon_changed from=" + lastWeaponId + " to=" + weaponId + " profile=" +
-                (config.FindWeapon(weaponId) != null ? config.FindWeapon(weaponId).ProfileName : "vanilla"));
+            WeaponProfile previous = ResolveProfile(config, lastWeaponId);
+            // A catalog weapon shares its WeaponInfo entry with every NPC carrying it: give the game its own accuracy back.
+            if (previous != null && !previous.IsTestWeapon && weaponInfo != null) { weaponInfo.Restore(lastWeaponId); }
+            WeaponProfile now = ResolveProfile(config, weaponId);
+            RuntimeLog.Info("weapon_changed from=" + lastWeaponId + " to=" + weaponId + " profile=" + (now != null ? now.ProfileName : "vanilla") +
+                (now != null && !now.IsTestWeapon ? " catalog=" + now.CatalogId : ""));
             lastWeaponId = weaponId;
             lastClip = -1;
             recoil.Reset();
@@ -651,7 +716,7 @@ namespace LibertyFramework.Gunplay
             }
             ShotAuditStats stats;
             if (!audits.TryGetValue(weaponId, out stats)) { stats = new ShotAuditStats(); audits[weaponId] = stats; }
-            WeaponProfile profile = config.FindWeapon(weaponId);
+            WeaponProfile profile = ResolveProfile(config, weaponId);
             // Bullets fired this frame used the accuracy written (and the crosshair shown) last frame.
             double intended = writtenConeDegrees;
             double shown = profile != null ? displayConeDegrees : currentConeDegrees;
@@ -662,7 +727,7 @@ namespace LibertyFramework.Gunplay
                 if (double.IsNaN(deviation)) { continue; }
                 stats.Add(deviation, shown);
                 bool gainChanged = false;
-                if (profile != null && profile.CalibrationSource && SpreadControlEnabled && weaponInfo != null && weaponInfo.Validated)
+                if (profile != null && profile.CalibrationSource && SpreadControlEnabled && weaponInfo != null && weaponInfo.CanWrite(profile.WeaponId))
                 {
                     gainChanged = calibrator.AddSample(config.SpreadCalibration, deviation, intended);
                 }
@@ -681,7 +746,7 @@ namespace LibertyFramework.Gunplay
             if (activeProfile != null)
             {
                 currentConeDegrees = spread.Step(activeProfile.Spread, config.Movement, state, now, deltaSeconds);
-                if (SpreadControlEnabled && weaponInfo != null && weaponInfo.Validated)
+                if (SpreadControlEnabled && weaponInfo != null && weaponInfo.CanWrite(activeProfile.WeaponId))
                 {
                     // Hold the vanilla aim-settle timer at zero so the configured cone is what the game applies.
                     if (playerMemory != null) { playerMemory.ClearAimSettle(playerPed); }

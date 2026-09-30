@@ -27,9 +27,11 @@ namespace LibertyFramework.Weapons
 
         internal static string GiveAll(Player player, GunplayConfig config)
         {
-            foreach (WeaponProfile profile in config.Weapons) { Select(player, profile, true); }
+            // Test weapons only: the Stage 1 catalog weapons are given by the catalog command (T-041).
+            System.Collections.Generic.List<WeaponProfile> testWeapons = config.TestWeapons();
+            foreach (WeaponProfile profile in testWeapons) { Select(player, profile, true); }
             // Leave the pistol in hand; it is the first profile and the finish test weapon.
-            if (config.Weapons.Count > 0) { Select(player, config.Weapons[0], true); }
+            if (testWeapons.Count > 0) { Select(player, testWeapons[0], true); }
             return "All test weapons given; " + Status(player, config);
         }
 
@@ -69,7 +71,7 @@ namespace LibertyFramework.Weapons
             {
                 WeaponProfile profile = config.FindWeapon(weaponId);
                 if (profile != null) { return profile.Label; }
-                foreach (WeaponProfile weapon in config.Weapons)
+                foreach (WeaponProfile weapon in config.TestWeapons())
                 {
                     if (weapon.VanillaWeaponId == weaponId) { return "Vanilla (" + weapon.Label.Replace("Gold ", "") + ")"; }
                 }

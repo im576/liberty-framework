@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 // Fields are populated by DataContractJsonSerializer.
@@ -27,6 +27,20 @@ namespace LibertyFramework.Gunplay.Profiles
         // T-026, optional: null = refresh camera values every tick.
         [DataMember(Name = "performance", IsRequired = false, Order = 13)] internal PerformanceSettings Performance;
 
+        // T-041, optional: null = Stage 1 catalog weapons enabled.
+        [DataMember(Name = "stage1Weapons", IsRequired = false, Order = 14)] internal Stage1WeaponSettings Stage1Weapons;
+
+        internal bool Stage1WeaponsEnabled { get { return Stage1Weapons == null || Stage1Weapons.Enabled; } }
+
+        // The registered test weapons (58+), in file order.
+        internal System.Collections.Generic.List<WeaponProfile> TestWeapons()
+        {
+            System.Collections.Generic.List<WeaponProfile> result = new System.Collections.Generic.List<WeaponProfile>();
+            if (Weapons == null) { return result; }
+            foreach (WeaponProfile weapon in Weapons) { if (weapon.IsTestWeapon) { result.Add(weapon); } }
+            return result;
+        }
+
         internal WeaponProfile FindWeapon(int weaponId)
         {
             if (Weapons == null) { return null; }
@@ -38,3 +52,4 @@ namespace LibertyFramework.Gunplay.Profiles
         }
     }
 }
+

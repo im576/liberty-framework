@@ -37,6 +37,36 @@ namespace LibertyFramework.GameApi
             return result;
         }
 
+        // The identity fields of every weapon entry (T-041): <data timebetweenshots clipsize ammomax> and <damage base>.
+        internal static Dictionary<string, LibertyFramework.Weapons.Logic.WeaponStats> ReadStats(string path)
+        {
+            Dictionary<string, LibertyFramework.Weapons.Logic.WeaponStats> result =
+                new Dictionary<string, LibertyFramework.Weapons.Logic.WeaponStats>(StringComparer.OrdinalIgnoreCase);
+            XmlDocument document = new XmlDocument();
+            document.XmlResolver = null;
+            document.Load(path);
+            foreach (XmlNode weapon in document.SelectNodes("/weaponinfo/weapon"))
+            {
+                XmlAttribute type = weapon.Attributes["type"];
+                XmlNode data = weapon.SelectSingleNode("data");
+                if (type == null || data == null) { continue; }
+                LibertyFramework.Weapons.Logic.WeaponStats stats = new LibertyFramework.Weapons.Logic.WeaponStats();
+                stats.TimeBetweenShotsMilliseconds = IntAttribute(data, "timebetweenshots");
+                stats.ClipSize = IntAttribute(data, "clipsize");
+                stats.AmmoMax = IntAttribute(data, "ammomax");
+                stats.DamageBase = IntAttribute(data.SelectSingleNode("damage"), "base");
+                result[type.Value] = stats;
+            }
+            return result;
+        }
+
+        private static int? IntAttribute(XmlNode node, string name)
+        {
+            if (node == null || node.Attributes[name] == null) { return null; }
+            int value;
+            return int.TryParse(node.Attributes[name].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out value) ? (int?)value : null;
+        }
+
         internal static string ModelFor(string path, string weaponType)
         {
             XmlDocument document = new XmlDocument();

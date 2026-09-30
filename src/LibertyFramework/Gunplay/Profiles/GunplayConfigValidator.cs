@@ -80,7 +80,11 @@ namespace LibertyFramework.Gunplay.Profiles
             {
                 if (weapon == null) { errors.Add("null weapon entry"); continue; }
                 if (!ids.Add(weapon.WeaponId)) { errors.Add("duplicate weaponId " + weapon.WeaponId); }
-                if (weapon.WeaponId < 58 || weapon.WeaponId > 127) { errors.Add("weaponId " + weapon.WeaponId + " is not a custom (58+) weapon slot"); }
+                // Test weapons live in the custom (58+) slots; a Stage 1 catalog weapon keeps its vanilla id (1-57) and names its catalog entry.
+                if (weapon.WeaponId < 1 || weapon.WeaponId > 127) { errors.Add("weaponId " + weapon.WeaponId + " is out of range"); }
+                else if (weapon.WeaponId < 58 && (weapon.VanillaWeaponId != weapon.WeaponId || string.IsNullOrEmpty(weapon.CatalogId)))
+                { errors.Add("weaponId " + weapon.WeaponId + " is a vanilla id: needs vanillaWeaponId equal to it and a catalogId (a test weapon uses a 58+ id)"); }
+                else if (weapon.WeaponId >= 58 && weapon.VanillaWeaponId == weapon.WeaponId) { errors.Add("test weapon " + weapon.WeaponId + " needs its own vanillaWeaponId"); }
                 if (string.IsNullOrEmpty(weapon.WeaponInfoName) || string.IsNullOrEmpty(weapon.Label)) { errors.Add("weapon " + weapon.WeaponId + " needs weaponInfoName and label"); }
                 ValidateProfiles(errors, "weapon " + weapon.WeaponId, weapon.Recoil, weapon.Spread);
             }

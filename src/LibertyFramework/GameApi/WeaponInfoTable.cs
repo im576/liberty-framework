@@ -14,6 +14,8 @@ namespace LibertyFramework.GameApi
         private readonly LiveMemory memory;
         private readonly GameAddresses addresses;
         private readonly Dictionary<int, float[]> originals = new Dictionary<int, float[]>();
+        // Weapon ids whose entry was proven against WeaponInfo.xml; only these are ever written.
+        private readonly HashSet<int> writable = new HashSet<int>();
 
         internal WeaponInfoTable(LiveMemory memory, GameAddresses addresses)
         {
@@ -55,14 +57,50 @@ namespace LibertyFramework.GameApi
                 detail.Add(pair.Key + ":" + (read ? actual.ToString("0.####") : "unreadable") + "/" + pair.Value.ToString("0.####"));
             }
             Validated = expected.Count >= 3 && matches == expected.Count;
+            if (Validated) { foreach (int id in expected.Keys) { writable.Add(id); } }
             if (Validated) { RuntimeLog.Info("weaponinfo_validated " + string.Join(" ", detail.ToArray())); }
             else { RuntimeLog.Error("weaponinfo_validation_failed spread writes disabled " + string.Join(" ", detail.ToArray())); }
             return Validated;
         }
 
+        // Stage 1 catalog weapons (T-041): each id is proven on its own, so a wrong id can never disable the test weapons.
+        // Needs the base validation first (array base, stride and offset). Returns the ids that were accepted.
+        internal List<int> ValidateExtra(IDictionary<int, float> expected)
+        {
+            List<int> accepted = new List<int>();
+            if (!Validated) { return accepted; }
+            List<string> detail = new List<string>();
+            foreach (KeyValuePair<int, float> pair in expected)
+            {
+                float actual;
+                bool match = TryReadAccuracy(pair.Key, out actual) && Math.Abs(actual - pair.Value) < 0.0005f;
+                if (match) { writable.Add(pair.Key); accepted.Add(pair.Key); }
+                detail.Add(pair.Key + ":" + (match ? "ok" : "mismatch " + actual.ToString("0.####") + "/" + pair.Value.ToString("0.####")));
+            }
+            RuntimeLog.Info("weaponinfo_stage1_validated " + string.Join(" ", detail.ToArray()));
+            return accepted;
+        }
+
+        internal bool CanWrite(int weaponId) { return Validated && writable.Contains(weaponId); }
+
+        // Puts one weapon back to the game's own accuracy (a catalog weapon shares its id with every NPC that carries it).
+        internal void Restore(int weaponId)
+        {
+            float[] saved;
+            if (!originals.TryGetValue(weaponId, out saved)) { return; }
+            uint entry = EntryAddress(weaponId);
+            if (entry != 0)
+            {
+                memory.WriteSingle(entry + (uint)addresses.AccuracyOffset, saved[0]);
+                memory.WriteSingle(entry + (uint)addresses.AccuracyAlternateOffset, saved[1]);
+                RuntimeLog.Info("weaponinfo_restored id=" + weaponId + " accuracy=" + saved[0]);
+            }
+            originals.Remove(weaponId);
+        }
+
         internal void WriteAccuracy(int weaponId, float accuracy)
         {
-            if (!Validated) { return; }
+            if (!CanWrite(weaponId)) { return; }
             uint entry = EntryAddress(weaponId);
             if (entry == 0) { return; }
             uint primary = entry + (uint)addresses.AccuracyOffset;

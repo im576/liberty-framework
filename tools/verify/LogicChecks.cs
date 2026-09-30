@@ -18,7 +18,7 @@ namespace LibertyFramework.Verify
             GunplayConfig config = JsonStore.Load<GunplayConfig>(configPath);
             GunplayConfigValidator.Validate(config);
             check.True("gunplay.json parses and validates", true, "weapons=" + config.Weapons.Count);
-            check.Equal("three test weapons configured", 3, config.Weapons.Count);
+            check.Equal("three test weapons configured", 3, config.TestWeapons().Count);
             check.True("weapon ids 58/59/60", config.FindWeapon(58) != null && config.FindWeapon(59) != null && config.FindWeapon(60) != null, "");
             check.Near("pistol vertical kick read from JSON", 1.6, config.FindWeapon(58).Recoil.VerticalKickDegrees, 1e-9);
             check.Near("shotgun pellet pattern read from JSON", 3.0, config.FindWeapon(60).Spread.PelletPatternDegrees, 1e-9);

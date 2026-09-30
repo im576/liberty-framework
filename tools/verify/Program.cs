@@ -27,6 +27,7 @@ namespace LibertyFramework.Verify
             Section(check, "Gunplay logic and configuration", delegate { LogicChecks.Run(repo, check); });
             Section(check, "Arsenal core (T-020)", delegate { ArsenalCoreChecks.Run(repo, check); });
             Section(check, "Phase 2 ownership and catalog", delegate { Phase2SystemsChecks.Run(repo, check); });
+Section(check, "Stage 1 arsenal: catalog, profiles, gate, availability (T-041)", delegate { Stage1ArsenalChecks.Run(repo, check); });
             Section(check, "Feel and presentation (T-011, T-013..T-017, T-021)", delegate { FeelChecks.Run(repo, check); });
             Game(check, "Vehicle body parts (T-023)", delegate { VehicleChecks.Run(exe, check); });
             Game(check, "Dismemberment plans and particles (T-022)", delegate { CombatChecks.Run(exe, repo, check); });

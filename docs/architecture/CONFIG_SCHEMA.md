@@ -39,7 +39,7 @@ Polled every second; a valid change is applied live. DevTools "Save live values"
 | `tuning[]` | key, step, min, max | parameters exposed in DevTools Live Tuning |
 | `testRange.*` | m, rounds, hp | target lane distances, vehicle offset, ammo/health/armour refills |
 
-`weapons[]`: `weaponId`, `vanillaWeaponId`, `weaponInfoName` (must match WeaponInfo.xml), `label`, `profileName`, `finish`, `initialAmmo`, `calibrationSource` (use this weapon's bullets to calibrate), `recoil`, `spread`.
+`weapons[]`: `weaponId`, `vanillaWeaponId`, `weaponInfoName` (must match WeaponInfo.xml), `label`, `profileName`, `finish`, `initialAmmo`, `calibrationSource` (use this weapon's bullets to calibrate), `recoil`, `spread`, and (T-041) optional `catalogId` for a Stage 1 catalog weapon (see "Stage 1 arsenal" below).
 
 `recoil` (degrees of aim camera, ms): `verticalKickDegrees`, `horizontalKickDegrees` (bias, + right), `horizontalRandomDegrees` (±), `firstShotMultiplier`, `sustainedFireGrowthPerShot`, `sustainedFireShotCap`, `chainResetMilliseconds`, `maxAccumulatedDegrees` (soft cap), `minimumKickFractionAtCap`, `kickDurationMilliseconds`, `recoveryDelayMilliseconds`, `recoveryDegreesPerSecond`, `recoveryFraction` (0–1 of each kick auto-recovered), and multipliers `moving`, `crouched`, `cover`, `vehicle`, `hipFire`.
 
@@ -181,6 +181,19 @@ Each entry defines `id` (stable catalog ID), `family`, `label`, `role` (`replace
 
 `config/arsenal.json` optionally sets `gunsmithGoldFinishPrice` in dollars (`500` in the template). At a safehouse Arsenal page or nearby safehouse panel, this charges once to unlock the existing gold pistol model for that physical service pistol; returning to the factory model and re-equipping gold are free. A missing or zero price disables new finish purchases while retaining legacy Arsenal operation and previously unlocked finishes. The Match grip price/effect live in `weapon-catalog.json`. The integrated installer merges the top-level Arsenal default into an existing `arsenal.json` without replacing marked safehouses.
 
+## Stage 1 arsenal: weapon-catalog.json and gunplay.json weapons[] (T-041)
+
+`config/weapon-catalog.json` (still `schemaVersion: 1`; every new field is optional, so an older catalog loads) now carries the Stage 1 arsenal:
+
+- Top level: `tiers[]` (`id`, `label`, `normalAvailability`, `minimumStoryProgress` 0-1, default `sources[]`), `restrictedClasses[]` (classes that can never be Stage 1: `sniper`, `lmg`, `pdw`, `military`), `applyWeaponInfoStats` (true = the packager writes each Stage 1 entry's `stats` into WeaponInfo.xml; false = it writes `vanillaStats`, the game's own values, so the switch restores the game).
+- Per entry: `weaponInfoType` (the game's WeaponInfo.xml name of that weapon id, for example `AK47`), `class` (`pistol`, `shotgun`, `smg`, `rifle`, `sniper`, `lmg`, `pdw`; T-042/T-043 select handling and reticle by class), `tier`, `stage1` (true = a Stage 1 arsenal weapon; false or absent = the game's own behaviour, AGENTS.md rule 2), `profile` (the `profileName` of its gunplay.json entry), `availability`, `stats`, `vanillaStats`.
+- `availability`: `sources[]` (`gun-shop`, `street-dealer`, `contact`, `mission-reward`, `mission-only`), `price` in dollars, `contact` (a contact id that must be unlocked, for example `little-jacob`), `minimumStoryProgress` (overrides the tier's), `note`. Rules: no XP; a restricted tier or class is never offered; unknown story progress fails any rule that needs progress.
+- `stats` / `vanillaStats`: `timeBetweenShotsMilliseconds`, `damageBase`, `clipSize`, `ammoMax` (all optional). They are the `timebetweenshots`, `damage base`, `clipsize` and `ammomax` fields of the weapon's `<data>` in `update\common\data\WeaponInfo.xml`, written by `tools/package-phase2.ps1` (`Merge-WeaponInfoStats` in `tools/PackageMerge.psm1`; only those fields, only Stage 1 entries, byte-identical when nothing changes). Accuracy is not in the file: the spread model writes it at run time.
+- Validation (`WeaponCatalog.Validate`, the verifier and the game): a Stage 1 entry needs class, a known tier that has `normalAvailability: true`, a class outside `restrictedClasses`, `profile`, `weaponInfoType`, `availability.sources`, `stats` and `vanillaStats`.
+
+`gunplay.json`: a `weapons[]` entry for a Stage 1 weapon keeps the **vanilla id** (`weaponId` = `vanillaWeaponId`, 1-57) and names its catalog entry in `catalogId` (new, optional; test weapons 58+ have none). The gate (`Gunplay/Logic/Stage1Gate`) applies the recoil/spread/reticle model to a vanilla-id weapon only when the catalog has a `stage1: true` entry with that `catalogId` and `weaponId`; a missing catalog or a weapon outside it stays vanilla. Optional `stage1Weapons: { "enabled": true }` (absent = enabled): `false` turns every catalog profile off (weapons behave as vanilla; the test weapons are unaffected). The accuracy the model writes for a catalog weapon is put back to the game's own value when the player switches away (a catalog weapon shares its WeaponInfo entry with every NPC that carries it). Stage 1 recoil/spread numbers are a starting point for T-042.
+
+Commands (console and autopilot): `catalog [list]`, `catalog give <catalog id|weapon id> [ammo] [force]` (force is needed for a weapon that is not a Stage 1 weapon), `catalog offer <money> <story progress|unknown> [contacts,comma|-] [override]`, `catalog check`.
 ## Performance fields (T-026)
 
 - **`gunplay.json` `performance`** (optional):

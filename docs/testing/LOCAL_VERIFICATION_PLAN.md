@@ -16,7 +16,7 @@
 |---|---|---|
 | pc-offline | 13 | automatically (builds and tests that need Windows or the game's files) |
 | probe | 4 | automatically (read-only questions about the game's files; structure only) |
-| scenario | 24 | automatically (autopilot drives the game; about 2-4 minutes each) |
+| scenario | 25 | automatically (autopilot drives the game; about 2-4 minutes each) |
 | manual | 18 | you play and judge; about 162 minutes in total, grouped below |
 
 Statuses: QUEUED (never run on the current code), PASS, FAIL, ERROR, CRASH, NOT-RUN, NEEDS-REVIEW (a person or the review session must judge screenshots or log errors).
@@ -240,6 +240,7 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 | `T040-capture-broker-off` | T-040 | scenario | autopilot PASS (every goto, expect and gpumem step); screenshots judged; the summary (tools/perf/Measure-Stage1.ps1) has frame statistics, costs, perf and GPU memory for every point and condition; the final 'modules' reply shows no module off | QUEUED |
 | `T040-capture-city-off` | T-040 | scenario | autopilot PASS (every goto, expect and gpumem step); screenshots judged; the summary (tools/perf/Measure-Stage1.ps1) has frame statistics, costs, perf and GPU memory for every point and condition; the final 'modules' reply shows no module off | QUEUED |
 | `T040-worst-case-off` | T-040 | scenario | autopilot PASS; screenshots judged; the final 'modules' reply shows no module off | QUEUED |
+| `T041-stage1-arsenal` | T-041 | scenario | autopilot PASS (every expect); the six screenshots judged: the weapon in hand is the catalog weapon | QUEUED |
 
 ## What each check proves, and what stays unproven
 
@@ -303,3 +304,4 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 - `T040-capture-broker-off`: The same measurement with the Liberty gameplay modules stopped (gunplay, combat, arsenal, holsters, atmosphere): the reference every Stage 1 budget is compared to. Restarts the modules at the end.
 - `T040-capture-city-off`: Mod-off measurement of the citywide points.
 - `T040-worst-case-off`: The worst case with the Liberty gameplay modules stopped: the reference for the frame-time budget (p95 +10%, p99 +15%) and the VRAM overhead.
+- `T041-stage1-arsenal`: Every Stage 1 catalog weapon is given, held and fired at the test range and the Liberty gunplay profile drives it (weapon_changed profile=, gunplay_state); the catalog, gunplay.json, the gate and the loaded WeaponInfo.xml agree (catalog check); restricted weapons (snipers, MG36, P90-look), a test weapon and a vanilla weapon outside the catalog keep their own behaviour; the availability rules offer only common weapons for $600 at the start and never a restricted weapon.

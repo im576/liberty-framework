@@ -24,6 +24,7 @@ When a spike confirms or disproves something, **edit the note** and change the t
 | [LibertyTweaks.md](LibertyTweaks.md) | Liberty Tweaks features + techniques (reference only, no license) |
 | [RealRecoil.md](RealRecoil.md) | Real Recoil / Real Recoil Enhanced CE / other recoil mods |
 | [WeaponData.md](WeaponData.md) | `weaponinfo.xml`, weapon type IDs, spare slots, flags |
+| [WeaponAvailability.md](WeaponAvailability.md) | What a script can control about weapon availability (T-041) |
 | [ControllerAndAimAssist.md](ControllerAndAimAssist.md) | Controller, aim assist, response curves |
 | [HudAndCrosshair.md](HudAndCrosshair.md) | Reticle, health ring, custom crosshair options |
 | [Mafia3Combat.md](Mafia3Combat.md) | Why Mafia III combat feels good, tools |

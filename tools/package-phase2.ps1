@@ -44,6 +44,13 @@ function Stage-File([string] $source, [string] $relativePath, [string] $policy) 
         }
         [IO.File]::WriteAllText($target, ($saved | ConvertTo-Json -Depth 32), (New-Object Text.UTF8Encoding($false)))
     }
+    elseif ($policy -eq 'patch-weaponinfo') {
+        # T-041: the installed WeaponInfo.xml (the weapon pack's, plus the LF_GOLD_* entries) with the catalog's identity stats.
+        if (-not (Test-Path -LiteralPath $installed -PathType Leaf)) { throw "Missing installed $relativePath (install the weapon pack first)." }
+        $patched = Merge-WeaponInfoStats (Get-Content -LiteralPath $source -Raw) ([IO.File]::ReadAllText($installed))
+        [IO.File]::WriteAllText($target, $patched.Xml, (New-Object Text.UTF8Encoding($false)))
+        if ($patched.Changes.Count -gt 0) { Write-Host "weaponinfo: $($patched.Changes.Count) stat changes: $($patched.Changes -join '; ')" } else { Write-Host 'weaponinfo: installed stats already match the catalog' }
+    }
     elseif ($policy -eq 'merge-locations' -and (Test-Path -LiteralPath $installed -PathType Leaf)) {
         $merge = Merge-LocationFiles (Get-Content -LiteralPath $source -Raw) (Get-Content -LiteralPath $installed -Raw)
         [IO.File]::WriteAllText($target, $merge.Json, (New-Object Text.UTF8Encoding($false)))
@@ -57,7 +64,7 @@ function Stage-File([string] $source, [string] $relativePath, [string] $policy) 
         path = $relativePath
         sha256 = (Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash
         baseSha256 = $baseSha
-        policy = $(if ($policy -eq 'merge-defaults' -or $policy -eq 'merge-locations') { 'replace' } else { $policy })
+        policy = $(if ($policy -eq 'merge-defaults' -or $policy -eq 'merge-locations' -or $policy -eq 'patch-weaponinfo') { 'replace' } else { $policy })
     }
 }
 
@@ -79,6 +86,8 @@ Stage-File (Join-Path $repoRoot 'config\arsenal.json') 'scripts\LibertyFramework
 Stage-File (Join-Path $repoRoot 'config\holsters.json') 'scripts\LibertyFramework\config\holsters.json' 'merge-defaults'
 # T-040: teleport locations (DevTools, the autopilot's `goto`): the owner's file stays, missing ids are appended.
 Stage-File (Join-Path $repoRoot 'config\devtools\locations.json') 'scripts\LibertyFramework\config\devtools\locations.json' 'merge-locations'
+# T-041: the Stage 1 arsenal's identity stats (fire rate, damage, clip, ammo) written into the installed WeaponInfo.xml.
+Stage-File (Join-Path $repoRoot 'config\weapon-catalog.json') 'update\common\data\WeaponInfo.xml' 'patch-weaponinfo'
 # T-033: where the static world objects stand (read by the world mod, mods/Liberty.World: config\<module id>\objects.json).
 Stage-File (Join-Path $repoRoot 'config\world\objects.json') 'scripts\LibertyFramework\config\world\objects.json' 'replace'
 Get-ChildItem -LiteralPath (Join-Path $repoRoot 'config\presets') -Filter '*.json' | Sort-Object Name | ForEach-Object {
