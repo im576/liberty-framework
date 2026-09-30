@@ -1433,7 +1433,7 @@
         "scenario": "stage1-loadout-vehicles"
       },
       "proves": "With two long guns and a sidearm carried, both slung guns and both straps are hidden every time Niko is in the car, all are back every time he steps out, and the game's object pool does not grow across 100 cycles (no orphaned or floating props). The car is parked on the Hove Beach road (s1_hove_beach_a).",
-      "pass": "autopilot PASS: the scenario line \"autopilot_vehicle_cycles_done cycles=100 hidden_failures=0 restored_failures=0 enter_timeouts=0 leave_timeouts=0 object_growth<=3\" is found; screenshots judged",
+      "pass": "autopilot PASS: the scenario line \"autopilot_vehicle_cycles_done cycles=100 hidden_failures=0 restored_failures=0 enter_timeouts=0 leave_timeouts=0 object_growth at most 3 (the pool may also shrink)\" is found; screenshots judged",
       "review": {
         "screenshots": {
           "on_foot_back": "Niko seen from behind and the side: two long guns and two leather straps slung on the back, the pistol holstered, nothing floating or intersecting the head or arms",

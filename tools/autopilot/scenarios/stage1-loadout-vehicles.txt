@@ -32,7 +32,7 @@ shot on_foot_back
 cam off
 hud on
 cycle-vehicle 100
-expect "autopilot_vehicle_cycles_done cycles=100 hidden_failures=0 restored_failures=0 enter_timeouts=0 leave_timeouts=0 object_growth=(-[0-3]|[0-3]) " 1700
+expect "autopilot_vehicle_cycles_done cycles=100 hidden_failures=0 restored_failures=0 enter_timeouts=0 leave_timeouts=0 object_growth=(-\d+|[0-3]) " 1700
 wait 1500
 holsters status
 hud off
