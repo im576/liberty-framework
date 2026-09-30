@@ -221,6 +221,7 @@ namespace LibertyFramework.Content
             {
                 // LOD 0: two materials; LOD 1: the first material again.
                 ContentAsset asset = SelfTest.Asset(SelfTest.Box("a", 0, 0, 1), SelfTest.Box("b", 0, 1, 0.5f), SelfTest.Box("c", 1, 0, 0.6f));
+                asset.Materials[1].BaseColour = new[] { 0.2f, 0.4f, 0.6f, 1f }; // distinct pixels: identical materials would share one texture
                 AssetManifest manifest = StructureManifest("auto", "native", "20,50");
                 t.Check(CompilerCapabilities.For(manifest) == CompilerCapabilities.Structure && CompilerCapabilities.For(StructureManifest("auto", "native", null)).CompiledLodLevels == 4,
                     "structure manifests validate against the structure capabilities");

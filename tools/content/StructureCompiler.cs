@@ -132,14 +132,29 @@ namespace LibertyFramework.Content
             // One texture per material, named after the asset.
             List<int> materials = need.Levels.Values.SelectMany(l => l).Distinct().ToList();
             Dictionary<int, string> textureNames = new Dictionary<int, string>();
+            List<string> textureFormats = new List<string>();
             for (int k = 0; k < materials.Count; k++)
             {
-                textureNames[materials[k]] = TextureName(manifest.Name, k);
                 ContentMaterial material = materials[k] >= 0 && materials[k] < asset.Materials.Count ? asset.Materials[materials[k]] : null;
                 string format;
                 RgbaImage pixels = PropCompiler.MaterialPixels(asset, material, result.Notes, out format);
+                // Materials that resolve to identical pixels share one texture: fewer dictionary entries, less memory.
+                int shared = -1;
+                for (int earlier = 0; earlier < result.TextureSources.Count && shared < 0; earlier++)
+                {
+                    RgbaImage other = result.TextureSources[earlier];
+                    if (textureFormats[earlier] == format && other.Width == pixels.Width && other.Height == pixels.Height && other.Pixels.SequenceEqual(pixels.Pixels)) { shared = earlier; }
+                }
+                if (shared >= 0)
+                {
+                    textureNames[materials[k]] = result.Textures[shared].Name;
+                    result.Notes.Add("material " + materials[k] + " shares texture " + result.Textures[shared].Name + " (identical pixels)");
+                    continue;
+                }
+                textureNames[materials[k]] = TextureName(manifest.Name, result.Textures.Count);
                 result.Textures.Add(TextureEncoder.Encode(textureNames[materials[k]], pixels, format, 0));
                 result.TextureSources.Add(pixels);
+                textureFormats.Add(format);
             }
 
             DrawableStructureBuilder.Plan plan = new DrawableStructureBuilder.Plan();
