@@ -110,14 +110,18 @@ namespace LibertyFramework.DevTools
             try
             {
                 WeaponCatalog catalog = JsonStore.Load<WeaponCatalog>(LibertyPaths.WeaponCatalog);
-                foreach (WeaponCatalogEntry entry in catalog.Stage1Entries())
+                // Owner decision 2026-09-30: the weapons outside normal Stage 1 availability (P90 look, MG36, snipers) stay in the game
+                // and are always obtainable from here; the test weapons have their own entries below.
+                List<WeaponCatalogEntry> menuEntries = catalog.Stage1Entries();
+                foreach (WeaponCatalogEntry entry in catalog.Entries) { if (!entry.Stage1 && entry.Tier == "restricted") { menuEntries.Add(entry); } }
+                foreach (WeaponCatalogEntry entry in menuEntries)
                 {
                     WeaponCatalogEntry captured = entry;
-                    items.Add(MenuItem.Confirmed("Give " + entry.Label + " (Stage 1, " + entry.Tier + ")", () =>
+                    items.Add(MenuItem.Confirmed("Give " + entry.Label + (entry.Stage1 ? " (Stage 1, " + entry.Tier + ")" : " (not normal availability)"), () =>
                     {
                         Engine.Weapons.Give(Engine.World.Player.Ped, captured.WeaponId, config.TestRange.AmmoRefillRounds);
                         Engine.Weapons.Select(Engine.World.Player.Ped, captured.WeaponId);
-                        RuntimeLog.Info("catalog_give id=" + captured.Id + " weapon=" + captured.WeaponId + " source=devtools");
+                        RuntimeLog.Info("catalog_give id=" + captured.Id + " weapon=" + captured.WeaponId + " stage1=" + captured.Stage1 + " source=devtools");
                         return "Gave " + captured.Label;
                     }));
                 }
