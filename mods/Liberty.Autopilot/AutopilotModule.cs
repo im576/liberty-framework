@@ -535,11 +535,27 @@ namespace Liberty.Autopilot
             double angle = (pedHeading + Args.Float(args, 0, 0f)) * Math.PI / 180.0;
             float distance = Args.Float(args, 1, 2.5f), height = Args.Float(args, 2, 0.6f);
             Vec3 position = target + new Vec3((float)(-Math.Sin(angle) * distance), (float)(Math.Cos(angle) * distance), height);
-            CameraOff();
-            camera = Liberty.Cameras.Create(this);
-            Liberty.Cameras.SetPosition(camera, position);
-            Liberty.Cameras.PointAt(camera, target + new Vec3(0, 0, 0.3f));
-            Liberty.Cameras.Activate(camera);
+            // The game sometimes frees a scripted camera before it is positioned ("object doesn't exist anymore"); one such
+            // failure must not stop this module (its release would drop god mode mid-scenario), so the camera is retried.
+            bool placed = false;
+            for (int attempt = 1; attempt <= 4 && !placed; attempt++)
+            {
+                try
+                {
+                    CameraOff();
+                    camera = Liberty.Cameras.Create(this);
+                    Liberty.Cameras.SetPosition(camera, position);
+                    Liberty.Cameras.PointAt(camera, target + new Vec3(0, 0, 0.3f));
+                    Liberty.Cameras.Activate(camera);
+                    placed = true;
+                }
+                catch (Exception error)
+                {
+                    camera = CameraRef.None;
+                    Liberty.Log.Info(this, "autopilot_camera_retry attempt=" + attempt + " error=" + error.Message);
+                }
+            }
+            if (!placed) { return "error the scripted camera could not be created"; }
             return "camera at " + Args.F(Args.Float(args, 0, 0f)) + " deg, " + Args.F(distance) + " m";
         }
 
