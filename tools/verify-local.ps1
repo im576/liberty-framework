@@ -131,6 +131,16 @@ $options = @{
     ResultsRoot = $(if ($ResultsDirectory) { $ResultsDirectory } else { Join-Path $repo 'results-local' })
     NoPush = [bool]$NoPush; Remote = 'origin'; GameInfo = $gameInfo; Replacements = $replacements
 }
-$outcome = Invoke-VerifyLocal $options
+# One game, one install: runs from parallel agent sessions or worktrees wait their turn. The mutex is released when this
+# process ends even after a crash (the next waiter then sees an abandoned mutex, which still grants ownership).
+$gameLock = New-Object System.Threading.Mutex($false, 'Global\LibertyVerifyLocalGame')
+try { $owned = $gameLock.WaitOne(0) } catch [System.Threading.AbandonedMutexException] { $owned = $true }
+if (-not $owned) {
+    Write-Host 'verify-local: another verification run owns the game; waiting for it to finish (up to 3 hours)...'
+    try { $owned = $gameLock.WaitOne([TimeSpan]::FromHours(3)) } catch [System.Threading.AbandonedMutexException] { $owned = $true }
+    if (-not $owned) { Write-Host 'verify-local: gave up waiting for the game after 3 hours'; exit 1 }
+}
+try { $outcome = Invoke-VerifyLocal $options }
+finally { $gameLock.ReleaseMutex(); $gameLock.Dispose() }
 if (($outcome.Counts['FAIL'] + $outcome.Counts['CRASH'] + $outcome.Counts['ERROR']) -gt 0) { exit 1 }
 exit 0

@@ -31,9 +31,13 @@ $only = @(Select-Checks $queue @('T027-raycast') @() $false $false | ForEach-Obj
 Test-That 'only a scenario: package-install is added before it' (($only -join ',') -eq 'LOOP-package-install,T027-raycast') ($only -join ',')
 $threw = $false; try { Select-Checks $queue @('NO-such-check') @() $false $false | Out-Null } catch { $threw = $true }
 Test-That 'only an unknown id: refused' $threw
-$only = @(Select-Checks $queue @('T027-raycast-objects') @() $false $false | ForEach-Object { $_.id })
+# No active scenario needs a probe any more (T027-raycast-objects was retired 2026-09-30), so the needs rule is tested on a
+# copy of the queue with that check active again.
+$needsQueue = $queue | ConvertTo-Json -Depth 20 | ConvertFrom-Json
+($needsQueue.checks | Where-Object { $_.id -eq 'T027-raycast-objects' }).status = 'QUEUED'
+$only = @(Select-Checks $needsQueue @('T027-raycast-objects') @() $false $false | ForEach-Object { $_.id })
 Test-That 'only a scenario that needs a probe: the probe and package-install run first' (($only -join ',') -eq 'PROBE-collision,LOOP-package-install,T027-raycast-objects') ($only -join ',')
-$only = @(Select-Checks $queue @() @('scenario') $false $false | ForEach-Object { $_.id })
+$only = @(Select-Checks $needsQueue @() @('scenario') $false $false | ForEach-Object { $_.id })
 Test-That 'kind scenario: a needed probe is still added' ($only -contains 'PROBE-collision') ($only -join ',')
 
 # ---- A full simulated run

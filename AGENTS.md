@@ -94,9 +94,9 @@ A task is done only when ALL of these are true:
 
 ## 5b. When you need art
 
-Never stop to ask for image prompts. File a request in the art queue (python tools/art/artq.py new ..., see
-docs/art/README.md), keep working, and review, approve, prep and integrate the result when it arrives in
-rt/generated/. The repository is the source of truth for every request, prompt and generated file.
+Never stop to ask for image prompts. File a request in the art queue (`python tools/art/artq.py new ...`, see
+`docs/art/README.md`), keep working, and review, approve, prep and integrate the result when it arrives in
+`art/generated/`. The repository is the source of truth for every request, prompt and generated file.
 
 ## 6. When you are stuck
 

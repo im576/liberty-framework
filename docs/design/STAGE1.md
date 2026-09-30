@@ -48,10 +48,15 @@ blood, inventory, audio, ambience) must read as one product.
   generic glass, sidewalks, dirt, generic vegetation materials.
 - **Never:** ripped commercial assets (AGENTS.md rule 7). All third-party art and audio needs a licence that allows use
   in the project, recorded in `third_party/README.md` with its source.
-- **Image generation:** the owner's GPT Image 2.5 subscription is available for concept and source art. Generated
-  images count as original once the owner confirms the provider's terms allow this use; they still go through the
-  same review, tiling, atlasing, mipmap and compression steps, and the prompt and date are recorded per asset. Claude
-  has no direct tool for it in these sessions; the owner runs prompts Claude writes, or a tool is connected later.
+- **Image generation (primary path: the art-request queue).** Agents file structured requests in
+  `docs/art/requests/` ([art queue](../art/README.md)) and keep working; a separate image-capable agent or app (the
+  owner's GPT Image 2.5 subscription) follows [GENERATOR.md](../art/GENERATOR.md), writes results to
+  `art/generated/`, and registers them. Agents then review, approve or reject, prep and integrate them. Every prompt,
+  revision, file hash and review decision is recorded in the request, so the repository is the source of truth.
+  **Fallback only:** if no image agent is available, the owner may generate from a request's prompt by hand and drop the
+  files into the same `art/generated/ART-NNN/rN/` folder; the same registration, review and provenance rules apply.
+  Generated images count as original once the owner confirms the provider's terms allow this use, and they go through
+  the same review, tiling, atlasing, mipmap and compression steps as all other art.
 - Agents build the pipelines, procedural materials, variants and prompts; final hero-art quality is an owner sign-off.
 
 ## 4. Scope
@@ -99,6 +104,7 @@ Functional first; Slice C gives these screens their final unified look.
 |---|---|---|
 | Weapons and availability | Ready/Extend | Weapon catalog, per-weapon config, WeaponInfo. Tiers: common (cheap/service pistols, revolvers, basic shotguns, Uzi), less common (better pistols/shotguns, MP5-type), rare (AK-type, tactical by circumstance). No snipers/LMGs/P90/military gear as normal Stage 1 availability. Availability comes from the world, contacts and money, never XP |
 | Gunplay tuning | Extend | Per-weapon recoil, first-shot accuracy, burst control, sustained-fire climb, stance/movement influence, caliber differences. Shoulder swap finished (T-015), not recreated. Accept: tuned numbers in `config/`, owner feel sign-off per weapon class |
+| Weapon-specific reticles | Extend | Replaces the one generic crosshair (`Gunplay/Crosshair`, whose gap already follows the live spread cone). Per class: pistol small and precise; SMG wider, showing spread and burst control; assault rifle tighter, structured, with clear recoil/spread feedback; shotgun wide circular/pellet pattern; sniper/precision minimal or none from the hip, scope UI when aimed; heavy/special unique where it fits. Size and spread follow the **actual** gunplay values (movement, stance, recoil, bloom, sustained fire, recovery), never cosmetic. Restrained, gritty, readable, not futuristic; hidden or simplified where realism or gameplay calls for it; controller and keyboard/mouse. Shape, sizes, colours and behaviour per class with per-weapon overrides in `config/`. Final styling revisited in Slice C |
 | Physical weapons | Extend | **Decided: 2 long guns + 1 sidearm**, one long gun equipped at a time, the other slung and visible (as the sling system already proves); limited equipment and ammunition; the rest in trunk/safehouse. Must handle weapon size, sling/back placement, clipping, outfits, vehicle entry/exit, cutscenes and draw/holster transitions. Carried long guns may be hidden or stowed in vehicles and cutscenes to avoid clipping or animation problems |
 | Harsh gore | Extend / Spike | *"Harsh realism, not gore for gore's sake."* Exact-damage driven (no proximity guessing): severe wounds, strong head and shotgun trauma, caliber-sensitive presentation, limb damage, dismemberment where reliable, bleeding, wounded NPCs crawling/writhing, brief pain behaviour, strong panic nearby, contextual grounded executions only (no finisher system, no arcade or comedic gore). Blood pools, trails and surface blood: **Spike R3** |
 | Combat effects | Extend / Spike | Per-weapon muzzle flash, smoke, casings, sparks, night muzzle light. Material-specific impacts (concrete, wood, glass, metal): **Spike R2** |
@@ -125,7 +131,7 @@ Functional first; Slice C gives these screens their final unified look.
 | Feature | Status | Notes |
 |---|---|---|
 | Design language | New (design) | *"Modern functionality designed through GTA IV's visual language."* Keep: dark, grey/black translucent surfaces, restrained amber/orange/red accents, gritty type, industrial feel, sharp iconography. Modernize: hierarchy, spacing, animation, readability, navigation. No mobile UI, big rounded cards, neon, live-service or GTA Online styling |
-| Weapon wheel, trunk UI, HUD, prompts | Extend | Slice A's screens rebuilt in the final language |
+| Weapon wheel, trunk UI, HUD, prompts, reticles | Extend | Slice A's screens and reticles restyled in the final language |
 | Inventory/stats menu | Extend | A Liberty menu (inventory, weapons, progress, stats, settings) as its own screen; room for vehicles/properties/contacts later without showing unfinished features. **Not** the Rockstar pause menu (Phase 3) |
 | Icon family | New (art) | One coherent GTA IV-inspired family for weapons, HUD, menus and later map categories |
 
@@ -201,6 +207,7 @@ scenario ≤ **+15%** vs mod-off.
 | First-shot accuracy | Aimed, standing, first shot at 25 m on the test range (bullet events) | pistols/SMGs within a configured cone (proposal ≤ 0.5°); owner feel sign-off per class |
 | Burst control | 3-round burst then pause | recovers to the first-shot cone within the weapon's configured recovery time |
 | Sustained fire | 30-round full-auto AK burst | vertical climb within the configured range for that weapon (proposal 6–12°); never "laser" (spread grows every shot) |
+| Reticle truthfulness | Reticle opening vs the spread model's live cone, across stand/crouch/move/sustained fire/recovery (logged per frame in a test-range scenario) | opening within ±5% of the cone at every sample; each Stage 1 weapon class shows its own configured reticle; reticle drawing ≤ 0.1 ms |
 | Shoulder swap | On foot, in cover, near walls (scripted camera scenario) | works in all states; 0 camera clips into walls at the test spots |
 | Visible loadout | Carried weapons visible on the body | 100% on foot; hidden in vehicles and cutscenes; 0 orphaned/floating props after 100 autopilot vehicle enter/exit cycles |
 | Clipping | Front/side/back review for every Stage 1 outfit and weapon class | owner pass on every pair |
