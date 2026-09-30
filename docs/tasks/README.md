@@ -4,7 +4,28 @@ Development runs in cloud sessions; every check that needs the game is queued in
 
 Statuses: `READY` = agent can start; `NEEDS-PLAYTEST` = agent implementation awaits human test; `BLOCKED` = named dependency missing; `DONE` = human verified. Only the project owner marks a card `DONE`. Track each task's scope and evidence separately; batch compatible offline work into one game session.
 
-## Active cards
+## Stage 1 — Liberty Vanilla+ (current work)
+
+Design and acceptance criteria: [STAGE1.md](../design/STAGE1.md). Slice A (P0) plus the parallel research track. Slices
+B and C get their cards after Slice A's audit (T-040) and the relevant spikes.
+
+**Lanes.** Tasks in one lane touch the same files, so a lane runs in order in one session or worktree at a time.
+Different lanes can run in parallel sessions; the game is shared, and `tools/verify-local.ps1` makes parallel runs
+wait their turn. **Dependency rule for Stage 1:** a dependency is satisfied when it is `NEEDS-PLAYTEST` with its own
+in-game checks passing (or `DONE`); owner sign-offs can come later.
+
+| Lane | Order | Area |
+|---|---|---|
+| 0 | [T-040](T-040-stage1-foundation.md) | Reuse audit, capture points, measurement baseline (do first) |
+| A | [T-041](T-041-stage1-weapons.md) → [T-042](T-042-stage1-gunplay.md) → [T-043](T-043-stage1-reticles.md) | Arsenal data, gunplay tuning and shoulder swap, weapon-specific reticles |
+| B | [T-044](T-044-stage1-physical-weapons.md) → [T-045](T-045-stage1-weapon-wheel.md) → [T-046](T-046-stage1-trunk-ui.md) | 2+1 physical loadout, weapon wheel, trunk UI |
+| C | [T-047](T-047-stage1-gore.md) → [T-048](T-048-stage1-combat-effects.md) | Harsh gore, contextual combat effects |
+| D | [T-049](T-049-stage1-hud.md) | Basic Liberty HUD |
+| R | [T-050](T-050-r2-hit-material.md), [T-051](T-051-r3-blood-decals.md), [T-052](T-052-r4-screen-effect-cost.md), [T-053](T-053-r1-weapon-audio.md), [T-054](T-054-r5-custom-radar.md), [T-055](T-055-r6-frontend-hooks.md) | Research spikes R2, R3, R4, R1, R5, R6 (in that priority) |
+
+All Stage 1 cards start `READY`.
+
+## Active cards (engine phase)
 
 | ID | Task | Status |
 |---|---|---|

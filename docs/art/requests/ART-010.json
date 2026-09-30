@@ -1,0 +1,46 @@
+{
+  "id": "ART-010",
+  "title": "Cracked sidewalk slabs",
+  "status": "requested",
+  "priority": "P1",
+  "kind": "texture",
+  "prompt": "Seamless tileable texture of a worn city sidewalk viewed straight down (orthographic), edge to edge, about 3 by 3 metres: square concrete slabs about 1.5 m wide separated by dark joints, chipped edges, a few cracks, dark chewing-gum spots, grime collected along the joints, faint water stains. Cold grey concrete. Even flat lighting, no shadows, no perspective, must tile seamlessly in both directions.",
+  "intendedUse": "Slice B sidewalk surface for Broker (Hove Beach first).",
+  "dimensions": {
+    "width": 1024,
+    "height": 1024
+  },
+  "aspectRatio": "1:1",
+  "transparency": "none",
+  "styleConstraints": [
+    "Must look like it belongs in GTA IV (2008, Liberty City, late-2000s New York analogue), remastered today; not GTA V, not GTA Online",
+    "Cold, grey, overcast, wet-city palette; grime, wear and dirt are welcome; warm artificial light against cold surroundings",
+    "Grounded and realistic, photographic material detail; no stylisation, no cartoon, no painterly look unless the request says so",
+    "Late-2000s objects, technology, signage and typography of that era, without real brands",
+    "UI and icons: dark translucent grey/black surfaces, restrained amber/orange/red accents, gritty industrial typography, sharp purposeful shapes, minimal decoration"
+  ],
+  "prohibited": [
+    "Real brand names, logos, trademarks or copyrighted characters",
+    "Rockstar, GTA, Take-Two or any game's logos, UI or artwork",
+    "Readable text unless the request gives the exact text",
+    "Watermarks, signatures, frames or borders",
+    "Neon gradients, glossy mobile-app UI, large rounded cards, live-service styling",
+    "Modern (post-2010) phones, cars, fashion or technology",
+    "Cartoon, anime, comic or exaggerated gore styles",
+    "Lighting or shadows baked into tiling textures (unless the request asks for it)",
+    "Perspective or visible camera angle in textures meant to tile (textures are flat, orthographic)"
+  ],
+  "outputPath": "art/generated/ART-010/",
+  "outputName": "art_010.png",
+  "consumer": null,
+  "revision": 1,
+  "history": [
+    {
+      "at": "2026-09-30T04:28:27+00:00",
+      "event": "requested",
+      "revision": 1,
+      "by": "claude",
+      "prompt": "Seamless tileable texture of a worn city sidewalk viewed straight down (orthographic), edge to edge, about 3 by 3 metres: square concrete slabs about 1.5 m wide separated by dark joints, chipped edges, a few cracks, dark chewing-gum spots, grime collected along the joints, faint water stains. Cold grey concrete. Even flat lighting, no shadows, no perspective, must tile seamlessly in both directions."
+    }
+  ]
+}
