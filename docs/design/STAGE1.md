@@ -55,7 +55,7 @@ blood, inventory, audio, ambience) must read as one product.
   revision, file hash and review decision is recorded in the request, so the repository is the source of truth.
   **Fallback only:** if no image agent is available, the owner may generate from a request's prompt by hand and drop the
   files into the same `art/generated/ART-NNN/rN/` folder; the same registration, review and provenance rules apply.
-  Generated images count as original once the owner confirms the provider's terms allow this use, and they go through
+  Generated images count as original project art (the owner confirmed on 2026-09-30 that the provider's terms allow this use), and they go through
   the same review, tiling, atlasing, mipmap and compression steps as all other art.
 - Agents build the pipelines, procedural materials, variants and prompts; final hero-art quality is an owner sign-off.
 

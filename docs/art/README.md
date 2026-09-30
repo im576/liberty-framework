@@ -50,5 +50,5 @@ runs the whole lifecycle in a temporary repository; `artq.py validate` runs in `
 5. **Integrate:** build and test in game as usual; then `artq.py mark ART-NNN integrated --notes "<scenario or check>"`.
 
 Licensing: generated images are recorded with the generator and model in their history. They count as original project
-art once the owner has confirmed the provider's terms allow this use (STAGE1.md section 3). No request may ask for
+art: the owner confirmed on 2026-09-30 that the provider's terms allow this use (STAGE1.md section 3). No request may ask for
 real brands, logos, game art or a living artist's style.
