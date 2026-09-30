@@ -1150,7 +1150,8 @@ namespace LibertyFramework.Gunplay
         // The reticle of the held weapon: catalog class (else the inventory slot), style from gunplay.json, cached per weapon and config.
         private ResolvedReticle ResolveReticle(GunplayConfig config, Ped ped)
         {
-            int weaponId = (int)ped.Weapons.CurrentType;
+            // The weapon id the tick already read (a ScriptHookDotNet inventory call here would cost every frame).
+            int weaponId = activeWeaponId;
             if (activeReticle == null || weaponId != reticleWeaponId || !ReferenceEquals(config, reticleConfig) || !ReferenceEquals(weaponCatalog, reticleCatalog))
             {
                 GTA.value.Weapon current = ped.Weapons.Current;
