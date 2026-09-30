@@ -48,7 +48,7 @@ namespace Liberty.Autopilot
             Register("select", "select <weapon id>", a => { Liberty.Weapons.Select(Liberty.Player.Ped, Args.Int(a, 0)); return "selected " + Args.Int(a, 0); });
             Register("heading", "heading <degrees>", a => { Liberty.Peds.SetHeading(Liberty.Player.Ped, Args.Float(a, 0)); return "heading " + Args.F(Args.Float(a, 0)); });
             Register("spawn", "spawn <count> [distance m] [weapon id] - NPC subjects facing the player", Spawn);
-            Register("spawncar", "spawncar <model> [distance m] - a vehicle in front of the player", SpawnCar);
+            Register("spawncar", "spawncar <model> [distance m] [heading offset deg, default 90] - a vehicle in front of the player", SpawnCar);
             Register("spawnprop", "spawnprop <model> [distance m] [height above ground m] [on|off] - frozen prop; collision off by default", SpawnProp);
             Register("at-trunk","at-trunk [distance behind m] - stand behind the last spawned car, facing its trunk", AtTrunk);
             Register("clear", "delete spawned subjects and vehicles", Clear);
@@ -199,7 +199,7 @@ namespace Liberty.Autopilot
                 {
                     VehicleRef fresh = VehicleRef.None;
                     bool spawned = false;
-                    Liberty.Vehicles.Spawn(this, "admiral", InFront(4f, 0), Liberty.World.Player.Heading + 90f, v => { fresh = v; spawned = true; });
+                    Liberty.Vehicles.Spawn(this, "admiral", InFront(6f, 0), Liberty.World.Player.Heading, v => { fresh = v; spawned = true; });
                     yield return Wait.Until(() => spawned, 10000);
                     if (fresh.IsNone) { enterTimeouts++; Liberty.Log.Error(this, "autopilot_vehicle_cycle cycle=" + cycle + " no_car"); continue; }
                     car = fresh;
@@ -444,7 +444,7 @@ namespace Liberty.Autopilot
         private string SpawnCar(string[] args)
         {
             ModelRef model = args.Length > 0 ? args[0] : "admiral";
-            Liberty.Vehicles.Spawn(this, model, InFront(Args.Float(args, 1, 7f), 0), Liberty.World.Player.Heading + 90f, vehicle =>
+            Liberty.Vehicles.Spawn(this, model, InFront(Args.Float(args, 1, 7f), 0), Liberty.World.Player.Heading + Args.Float(args, 2, 90f), vehicle =>
             {
                 if (vehicle.IsNone) { Liberty.Log.Error(this, "autopilot_spawncar_failed model=" + model); return; }
                 cars.Add(vehicle);

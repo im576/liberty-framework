@@ -6,9 +6,9 @@ await-alive 60000
 expect "autopilot_player_ready" 65
 god on
 wanted 0
-goto east_park
-expect "teleport_done id=east_park" 90
-wait 4000
+goto s1_hove_beach_a
+expect "teleport_done id=s1_hove_beach_a" 90
+wait 10000
 time 13 0
 wait 1500
 weather 1
@@ -20,7 +20,7 @@ give 14 100
 wait 1200
 give 7 100
 wait 1500
-spawncar admiral 3.5
+spawncar admiral 6 0
 expect "autopilot_spawncar handle=" 15
 wait 3000
 holsters status
