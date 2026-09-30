@@ -40,6 +40,15 @@ long gun equipped at a time, the other slung and visible; everything else lives 
 1. Melee and thrown weapons: keep one melee slot and uncounted thrown weapons (current rule)? Ask the owner in the
    final report; do not block on it.
 
+## Progress notes (Claude, lane B, 2026-09-30)
+
+Built (branch stage1/T-044; evidence is added here as game runs finish):
+
+- **Loadout rules** (config/arsenal.json block loadout, Arsenal/Logic/LoadoutRules.cs, ArsenalPolicy): 1 sidearm + 2 long guns, SMGs count as long guns (they are slung, the one sidearm slot is the handgun), ammunition caps per category. The block is optional and enabled: false restores the old 2 + 2 + 1 rules, so installs that keep their old rsenal.json still load (packaging adds the block). Overflow rule unchanged (least recently used goes to the car trunk or safehouse stash).
+- **Holsters** (HolsterController): reacts in the frame of the engine events (PlayerWeaponChanged, vehicle enter/exit, CutsceneChanged) instead of the next 50 ms tick, reads the weapon in hand live, hides for cutscenes through the event, clears its props when the module stops (mod-off runs left props behind before), and has a holsters command (status, outfits, outfit <component> <drawable>, outfit restore).
+- **Outfits**: Niko has 17 upper-body drawables (LibertyModel outfits on playerped.rpf): the torso stands 0.101 to 0.145 m behind Char_Spine2 at the gun's height. The ulky class (0.13 m or more: drawables 0, 1, 2, 3, 8, 9, 14) moves both slung guns 3 cm further back (outfitClasses, loadoutPlacements in config/holsters.json). Component 1 being the upper body is checked in game by the outfits scenario.
+- **Tools and tests**: autopilot commands strip, uy, die, enter, leave, cycle-vehicle, cycle-weapons, cycle-deaths; engine command rsenal (status, oundtrip); 	ools/verify/LoadoutChecks.cs (limits, caps, overrides, 50 death cycles of the loss rule, save/load identity, placement specificity); generator 	ools/perf/New-LoadoutScenarios.ps1 (outfit and weapon-class reviews).
+- **Scenarios and queue checks** (	ests/local/checks.json): T044-loadout-vehicles, -weapons, -deaths-a, -deaths-b, -outfits, -review.
 ## Human test steps
 
 Fill in when done.

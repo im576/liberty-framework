@@ -201,8 +201,8 @@ namespace LibertyFramework.Arsenal
                 }
                 if (openedTrunk != null && activeStorage == null && !DevToolsMenu.IsOpen) { CloseTrunk(); }
 
-                // Arrest/death/mission/cutscene/fade state: seven SHDN natives, refreshed at most every stateRefresh ms.
-                int stateRefresh = config.StateRefreshMilliseconds > 0 ? config.StateRefreshMilliseconds : 200;
+                // Arrest/death/mission/cutscene/fade state: seven SHDN natives (about 0.15-0.4 ms each), refreshed at most every stateRefresh ms (default 500).
+                int stateRefresh = config.StateRefreshMilliseconds > 0 ? config.StateRefreshMilliseconds : 500;
                 if (lastStateReadTicks == 0 || unchecked(nowTicks - lastStateReadTicks) >= stateRefresh)
                 {
                     lastStateReadTicks = nowTicks;
@@ -458,9 +458,10 @@ namespace LibertyFramework.Arsenal
                 SafehouseRule nearest = NearestSafehouse(Player.Character.Position);
                 if (nearest != null) { safehouseId = nearest.Id; RuntimeLog.Info("arsenal_loss_nearest_safehouse id=" + nearest.Id); }
             }
-            StorageBin destination = !busted && !string.IsNullOrEmpty(safehouseId) ?
-                ArsenalPolicy.FindOrAdd(state.SafehouseStashes, safehouseId) : null;
-            if (!busted && destination == null) { RuntimeLog.Error("arsenal_loss_no_safehouse owned weapons cannot be stored"); }
+            // T-044 inventory integrity: with no safehouse known yet the owned weapons still go somewhere: a stash with no
+            // address, which the first safehouse Niko reaches adopts (AdoptUnassignedStash).
+            if (!busted && string.IsNullOrEmpty(safehouseId)) { safehouseId = UnassignedStashId; RuntimeLog.Info("arsenal_loss_unassigned_stash no safehouse known yet"); }
+            StorageBin destination = !busted ? ArsenalPolicy.FindOrAdd(state.SafehouseStashes, safehouseId) : null;
             foreach (WeaponRecord record in carried)
             {
                 RuntimeLog.Info("arsenal_loss reason=" + (busted ? "busted" : "wasted") + " id=" + record.WeaponId + " owned=" + record.Owned);
@@ -540,6 +541,19 @@ namespace LibertyFramework.Arsenal
             }
         }
 
+        private const string UnassignedStashId = "unassigned";
+
+        // Weapons stored before any safehouse was known join the first safehouse Niko reaches (nothing is lost, nothing duplicated).
+        private void AdoptUnassignedStash(string safehouseId)
+        {
+            StorageBin unassigned = state.SafehouseStashes.Find(bin => bin.Id == UnassignedStashId);
+            if (unassigned == null || unassigned.Weapons.Count == 0) { return; }
+            StorageBin home = ArsenalPolicy.FindOrAdd(state.SafehouseStashes, safehouseId);
+            home.Weapons.AddRange(unassigned.Weapons);
+            RuntimeLog.Info("arsenal_unassigned_adopted count=" + unassigned.Weapons.Count + " by=" + safehouseId);
+            state.SafehouseStashes.Remove(unassigned);
+        }
+
         private void ObserveSafehouse(Ped ped)
         {
             foreach (SafehouseRule house in AllSafehouses())
@@ -547,7 +561,7 @@ namespace LibertyFramework.Arsenal
                 if (!string.Equals(house.Episode, episode, StringComparison.OrdinalIgnoreCase)) { continue; }
                 if (Distance(ped.Position, house.X, house.Y, house.Z) <= house.Radius && state.LastSafehouseId != house.Id)
                 {
-                    state.LastSafehouseId = house.Id; Persist(); RuntimeLog.Info("arsenal_safehouse_enter id=" + house.Id);
+                    state.LastSafehouseId = house.Id; AdoptUnassignedStash(house.Id); Persist(); RuntimeLog.Info("arsenal_safehouse_enter id=" + house.Id);
                 }
             }
         }
@@ -690,8 +704,8 @@ namespace LibertyFramework.Arsenal
                 }
                 // Safehouse: the wheel's own close (B) ends the visit through WheelHost.WheelClosed.
             }
-            else if (!gated && !DevToolsMenu.IsOpen && Player.CanControlCharacter &&
-                !Function.Call<bool>("IS_CHAR_IN_ANY_CAR", ped))
+            else if (!gated && !DevToolsMenu.IsOpen && LibertyFramework.GameApi.Natives.IsPlayerControlOn(Player) &&
+                !LibertyFramework.GameApi.Natives.IsInAnyCar(ped))
             {
                 int now = Environment.TickCount;
                 if (lastStorageScanTicks == 0 || unchecked(now - lastStorageScanTicks) >= 250)
@@ -1048,7 +1062,7 @@ namespace LibertyFramework.Arsenal
             house.Radius = config.TrunkDistanceMeters; house.Verified = true;
             config.Safehouses.Add(house); ArsenalConfigValidator.Validate(config);
             JsonStore.Save(LibertyPaths.ArsenalConfig, config);
-            state.LastSafehouseId = house.Id; Persist();
+            state.LastSafehouseId = house.Id; AdoptUnassignedStash(house.Id); Persist();
             RuntimeLog.Info("arsenal_safehouse_marked id=" + house.Id + " x=" + house.X + " y=" + house.Y + " z=" + house.Z);
             return "Marked " + house.Id;
         }
