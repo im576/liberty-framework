@@ -1,0 +1,1080 @@
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> T055_READ_ONLY program=GTAIV.exe md5=1a47b45f9e254a8dec8a347ece43c8ac sha256=08759a5516f9837920ea504436236bbab89d0826a8e4d04ff106345177b5345d base=00400000 language=x86:LE:32:default functions=134  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> ANCHOR 005be150 function=UNKNOWN  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be150 PUSH ECX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be151 PUSH ESI  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be152 PUSH EDI  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be153 MOV EDI,dword ptr FS:[0x2c]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be15a MOV ESI,0x19d30c4  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be15f NOP  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be160 MOV dword ptr [ESI + -0x4],0x0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be167 MOV EDX,dword ptr [ESI]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be169 TEST EDX,EDX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be16b JZ 0x005be178  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be16d MOV EAX,dword ptr [EDI]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be16f PUSH EDX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be170 MOV ECX,dword ptr [EAX + 0x8]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be173 MOV EAX,dword ptr [ECX]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be175 CALL dword ptr [EAX + 0xc]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be178 XOR EAX,EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be17a MOV dword ptr [ESI],0x0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be180 MOV dword ptr [ESI + 0x4],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be183 ADD ESI,0xc  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be186 CMP ESI,0x19d3394  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be18c JL 0x005be160  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be18e MOV ESI,0x19d33a0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be193 MOV byte ptr [ESI + -0x10],0x0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be197 MOV EDX,dword ptr [ESI]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be199 TEST EDX,EDX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be19b JZ 0x005be1a8  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be19d MOV EAX,dword ptr [EDI]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be19f PUSH EDX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be1a0 MOV ECX,dword ptr [EAX + 0x8]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be1a3 MOV EAX,dword ptr [ECX]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be1a5 CALL dword ptr [EAX + 0xc]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be1a8 XOR EAX,EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be1aa MOV dword ptr [ESI],0x0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be1b0 MOV dword ptr [ESI + 0x4],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be1b3 ADD ESI,0x18  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be1b6 CMP ESI,0x19d3aa8  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be1bc JL 0x005be193  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be1be CALL 0x005be250  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be1c3 POP EDI  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be1c4 POP ESI  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be1c5 POP ECX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005be1c6 RET  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> ANCHOR 005ae033 function=UNKNOWN  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae033 MOVSS XMM2,dword ptr [0x00fe8830]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae03b MOVSS XMM3,dword ptr [ESP + 0x14]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae041 MOVZX EAX,AL  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae044 SHL EAX,0x18  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae047 OR EAX,0xffffff  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae04c MOVAPS XMM0,XMM2  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae04f SUBSS XMM0,XMM3  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae053 MOV dword ptr [ESP + 0x28],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae057 MOVAPS XMM1,XMM2  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae05a SUBSS XMM1,dword ptr [ESP + 0x1c]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae060 ADDSS XMM3,XMM2  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae064 MOVSS dword ptr [ESP + 0x14],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae06a MOV EAX,dword ptr [ESP + 0x14]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae06e MOV dword ptr [ESP + 0x3c],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae072 MOVSS dword ptr [ESP + 0x14],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae078 MOVSS dword ptr [ESP + 0x20],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae07e MOVSS XMM0,dword ptr [ESP + 0x38]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae084 ADDSS XMM0,dword ptr [0x00fe86d0]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae08c MOVSS dword ptr [ESP + 0x18],XMM1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae092 MOV EAX,dword ptr [ESP + 0x18]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae096 MOV dword ptr [ESP + 0x40],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae09a MOV EAX,dword ptr [ESP + 0x14]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae09e MOV dword ptr [ESP + 0x44],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0a2 MOVSS dword ptr [ESP + 0x18],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0a8 MOV EAX,dword ptr [ESP + 0x18]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0ac MOV dword ptr [ESP + 0x48],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0b0 MOVSS dword ptr [ESP + 0xc],XMM3  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0b6 MOV EAX,dword ptr [ESP + 0xc]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0ba MOV dword ptr [ESP + 0x4c],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0be MOVSS dword ptr [ESP + 0x10],XMM1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0c4 MOV EAX,dword ptr [ESP + 0x10]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0c8 MOV dword ptr [ESP + 0x50],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0cc MOVSS dword ptr [ESP + 0xc],XMM3  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0d2 MOV EAX,dword ptr [ESP + 0xc]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0d6 MOVSS dword ptr [ESP + 0x10],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0dc MOV dword ptr [ESP + 0x54],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0e0 MOV EAX,dword ptr [ESP + 0x10]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0e4 MOV ECX,0x19d2f24  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0e9 MOVSS dword ptr [ESP + 0x14],XMM3  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0ef MOV dword ptr [ESP + 0x58],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0f3 CALL 0x008d4c80  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0f8 LEA EAX,[ESP + 0x28]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0fc PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae0fd LEA EAX,[ESP + 0x50]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae101 PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae102 LEA EAX,[ESP + 0x44]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae106 PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae107 LEA EAX,[ESP + 0x60]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae10b PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae10c LEA EAX,[ESP + 0x54]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae110 PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae111 CALL 0x008d41d0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae116 MOVSS XMM2,dword ptr [0x00fe88e8]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae11e SUBSS XMM2,dword ptr [ESP + 0x4c]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae124 MOVSS XMM0,dword ptr [ESP + 0x34]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae12a MOVSS XMM1,dword ptr [ESP + 0x28]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae130 MOVSS dword ptr [ESP + 0x20],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae136 MOV EAX,dword ptr [ESP + 0x20]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae13a SUBSS XMM2,dword ptr [0x00fe86d0]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae142 MOVSS dword ptr [ESP + 0x20],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae148 MOVSS XMM0,dword ptr [ESP + 0x30]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae14e ADDSS XMM0,dword ptr [0x00fe8830]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae156 MOV dword ptr [ESP + 0x50],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae15a MOVSS dword ptr [ESP + 0x24],XMM2  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae160 MOV EAX,dword ptr [ESP + 0x24]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae164 MOV dword ptr [ESP + 0x54],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae168 MOV EAX,dword ptr [ESP + 0x20]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae16c MOV dword ptr [ESP + 0x58],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae170 MOVSS dword ptr [ESP + 0x24],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae176 MOV EAX,dword ptr [ESP + 0x24]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae17a MOV dword ptr [ESP + 0x5c],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae17e MOVSS dword ptr [ESP + 0x20],XMM1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae184 MOV EAX,dword ptr [ESP + 0x20]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae188 MOVSS dword ptr [ESP + 0x24],XMM2  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae18e MOV dword ptr [ESP + 0x60],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae192 MOV EAX,dword ptr [ESP + 0x24]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae196 MOV dword ptr [ESP + 0x64],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae19a MOVSS dword ptr [ESP + 0x20],XMM1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1a0 MOV EAX,dword ptr [ESP + 0x20]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1a4 ADD ESP,0x14  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1a7 MOVSS dword ptr [ESP + 0x10],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1ad MOV dword ptr [ESP + 0x54],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1b1 MOV EAX,dword ptr [ESP + 0x10]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1b5 MOV ECX,0x19d2f24  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1ba MOV dword ptr [ESP + 0x58],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1be CALL 0x008d4c80  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1c3 LEA EAX,[ESP + 0x28]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1c7 PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1c8 LEA EAX,[ESP + 0x48]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1cc PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1cd LEA EAX,[ESP + 0x5c]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1d1 PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1d2 LEA EAX,[ESP + 0x48]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1d6 PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1d7 LEA EAX,[ESP + 0x5c]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1db PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1dc CALL 0x008d41d0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1e1 MOVSS XMM1,dword ptr [0x00fe8830]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1e9 MOVSS XMM3,dword ptr [ESP + 0x40]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1ef MOVSS XMM0,dword ptr [ESP + 0x44]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1f5 ADDSS XMM0,XMM1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1f9 MOVAPS XMM2,XMM3  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae1fc ADDSS XMM2,XMM1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae200 SUBSS XMM1,XMM3  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae204 ADD ESP,0x14  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae207 MOVSS dword ptr [ESP + 0xc],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae20d MOV EAX,dword ptr [ESP + 0xc]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae211 MOV dword ptr [ESP + 0x3c],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae215 MOVSS dword ptr [ESP + 0x10],XMM2  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae21b MOV EAX,dword ptr [ESP + 0x10]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae21f MOV dword ptr [ESP + 0x40],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae223 MOVSS dword ptr [ESP + 0xc],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae229 MOV EAX,dword ptr [ESP + 0xc]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae22d SUBSS XMM0,dword ptr [ESP + 0x34]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae233 MOV dword ptr [ESP + 0x44],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae237 MOVSS dword ptr [ESP + 0x10],XMM1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae23d MOV EAX,dword ptr [ESP + 0x10]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae241 MOV dword ptr [ESP + 0x48],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae245 MOVSS dword ptr [ESP + 0xc],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae24b MOV EAX,dword ptr [ESP + 0xc]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae24f MOV dword ptr [ESP + 0x4c],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae253 MOVSS dword ptr [ESP + 0x10],XMM2  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae259 MOV EAX,dword ptr [ESP + 0x10]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae25d MOV dword ptr [ESP + 0x50],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae261 MOVSS dword ptr [ESP + 0xc],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae267 MOV EAX,dword ptr [ESP + 0xc]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae26b MOVSS dword ptr [ESP + 0x10],XMM1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae271 MOV dword ptr [ESP + 0x54],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae275 MOV EAX,dword ptr [ESP + 0x10]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae279 MOV ECX,0x19d2f24  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae27e MOVSS dword ptr [ESP + 0x2c],XMM2  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae284 MOVSS dword ptr [ESP + 0x20],XMM1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae28a MOV dword ptr [ESP + 0x58],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae28e CALL 0x008d4c80  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae293 LEA EAX,[ESP + 0x28]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae297 PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae298 LEA EAX,[ESP + 0x48]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae29c PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae29d LEA EAX,[ESP + 0x44]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2a1 PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2a2 LEA EAX,[ESP + 0x60]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2a6 PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2a7 LEA EAX,[ESP + 0x5c]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2ab PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2ac CALL 0x008d41d0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2b1 MOVSS XMM2,dword ptr [0x00fe8830]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2b9 SUBSS XMM2,dword ptr [ESP + 0x44]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2bf MOVSS XMM1,dword ptr [ESP + 0x40]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2c5 MOVSS dword ptr [ESP + 0x24],XMM1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2cb ADD ESP,0x14  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2ce MOVAPS XMM0,XMM2  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2d1 ADDSS XMM0,dword ptr [ESP + 0x34]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2d7 MOVSS dword ptr [ESP + 0xc],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2dd MOV EAX,dword ptr [ESP + 0xc]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2e1 MOV dword ptr [ESP + 0x3c],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2e5 MOV EAX,dword ptr [ESP + 0x10]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2e9 MOVSS dword ptr [ESP + 0xc],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2ef MOVSS XMM0,dword ptr [ESP + 0x20]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2f5 MOV dword ptr [ESP + 0x40],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2f9 MOV EAX,dword ptr [ESP + 0xc]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae2fd MOVSS dword ptr [ESP + 0x10],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae303 MOV dword ptr [ESP + 0x44],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae307 MOV EAX,dword ptr [ESP + 0x10]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae30b MOV dword ptr [ESP + 0x48],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae30f MOVSS dword ptr [ESP + 0xc],XMM2  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae315 MOV EAX,dword ptr [ESP + 0xc]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae319 MOV dword ptr [ESP + 0x4c],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae31d MOVSS dword ptr [ESP + 0x10],XMM1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae323 MOV EAX,dword ptr [ESP + 0x10]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae327 MOV dword ptr [ESP + 0x50],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae32b MOVSS dword ptr [ESP + 0xc],XMM2  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae331 MOV EAX,dword ptr [ESP + 0xc]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae335 MOVSS dword ptr [ESP + 0x10],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae33b MOV dword ptr [ESP + 0x54],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae33f MOV EAX,dword ptr [ESP + 0x10]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae343 MOV ECX,0x19d2f24  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae348 MOV dword ptr [ESP + 0x58],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae34c CALL 0x008d4c80  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae351 LEA EAX,[ESP + 0x28]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005ae355 PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> ANCHOR 005a9412 function=UNKNOWN  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9412 MOV EAX,[0x01160c40]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9417 CMP EAX,0x8  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a941a JZ 0x005a9433  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a941c MOVZX ECX,byte ptr [0x011609d7]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9423 XOR EDX,EDX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9425 CMP EAX,0x31  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9428 CMOVNZ ECX,EDX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a942b MOV byte ptr [0x011609d7],CL  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9431 JMP 0x005a9439  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9433 MOV CL,byte ptr [0x011609d7]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9439 MOV dword ptr [ESP + 0x14],ECX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a943d CMP EAX,0x3  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9440 JZ 0x005a9815  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9446 CMP byte ptr [0x01160c39],0x0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a944d JNZ 0x005a9822  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9453 CMP EAX,0x31  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9456 JNZ 0x005a94a2  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9458 CALL 0x0047c2e0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a945d TEST AL,AL  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a945f JNZ 0x005a9468  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9461 MOV byte ptr [0x011609d7],0x1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9468 MOVZX EAX,BL  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a946b SHL EAX,0x18  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a946e MOV dword ptr [ESP + 0x30],EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9472 CALL 0x0041f300  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9477 MOVD XMM0,EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a947b CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a947e MOVSS dword ptr [ESP + 0x10],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9484 CALL 0x0041f320  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9489 MOVSS XMM1,dword ptr [ESP + 0x10]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a948f MOVD XMM0,EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9493 MOVSS dword ptr [ESP + 0x20],XMM1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9499 LEA EAX,[ESP + 0x30]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a949d JMP 0x005a9894  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94a2 CMP EAX,0x8  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94a5 JNZ 0x005a9468  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94a7 CALL 0x0047c2e0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94ac TEST AL,AL  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94ae JZ 0x005a94c2  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94b0 CALL 0x0047c2e0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94b5 TEST AL,AL  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94b7 JZ 0x005a9468  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94b9 CMP byte ptr [0x011609f7],0x0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94c0 JNZ 0x005a9468  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94c2 CALL 0x0047c2e0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94c7 MOV EDX,dword ptr [ESP + 0x14]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94cb MOVZX ECX,DL  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94ce MOV ESI,0x1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94d3 TEST AL,AL  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94d5 CMOVZ ECX,ESI  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94d8 MOV byte ptr [0x011609d7],CL  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94de MOV byte ptr [ESP + 0x14],0x0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94e3 CMP dword ptr [0x011d6fd4],ESI  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94e9 JNZ 0x005a950a  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94eb PUSH dword ptr [0x01160c0c]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94f1 CALL 0x008cce00  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94f6 MOV ECX,dword ptr [ESP + 0x18]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94fa MOVZX ECX,CL  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a94fd ADD ESP,0x4  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9500 CMP EAX,0x3  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9503 CMOVZ ECX,ESI  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9506 MOV dword ptr [ESP + 0x14],ECX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a950a PUSH 0x0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a950c CALL 0x008b9590  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9511 ADD ESP,0x4  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9514 TEST AL,AL  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9516 JZ 0x005a97de  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a951c PUSH dword ptr [0x01160c0c]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9522 CALL 0x008cce00  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9527 ADD ESP,0x4  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a952a TEST EAX,EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a952c JZ 0x005a955f  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a952e PUSH dword ptr [0x01160c0c]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9534 CALL 0x008cce00  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9539 ADD ESP,0x4  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a953c CMP EAX,0x1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a953f JZ 0x005a955f  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9541 PUSH dword ptr [0x01160c0c]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9547 CALL 0x008cce00  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a954c ADD ESP,0x4  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a954f CMP EAX,0x2  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9552 JZ 0x005a955f  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9554 CMP byte ptr [ESP + 0x14],0x0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9559 JZ 0x005a97de  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a955f LEA EAX,[ESP + 0x50]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9563 PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9564 CALL 0x008b7720  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9569 ADD ESP,0x4  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a956c LEA EAX,[ESP + 0x40]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9570 PUSH 0x6f  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9572 PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9573 CALL 0x008b9020  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9578 PUSH 0x0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a957a PUSH 0x0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a957c LEA EAX,[ESP + 0x60]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9580 PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9581 PUSH 0x2  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9583 CALL 0x008fc260  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9588 PUSH 0x0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a958a PUSH 0x0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a958c LEA EAX,[ESP + 0x60]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9590 PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9591 PUSH 0x3  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9593 CALL 0x008fc260  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9598 MOVZX ESI,BL  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a959b SHL ESI,0x18  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a959e MOV dword ptr [ESP + 0x50],ESI  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95a2 CALL 0x0041f300  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95a7 MOVD XMM0,EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95ab CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95ae MULSS XMM0,dword ptr [ESP + 0x78]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95b4 MOVSS dword ptr [ESP + 0x3c],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95ba CALL 0x0041f320  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95bf MOVSS XMM1,dword ptr [ESP + 0x3c]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95c5 MOVD XMM0,EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95c9 CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95cc LEA EAX,[ESP + 0x50]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95d0 PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95d1 LEA EAX,[ESP + 0x5c]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95d5 PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95d6 MOV dword ptr [ESP + 0x60],0x0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95de MOV dword ptr [ESP + 0x6c],0x0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95e6 MOVSS dword ptr [ESP + 0x68],XMM1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95ec MOVSS dword ptr [ESP + 0x64],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95f2 CALL 0x008d4750  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95f7 MOV dword ptr [ESP + 0x60],ESI  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a95fb CALL 0x0041f300  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9600 MOVD XMM0,EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9604 CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9607 MULSS XMM0,dword ptr [ESP + 0x70]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a960d MOVSS dword ptr [ESP + 0x58],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9613 CALL 0x0041f300  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9618 MOVD XMM0,EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a961c CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a961f MOVSS dword ptr [ESP + 0x44],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9625 CALL 0x0041f320  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a962a MOVSS XMM1,dword ptr [ESP + 0x58]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9630 MOVD XMM0,EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9634 CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9637 LEA EAX,[ESP + 0x60]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a963b PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a963c MOVSS dword ptr [ESP + 0x4c],XMM1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9642 MOVSS XMM1,dword ptr [ESP + 0x48]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9648 LEA EAX,[ESP + 0x4c]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a964c PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a964d MOV dword ptr [ESP + 0x5c],0x0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9655 MOVSS dword ptr [ESP + 0x58],XMM1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a965b MOVSS dword ptr [ESP + 0x54],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9661 CALL 0x008d4750  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9666 MOV dword ptr [ESP + 0x4c],ESI  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a966a CALL 0x0041f300  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a966f MOVD XMM0,EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9673 CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9676 MULSS XMM0,dword ptr [ESP + 0x88]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a967f MOVSS dword ptr [ESP + 0x68],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9685 CALL 0x0041f300  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a968a MOVD XMM0,EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a968e CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9691 MULSS XMM0,dword ptr [ESP + 0x78]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a9697 MOVSS dword ptr [ESP + 0x60],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a969d CALL 0x0041f320  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a96a2 MOVSS XMM1,dword ptr [ESP + 0x68]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a96a8 MOVD XMM0,EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a96ac CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a96af MULSS XMM0,dword ptr [ESP + 0x8c]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a96b8 LEA EAX,[ESP + 0x4c]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a96bc PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a96bd MOVSS dword ptr [ESP + 0x54],XMM1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a96c3 MOVSS XMM1,dword ptr [ESP + 0x64]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a96c9 LEA EAX,[ESP + 0x54]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a96cd PUSH EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a96ce MOV dword ptr [ESP + 0x64],0x0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a96d6 MOVSS dword ptr [ESP + 0x60],XMM1  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a96dc MOVSS dword ptr [ESP + 0x5c],XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a96e2 CALL 0x008d4750  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a96e7 ADD ESP,0x40  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a96ea MOV dword ptr [ESP + 0x10],ESI  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a96ee CALL 0x0041f300  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a96f3 MOVD XMM0,EAX  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 005a96f7 CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> ANCHOR 004016a0 function=UNKNOWN  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016a0 JLE 0x00401678  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016a2 DEC byte ptr [EAX + -0xa]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016a5 FSUBR double ptr [EAX]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016a7 MOV byte ptr [ESI + EDX*0x4 + 0x163f1041],0x4f  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016af MOV AH,0x82  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016b1 POP SS  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016b2 FSTP extended double ptr [EAX + 0x32]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016b5 SBB CL,byte ptr [0xbe1d6abb]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016bb JS 0x004016a3  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016bd POP ESP  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016be IMUL EBX,EDX,-0x4  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016c1 JMP 0x00401662  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016c3 MOV DH,0x81  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016c5 PUSH DS  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016c6 SBB DH,DH  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016c8 SUB AX,0x24ee  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016cc AAD 0x8d  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016ce XOR EAX,dword ptr [0x3d6ffe57]  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016d4 POP ESI  
+2026-09-29 22:03:34 INFO  frontend_t055_ghidra.java> 004016d5 INT1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> T055_READ_ONLY program=GTAIV.exe md5=1a47b45f9e254a8dec8a347ece43c8ac sha256=08759a5516f9837920ea504436236bbab89d0826a8e4d04ff106345177b5345d base=00400000 language=x86:LE:32:default functions=134  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> ANCHOR 005be150 function=UNKNOWN  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be150 PUSH ECX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be151 PUSH ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be152 PUSH EDI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be153 MOV EDI,dword ptr FS:[0x2c]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be15a MOV ESI,0x19d30c4  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be15f NOP  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be160 MOV dword ptr [ESI + -0x4],0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be167 MOV EDX,dword ptr [ESI]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be169 TEST EDX,EDX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be16b JZ 0x005be178  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be16d MOV EAX,dword ptr [EDI]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be16f PUSH EDX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be170 MOV ECX,dword ptr [EAX + 0x8]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be173 MOV EAX,dword ptr [ECX]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be175 CALL dword ptr [EAX + 0xc]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be178 XOR EAX,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be17a MOV dword ptr [ESI],0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be180 MOV dword ptr [ESI + 0x4],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be183 ADD ESI,0xc  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be186 CMP ESI,0x19d3394  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be18c JL 0x005be160  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be18e MOV ESI,0x19d33a0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be193 MOV byte ptr [ESI + -0x10],0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be197 MOV EDX,dword ptr [ESI]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be199 TEST EDX,EDX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be19b JZ 0x005be1a8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be19d MOV EAX,dword ptr [EDI]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be19f PUSH EDX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be1a0 MOV ECX,dword ptr [EAX + 0x8]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be1a3 MOV EAX,dword ptr [ECX]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be1a5 CALL dword ptr [EAX + 0xc]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be1a8 XOR EAX,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be1aa MOV dword ptr [ESI],0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be1b0 MOV dword ptr [ESI + 0x4],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be1b3 ADD ESI,0x18  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be1b6 CMP ESI,0x19d3aa8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be1bc JL 0x005be193  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be1be CALL 0x005be250  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be1c3 POP EDI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be1c4 POP ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be1c5 POP ECX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be1c6 RET  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> ANCHOR 005be250 function=UNKNOWN  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be250 PUSH EBP  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be251 MOV EBP,ESP  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be253 AND ESP,0xfffffff8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be256 SUB ESP,0x28c  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be25c MOV ECX,dword ptr [0x01bb5628]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be262 PUSH EBX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be263 MOVZX EAX,word ptr [ECX + 0x4]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be267 PUSH ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be268 MOV dword ptr [ESP + 0x90],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be26f PUSH EDI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be270 LEA EAX,[ESP + 0x10]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be274 PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be275 MOV dword ptr [ESP + 0x94],0x19  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be280 CALL 0x004849e0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be285 MOV ESI,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be287 CMP dword ptr [ESI + 0x84],-0x1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be28e JZ 0x005be2ed  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be290 CALL 0x005be1d0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be295 MOV ECX,ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be297 CALL 0x005be340  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be29c MOV EDI,dword ptr [0x01bb5628]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2a2 MOV EAX,dword ptr [ESI + 0x84]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2a8 MOVZX ECX,word ptr [EDI + 0x4]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2ac TEST EAX,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2ae JNS 0x005be2b4  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2b0 XOR EAX,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2b2 JMP 0x005be2b9  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2b4 CMP EAX,ECX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2b6 CMOVG EAX,ECX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2b9 DEC EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2ba JS 0x005be2de  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2bc MOV EBX,dword ptr [EDI]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2be MOV EDX,dword ptr [ESI + 0x80]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2c4 MOV ECX,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2c6 IMUL ECX,ECX,0x88  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2cc SUB ECX,-0x80  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2cf ADD ECX,EBX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2d1 CMP dword ptr [ECX],EDX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2d3 JZ 0x005be32e  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2d5 SUB ECX,0x88  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2db DEC EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2dc JNS 0x005be2d1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2de LEA ESI,[EDI + 0x690]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2e4 CMP dword ptr [ESI + 0x84],-0x1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2eb JNZ 0x005be290  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2ed CMP dword ptr [0x011d6fd0],0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2f4 JNZ 0x005be327  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2f6 PUSH 0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2f8 PUSH 0xf8d2bc  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be2fd PUSH 0x200  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be302 LEA EAX,[ESP + 0xa4]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be309 PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be30a MOV ECX,0x110c0a0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be30f CALL 0x0040afe0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be314 TEST AL,AL  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be316 JZ 0x005be327  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be318 CALL 0x005be1d0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be31d MOV ECX,0xf8d5fc  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be322 CALL 0x005be340  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be327 POP EDI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be328 POP ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be329 POP EBX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be32a MOV ESP,EBP  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be32c POP EBP  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be32d RET  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> ANCHOR 005be340 function=UNKNOWN  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be340 PUSH ECX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be341 PUSH EBX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be342 PUSH EBP  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be343 PUSH ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be344 PUSH EDI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be345 MOV EDI,dword ptr [0x01bb5520]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be34b PUSH 0x1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be34d PUSH 0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be34f PUSH 0xf8d630  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be354 PUSH ECX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be355 MOV ECX,0x110c0a0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be35a CALL 0x0040b410  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be35f MOV ESI,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be361 TEST ESI,ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be363 JZ 0x005be5dd  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be369 PUSH ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be36a MOV ECX,EDI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be36c CALL 0x00408430  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be371 CMP dword ptr [ESI + 0x14],0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be375 MOV EBX,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be377 MOV dword ptr [ESP + 0x10],EBX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be37b JNZ 0x005be38a  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be37d CMP dword ptr [ESI + 0x10],0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be381 JZ 0x005be38a  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be383 MOV ECX,ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be385 CALL 0x0040eac0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be38a MOV ECX,dword ptr [ESI]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be38c PUSH dword ptr [ESI + 0x4]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be38f MOV EAX,dword ptr [ECX]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be391 CALL dword ptr [EAX + 0x2c]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be394 MOV dword ptr [ESI + 0x4],0xffffffff  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be39b MOV dword ptr [ESI],0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3a1 TEST EBX,EBX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3a3 JZ 0x005be5dd  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3a9 MOV EDI,dword ptr [EBX]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3ab TEST EDI,EDI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3ad JZ 0x005be5c5  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3b3 MOV EDI,dword ptr [EDI + 0x1c]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3b6 TEST EDI,EDI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3b8 JZ 0x005be5c5  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3be MOV EDI,EDI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3c0 PUSH 0xf8d61c  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3c5 PUSH dword ptr [EDI]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3c7 CALL 0x00df9e88  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3cc ADD ESP,0x8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3cf TEST EAX,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3d1 JNZ 0x005be4c6  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3d7 MOV ESI,dword ptr [EDI + 0x1c]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3da TEST ESI,ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3dc JZ 0x005be5b6  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3e2 PUSH 0xf8d63c  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3e7 PUSH dword ptr [ESI]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3e9 CALL 0x00df9e88  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3ee ADD ESP,0x8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3f1 TEST EAX,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3f3 JNZ 0x005be435  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3f5 PUSH 0xf8d634  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3fa MOV ECX,ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be3fc CALL 0x00405610  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be401 MOV EBP,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be403 TEST EBP,EBP  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be405 JZ 0x005be4b6  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be40b MOV ECX,dword ptr [EBP + 0x4]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be40e CALL 0x005bebd0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be413 LEA ECX,[EAX + EAX*0x2]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be416 LEA EBX,[ECX*0x4 + 0x19d30c0]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be41d MOV ECX,dword ptr [EBP + 0x4]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be420 CALL 0x005bee50  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be425 MOV EDX,EBX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be427 MOV ECX,ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be429 MOV dword ptr [EBX],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be42b CALL 0x005be5f0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be430 JMP 0x005be4b6  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be435 PUSH 0xf8d64c  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be43a PUSH dword ptr [ESI]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be43c CALL 0x00df9e88  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be441 ADD ESP,0x8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be444 TEST EAX,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be446 JNZ 0x005be481  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be448 PUSH 0xf8d644  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be44d MOV ECX,ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be44f CALL 0x00405610  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be454 MOV EBP,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be456 TEST EBP,EBP  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be458 JZ 0x005be4b6  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be45a MOV ECX,dword ptr [EBP + 0x4]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be45d CALL 0x005bebd0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be462 LEA ECX,[EAX + EAX*0x2]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be465 LEA EBX,[ECX*0x4 + 0x19d30c0]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be46c MOV ECX,dword ptr [EBP + 0x4]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be46f CALL 0x005bee50  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be474 MOV EDX,EBX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be476 MOV ECX,ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be478 MOV dword ptr [EBX],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be47a CALL 0x005be5f0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be47f JMP 0x005be4b6  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be481 PUSH 0xf8d5b4  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be486 PUSH dword ptr [ESI]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be488 CALL 0x00df9e88  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be48d ADD ESP,0x8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be490 TEST EAX,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be492 JZ 0x005be4b6  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be494 PUSH 0xf8d5ac  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be499 PUSH dword ptr [ESI]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be49b CALL 0x00df9e88  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4a0 ADD ESP,0x8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4a3 TEST EAX,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4a5 JZ 0x005be4b6  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4a7 PUSH 0xf8d5c8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4ac PUSH dword ptr [ESI]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4ae CALL 0x00df9e88  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4b3 ADD ESP,0x8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4b6 MOV ESI,dword ptr [ESI + 0x18]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4b9 TEST ESI,ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4bb JNZ 0x005be3e2  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4c1 JMP 0x005be5b6  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4c6 PUSH 0xf8d5bc  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4cb PUSH dword ptr [EDI]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4cd CALL 0x00df9e88  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4d2 ADD ESP,0x8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4d5 TEST EAX,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4d7 JNZ 0x005be5b6  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4dd MOV ESI,dword ptr [EDI + 0x1c]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4e0 TEST ESI,ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4e2 JZ 0x005be5b6  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4e8 JMP 0x005be4f0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4ea LEA EBX,[EBX]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4f0 PUSH 0xf8d5e4  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4f5 PUSH dword ptr [ESI]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4f7 CALL 0x00df9e88  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4fc ADD ESP,0x8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be4ff TEST EAX,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be501 JNZ 0x005be516  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be503 PUSH 0xf8d5d8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be508 MOV ECX,ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be50a CALL 0x00405610  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be50f PUSH 0xf8d5f4  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be514 JMP 0x005be53a  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be516 PUSH 0xf8d5ec  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be51b PUSH dword ptr [ESI]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be51d CALL 0x00df9e88  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be522 ADD ESP,0x8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be525 TEST EAX,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be527 JNZ 0x005be576  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be529 PUSH 0xf8d568  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be52e MOV ECX,ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be530 CALL 0x00405610  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be535 PUSH 0xf8d560  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be53a MOV ECX,ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be53c MOV EBP,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be53e CALL 0x00405610  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be543 TEST EBP,EBP  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be545 JZ 0x005be5ab  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be547 TEST EAX,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be549 JZ 0x005be5ab  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be54b MOV ECX,dword ptr [EAX + 0x4]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be54e CALL 0x005bee10  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be553 PUSH dword ptr [EBP + 0x4]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be556 LEA EAX,[EAX + EAX*0x2]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be559 PUSH 0x10  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be55b LEA EBX,[EAX*0x8 + 0x19d3390]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be562 PUSH EBX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be563 CALL 0x0040ce60  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be568 ADD ESP,0xc  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be56b MOV EDX,EBX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be56d MOV ECX,ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be56f CALL 0x005be820  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be574 JMP 0x005be5ab  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be576 PUSH 0xf8d57c  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be57b PUSH dword ptr [ESI]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be57d CALL 0x00df9e88  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be582 ADD ESP,0x8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be585 TEST EAX,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be587 JZ 0x005be5ab  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be589 PUSH 0xf8d574  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be58e PUSH dword ptr [ESI]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be590 CALL 0x00df9e88  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be595 ADD ESP,0x8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be598 TEST EAX,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005be59a JZ 0x005be5ab  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> ANCHOR 005adea0 function=UNKNOWN  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adea0 PUSH EBP  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adea1 MOV EBP,ESP  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adea3 AND ESP,0xfffffff8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adea6 SUB ESP,0x58  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adea9 MOV EAX,[0x01057fb4]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adeae XOR EAX,ESP  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adeb0 MOV dword ptr [ESP + 0x54],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adeb4 PUSH ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adeb5 PUSH EDI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adeb6 CALL 0x00432be0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adebb MOV EAX,[0x017ed954]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adec0 PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adec1 PUSH dword ptr [0x017ed8ec]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adec7 MOV ECX,0x18dd510  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adecc PUSH 0x18dd540  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005aded1 MOV [0x01b4bc5c],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005aded6 CALL 0x00436f10  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adedb PUSH 0x1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adedd PUSH 0x3  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adedf MOV dword ptr [0x017f5864],0x1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adee9 CALL 0x00437140  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adeee MOV EDI,dword ptr [0x00e731ac]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adef4 ADD ESP,0x8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adef7 CALL EDI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adef9 CMP dword ptr [0x0110dd14],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adeff MOV ESI,dword ptr [0x0105c884]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf05 CMOVZ ESI,dword ptr [0x0105c888]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf0c CALL EDI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf0e CMP dword ptr [0x0110dd14],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf14 MOV ECX,dword ptr [0x0105c880]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf1a CMOVZ ECX,dword ptr [0x0105c87c]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf21 MOVD XMM1,ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf25 MOVD XMM0,ECX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf29 CVTDQ2PS XMM1,XMM1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf2c CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf2f DIVSS XMM1,XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf33 MOVSS dword ptr [ESP + 0x1c],XMM1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf39 CALL EDI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf3b CMP dword ptr [0x0110dd14],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf41 MOV ECX,dword ptr [0x0105c884]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf47 CMOVZ ECX,dword ptr [0x0105c888]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf4e MOVSS XMM1,dword ptr [0x00fe8898]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf56 MOVD XMM0,ECX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf5a CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf5d DIVSS XMM1,XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf61 MOVSS dword ptr [ESP + 0x14],XMM1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf67 CALL EDI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf69 CMP dword ptr [0x0110dd14],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf6f MOV ECX,dword ptr [0x0105c884]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf75 CMOVZ ECX,dword ptr [0x0105c888]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf7c MOVSS XMM1,dword ptr [0x00fe8858]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf84 MOVD XMM0,ECX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf88 CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf8b LEA EAX,[ESP + 0xc]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf8f DIVSS XMM1,XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf93 PUSH 0x7d  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf95 PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf96 MOVSS dword ptr [ESP + 0x34],XMM1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adf9c CALL 0x008b9020  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adfa1 MOVSS XMM0,dword ptr [ESP + 0x24]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adfa7 MOV ECX,dword ptr [EAX]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adfa9 MOVSS XMM1,dword ptr [0x00fe88e8]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adfb1 MOV EAX,dword ptr [EAX + 0x4]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adfb4 ADD ESP,0x8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adfb7 COMISS XMM1,XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adfba MULSS XMM0,dword ptr [0x00fe888c]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adfc2 MOV dword ptr [ESP + 0x20],ECX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adfc6 MOV dword ptr [ESP + 0x24],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adfca JBE 0x005adfe6  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adfcc MULSS XMM0,dword ptr [ESP + 0x24]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adfd2 MOVSS dword ptr [ESP + 0x1c],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adfd8 MOVSS XMM0,dword ptr [ESP + 0x20]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adfde MOVSS dword ptr [ESP + 0x30],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adfe4 JMP 0x005ae002  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adfe6 MOVSS XMM1,dword ptr [ESP + 0x20]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adfec DIVSS XMM1,XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adff0 MOVSS XMM0,dword ptr [ESP + 0x24]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adff6 MOVSS dword ptr [ESP + 0x30],XMM1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005adffc MOVSS dword ptr [ESP + 0x1c],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae002 LEA EAX,[ESP + 0xc]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae006 PUSH 0x4c  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae008 PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae009 CALL 0x008b9020  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae00e MOV ECX,dword ptr [EAX]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae010 MOV EAX,dword ptr [EAX + 0x4]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae013 MOV dword ptr [ESP + 0x40],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae017 ADD ESP,0x8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae01a OR AL,0xff  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae01c CMP byte ptr [0x01161578],0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae023 MOV dword ptr [ESP + 0x34],ECX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae027 JZ 0x005ae033  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae029 MOV ECX,0x1161578  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae02e CALL 0x008b7980  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae033 MOVSS XMM2,dword ptr [0x00fe8830]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae03b MOVSS XMM3,dword ptr [ESP + 0x14]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae041 MOVZX EAX,AL  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae044 SHL EAX,0x18  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae047 OR EAX,0xffffff  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae04c MOVAPS XMM0,XMM2  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae04f SUBSS XMM0,XMM3  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae053 MOV dword ptr [ESP + 0x28],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae057 MOVAPS XMM1,XMM2  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae05a SUBSS XMM1,dword ptr [ESP + 0x1c]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae060 ADDSS XMM3,XMM2  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae064 MOVSS dword ptr [ESP + 0x14],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae06a MOV EAX,dword ptr [ESP + 0x14]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae06e MOV dword ptr [ESP + 0x3c],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae072 MOVSS dword ptr [ESP + 0x14],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae078 MOVSS dword ptr [ESP + 0x20],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae07e MOVSS XMM0,dword ptr [ESP + 0x38]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae084 ADDSS XMM0,dword ptr [0x00fe86d0]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae08c MOVSS dword ptr [ESP + 0x18],XMM1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae092 MOV EAX,dword ptr [ESP + 0x18]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae096 MOV dword ptr [ESP + 0x40],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae09a MOV EAX,dword ptr [ESP + 0x14]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae09e MOV dword ptr [ESP + 0x44],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0a2 MOVSS dword ptr [ESP + 0x18],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0a8 MOV EAX,dword ptr [ESP + 0x18]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0ac MOV dword ptr [ESP + 0x48],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0b0 MOVSS dword ptr [ESP + 0xc],XMM3  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0b6 MOV EAX,dword ptr [ESP + 0xc]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0ba MOV dword ptr [ESP + 0x4c],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0be MOVSS dword ptr [ESP + 0x10],XMM1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0c4 MOV EAX,dword ptr [ESP + 0x10]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0c8 MOV dword ptr [ESP + 0x50],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0cc MOVSS dword ptr [ESP + 0xc],XMM3  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0d2 MOV EAX,dword ptr [ESP + 0xc]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0d6 MOVSS dword ptr [ESP + 0x10],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0dc MOV dword ptr [ESP + 0x54],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0e0 MOV EAX,dword ptr [ESP + 0x10]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0e4 MOV ECX,0x19d2f24  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0e9 MOVSS dword ptr [ESP + 0x14],XMM3  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0ef MOV dword ptr [ESP + 0x58],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0f3 CALL 0x008d4c80  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0f8 LEA EAX,[ESP + 0x28]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0fc PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae0fd LEA EAX,[ESP + 0x50]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae101 PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae102 LEA EAX,[ESP + 0x44]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae106 PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae107 LEA EAX,[ESP + 0x60]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae10b PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae10c LEA EAX,[ESP + 0x54]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae110 PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae111 CALL 0x008d41d0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae116 MOVSS XMM2,dword ptr [0x00fe88e8]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae11e SUBSS XMM2,dword ptr [ESP + 0x4c]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae124 MOVSS XMM0,dword ptr [ESP + 0x34]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae12a MOVSS XMM1,dword ptr [ESP + 0x28]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae130 MOVSS dword ptr [ESP + 0x20],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae136 MOV EAX,dword ptr [ESP + 0x20]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae13a SUBSS XMM2,dword ptr [0x00fe86d0]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae142 MOVSS dword ptr [ESP + 0x20],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae148 MOVSS XMM0,dword ptr [ESP + 0x30]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae14e ADDSS XMM0,dword ptr [0x00fe8830]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae156 MOV dword ptr [ESP + 0x50],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae15a MOVSS dword ptr [ESP + 0x24],XMM2  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae160 MOV EAX,dword ptr [ESP + 0x24]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae164 MOV dword ptr [ESP + 0x54],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae168 MOV EAX,dword ptr [ESP + 0x20]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae16c MOV dword ptr [ESP + 0x58],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae170 MOVSS dword ptr [ESP + 0x24],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae176 MOV EAX,dword ptr [ESP + 0x24]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae17a MOV dword ptr [ESP + 0x5c],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae17e MOVSS dword ptr [ESP + 0x20],XMM1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae184 MOV EAX,dword ptr [ESP + 0x20]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae188 MOVSS dword ptr [ESP + 0x24],XMM2  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae18e MOV dword ptr [ESP + 0x60],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae192 MOV EAX,dword ptr [ESP + 0x24]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae196 MOV dword ptr [ESP + 0x64],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae19a MOVSS dword ptr [ESP + 0x20],XMM1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae1a0 MOV EAX,dword ptr [ESP + 0x20]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae1a4 ADD ESP,0x14  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae1a7 MOVSS dword ptr [ESP + 0x10],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae1ad MOV dword ptr [ESP + 0x54],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae1b1 MOV EAX,dword ptr [ESP + 0x10]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae1b5 MOV ECX,0x19d2f24  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae1ba MOV dword ptr [ESP + 0x58],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae1be CALL 0x008d4c80  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005ae1c3 LEA EAX,[ESP + 0x28]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> ANCHOR 005a9412 function=UNKNOWN  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9412 MOV EAX,[0x01160c40]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9417 CMP EAX,0x8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a941a JZ 0x005a9433  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a941c MOVZX ECX,byte ptr [0x011609d7]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9423 XOR EDX,EDX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9425 CMP EAX,0x31  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9428 CMOVNZ ECX,EDX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a942b MOV byte ptr [0x011609d7],CL  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9431 JMP 0x005a9439  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9433 MOV CL,byte ptr [0x011609d7]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9439 MOV dword ptr [ESP + 0x14],ECX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a943d CMP EAX,0x3  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9440 JZ 0x005a9815  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9446 CMP byte ptr [0x01160c39],0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a944d JNZ 0x005a9822  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9453 CMP EAX,0x31  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9456 JNZ 0x005a94a2  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9458 CALL 0x0047c2e0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a945d TEST AL,AL  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a945f JNZ 0x005a9468  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9461 MOV byte ptr [0x011609d7],0x1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9468 MOVZX EAX,BL  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a946b SHL EAX,0x18  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a946e MOV dword ptr [ESP + 0x30],EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9472 CALL 0x0041f300  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9477 MOVD XMM0,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a947b CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a947e MOVSS dword ptr [ESP + 0x10],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9484 CALL 0x0041f320  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9489 MOVSS XMM1,dword ptr [ESP + 0x10]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a948f MOVD XMM0,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9493 MOVSS dword ptr [ESP + 0x20],XMM1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9499 LEA EAX,[ESP + 0x30]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a949d JMP 0x005a9894  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94a2 CMP EAX,0x8  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94a5 JNZ 0x005a9468  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94a7 CALL 0x0047c2e0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94ac TEST AL,AL  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94ae JZ 0x005a94c2  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94b0 CALL 0x0047c2e0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94b5 TEST AL,AL  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94b7 JZ 0x005a9468  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94b9 CMP byte ptr [0x011609f7],0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94c0 JNZ 0x005a9468  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94c2 CALL 0x0047c2e0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94c7 MOV EDX,dword ptr [ESP + 0x14]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94cb MOVZX ECX,DL  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94ce MOV ESI,0x1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94d3 TEST AL,AL  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94d5 CMOVZ ECX,ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94d8 MOV byte ptr [0x011609d7],CL  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94de MOV byte ptr [ESP + 0x14],0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94e3 CMP dword ptr [0x011d6fd4],ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94e9 JNZ 0x005a950a  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94eb PUSH dword ptr [0x01160c0c]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94f1 CALL 0x008cce00  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94f6 MOV ECX,dword ptr [ESP + 0x18]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94fa MOVZX ECX,CL  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a94fd ADD ESP,0x4  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9500 CMP EAX,0x3  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9503 CMOVZ ECX,ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9506 MOV dword ptr [ESP + 0x14],ECX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a950a PUSH 0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a950c CALL 0x008b9590  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9511 ADD ESP,0x4  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9514 TEST AL,AL  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9516 JZ 0x005a97de  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a951c PUSH dword ptr [0x01160c0c]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9522 CALL 0x008cce00  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9527 ADD ESP,0x4  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a952a TEST EAX,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a952c JZ 0x005a955f  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a952e PUSH dword ptr [0x01160c0c]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9534 CALL 0x008cce00  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9539 ADD ESP,0x4  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a953c CMP EAX,0x1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a953f JZ 0x005a955f  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9541 PUSH dword ptr [0x01160c0c]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9547 CALL 0x008cce00  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a954c ADD ESP,0x4  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a954f CMP EAX,0x2  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9552 JZ 0x005a955f  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9554 CMP byte ptr [ESP + 0x14],0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9559 JZ 0x005a97de  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a955f LEA EAX,[ESP + 0x50]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9563 PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9564 CALL 0x008b7720  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9569 ADD ESP,0x4  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a956c LEA EAX,[ESP + 0x40]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9570 PUSH 0x6f  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9572 PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9573 CALL 0x008b9020  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9578 PUSH 0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a957a PUSH 0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a957c LEA EAX,[ESP + 0x60]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9580 PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9581 PUSH 0x2  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9583 CALL 0x008fc260  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9588 PUSH 0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a958a PUSH 0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a958c LEA EAX,[ESP + 0x60]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9590 PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9591 PUSH 0x3  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9593 CALL 0x008fc260  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9598 MOVZX ESI,BL  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a959b SHL ESI,0x18  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a959e MOV dword ptr [ESP + 0x50],ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95a2 CALL 0x0041f300  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95a7 MOVD XMM0,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95ab CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95ae MULSS XMM0,dword ptr [ESP + 0x78]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95b4 MOVSS dword ptr [ESP + 0x3c],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95ba CALL 0x0041f320  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95bf MOVSS XMM1,dword ptr [ESP + 0x3c]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95c5 MOVD XMM0,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95c9 CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95cc LEA EAX,[ESP + 0x50]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95d0 PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95d1 LEA EAX,[ESP + 0x5c]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95d5 PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95d6 MOV dword ptr [ESP + 0x60],0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95de MOV dword ptr [ESP + 0x6c],0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95e6 MOVSS dword ptr [ESP + 0x68],XMM1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95ec MOVSS dword ptr [ESP + 0x64],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95f2 CALL 0x008d4750  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95f7 MOV dword ptr [ESP + 0x60],ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a95fb CALL 0x0041f300  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9600 MOVD XMM0,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9604 CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9607 MULSS XMM0,dword ptr [ESP + 0x70]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a960d MOVSS dword ptr [ESP + 0x58],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9613 CALL 0x0041f300  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9618 MOVD XMM0,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a961c CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a961f MOVSS dword ptr [ESP + 0x44],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9625 CALL 0x0041f320  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a962a MOVSS XMM1,dword ptr [ESP + 0x58]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9630 MOVD XMM0,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9634 CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9637 LEA EAX,[ESP + 0x60]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a963b PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a963c MOVSS dword ptr [ESP + 0x4c],XMM1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9642 MOVSS XMM1,dword ptr [ESP + 0x48]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9648 LEA EAX,[ESP + 0x4c]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a964c PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a964d MOV dword ptr [ESP + 0x5c],0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9655 MOVSS dword ptr [ESP + 0x58],XMM1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a965b MOVSS dword ptr [ESP + 0x54],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9661 CALL 0x008d4750  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9666 MOV dword ptr [ESP + 0x4c],ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a966a CALL 0x0041f300  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a966f MOVD XMM0,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9673 CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9676 MULSS XMM0,dword ptr [ESP + 0x88]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a967f MOVSS dword ptr [ESP + 0x68],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9685 CALL 0x0041f300  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a968a MOVD XMM0,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a968e CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9691 MULSS XMM0,dword ptr [ESP + 0x78]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a9697 MOVSS dword ptr [ESP + 0x60],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a969d CALL 0x0041f320  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a96a2 MOVSS XMM1,dword ptr [ESP + 0x68]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a96a8 MOVD XMM0,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a96ac CVTDQ2PS XMM0,XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a96af MULSS XMM0,dword ptr [ESP + 0x8c]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a96b8 LEA EAX,[ESP + 0x4c]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a96bc PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a96bd MOVSS dword ptr [ESP + 0x54],XMM1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a96c3 MOVSS XMM1,dword ptr [ESP + 0x64]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a96c9 LEA EAX,[ESP + 0x54]  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a96cd PUSH EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a96ce MOV dword ptr [ESP + 0x64],0x0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a96d6 MOVSS dword ptr [ESP + 0x60],XMM1  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a96dc MOVSS dword ptr [ESP + 0x5c],XMM0  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a96e2 CALL 0x008d4750  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a96e7 ADD ESP,0x40  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a96ea MOV dword ptr [ESP + 0x10],ESI  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a96ee CALL 0x0041f300  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a96f3 MOVD XMM0,EAX  
+2026-09-29 22:12:17 INFO  frontend_t055_ghidra.java> 005a96f7 CVTDQ2PS XMM0,XMM0  

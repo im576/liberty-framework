@@ -1,0 +1,1138 @@
+{
+  "exe": {
+    "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\GTAIV.exe",
+    "bytes": 17425752,
+    "sha256": "08759a5516f9837920ea504436236bbab89d0826a8e4d04ff106345177b5345d"
+  },
+  "image_base": "0x400000",
+  "patterns": {
+    "menu_active": {
+      "pattern": "80 3D ? ? ? ? ? 74 4B E8 ? ? ? ? 84 C0",
+      "count": 0,
+      "hits": []
+    },
+    "menu_tab_a": {
+      "pattern": "A1 ? ? ? ? 83 F8 08 74 17",
+      "count": 1,
+      "hits": [
+        {
+          "rva": "0x1a9412",
+          "va_for_navigation_only": "0x5a9412",
+          "file_offset": "0x1a8812",
+          "section": ".text",
+          "instructions": [
+            {
+              "va": "0x5a9412",
+              "bytes": "a1 40 0c 16 01",
+              "asm": "mov eax, dword ptr [0x1160c40]"
+            },
+            {
+              "va": "0x5a9417",
+              "bytes": "83 f8 08",
+              "asm": "cmp eax, 8"
+            },
+            {
+              "va": "0x5a941a",
+              "bytes": "74 17",
+              "asm": "je 0x5a9433"
+            },
+            {
+              "va": "0x5a941c",
+              "bytes": "0f b6 0d d7 09 16 01",
+              "asm": "movzx ecx, byte ptr [0x11609d7]"
+            },
+            {
+              "va": "0x5a9423",
+              "bytes": "33 d2",
+              "asm": "xor edx, edx"
+            },
+            {
+              "va": "0x5a9425",
+              "bytes": "83 f8 31",
+              "asm": "cmp eax, 0x31"
+            },
+            {
+              "va": "0x5a9428",
+              "bytes": "0f 45 ca",
+              "asm": "cmovne ecx, edx"
+            },
+            {
+              "va": "0x5a942b",
+              "bytes": "88 0d d7 09 16 01",
+              "asm": "mov byte ptr [0x11609d7], cl"
+            },
+            {
+              "va": "0x5a9431",
+              "bytes": "eb 06",
+              "asm": "jmp 0x5a9439"
+            },
+            {
+              "va": "0x5a9433",
+              "bytes": "8a 0d d7 09 16 01",
+              "asm": "mov cl, byte ptr [0x11609d7]"
+            },
+            {
+              "va": "0x5a9439",
+              "bytes": "89 4c 24 14",
+              "asm": "mov dword ptr [esp + 0x14], ecx"
+            },
+            {
+              "va": "0x5a943d",
+              "bytes": "83 f8 03",
+              "asm": "cmp eax, 3"
+            },
+            {
+              "va": "0x5a9440",
+              "bytes": "0f 84 cf 03 00 00",
+              "asm": "je 0x5a9815"
+            },
+            {
+              "va": "0x5a9446",
+              "bytes": "80 3d 39 0c 16 01 00",
+              "asm": "cmp byte ptr [0x1160c39], 0"
+            },
+            {
+              "va": "0x5a944d",
+              "bytes": "0f 85 cf 03 00 00",
+              "asm": "jne 0x5a9822"
+            },
+            {
+              "va": "0x5a9453",
+              "bytes": "83 f8 31",
+              "asm": "cmp eax, 0x31"
+            }
+          ],
+          "absolute_operand_navigation_only": "0x1160c40"
+        }
+      ]
+    },
+    "menu_tab_b": {
+      "pattern": "A1 ? ? ? ? 83 F8 08 74 0C",
+      "count": 0,
+      "hits": []
+    },
+    "frontend_read_a": {
+      "pattern": "51 56 57 64 8B 3D",
+      "count": 1,
+      "hits": [
+        {
+          "rva": "0x1be150",
+          "va_for_navigation_only": "0x5be150",
+          "file_offset": "0x1bd550",
+          "section": ".text",
+          "instructions": [
+            {
+              "va": "0x5be150",
+              "bytes": "51",
+              "asm": "push ecx"
+            },
+            {
+              "va": "0x5be151",
+              "bytes": "56",
+              "asm": "push esi"
+            },
+            {
+              "va": "0x5be152",
+              "bytes": "57",
+              "asm": "push edi"
+            },
+            {
+              "va": "0x5be153",
+              "bytes": "64 8b 3d 2c 00 00 00",
+              "asm": "mov edi, dword ptr fs:[0x2c]"
+            },
+            {
+              "va": "0x5be15a",
+              "bytes": "be c4 30 9d 01",
+              "asm": "mov esi, 0x19d30c4"
+            },
+            {
+              "va": "0x5be15f",
+              "bytes": "90",
+              "asm": "nop "
+            },
+            {
+              "va": "0x5be160",
+              "bytes": "c7 46 fc 00 00 00 00",
+              "asm": "mov dword ptr [esi - 4], 0"
+            },
+            {
+              "va": "0x5be167",
+              "bytes": "8b 16",
+              "asm": "mov edx, dword ptr [esi]"
+            },
+            {
+              "va": "0x5be169",
+              "bytes": "85 d2",
+              "asm": "test edx, edx"
+            },
+            {
+              "va": "0x5be16b",
+              "bytes": "74 0b",
+              "asm": "je 0x5be178"
+            },
+            {
+              "va": "0x5be16d",
+              "bytes": "8b 07",
+              "asm": "mov eax, dword ptr [edi]"
+            },
+            {
+              "va": "0x5be16f",
+              "bytes": "52",
+              "asm": "push edx"
+            },
+            {
+              "va": "0x5be170",
+              "bytes": "8b 48 08",
+              "asm": "mov ecx, dword ptr [eax + 8]"
+            },
+            {
+              "va": "0x5be173",
+              "bytes": "8b 01",
+              "asm": "mov eax, dword ptr [ecx]"
+            },
+            {
+              "va": "0x5be175",
+              "bytes": "ff 50 0c",
+              "asm": "call dword ptr [eax + 0xc]"
+            },
+            {
+              "va": "0x5be178",
+              "bytes": "33 c0",
+              "asm": "xor eax, eax"
+            }
+          ]
+        }
+      ]
+    },
+    "frontend_read_b": {
+      "pattern": "51 53 56 BE ? ? ? ? 33 DB",
+      "count": 0,
+      "hits": []
+    },
+    "frontend_selector_derived": {
+      "pattern": "55 8B EC 83 E4 F8 81 EC 8C 02 00 00 8B 0D ? ? ? ? 53 0F B7 41 04 56",
+      "count": 1,
+      "hits": [
+        {
+          "rva": "0x1be250",
+          "va_for_navigation_only": "0x5be250",
+          "file_offset": "0x1bd650",
+          "section": ".text",
+          "instructions": [
+            {
+              "va": "0x5be250",
+              "bytes": "55",
+              "asm": "push ebp"
+            },
+            {
+              "va": "0x5be251",
+              "bytes": "8b ec",
+              "asm": "mov ebp, esp"
+            },
+            {
+              "va": "0x5be253",
+              "bytes": "83 e4 f8",
+              "asm": "and esp, 0xfffffff8"
+            },
+            {
+              "va": "0x5be256",
+              "bytes": "81 ec 8c 02 00 00",
+              "asm": "sub esp, 0x28c"
+            },
+            {
+              "va": "0x5be25c",
+              "bytes": "8b 0d 28 56 bb 01",
+              "asm": "mov ecx, dword ptr [0x1bb5628]"
+            },
+            {
+              "va": "0x5be262",
+              "bytes": "53",
+              "asm": "push ebx"
+            },
+            {
+              "va": "0x5be263",
+              "bytes": "0f b7 41 04",
+              "asm": "movzx eax, word ptr [ecx + 4]"
+            },
+            {
+              "va": "0x5be267",
+              "bytes": "56",
+              "asm": "push esi"
+            },
+            {
+              "va": "0x5be268",
+              "bytes": "89 84 24 90 00 00 00",
+              "asm": "mov dword ptr [esp + 0x90], eax"
+            },
+            {
+              "va": "0x5be26f",
+              "bytes": "57",
+              "asm": "push edi"
+            },
+            {
+              "va": "0x5be270",
+              "bytes": "8d 44 24 10",
+              "asm": "lea eax, [esp + 0x10]"
+            },
+            {
+              "va": "0x5be274",
+              "bytes": "50",
+              "asm": "push eax"
+            },
+            {
+              "va": "0x5be275",
+              "bytes": "c7 84 24 94 00 00 00 19 00 00 00",
+              "asm": "mov dword ptr [esp + 0x94], 0x19"
+            },
+            {
+              "va": "0x5be280",
+              "bytes": "e8 5b 67 ec ff",
+              "asm": "call 0x4849e0"
+            },
+            {
+              "va": "0x5be285",
+              "bytes": "8b f0",
+              "asm": "mov esi, eax"
+            },
+            {
+              "va": "0x5be287",
+              "bytes": "83 be 84 00 00 00 ff",
+              "asm": "cmp dword ptr [esi + 0x84], -1"
+            }
+          ]
+        }
+      ]
+    },
+    "frontend_xml_parser_derived": {
+      "pattern": "51 53 55 56 57 8B 3D ? ? ? ? 6A 01 6A 00 68 ? ? ? ? 51 B9",
+      "count": 1,
+      "hits": [
+        {
+          "rva": "0x1be340",
+          "va_for_navigation_only": "0x5be340",
+          "file_offset": "0x1bd740",
+          "section": ".text",
+          "instructions": [
+            {
+              "va": "0x5be340",
+              "bytes": "51",
+              "asm": "push ecx"
+            },
+            {
+              "va": "0x5be341",
+              "bytes": "53",
+              "asm": "push ebx"
+            },
+            {
+              "va": "0x5be342",
+              "bytes": "55",
+              "asm": "push ebp"
+            },
+            {
+              "va": "0x5be343",
+              "bytes": "56",
+              "asm": "push esi"
+            },
+            {
+              "va": "0x5be344",
+              "bytes": "57",
+              "asm": "push edi"
+            },
+            {
+              "va": "0x5be345",
+              "bytes": "8b 3d 20 55 bb 01",
+              "asm": "mov edi, dword ptr [0x1bb5520]"
+            },
+            {
+              "va": "0x5be34b",
+              "bytes": "6a 01",
+              "asm": "push 1"
+            },
+            {
+              "va": "0x5be34d",
+              "bytes": "6a 00",
+              "asm": "push 0"
+            },
+            {
+              "va": "0x5be34f",
+              "bytes": "68 30 d6 f8 00",
+              "asm": "push 0xf8d630"
+            },
+            {
+              "va": "0x5be354",
+              "bytes": "51",
+              "asm": "push ecx"
+            },
+            {
+              "va": "0x5be355",
+              "bytes": "b9 a0 c0 10 01",
+              "asm": "mov ecx, 0x110c0a0"
+            },
+            {
+              "va": "0x5be35a",
+              "bytes": "e8 b1 d0 e4 ff",
+              "asm": "call 0x40b410"
+            },
+            {
+              "va": "0x5be35f",
+              "bytes": "8b f0",
+              "asm": "mov esi, eax"
+            },
+            {
+              "va": "0x5be361",
+              "bytes": "85 f6",
+              "asm": "test esi, esi"
+            },
+            {
+              "va": "0x5be363",
+              "bytes": "0f 84 74 02 00 00",
+              "asm": "je 0x5be5dd"
+            },
+            {
+              "va": "0x5be369",
+              "bytes": "56",
+              "asm": "push esi"
+            }
+          ]
+        }
+      ]
+    },
+    "map_crosshair_entry_derived": {
+      "pattern": "55 8B EC 83 E4 F8 83 EC 58 A1 ? ? ? ? 33 C4 89 44 24 54 56 57",
+      "count": 2,
+      "hits": [
+        {
+          "rva": "0x1adea0",
+          "va_for_navigation_only": "0x5adea0",
+          "file_offset": "0x1ad2a0",
+          "section": ".text",
+          "instructions": [
+            {
+              "va": "0x5adea0",
+              "bytes": "55",
+              "asm": "push ebp"
+            },
+            {
+              "va": "0x5adea1",
+              "bytes": "8b ec",
+              "asm": "mov ebp, esp"
+            },
+            {
+              "va": "0x5adea3",
+              "bytes": "83 e4 f8",
+              "asm": "and esp, 0xfffffff8"
+            },
+            {
+              "va": "0x5adea6",
+              "bytes": "83 ec 58",
+              "asm": "sub esp, 0x58"
+            },
+            {
+              "va": "0x5adea9",
+              "bytes": "a1 b4 7f 05 01",
+              "asm": "mov eax, dword ptr [0x1057fb4]"
+            },
+            {
+              "va": "0x5adeae",
+              "bytes": "33 c4",
+              "asm": "xor eax, esp"
+            },
+            {
+              "va": "0x5adeb0",
+              "bytes": "89 44 24 54",
+              "asm": "mov dword ptr [esp + 0x54], eax"
+            },
+            {
+              "va": "0x5adeb4",
+              "bytes": "56",
+              "asm": "push esi"
+            },
+            {
+              "va": "0x5adeb5",
+              "bytes": "57",
+              "asm": "push edi"
+            },
+            {
+              "va": "0x5adeb6",
+              "bytes": "e8 25 4d e8 ff",
+              "asm": "call 0x432be0"
+            },
+            {
+              "va": "0x5adebb",
+              "bytes": "a1 54 d9 7e 01",
+              "asm": "mov eax, dword ptr [0x17ed954]"
+            },
+            {
+              "va": "0x5adec0",
+              "bytes": "50",
+              "asm": "push eax"
+            },
+            {
+              "va": "0x5adec1",
+              "bytes": "ff 35 ec d8 7e 01",
+              "asm": "push dword ptr [0x17ed8ec]"
+            },
+            {
+              "va": "0x5adec7",
+              "bytes": "b9 10 d5 8d 01",
+              "asm": "mov ecx, 0x18dd510"
+            },
+            {
+              "va": "0x5adecc",
+              "bytes": "68 40 d5 8d 01",
+              "asm": "push 0x18dd540"
+            },
+            {
+              "va": "0x5aded1",
+              "bytes": "a3 5c bc b4 01",
+              "asm": "mov dword ptr [0x1b4bc5c], eax"
+            }
+          ]
+        },
+        {
+          "rva": "0x521da0",
+          "va_for_navigation_only": "0x921da0",
+          "file_offset": "0x5211a0",
+          "section": ".text",
+          "instructions": [
+            {
+              "va": "0x921da0",
+              "bytes": "55",
+              "asm": "push ebp"
+            },
+            {
+              "va": "0x921da1",
+              "bytes": "8b ec",
+              "asm": "mov ebp, esp"
+            },
+            {
+              "va": "0x921da3",
+              "bytes": "83 e4 f8",
+              "asm": "and esp, 0xfffffff8"
+            },
+            {
+              "va": "0x921da6",
+              "bytes": "83 ec 58",
+              "asm": "sub esp, 0x58"
+            },
+            {
+              "va": "0x921da9",
+              "bytes": "a1 b4 7f 05 01",
+              "asm": "mov eax, dword ptr [0x1057fb4]"
+            },
+            {
+              "va": "0x921dae",
+              "bytes": "33 c4",
+              "asm": "xor eax, esp"
+            },
+            {
+              "va": "0x921db0",
+              "bytes": "89 44 24 54",
+              "asm": "mov dword ptr [esp + 0x54], eax"
+            },
+            {
+              "va": "0x921db4",
+              "bytes": "56",
+              "asm": "push esi"
+            },
+            {
+              "va": "0x921db5",
+              "bytes": "57",
+              "asm": "push edi"
+            },
+            {
+              "va": "0x921db6",
+              "bytes": "8b 7d 10",
+              "asm": "mov edi, dword ptr [ebp + 0x10]"
+            },
+            {
+              "va": "0x921db9",
+              "bytes": "85 ff",
+              "asm": "test edi, edi"
+            },
+            {
+              "va": "0x921dbb",
+              "bytes": "0f 84 34 04 00 00",
+              "asm": "je 0x9221f5"
+            },
+            {
+              "va": "0x921dc1",
+              "bytes": "e8 8a a3 ff ff",
+              "asm": "call 0x91c150"
+            },
+            {
+              "va": "0x921dc6",
+              "bytes": "66 83 3f 00",
+              "asm": "cmp word ptr [edi], 0"
+            },
+            {
+              "va": "0x921dca",
+              "bytes": "0f 84 25 04 00 00",
+              "asm": "je 0x9221f5"
+            },
+            {
+              "va": "0x921dd0",
+              "bytes": "8d 34 c0",
+              "asm": "lea esi, [eax + eax*8]"
+            }
+          ]
+        }
+      ]
+    },
+    "map_crosshair_a": {
+      "pattern": "F3 0F 10 15 ? ? ? ? F3 0F 10 5C 24 ? 0F B6 C0",
+      "count": 1,
+      "hits": [
+        {
+          "rva": "0x1ae033",
+          "va_for_navigation_only": "0x5ae033",
+          "file_offset": "0x1ad433",
+          "section": ".text",
+          "instructions": [
+            {
+              "va": "0x5ae033",
+              "bytes": "f3 0f 10 15 30 88 fe 00",
+              "asm": "movss xmm2, dword ptr [0xfe8830]"
+            },
+            {
+              "va": "0x5ae03b",
+              "bytes": "f3 0f 10 5c 24 14",
+              "asm": "movss xmm3, dword ptr [esp + 0x14]"
+            },
+            {
+              "va": "0x5ae041",
+              "bytes": "0f b6 c0",
+              "asm": "movzx eax, al"
+            },
+            {
+              "va": "0x5ae044",
+              "bytes": "c1 e0 18",
+              "asm": "shl eax, 0x18"
+            },
+            {
+              "va": "0x5ae047",
+              "bytes": "0d ff ff ff 00",
+              "asm": "or eax, 0xffffff"
+            },
+            {
+              "va": "0x5ae04c",
+              "bytes": "0f 28 c2",
+              "asm": "movaps xmm0, xmm2"
+            },
+            {
+              "va": "0x5ae04f",
+              "bytes": "f3 0f 5c c3",
+              "asm": "subss xmm0, xmm3"
+            },
+            {
+              "va": "0x5ae053",
+              "bytes": "89 44 24 28",
+              "asm": "mov dword ptr [esp + 0x28], eax"
+            },
+            {
+              "va": "0x5ae057",
+              "bytes": "0f 28 ca",
+              "asm": "movaps xmm1, xmm2"
+            },
+            {
+              "va": "0x5ae05a",
+              "bytes": "f3 0f 5c 4c 24 1c",
+              "asm": "subss xmm1, dword ptr [esp + 0x1c]"
+            },
+            {
+              "va": "0x5ae060",
+              "bytes": "f3 0f 58 da",
+              "asm": "addss xmm3, xmm2"
+            },
+            {
+              "va": "0x5ae064",
+              "bytes": "f3 0f 11 44 24 14",
+              "asm": "movss dword ptr [esp + 0x14], xmm0"
+            },
+            {
+              "va": "0x5ae06a",
+              "bytes": "8b 44 24 14",
+              "asm": "mov eax, dword ptr [esp + 0x14]"
+            },
+            {
+              "va": "0x5ae06e",
+              "bytes": "89 44 24 3c",
+              "asm": "mov dword ptr [esp + 0x3c], eax"
+            },
+            {
+              "va": "0x5ae072",
+              "bytes": "f3 0f 11 44 24 14",
+              "asm": "movss dword ptr [esp + 0x14], xmm0"
+            },
+            {
+              "va": "0x5ae078",
+              "bytes": "f3 0f 11 44 24 20",
+              "asm": "movss dword ptr [esp + 0x20], xmm0"
+            }
+          ]
+        }
+      ]
+    },
+    "map_crosshair_b": {
+      "pattern": "F3 0F 10 1D ? ? ? ? F3 0F 10 54 24 ? 0F B6 C8",
+      "count": 0,
+      "hits": []
+    },
+    "game_process_call": {
+      "pattern": "E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? B9 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? B9",
+      "count": 1,
+      "hits": [
+        {
+          "rva": "0x1c2a41",
+          "va_for_navigation_only": "0x5c2a41",
+          "file_offset": "0x1c1e41",
+          "section": ".text",
+          "instructions": [
+            {
+              "va": "0x5c2a41",
+              "bytes": "e8 5a ec e3 ff",
+              "asm": "call 0x4016a0"
+            },
+            {
+              "va": "0x5c2a46",
+              "bytes": "e8 55 ec e3 ff",
+              "asm": "call 0x4016a0"
+            },
+            {
+              "va": "0x5c2a4b",
+              "bytes": "e8 80 d1 ff ff",
+              "asm": "call 0x5bfbd0"
+            },
+            {
+              "va": "0x5c2a50",
+              "bytes": "b9 a0 05 72 01",
+              "asm": "mov ecx, 0x17205a0"
+            },
+            {
+              "va": "0x5c2a55",
+              "bytes": "e8 86 bb 77 00",
+              "asm": "call 0xd3e5e0"
+            },
+            {
+              "va": "0x5c2a5a",
+              "bytes": "e8 41 ec e3 ff",
+              "asm": "call 0x4016a0"
+            },
+            {
+              "va": "0x5c2a5f",
+              "bytes": "e8 dc b2 38 00",
+              "asm": "call 0x94dd40"
+            },
+            {
+              "va": "0x5c2a64",
+              "bytes": "e8 47 d6 37 00",
+              "asm": "call 0x9400b0"
+            },
+            {
+              "va": "0x5c2a69",
+              "bytes": "b9 f0 d7 18 01",
+              "asm": "mov ecx, 0x118d7f0"
+            },
+            {
+              "va": "0x5c2a6e",
+              "bytes": "e8 fd 51 33 00",
+              "asm": "call 0x8f7c70"
+            },
+            {
+              "va": "0x5c2a73",
+              "bytes": "83 3d 60 70 1f 01 01",
+              "asm": "cmp dword ptr [0x11f7060], 1"
+            },
+            {
+              "va": "0x5c2a7a",
+              "bytes": "75 17",
+              "asm": "jne 0x5c2a93"
+            },
+            {
+              "va": "0x5c2a7c",
+              "bytes": "83 3d b4 88 20 01 ff",
+              "asm": "cmp dword ptr [0x12088b4], -1"
+            },
+            {
+              "va": "0x5c2a83",
+              "bytes": "75 0e",
+              "asm": "jne 0x5c2a93"
+            },
+            {
+              "va": "0x5c2a85",
+              "bytes": "83 3d 20 77 03 01 12",
+              "asm": "cmp dword ptr [0x1037720], 0x12"
+            },
+            {
+              "va": "0x5c2a8c",
+              "bytes": "74 05",
+              "asm": "je 0x5c2a93"
+            }
+          ],
+          "call_target_navigation_only": "0x4016a0"
+        }
+      ]
+    }
+  },
+  "strings": {
+    "frontend_menus.xml": [
+      {
+        "va_navigation_only": "0xf8d2c9",
+        "raw_pointer_occurrences_not_proven_xrefs": []
+      },
+      {
+        "va_navigation_only": "0xf8d609",
+        "raw_pointer_occurrences_not_proven_xrefs": []
+      }
+    ],
+    "frontend_pc.dat": [],
+    "frontend.dat": [],
+    "sMenuDisplayValue": [
+      {
+        "va_navigation_only": "0xf8d61c",
+        "raw_pointer_occurrences_not_proven_xrefs": [
+          "0x5be3c1"
+        ]
+      }
+    ],
+    "sMenu": [],
+    "sMenuScreen": [
+      {
+        "va_navigation_only": "0xf8d5bc",
+        "raw_pointer_occurrences_not_proven_xrefs": [
+          "0x5be4c7"
+        ]
+      }
+    ],
+    "MENU_MAP": [],
+    "PREF_SFXVOLUME": [],
+    "MAP_map_scroll_zoom": []
+  },
+  "data": [
+    {
+      "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\common\\data\\frontend.dat",
+      "bytes": 13455,
+      "sha256": "521f4dfab1aa14d0c3f64ca03bdf88a844bad2438ff47f868827e9cbba45b637",
+      "map_rows": [
+        "MAP_map_border_init 800.00000 0.00000",
+        "MAP_map_border_length 1600.00000 0.00000",
+        "MAP_map_scroll_zoom 2.00000 4.00000",
+        "MAP_map_WestNorth_limit 2950.00000 2275.00000",
+        "MAP_map_EastSouth_limit 2330.00000 1150.00000",
+        "MAP_area_name_position 0.90000 0.23000",
+        "MAP_area_name_size 0.28600 0.39000",
+        "MAP_blip_name_position 0.02100 0.01600",
+        "MAP_blip_name_size 0.34800 0.51400",
+        "MAP_legend_position 0.09400 0.18000",
+        "MAP_legend_text_size 0.34800 0.51400",
+        "MAP_legend_blip_size 0.02400 0.03300",
+        "MAP_legend_spacing 0.01000 0.04500",
+        "MAP_cursor_fade 0.28000 0.50400",
+        "MAP_blip_hover_alpha 200.00000 0.00000",
+        "MAP_CURSOR_SIZE 0.27600 0.38000",
+        "MAP_map_border_init 800.00000 0.00000",
+        "MAP_map_border_length 1600.00000 0.00000",
+        "MAP_map_scroll_zoom 2.00000 4.00000",
+        "MAP_map_WestNorth_limit 2950.00000 2275.00000",
+        "MAP_map_EastSouth_limit 2330.00000 1150.00000",
+        "MAP_area_name_position 0.90000 0.23100",
+        "MAP_area_name_size 0.28600 0.39000",
+        "MAP_blip_name_position 0.02100 0.01600",
+        "MAP_blip_name_size 0.34800 0.51400",
+        "MAP_legend_position 0.09400 0.18000",
+        "MAP_legend_text_size 0.34800 0.51400",
+        "MAP_legend_blip_size 0.02400 0.03300",
+        "MAP_legend_spacing 0.01000 0.04500",
+        "MAP_cursor_fade 0.28200 0.50400",
+        "MAP_blip_hover_alpha 200.00000 0.00000",
+        "MAP_CURSOR_SIZE 0.27400 0.29400"
+      ]
+    },
+    {
+      "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\common\\data\\frontend_360.dat",
+      "bytes": 13883,
+      "sha256": "c2aa149fa746931201dc9c9498d40573929e4eb028ceb31e6c51dd6e0303a4db",
+      "map_rows": [
+        "MAP_map_border_init 800.00000 0.00000",
+        "MAP_map_border_length 1600.00000 0.00000",
+        "MAP_map_scroll_zoom 2.00000 4.00000",
+        "MAP_map_WestNorth_limit 2950.00000 2275.00000",
+        "MAP_map_EastSouth_limit 2330.00000 1150.00000",
+        "MAP_area_name_position 0.90200 0.22800",
+        "MAP_area_name_size 0.28600 0.39000",
+        "MAP_blip_name_position 0.02100 0.01600",
+        "MAP_blip_name_size 0.33800 0.51400",
+        "MAP_legend_position 0.09400 0.17900",
+        "MAP_legend_text_size 0.33800 0.51400",
+        "MAP_legend_blip_size 0.02400 0.03300",
+        "MAP_legend_spacing 0.01000 0.04300",
+        "MAP_cursor_fade 0.28000 0.50400",
+        "MAP_blip_hover_alpha 200.00000 0.00000",
+        "MAP_CURSOR_SIZE 0.27600 0.32800",
+        "MAP_map_border_init 800.00000 0.00000",
+        "MAP_map_border_length 1600.00000 0.00000",
+        "MAP_map_scroll_zoom 2.00000 4.00000",
+        "MAP_map_WestNorth_limit 2950.00000 2275.00000",
+        "MAP_map_EastSouth_limit 2330.00000 1150.00000",
+        "MAP_area_name_position 0.90000 0.22700",
+        "MAP_area_name_size 0.28600 0.39000",
+        "MAP_blip_name_position 0.02100 0.01600",
+        "MAP_blip_name_size 0.33800 0.51400",
+        "MAP_legend_position 0.09400 0.17600",
+        "MAP_legend_text_size 0.33800 0.51400",
+        "MAP_legend_blip_size 0.02400 0.03300",
+        "MAP_legend_spacing 0.01000 0.04500",
+        "MAP_cursor_fade 0.28200 0.50400",
+        "MAP_blip_hover_alpha 200.00000 0.00000",
+        "MAP_CURSOR_SIZE 0.27400 0.29400"
+      ]
+    },
+    {
+      "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\common\\data\\frontend_menus.xml",
+      "bytes": 63998,
+      "sha256": "ecae9397ac72e39502ffd99ceaab250122255995de845fbadf0f1f2886ae21ec",
+      "root": "FrontendMenu",
+      "child_sections": [
+        "sMenuDisplayValue",
+        "sMenuScreen"
+      ],
+      "tag_counts": {
+        "FrontendMenu": 0,
+        "menu": 54,
+        "menu360": 3,
+        "menupc": 30,
+        "menupldebug": 1,
+        "menups3": 1,
+        "options": 428,
+        "options360": 16,
+        "optionspc": 68,
+        "optionsps3": 12,
+        "sMenuDisplayValue": 1,
+        "sMenuScreen": 1
+      },
+      "map_elements": [
+        {
+          "tag": "menu",
+          "attributes": {
+            "HeaderText": "MH_MAP",
+            "enum": "SCR_MAP"
+          }
+        },
+        {
+          "tag": "optionspc",
+          "attributes": {
+            "action": "MENUOPT_REMAP_KEYBOARD",
+            "label": "MO_KBMAP",
+            "value": "PREF_NULL",
+            "scaler": "0",
+            "displayValue": "MENU_DISPLAY_NONE"
+          }
+        },
+        {
+          "tag": "optionspc",
+          "attributes": {
+            "action": "MENUOPT_SHOW_CONTROLLER",
+            "label": "MO_CTRLMAP",
+            "value": "PREF_NULL",
+            "scaler": "0",
+            "displayValue": "MENU_DISPLAY_NONE"
+          }
+        },
+        {
+          "tag": "menu",
+          "attributes": {
+            "HeaderText": "MH_CON",
+            "enum": "SCR_REMAP_KEYBOARD"
+          }
+        }
+      ]
+    },
+    {
+      "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\common\\data\\frontend_pc.dat",
+      "bytes": 23257,
+      "sha256": "2a4102e63e96cefd836303614a42a0999ec6458dc67bc16dfa96512321a0c76b",
+      "map_rows": [
+        "MAP_map_border_init 800.00000 0.00000",
+        "MAP_map_border_length 1600.00000 0.00000",
+        "MAP_map_scroll_zoom 2.00000 4.00000",
+        "MAP_map_WestNorth_limit 2950.00000 2275.00000",
+        "MAP_map_EastSouth_limit 2330.00000 1150.00000",
+        "MAP_area_name_position 0.91000 0.22100",
+        "MAP_area_name_size 0.19200 0.29250",
+        "MAP_blip_name_position 0.02100 0.01600",
+        "MAP_blip_name_size 0.25350 0.32200",
+        "MAP_legend_position 0.08800 0.18400",
+        "MAP_legend_text_size 0.24400 0.38550",
+        "MAP_legend_blip_size 0.01800 0.02475",
+        "MAP_legend_spacing 0.00800 0.03300",
+        "MAP_cursor_fade 0.28000 0.50400",
+        "MAP_blip_hover_alpha 200.00000 0.00000",
+        "MAP_CURSOR_SIZE 0.27600 0.32800",
+        "MAP_area_name_position_43 0.90900 0.22100",
+        "MAP_area_name_position_54 0.84300 0.22100",
+        "MAP_map_border_init 800.00000 0.00000",
+        "MAP_map_border_length 1600.00000 0.00000",
+        "MAP_map_scroll_zoom 2.00000 4.00000",
+        "MAP_map_WestNorth_limit 2950.00000 2275.00000",
+        "MAP_map_EastSouth_limit 2330.00000 1150.00000",
+        "MAP_area_name_position 0.90000 0.21500",
+        "MAP_area_name_size 0.21450 0.29250",
+        "MAP_blip_name_position 0.02100 0.01600",
+        "MAP_blip_name_size 0.25350 0.38550",
+        "MAP_legend_position 0.09400 0.17700",
+        "MAP_legend_text_size 0.25350 0.38550",
+        "MAP_legend_blip_size 0.01800 0.02475",
+        "MAP_legend_spacing 0.01000 0.03300",
+        "MAP_cursor_fade 0.28200 0.50400",
+        "MAP_blip_hover_alpha 200.00000 0.00000",
+        "MAP_CURSOR_SIZE 0.27400 0.29400",
+        "MAP_area_name_position_43 0.90900 0.21500",
+        "MAP_area_name_position_54 0.84300 0.22100"
+      ]
+    },
+    {
+      "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\update\\common\\data\\frontend_menus.xml",
+      "bytes": 89828,
+      "sha256": "6ada989e7ebe1754614d8e59419bf84a50c143f529e269bac6fbce1249cb72a4",
+      "root": "FrontendMenu",
+      "child_sections": [
+        "sMenuDisplayValue",
+        "sMenuScreen"
+      ],
+      "tag_counts": {
+        "FrontendMenu": 0,
+        "menu": 54,
+        "menu360": 3,
+        "menupc": 38,
+        "menupldebug": 1,
+        "menups3": 1,
+        "options": 494,
+        "options360": 16,
+        "optionspc": 173,
+        "optionsps3": 12,
+        "sMenuDisplayValue": 1,
+        "sMenuScreen": 1
+      },
+      "map_elements": [
+        {
+          "tag": "optionspc",
+          "attributes": {
+            "action": "MENUOPT_ADJUST",
+            "label": "TranspMapMenu",
+            "value": "PREF_TRANSPARENTMAPMENU",
+            "scaler": "2",
+            "displayValue": "MENU_DISPLAY_ON_OFF"
+          }
+        },
+        {
+          "tag": "menu",
+          "attributes": {
+            "HeaderText": "MH_MAP",
+            "enum": "SCR_MAP"
+          }
+        },
+        {
+          "tag": "optionspc",
+          "attributes": {
+            "action": "MENUOPT_REMAP_KEYBOARD",
+            "label": "MO_KBMAP",
+            "value": "PREF_NULL",
+            "scaler": "0",
+            "displayValue": "MENU_DISPLAY_NONE"
+          }
+        },
+        {
+          "tag": "optionspc",
+          "attributes": {
+            "action": "MENUOPT_SHOW_CONTROLLER",
+            "label": "MO_CTRLMAP",
+            "value": "PREF_NULL",
+            "scaler": "0",
+            "displayValue": "MENU_DISPLAY_NONE"
+          }
+        },
+        {
+          "tag": "menu",
+          "attributes": {
+            "HeaderText": "MH_CON",
+            "enum": "SCR_REMAP_KEYBOARD"
+          }
+        },
+        {
+          "tag": "optionspc",
+          "attributes": {
+            "action": "MENUOPT_ADJUST",
+            "label": "Tone Mapping",
+            "value": "PREF_TONEMAPPING",
+            "scaler": "2",
+            "displayValue": "MENU_DISPLAY_ON_OFF"
+          }
+        },
+        {
+          "tag": "optionspc",
+          "attributes": {
+            "action": "MENUOPT_ADJUST",
+            "label": "Tone Mapping",
+            "value": "PREF_TONEMAPPING",
+            "scaler": "2",
+            "displayValue": "MENU_DISPLAY_ON_OFF"
+          }
+        },
+        {
+          "tag": "optionspc",
+          "attributes": {
+            "action": "MENUOPT_ADJUST",
+            "label": "TranspMapMenu",
+            "value": "PREF_TRANSPARENTMAPMENU",
+            "scaler": "2",
+            "displayValue": "MENU_DISPLAY_ON_OFF"
+          }
+        }
+      ]
+    },
+    {
+      "path": "C:\\Games\\Grand Theft Auto IV\\GTAIV\\update\\common\\data\\frontend_pc.dat",
+      "bytes": 23351,
+      "sha256": "3644ba9cf0faee8d5b7022a2406302995ed073804fbcc3921223d21aea4c4adc",
+      "map_rows": [
+        "MAP_map_border_init 800.00000 0.00000",
+        "MAP_map_border_length 1600.00000 0.00000",
+        "MAP_map_scroll_zoom 2.00000 4.00000",
+        "MAP_map_WestNorth_limit 2950.00000 2275.00000",
+        "MAP_map_EastSouth_limit 2330.00000 1150.00000",
+        "MAP_area_name_position 0.91000 0.22100",
+        "MAP_area_name_size 0.19200 0.29250",
+        "MAP_blip_name_position 0.02100 0.01600",
+        "MAP_blip_name_size 0.25350 0.32200",
+        "MAP_legend_position 0.08800 0.18400",
+        "MAP_legend_text_size 0.24400 0.38550",
+        "MAP_legend_blip_size 0.01800 0.02475",
+        "MAP_legend_spacing 0.00800 0.03300",
+        "MAP_cursor_fade 0.28000 0.50400",
+        "MAP_blip_hover_alpha 200.00000 0.00000",
+        "MAP_CURSOR_SIZE 0.27600 0.32800",
+        "MAP_area_name_position_43 0.90900 0.22100",
+        "MAP_area_name_position_54 0.84300 0.22100",
+        "MAP_map_border_init 800.00000 0.00000",
+        "MAP_map_border_length 1600.00000 0.00000",
+        "MAP_map_scroll_zoom 2.00000 4.00000",
+        "MAP_map_WestNorth_limit 2950.00000 2275.00000",
+        "MAP_map_EastSouth_limit 2330.00000 1150.00000",
+        "MAP_area_name_position 0.90000 0.21500",
+        "MAP_area_name_size 0.21450 0.29250",
+        "MAP_blip_name_position 0.02100 0.01600",
+        "MAP_blip_name_size 0.25350 0.38550",
+        "MAP_legend_position 0.09400 0.17700",
+        "MAP_legend_text_size 0.25350 0.38550",
+        "MAP_legend_blip_size 0.01800 0.02475",
+        "MAP_legend_spacing 0.01000 0.03300",
+        "MAP_cursor_fade 0.28200 0.50400",
+        "MAP_blip_hover_alpha 200.00000 0.00000",
+        "MAP_CURSOR_SIZE 0.27400 0.29400",
+        "MAP_area_name_position_43 0.90900 0.21500",
+        "MAP_area_name_position_54 0.84300 0.22100"
+      ]
+    }
+  ]
+}
