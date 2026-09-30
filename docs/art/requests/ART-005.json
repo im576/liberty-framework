@@ -41,6 +41,33 @@
       "revision": 1,
       "by": "claude",
       "prompt": "A 2 by 2 atlas of four realistic firearm muzzle flashes seen from the side, each in its own quarter on a fully transparent background, the (invisible) muzzle at the left edge of each quarter and the flash pointing right. Short, sharp, photographic flash: white-hot core, orange-yellow petals, faint grey smoke wisps; each variant a different shape and size (small to large). No gun, no hands, no background, no glow halo filling the cell, no stylisation."
+    },
+    {
+      "at": "2026-09-30T04:51:10+00:00",
+      "event": "blocked",
+      "revision": 1,
+      "by": "Codex",
+      "notes": "Two independent built-in generations; exact request prompt followed by all verbatim styleConstraints and prohibited entries; requested dimensions/aspect/transparency supplied; no image postprocessing; seed and underlying model/version unavailable. Both candidates show large flame plumes surrounded by dense smoke clouds rather than short sharp muzzle flashes with faint smoke wisps; some origins are inset from the quarter's left edge. Exact specification not achieved with the available generator. Failed candidates retained; status remains requested.",
+      "model": "OpenAI image_gen built-in (model/version not exposed)",
+      "prompt": "A 2 by 2 atlas of four realistic firearm muzzle flashes seen from the side, each in its own quarter on a fully transparent background, the (invisible) muzzle at the left edge of each quarter and the flash pointing right. Short, sharp, photographic flash: white-hot core, orange-yellow petals, faint grey smoke wisps; each variant a different shape and size (small to large). No gun, no hands, no background, no glow halo filling the cell, no stylisation.",
+      "files": [
+        {
+          "path": "art/generated/ART-005/r1/art_005_1.png",
+          "sha256": "2511fe5516930c33844f51b77c26f7149cf22ef00b1e1f0a1c52e7a5b2989b75",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-005/r1/art_005_2.png",
+          "sha256": "9d34dc34306739e42ed4f72cda66d04cf6ac6f6a4db1e65796521ad3b97b83db",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ]
     }
   ]
 }
