@@ -7,6 +7,8 @@ wait 5000
 time 13 0
 weather 1
 give 14 120
+heading 0
+wait 500
 spawncar admiral 8
 expect "autopilot_spawncar handle=" 15
 wait 1500
