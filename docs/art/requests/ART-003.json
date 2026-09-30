@@ -1,7 +1,7 @@
 {
   "id": "ART-003",
   "title": "Blood pool decal",
-  "status": "requested",
+  "status": "generated",
   "priority": "P0",
   "kind": "decal",
   "prompt": "A single realistic pool of blood seen from directly above (orthographic), centred, irregular organic outline with a few smaller satellite drops, on a fully transparent background. Deep dark red centre, slightly thinner translucent edges, a thin darker dried rim, subtle wet sheen without visible reflections of any environment. Photographic, grounded, no ground texture, no lighting, no shadows.",
@@ -62,6 +62,49 @@
         {
           "path": "art/generated/ART-003/r1/art_003_2.png",
           "sha256": "62e6ed192701c9b7eb8dfa4138d514b4ba88de4ac57210f625b3c136a2adea5a",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ]
+    },
+    {
+      "at": "2026-09-30T06:43:46+00:00",
+      "event": "generated",
+      "revision": 1,
+      "by": "Codex",
+      "notes": "Two fresh independent generations (_3,_4) from current prompt plus verbatim constraints; all earlier candidates preserved and four registered. _1: broad specular patches and shaded raised liquid. _2: broad glossy highlights, rounded raised droplets. _3: bright broad reflective patches and glossy raised droplets. _4: strong specular patch across centre-right, numerous shiny drops and bubble-like surface detail. Real alpha preserved; no post-processing or acceptance decision; built-in version/seeds unavailable.",
+      "model": "OpenAI image_gen built-in (model/version not exposed)",
+      "prompt": "A single realistic pool of blood seen from directly above (orthographic), centred, irregular organic outline with a few smaller satellite drops, on a fully transparent background. Deep dark red centre, slightly thinner translucent edges, a thin darker dried rim, subtle wet sheen without visible reflections of any environment. Photographic, grounded, no ground texture, no lighting, no shadows.",
+      "files": [
+        {
+          "path": "art/generated/ART-003/r1/art_003_1.png",
+          "sha256": "53d097655b69b1f12f9775bd2071e60570ffadb65e312652f14ec6f4d1bb87f2",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-003/r1/art_003_2.png",
+          "sha256": "62e6ed192701c9b7eb8dfa4138d514b4ba88de4ac57210f625b3c136a2adea5a",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-003/r1/art_003_3.png",
+          "sha256": "9a32bb74d726e95cd8e21331d9d640c506f5fa35a8c8c7e1bb0fe2781ef7de84",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-003/r1/art_003_4.png",
+          "sha256": "d50cc6e1ce14f6e7167fa758fb12a9354b547ea42c2ac728016cb91ff9f6cff8",
           "width": 1254,
           "height": 1254,
           "mode": "RGBA",
