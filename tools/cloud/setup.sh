@@ -90,6 +90,8 @@ fi
 BLENDER_PY="$TOOLCHAINS/blender-py"
 if ! "$BLENDER_PY/bin/python" -c "import bpy, sys; sys.exit(bpy.app.version_string.split()[0] != '$BPY_VERSION')" >/dev/null 2>&1; then
     command -v uv >/dev/null || python3 -m pip install -q uv >/dev/null 2>&1 || true
+# Pillow for the art-request queue (tools/art/artq.py).
+python3 -c 'import PIL' 2>/dev/null || python3 -m pip install -q pillow >/dev/null 2>&1 || true
     UV="$(command -v uv || echo "$HOME/.local/bin/uv")"
     log "installing bpy $BPY_VERSION (about 400 MB)"
     "$UV" venv -q --allow-existing --python 3.13 "$BLENDER_PY" >/dev/null 2>&1 &&

@@ -116,6 +116,13 @@ else
     record "PowerShell unit tests" NOT-RUN "pwsh or tools/tests/Run-Tests.ps1 missing"
 fi
 
+# 6b. Art-request queue (docs/art): the lifecycle self-test and every request in the repository.
+if [ -f tools/art/artq.py ] && python3 -c 'import PIL' 2>/dev/null; then
+    run "Art-request queue" art-queue.log '^art-queue' sh -c 'python3 tools/art/artq.py selftest && python3 tools/art/artq.py validate'
+else
+    record "Art-request queue" NOT-RUN "tools/art/artq.py or Pillow missing"
+fi
+
 # 7. Local check queue (tests/local/checks.json) is valid and the generated plan is current.
 if [ -f tools/checks/checks.py ]; then
     run "Check queue + plan in sync" checks.log '^checks:' python3 tools/checks/checks.py validate
