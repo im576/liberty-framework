@@ -242,7 +242,9 @@ function Invoke-PackageInstall($Context, $Check) {
     $ps = Get-PowerShellPath
     $tools = Join-Path $Context.Repo 'tools'
     $log = Join-Path $Context.Results ($Check.id + '.log')
-    $package = (Get-ScriptArguments (Join-Path $tools 'package-phase2.ps1')) + @('-GameDirectory', $Context.Game, '-ScriptHookDotNetReference', $Context.Shdn)
+    # -Fast: the offline verifier and the self-tests are checks of their own (LOOP-verify, LOOP-content-selftest); repeating
+    # them inside every package step held the game lock for minutes while parallel sessions waited.
+    $package = (Get-ScriptArguments (Join-Path $tools 'package-phase2.ps1')) + @('-GameDirectory', $Context.Game, '-ScriptHookDotNetReference', $Context.Shdn, '-Fast')
     if ($Context.Lvs) { $package += @('-LvsDirectory', $Context.Lvs) }
     $run = Invoke-ChildProcess $ps $package 2400 $log $Context.Repo
     if ($run.TimedOut -or $run.ExitCode -ne 0) { return New-Result 'FAIL' "package-phase2.ps1 failed (exit $($run.ExitCode))" @((Split-Path -Leaf $log)) }

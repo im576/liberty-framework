@@ -2,7 +2,10 @@ param(
     [Parameter(Mandatory = $true)][string] $GameDirectory,
     [Parameter(Mandatory = $true)][string] $ScriptHookDotNetReference,
     # Extracted Liberty Vehicle Services CE release (MIT, ekzestean): source for the T-023 label patch.
-    [string] $LvsDirectory
+    [string] $LvsDirectory,
+    # Skip the validation steps that tools/verify-local.ps1 already runs as its own checks (offline verifier, model and
+    # content self-tests). The artifacts are built the same way; only the repeated validation is left out.
+    [switch] $Fast
 )
 
 # Package only Phase 2 scripts/config. Phase 1's already-installed gold models and
@@ -20,8 +23,10 @@ New-Item -ItemType Directory -Force -Path $stage | Out-Null
 if ($LASTEXITCODE -ne 0) { throw 'Phase 2 build failed.' }
 & (Join-Path $PSScriptRoot 'build-core.ps1')
 if ($LASTEXITCODE -ne 0) { throw 'LibertyCore build failed.' }
-& (Join-Path $PSScriptRoot 'verify.ps1') -GameDirectory $game | Select-String -Pattern '^(FAIL|RESULT)'
-if ($LASTEXITCODE -ne 0) { throw 'Phase 2 offline verification failed.' }
+if (-not $Fast) {
+    & (Join-Path $PSScriptRoot 'verify.ps1') -GameDirectory $game | Select-String -Pattern '^(FAIL|RESULT)'
+    if ($LASTEXITCODE -ne 0) { throw 'Phase 2 offline verification failed.' }
+}
 
 function Stage-File([string] $source, [string] $relativePath, [string] $policy) {
     if (-not (Test-Path -LiteralPath $source -PathType Leaf)) { throw "Missing Phase 2 source: $source" }
@@ -125,8 +130,10 @@ $modelSources = @((Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tools\finish
 & $compiler /nologo /target:exe /platform:x86 /warn:4 /warnaserror+ "/out:$modelTool" /reference:System.Runtime.Serialization.dll /reference:System.Drawing.dll /reference:System.Core.dll $modelSources
 if ($LASTEXITCODE -ne 0) { throw 'Model tool build failed.' }
 $modelsOut = Join-Path $work 'models'
-& $modelTool selftest $game 'pc\models\cdimages\weapons.img' | Select-Object -Last 1
-if ($LASTEXITCODE -ne 0) { throw 'Model tool round-trip self-test failed.' }
+if (-not $Fast) {
+    & $modelTool selftest $game 'pc\models\cdimages\weapons.img' | Select-Object -Last 1
+    if ($LASTEXITCODE -ne 0) { throw 'Model tool round-trip self-test failed.' }
+}
 & $modelTool sling $game (Join-Path $repoRoot 'config\models\sling.json') $modelsOut
 if ($LASTEXITCODE -ne 0) { throw 'Sling build failed.' }
 Stage-File (Join-Path $modelsOut 'LibertyModels.img') 'update\LibertyFramework\LibertyModels.img' 'replace'
@@ -149,8 +156,10 @@ if (-not ($datLines | Where-Object { $_.Trim() -ieq 'IDE common:/data/lf_models.
 # packed into LibertyContent.img + lf_content.ide; a failed asset fails the package.
 & (Join-Path $PSScriptRoot 'build-content.ps1')
 if ($LASTEXITCODE -ne 0) { throw 'Content compiler build failed.' }
-& (Join-Path $repoRoot 'tools\content\bin\LibertyContent.exe') selftest
-if ($LASTEXITCODE -ne 0) { throw 'Content compiler self-test failed.' }
+if (-not $Fast) {
+    & (Join-Path $repoRoot 'tools\content\bin\LibertyContent.exe') selftest
+    if ($LASTEXITCODE -ne 0) { throw 'Content compiler self-test failed.' }
+}
 $contentAssets = @(Get-ChildItem -LiteralPath (Join-Path $repoRoot 'content') -Recurse -Filter 'asset.json' -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
 if ($contentAssets.Count -gt 0) {
     $contentOut = Join-Path $work 'content'
