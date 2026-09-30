@@ -7,7 +7,7 @@ you never edit game code, other requests or approved/rejected art.
    (`P0` first), then by id.
 2. For each request, generate from `prompt` exactly, honouring `styleConstraints`, `prohibited`, `aspectRatio` and
    `transparency` (`alpha`/`cutout` need a real alpha channel: PNG with transparency, not a white or black background).
-   Generate at `dimensions` or larger **at the same aspect ratio**. One to four candidates.
+   Generate at `dimensions` or larger **at the same aspect ratio** (square requests: 1024x1024 is fine for 512 and 1024). For `kind: concept` any size your generator supports is fine; use the nearest aspect ratio. One to four candidates.
 3. Save them as PNG in `art/generated/<id>/r<revision>/` (the request's `outputPath` plus `r` and its `revision`), named
    `<outputName without .png>_1.png`, `_2.png`, ... Do not write anywhere else.
 4. Register them: `python tools/art/artq.py register <id> --by <your name> --model <model and version> --notes "<seed or

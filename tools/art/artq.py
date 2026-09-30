@@ -178,6 +178,9 @@ def technical_problems(request, info):
     want_w, want_h = request["dimensions"]["width"], request["dimensions"]["height"]
     if "error" in info:
         return ["unreadable image: " + info["error"]]
+    if request["kind"] == "concept":
+        # Concepts are references, never shipped: any size or aspect the generator supports is fine.
+        return ["transparency %s requested but the image has no alpha channel" % request["transparency"]] if request["transparency"] != "none" and not info["hasAlpha"] else []
     if abs(info["width"] / info["height"] - want_w / want_h) > ASPECT_TOLERANCE * (want_w / want_h):
         problems.append("aspect %dx%d does not match %dx%d" % (info["width"], info["height"], want_w, want_h))
     if info["width"] < want_w or info["height"] < want_h:
