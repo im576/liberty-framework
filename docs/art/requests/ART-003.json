@@ -41,6 +41,33 @@
       "revision": 1,
       "by": "claude",
       "prompt": "A single realistic pool of blood seen from directly above (orthographic), centred, irregular organic outline with a few smaller satellite drops, on a fully transparent background. Deep dark red centre, slightly thinner translucent edges, a thin darker dried rim, subtle wet sheen without visible reflections of any environment. Photographic, grounded, no ground texture, no lighting, no shadows."
+    },
+    {
+      "at": "2026-09-30T04:46:59+00:00",
+      "event": "blocked",
+      "revision": 1,
+      "by": "Codex",
+      "notes": "Two independent built-in generations; exact request prompt followed by all verbatim styleConstraints and prohibited entries; requested dimensions/aspect/transparency supplied; no image postprocessing; seed and underlying model/version unavailable. Both candidates contain broad bright specular reflection patches and shaded raised liquid; this exceeds subtle wet sheen and conflicts with no lighting. Failed candidates retained for provenance; status remains requested.",
+      "model": "OpenAI image_gen built-in (model/version not exposed)",
+      "prompt": "A single realistic pool of blood seen from directly above (orthographic), centred, irregular organic outline with a few smaller satellite drops, on a fully transparent background. Deep dark red centre, slightly thinner translucent edges, a thin darker dried rim, subtle wet sheen without visible reflections of any environment. Photographic, grounded, no ground texture, no lighting, no shadows.",
+      "files": [
+        {
+          "path": "art/generated/ART-003/r1/art_003_1.png",
+          "sha256": "53d097655b69b1f12f9775bd2071e60570ffadb65e312652f14ec6f4d1bb87f2",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-003/r1/art_003_2.png",
+          "sha256": "62e6ed192701c9b7eb8dfa4138d514b4ba88de4ac57210f625b3c136a2adea5a",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ]
     }
   ]
 }
