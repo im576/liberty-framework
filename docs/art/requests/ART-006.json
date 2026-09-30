@@ -41,6 +41,33 @@
       "revision": 1,
       "by": "claude",
       "prompt": "A 2 by 2 atlas of four realistic firearm muzzle flashes seen from directly in front, each centred in its quarter on a fully transparent background: a bright white-hot centre with four to six irregular orange-yellow star petals and faint smoke, different petal counts and sizes per variant. Photographic, short and sharp, no gun, no background, no neon or cartoon shapes."
+    },
+    {
+      "at": "2026-09-30T04:53:10+00:00",
+      "event": "blocked",
+      "revision": 1,
+      "by": "Codex",
+      "notes": "Two independent built-in generations; exact request prompt followed by all verbatim styleConstraints and prohibited entries; requested dimensions/aspect/transparency supplied; no image postprocessing; seed and underlying model/version unavailable. Both candidates include a three-petal flash despite the required four-to-six petals per variant, and dense smoke rather than faint smoke. Exact specification not achieved. Failed candidates retained for provenance; status remains requested.",
+      "model": "OpenAI image_gen built-in (model/version not exposed)",
+      "prompt": "A 2 by 2 atlas of four realistic firearm muzzle flashes seen from directly in front, each centred in its quarter on a fully transparent background: a bright white-hot centre with four to six irregular orange-yellow star petals and faint smoke, different petal counts and sizes per variant. Photographic, short and sharp, no gun, no background, no neon or cartoon shapes.",
+      "files": [
+        {
+          "path": "art/generated/ART-006/r1/art_006_1.png",
+          "sha256": "72092252366de8f804e70215c23aa9f939ab4248b55cba75268adab51bb54a0f",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-006/r1/art_006_2.png",
+          "sha256": "1474a8156749302f449432da55e4554638c0687dfba2ca6f97c2738c380c90dd",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ]
     }
   ]
 }
