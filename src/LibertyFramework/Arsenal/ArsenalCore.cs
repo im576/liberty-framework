@@ -87,6 +87,63 @@ namespace LibertyFramework.Arsenal
             Engine.Events.Subscribe<global::Liberty.Sdk.Events.PlayerShot>(this, e => inventoryDirty = true);
             Engine.Events.Subscribe<global::Liberty.Sdk.Events.ReloadFinished>(this, e => inventoryDirty = true);
             Engine.Events.Subscribe<global::Liberty.Sdk.Events.PlayerDied>(this, e => inventoryDirty = true);
+            Engine.Commands.Register(this, "arsenal", "arsenal [status] | roundtrip - carried and stored weapons; roundtrip saves the state, loads it back and compares (T-044)", ArsenalCommand);
+        }
+
+        // Test surface of T-044: what Niko carries and what every storage bin holds, and the save/load identity check.
+        private string ArsenalCommand(string[] args)
+        {
+            if (state == null || config == null) { return "arsenal not ready"; }
+            string verb = args.Length > 0 ? args[0] : "status";
+            if (verb == "roundtrip")
+            {
+                inventoryDirty = true;
+                Persist();
+                ArsenalState loaded = ArsenalStateStore.LoadOrEmpty(statePath, error => RuntimeLog.Error("arsenal_roundtrip_load_failed error=" + error));
+                string before = Summarize(state), after = Summarize(loaded);
+                return "arsenal_roundtrip identical=" + (before == after) + " records=" + (loaded.CarriedRecords.Count + StoredCount(loaded)) +
+                    (before == after ? "" : " before=" + before + " after=" + after);
+            }
+            if (verb != "status") { return "arsenal [status] | roundtrip"; }
+            int ownedCarried = 0;
+            List<string> carriedText = new List<string>();
+            foreach (WeaponRecord record in carried)
+            {
+                if (record.Owned) { ownedCarried++; }
+                carriedText.Add(record.WeaponId + "/" + record.Category + "/" + (record.Owned ? "owned" : "found") + "/" + record.Ammo);
+            }
+            List<string> bins = new List<string>();
+            int ownedStored = 0;
+            foreach (StorageBin bin in state.SafehouseStashes) { bins.Add("stash:" + bin.Id + ":" + bin.Weapons.Count); ownedStored += bin.Weapons.Count; }
+            foreach (StorageBin bin in state.VehicleTrunks) { bins.Add("trunk:" + bin.Id + ":" + bin.Weapons.Count); ownedStored += bin.Weapons.Count; }
+            return "arsenal_status loadout=" + (ArsenalPolicy.LoadoutActive(config) ? "on" : "off") + " episode=" + episode +
+                " carried=" + (carriedText.Count == 0 ? "none" : string.Join(",", carriedText.ToArray())) + " owned_carried=" + ownedCarried +
+                " stored=" + ownedStored + " owned_total=" + (ownedCarried + ownedStored) + " bins=" + (bins.Count == 0 ? "none" : string.Join(",", bins.ToArray())) +
+                " last_safehouse=" + (string.IsNullOrEmpty(state.LastSafehouseId) ? "none" : state.LastSafehouseId) + " disabled=" + disabled;
+        }
+
+        private static int StoredCount(ArsenalState source)
+        {
+            int count = 0;
+            foreach (StorageBin bin in source.SafehouseStashes) { count += bin.Weapons.Count; }
+            foreach (StorageBin bin in source.VehicleTrunks) { count += bin.Weapons.Count; }
+            return count;
+        }
+
+        // Every record with its identity, in order: two states are "identical" when these lines match.
+        private static string Summarize(ArsenalState source)
+        {
+            System.Text.StringBuilder text = new System.Text.StringBuilder();
+            text.Append("last=" + source.LastSafehouseId + "|" + source.LastVehicleKey + "|owned=" + string.Join(",", source.OwnedCarried.ConvertAll(id => id.ToString()).ToArray()));
+            foreach (WeaponRecord record in source.CarriedRecords) { text.Append(";c:" + Line(record)); }
+            foreach (StorageBin bin in source.SafehouseStashes) { foreach (WeaponRecord record in bin.Weapons) { text.Append(";s:" + bin.Id + ":" + Line(record)); } }
+            foreach (StorageBin bin in source.VehicleTrunks) { foreach (WeaponRecord record in bin.Weapons) { text.Append(";t:" + bin.Id + ":" + Line(record)); } }
+            return text.ToString();
+        }
+
+        private static string Line(WeaponRecord record)
+        {
+            return record.WeaponId + "/" + record.Category + "/" + record.Ammo + "/" + record.Owned + "/" + record.InstanceId + "/" + record.Finish + "/" + record.CatalogId;
         }
 
         int ICarriedWeaponsSource.Revision { get { return revision; } }

@@ -220,7 +220,6 @@ namespace LibertyFramework.Arsenal.Holsters
                         Function.Call<int>("GET_CHAR_TEXTURE_VARIATION", ped, component));
                 }
                 string line = "holsters_outfit_components model=" + ped.Model.Hash.ToString("X8") + " drawable/texture " + string.Join(" ", parts.ToArray());
-                RuntimeLog.Info(line);
                 return line;
             }
             if (verb == "outfit")
@@ -232,7 +231,6 @@ namespace LibertyFramework.Arsenal.Holsters
                 Function.Call("SET_CHAR_COMPONENT_VARIATION", ped, component, drawable, texture);
                 int now = Function.Call<int>("GET_CHAR_DRAWABLE_VARIATION", ped, component);
                 string line = "holsters_outfit_set component=" + component + " requested=" + drawable + " now=" + now;
-                RuntimeLog.Info(line);
                 lastOutfitReadTicks = 0;
                 return line;
             }
@@ -250,7 +248,6 @@ namespace LibertyFramework.Arsenal.Holsters
             string status = "holsters_status props=" + props.Count + " existing=" + existing + " slings=" + slingProps.Count + " slings_existing=" + slings +
                 " hidden=" + (hiddenReason.Length == 0 ? "none" : hiddenReason) + " outfit=" + outfit + " disabled=" + disabled +
                 " slots=" + (slots.Count == 0 ? "none" : string.Join(",", slots.ToArray())) + " held=" + lastHeldWeapon;
-            RuntimeLog.Info(status);
             return status;
         }
 

@@ -72,6 +72,35 @@ namespace Liberty.Autopilot
             Register("fight", "fight <subject> <subject> - two subjects attack each other (exact damage events)", Fight);
             Register("fire", "fire <subject|all> [ms] - armed subjects shoot at a point beside them (bullet events)", Fire);
             Register("pfire", "pfire <subject index|near> [ms] - the player shoots at a spawned subject, so the damage is the player's (gore, exact events)", PlayerFire);
+            Register("strip", "strip - remove every weapon from the player (start a loadout test from an empty inventory)", a => { Liberty.Weapons.RemoveAll(Liberty.Player.Ped); return "player weapons removed"; });
+            Register("buy","buy <weapon id> [ammo] - spend $1 then give the weapon, so the arsenal counts it as bought (owned)", Buy);
+            Register("die", "die - kill the player (turn god off first); the arsenal's wasted rules then apply", a => { Liberty.Peds.SetHealth(Liberty.Player.Ped, -100); return "player health set to -100"; });
+            Register("enter", "enter - the player enters the last spawned car as driver", a =>
+            {
+                cars.RemoveAll(c => !Liberty.Vehicles.Exists(c));
+                if (cars.Count == 0) { return "no spawned car; use spawncar first"; }
+                Liberty.Tasks.EnterVehicle(Liberty.Player.Ped, cars[cars.Count - 1], -1);
+                return "entering " + cars[cars.Count - 1].Handle;
+            });
+            Register("leave", "leave - the player leaves the vehicle", a => { Liberty.Tasks.LeaveVehicle(Liberty.Player.Ped); return "leaving"; });
+            Register("cycle-vehicle", "cycle-vehicle <count> - enter and leave the last spawned car <count> times, checking the holster props every time (T-044)", a =>
+            {
+                Liberty.Scheduler.Start(this, "cycle-vehicle", VehicleCycles(Math.Max(1, Math.Min(500, Args.Int(a, 0, 100)))));
+                return "vehicle cycles started";
+            });
+            Register("cycle-deaths", "cycle-deaths <count> - buy a pistol and a rifle, die, respawn; every owned weapon must end up in storage (T-044)", a =>
+            {
+                Liberty.Scheduler.Start(this, "cycle-deaths", DeathCycles(Math.Max(1, Math.Min(100, Args.Int(a, 0, 50)))));
+                return "death cycles started";
+            });
+            Register("cycle-weapons","cycle-weapons <count> <weapon id> <weapon id> ... - select the weapons in turn and time how long the holster props take to follow (T-044)", a =>
+            {
+                List<int> ids = new List<int>();
+                for (int i = 1; i < a.Length; i++) { ids.Add(Args.Int(a, i)); }
+                if (ids.Count < 2) { return "cycle-weapons <count> <id> <id> [...]"; }
+                Liberty.Scheduler.Start(this, "cycle-weapons", WeaponCycles(Math.Max(1, Math.Min(500, Args.Int(a, 0, 20))), ids));
+                return "weapon cycles started";
+            });
             Register("hideprop", "hideprop [on|off] - hide (default) or show the last spawned prop (collision proxies stay solid)", HideProp);
             Register("rayto", "rayto <subject index|car|prop> [mask: all|world,peds,vehicles,objects] - Query.Raycast from the player to a spawned target", RayTo);
             Register("los", "los <subject index> - Query.HasLineOfSight from the player to a subject (and back)", LineOfSight);
@@ -99,6 +128,222 @@ namespace Liberty.Autopilot
             // A previous scenario may end during a wasted/respawn transition. Do not teleport a dead player.
             yield return Wait.Until(HasLivePlayer, timeoutMs);
             Liberty.Log.Info(this, HasLivePlayer() ? "autopilot_player_ready" : "autopilot_player_wait timed_out");
+        }
+
+        private string Buy(string[] args)
+        {
+            // Money must be able to decrease for the arsenal to see a purchase; an empty wallet is topped up first.
+            int money = Liberty.Player.Money;
+            if (money < 10) { money = 100; }
+            Liberty.Player.Money = money - 1;
+            return Give(args);
+        }
+
+        // The value after "key=" in a "key=value key=value" status line; "" when absent.
+        private static string Field(string text, string key)
+        {
+            int start = text.IndexOf(key + "=", StringComparison.Ordinal);
+            while (start > 0 && text[start - 1] != ' ') { start = text.IndexOf(key + "=", start + 1, StringComparison.Ordinal); }
+            if (start < 0) { return ""; }
+            start += key.Length + 1;
+            int end = text.IndexOf(' ', start);
+            return end < 0 ? text.Substring(start) : text.Substring(start, end - start);
+        }
+
+        private static int FieldInt(string text, string key)
+        {
+            int value;
+            return int.TryParse(Field(text, key), out value) ? value : -1;
+        }
+
+        // "34/1000" -> 34
+        private static int PoolUsed(string usedOverSize)
+        {
+            int slash = usedOverSize.IndexOf('/'), used;
+            return slash > 0 && int.TryParse(usedOverSize.Substring(0, slash), out used) ? used : -1;
+        }
+
+        private string HolsterStatus() { return Liberty.Commands.Execute("holsters status", "autopilot"); }
+
+        private string ObjectPool()
+        {
+            string pools = Liberty.Commands.Execute("pools", "autopilot");
+            return Field(pools, "objects");
+        }
+
+        // T-044 acceptance: the holster props are gone while Niko is in the car, come back when he steps out, and none is left
+        // behind in the game's object pool after the whole run.
+        private IEnumerator VehicleCycles(int count)
+        {
+            cars.RemoveAll(c => !Liberty.Vehicles.Exists(c));
+            if (cars.Count == 0) { Liberty.Log.Error(this, "autopilot_vehicle_cycles_failed no spawned car"); yield break; }
+            VehicleRef car = cars[cars.Count - 1];
+            PedRef player = Liberty.Player.Ped;
+            yield return Wait.Milliseconds(500);
+            string baseline = HolsterStatus();
+            int expectedProps = FieldInt(baseline, "props"), expectedSlings = FieldInt(baseline, "slings");
+            string poolsBefore = ObjectPool();
+            Liberty.Log.Info(this, "autopilot_vehicle_cycles_begin count=" + count + " expected_props=" + expectedProps +
+                " expected_slings=" + expectedSlings + " objects=" + poolsBefore);
+            int hiddenFailures = 0, restoredFailures = 0, enterTimeouts = 0, leaveTimeouts = 0;
+            for (int cycle = 1; cycle <= count; cycle++)
+            {
+                Liberty.Tasks.EnterVehicle(player, car, -1);
+                Wait entered = Wait.Until(() => Liberty.World.Player.InVehicle, 20000);
+                yield return entered;
+                if (entered.HasTimedOut)
+                {
+                    enterTimeouts++;
+                    Liberty.Log.Error(this, "autopilot_vehicle_cycle cycle=" + cycle + " enter_timeout");
+                    Liberty.Player.Teleport(Liberty.Vehicles.GetOffsetPosition(car, new Vec3(-2f, 0f, 0f)), Liberty.Vehicles.GetHeading(car));
+                    yield return Wait.Milliseconds(1500);
+                    continue;
+                }
+                yield return Wait.FramesCount(6);
+                string inside = HolsterStatus();
+                if (FieldInt(inside, "props") != 0 || FieldInt(inside, "slings") != 0 || Field(inside, "hidden") != "vehicle")
+                {
+                    hiddenFailures++;
+                    Liberty.Log.Error(this, "autopilot_vehicle_cycle cycle=" + cycle + " still_visible_in_vehicle " + inside);
+                }
+                Liberty.Tasks.LeaveVehicle(player);
+                Wait left = Wait.Until(() => !Liberty.World.Player.InVehicle, 12000);
+                yield return left;
+                if (left.HasTimedOut) { leaveTimeouts++; Liberty.Log.Error(this, "autopilot_vehicle_cycle cycle=" + cycle + " leave_timeout"); continue; }
+                string outside = "";
+                Wait restored = Wait.Until(() =>
+                {
+                    outside = HolsterStatus();
+                    return FieldInt(outside, "props") == expectedProps && FieldInt(outside, "existing") == expectedProps &&
+                        FieldInt(outside, "slings") == expectedSlings && FieldInt(outside, "slings_existing") == expectedSlings && Field(outside, "hidden") == "none";
+                }, 4000);
+                yield return restored;
+                if (restored.HasTimedOut)
+                {
+                    restoredFailures++;
+                    Liberty.Log.Error(this, "autopilot_vehicle_cycle cycle=" + cycle + " props_not_restored " + outside);
+                }
+                if (cycle % 10 == 0) { Liberty.Log.Info(this, "autopilot_vehicle_cycle_progress cycle=" + cycle + " objects=" + ObjectPool()); }
+                yield return Wait.Milliseconds(400);
+            }
+            yield return Wait.Milliseconds(1500);
+            string after = HolsterStatus();
+            string poolsAfter = ObjectPool();
+            // The game's object pool is where an orphaned prop would stay: growth across the run is the leak (4 objects per
+            // leaked cycle at 2 guns + 2 straps), ambient streaming moves it by a few at most.
+            int growth = PoolUsed(poolsAfter) - PoolUsed(poolsBefore);
+            Liberty.Log.Info(this, "autopilot_vehicle_cycles_done cycles=" + count + " hidden_failures=" + hiddenFailures +
+                " restored_failures=" + restoredFailures + " enter_timeouts=" + enterTimeouts + " leave_timeouts=" + leaveTimeouts +
+                " object_growth=" + growth + " objects_before=" + poolsBefore + " objects_after=" + poolsAfter + " final: " + after);
+        }
+
+        private string ArsenalStatus() { return Liberty.Commands.Execute("arsenal status", "autopilot"); }
+
+        private bool PlayerReady()
+        {
+            return HasLivePlayer() && Liberty.World.Player.IsPlaying && !Liberty.World.Player.InVehicle;
+        }
+
+        // T-044 inventory integrity: each cycle Niko owns two weapons (bought), dies, and respawns; the stored count must have
+        // grown by exactly the owned weapons he carried, so none is lost between death and the safehouse stash.
+        private IEnumerator DeathCycles(int count)
+        {
+            string start = ArsenalStatus();
+            int storedStart = FieldInt(start, "stored");
+            Liberty.Log.Info(this, "autopilot_death_cycles_begin count=" + count + " " + start);
+            int lost = 0, failures = 0, timeouts = 0, expectedTotal = 0;
+            for (int cycle = 1; cycle <= count; cycle++)
+            {
+                Liberty.Player.SetInvincible(this, false);
+                Wait ready = Wait.Until(PlayerReady, 120000);
+                yield return ready;
+                if (ready.HasTimedOut) { timeouts++; Liberty.Log.Error(this, "autopilot_death_cycle cycle=" + cycle + " no_live_player"); yield break; }
+                yield return Wait.Milliseconds(2500);
+                Buy(new[] { "7", "100" });
+                yield return Wait.Milliseconds(1200);
+                Buy(new[] { "14", "100" });
+                yield return Wait.Milliseconds(2000);
+                string before = ArsenalStatus();
+                int ownedCarried = FieldInt(before, "owned_carried"), storedBefore = FieldInt(before, "stored");
+                Liberty.Peds.SetHealth(Liberty.Player.Ped, -100);
+                Wait died = Wait.Until(() => !HasLivePlayer(), 20000);
+                yield return died;
+                if (died.HasTimedOut) { failures++; Liberty.Log.Error(this, "autopilot_death_cycle cycle=" + cycle + " did_not_die"); continue; }
+                Wait back = Wait.Until(PlayerReady, 150000);
+                yield return back;
+                if (back.HasTimedOut) { timeouts++; Liberty.Log.Error(this, "autopilot_death_cycle cycle=" + cycle + " no_respawn"); yield break; }
+                yield return Wait.Milliseconds(2500);
+                string after = ArsenalStatus();
+                int gained = FieldInt(after, "stored") - storedBefore;
+                expectedTotal += ownedCarried;
+                if (gained != ownedCarried)
+                {
+                    lost += Math.Max(0, ownedCarried - gained);
+                    failures++;
+                    Liberty.Log.Error(this, "autopilot_death_cycle cycle=" + cycle + " owned_carried=" + ownedCarried + " stored_gain=" + gained + " before: " + before + " after: " + after);
+                }
+                if (cycle % 5 == 0) { Liberty.Log.Info(this, "autopilot_death_cycle_progress cycle=" + cycle + " stored=" + FieldInt(after, "stored")); }
+            }
+            string end = ArsenalStatus();
+            Liberty.Log.Info(this, "autopilot_death_cycles_done cycles=" + count + " lost_owned=" + lost + " failed_cycles=" + failures +
+                " timeouts=" + timeouts + " owned_expected=" + expectedTotal + " stored_growth=" + (FieldInt(end, "stored") - storedStart) + " final: " + end);
+        }
+
+        // Selecting each weapon in turn: the prop of the weapon in Niko's hands disappears and the others stay; the latency is
+        // measured from the Select call to the first frame the holster state is right.
+        private IEnumerator WeaponCycles(int count, List<int> ids)
+        {
+            PedRef player = Liberty.Player.Ped;
+            int failures = 0, worstMs = 0, totalMs = 0, switches = 0, worstFrames = 0;
+            for (int cycle = 0; cycle < count; cycle++)
+            {
+                foreach (int id in ids)
+                {
+                    int started = Environment.TickCount, frames = 0;
+                    Liberty.Weapons.Select(player, id);
+                    bool consistent = false;
+                    string status = "";
+                    while (!consistent && unchecked(Environment.TickCount - started) < 1500)
+                    {
+                        yield return Wait.NextFrame();
+                        frames++;
+                        status = HolsterStatus();
+                        consistent = SlotsMatch(Field(status, "slots"), ids, id) && FieldInt(status, "held") == id;
+                    }
+                    int latency = unchecked(Environment.TickCount - started);
+                    switches++;
+                    totalMs += latency;
+                    if (latency > worstMs) { worstMs = latency; }
+                    if (frames > worstFrames) { worstFrames = frames; }
+                    if (!consistent)
+                    {
+                        failures++;
+                        Liberty.Log.Error(this, "autopilot_weapon_switch select=" + id + " not_consistent " + status);
+                    }
+                    else { Liberty.Log.Info(this, "autopilot_weapon_switch select=" + id + " latency_ms=" + latency + " frames=" + frames); }
+                    yield return Wait.Milliseconds(700);
+                }
+            }
+            Liberty.Log.Info(this, "autopilot_weapon_cycles_done switches=" + switches + " failures=" + failures +
+                " average_ms=" + (switches == 0 ? 0 : totalMs / switches) + " worst_ms=" + worstMs + " worst_frames=" + worstFrames);
+        }
+
+        // "SidearmPrimary:7,LongGun1:10": every listed weapon except the held one is shown, the held one is not.
+        private static bool SlotsMatch(string slots, List<int> ids, int held)
+        {
+            HashSet<int> shown = new HashSet<int>();
+            if (slots != "none" && slots.Length > 0)
+            {
+                foreach (string part in slots.Split(','))
+                {
+                    int colon = part.IndexOf(':');
+                    int id;
+                    if (colon < 0 || part.EndsWith("!missing") || !int.TryParse(part.Substring(colon + 1), out id)) { return false; }
+                    shown.Add(id);
+                }
+            }
+            foreach (int id in ids) { if ((id == held) == shown.Contains(id)) { return false; } }
+            return true;
         }
 
         private string Position(string[] args)
