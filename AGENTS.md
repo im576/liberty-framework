@@ -1,6 +1,8 @@
 # AGENTS.md — Rules for AI agents working in this repo
 
-You are an AI coding agent. A human tester runs the game; **you cannot run GTA IV**.
+You are an AI coding agent. On the owner's PC you run the game yourself through the autopilot and `tools/verify-local.ps1`
+(one run at a time: it waits on a machine-wide lock); cloud sessions cannot run it. The owner still signs off on feel
+and visuals.
 Read this whole file before doing anything. It is short on purpose.
 
 ## 1. Read these first, in this order
@@ -11,7 +13,9 @@ Read this whole file before doing anything. It is short on purpose.
      cloud, queued for the owner's PC and verified there. `tools/cloud/test-all.sh` runs every offline check.
    - Asked to "do the next session": `docs/workflow/NEXT_SESSIONS.md`.
 3. The task card you were given, in `docs/tasks/` (e.g. `docs/tasks/T-033-world-objects.md`); finished cards are in `docs/archive/tasks/`
-4. `docs/workflow/CLOUD_LOCAL_LOOP.md` (cloud sessions build and test offline; the owner's PC verifies through `tests/local/checks.json`) and `docs/workflow/NEXT_SESSIONS.md`, if your work queues game checks\n5. Only the docs that task card links to. Do not read the whole repo.
+4. `docs/workflow/CLOUD_LOCAL_LOOP.md` (cloud sessions build and test offline; the owner's PC verifies through `tests/local/checks.json`) and `docs/workflow/NEXT_SESSIONS.md`, if your work queues game checks
+5. For Stage 1 mod work: `docs/design/STAGE1.md` (the design and its acceptance criteria).
+6. Only the docs that task card links to. Do not read the whole repo.
 
 If you were not given a task card: open `docs/tasks/README.md`, pick the first active task whose
 status is `READY` and whose dependencies are all `DONE`. Tell the human which one you picked.
@@ -32,11 +36,10 @@ then Phase 3, reverse engineering toward FiveM-level control. Current state: `do
    project owner prefers batching compatible offline work so one game launch can verify several
    checks. Prepare dependent work only when its assumptions are documented, and do not mark any
    task `DONE` until its own in-game evidence exists.
-2. **Vanilla must stay vanilla.** Only the gold test weapons may behave differently from the base
-   game. Every gameplay change must be gated by "is the current weapon a registered test weapon?".
-   Owner-approved exception (T-010): free aim (no auto-aim/lock-on/health ring) and the LF crosshair
-   apply to all weapons while their DevTools toggles are on, and restore the player's settings when off.
-   Recoil and spread stay test-weapon-only.
+2. **Changes are gated and switchable.** Liberty Vanilla+ Stage 1 deliberately changes the whole arsenal and the game's
+   presentation (owner-approved, `docs/design/STAGE1.md`). Every gameplay change is still gated by data (the weapon
+   catalog, per-weapon/per-class config) and each system can be switched off in config, restoring the game's own
+   behaviour and the player's settings. Weapons outside the Stage 1 catalog stay vanilla.
 3. **Tuning values live in `config/`, never in code.** Code defines algorithms. JSON defines numbers.
    If you type a gameplay number (recoil, spread, speed, FOV, distance) into a `.cs` file, you are
    doing it wrong — add a config field instead (see `docs/architecture/CONFIG_SCHEMA.md`).
