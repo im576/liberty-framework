@@ -1,7 +1,7 @@
 {
   "id": "ART-012",
   "title": "Liberty icon family exploration",
-  "status": "requested",
+  "status": "generated",
   "priority": "P1",
   "kind": "concept",
   "prompt": "Icon family exploration sheet for a gritty 2008 crime game remaster: a 6 by 4 grid of simple monochrome icons on a dark charcoal background: side-view weapon silhouettes (compact pistol, revolver, submachine gun, pump shotgun, assault rifle, bat, knife, grenade), and utility icons (health cross, armour vest, ammo box, car trunk, safehouse, phone, cash, wanted star). Consistent line weight, sharp purposeful shapes, off-white on dark with one muted amber accent colour used sparingly. Utilitarian and industrial, no glossy or 3D effects, no text, not GTA V icons.",
@@ -41,6 +41,33 @@
       "revision": 1,
       "by": "claude",
       "prompt": "Icon family exploration sheet for a gritty 2008 crime game remaster: a 6 by 4 grid of simple monochrome icons on a dark charcoal background: side-view weapon silhouettes (compact pistol, revolver, submachine gun, pump shotgun, assault rifle, bat, knife, grenade), and utility icons (health cross, armour vest, ammo box, car trunk, safehouse, phone, cash, wanted star). Consistent line weight, sharp purposeful shapes, off-white on dark with one muted amber accent colour used sparingly. Utilitarian and industrial, no glossy or 3D effects, no text, not GTA V icons."
+    },
+    {
+      "at": "2026-09-30T05:09:28+00:00",
+      "event": "generated",
+      "revision": 1,
+      "by": "Codex",
+      "notes": "Two independent built-in generations; exact request prompt followed by all verbatim styleConstraints and prohibited entries; requested dimensions/aspect/transparency supplied; no image postprocessing; seed and underlying model/version unavailable. Visually inspected 1536x1024 3:2 concepts; 6x4 grid, requested weapon and utility family, off-white/charcoal with restrained amber, no text. Owner visual review pending.",
+      "model": "OpenAI image_gen built-in (model/version not exposed)",
+      "prompt": "Icon family exploration sheet for a gritty 2008 crime game remaster: a 6 by 4 grid of simple monochrome icons on a dark charcoal background: side-view weapon silhouettes (compact pistol, revolver, submachine gun, pump shotgun, assault rifle, bat, knife, grenade), and utility icons (health cross, armour vest, ammo box, car trunk, safehouse, phone, cash, wanted star). Consistent line weight, sharp purposeful shapes, off-white on dark with one muted amber accent colour used sparingly. Utilitarian and industrial, no glossy or 3D effects, no text, not GTA V icons.",
+      "files": [
+        {
+          "path": "art/generated/ART-012/r1/art_012_1.png",
+          "sha256": "77d4b4e62f07ea1e09970cb157301204c8a34c80f769f9f28b6fbbc176b5ab76",
+          "width": 1536,
+          "height": 1024,
+          "mode": "RGB",
+          "hasAlpha": false
+        },
+        {
+          "path": "art/generated/ART-012/r1/art_012_2.png",
+          "sha256": "0966d71a56bd2f99a0e4913469fe97dc3abaec955037d3da258be080264a52c2",
+          "width": 1536,
+          "height": 1024,
+          "mode": "RGB",
+          "hasAlpha": false
+        }
+      ]
     }
   ]
 }
