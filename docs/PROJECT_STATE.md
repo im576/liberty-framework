@@ -8,7 +8,7 @@ overrides older docs.
 
 - **Phase 1 = Liberty Engine: complete (2026-09-30), except the items under "Known limits".** Native core, SDK, content
   pipeline and hot reload are verified in game. The full regression pass ran on 2026-09-30 and passes ([report](reports/2026-09-30-regression.md)).
-- **Next: the first complex mod** built on the engine (uses the SDK and content compiler, gameplay code stays in `mods/`).
+- **Next: the first complex mod**, Liberty Vanilla+ Stage 1 ([design](design/STAGE1.md)), built on the engine (uses the SDK and content compiler, gameplay code stays in `mods/`).
 - **Then Phase 3: reverse engineering** toward FiveM-level control (authored collision, structure writing, deeper hooks).
 
 ## Cleanup and fixes in progress
