@@ -28,6 +28,8 @@ param(
 #   mark                         remember the current log position before a sequence of commands
 #   expectmarked <regex> [seconds] wait for a log line written after mark, including between commands in the sequence
 #   key <Keys name> [hold ms]    press a key in the game window (default 80 ms)
+#   gpumem <label>               record the game process's dedicated/shared GPU memory, private bytes and working set into
+#                                the report and measurements.json (fails the step when the GPU counters do not list the process)
 #   anything else                an engine command (see "lf help"), sent through the command channel; a refused
 #                                command (unknown, error, module not running, no reply) fails the step
 # Any line may contain {probe:<check id>:<field>}: a value a probe found earlier in the same run (Resolve-ScenarioLine).
@@ -39,6 +41,7 @@ New-Item -ItemType Directory -Force -Path $report | Out-Null
 $steps = New-Object System.Collections.Generic.List[string]
 $failedSteps = New-Object System.Collections.Generic.List[string]
 $screenshots = New-Object System.Collections.Generic.List[string]
+$measurements = New-Object System.Collections.Generic.List[object]
 $executed = 0
 $runnerError = ''
 $startUtc = [DateTime]::UtcNow
@@ -81,6 +84,15 @@ try {
                     if (-not (Test-Path -LiteralPath $file) -or (Get-Item -LiteralPath $file).Length -eq 0) { throw "screenshot $($words[1]) was not written" }
                     $screenshots.Add((Split-Path -Leaf $file))
                     $steps.Add("shot $($words[1]) -> $(Split-Path -Leaf $file)")
+                }
+                'gpumem' {
+                    if ($words.Count -ne 2) { Add-Failure "unparseable gpumem line (gpumem <label>): $line"; break }
+                    $memory = Get-GameMemory
+                    $memory.label = $words[1]
+                    $memory.utc = [DateTime]::UtcNow.ToString('o')
+                    $measurements.Add($memory)
+                    $steps.Add("gpumem $($words[1]): gpu_dedicated_mb=$($memory.gpuDedicatedMB) gpu_shared_mb=$($memory.gpuSharedMB) private_mb=$($memory.privateMB) working_set_mb=$($memory.workingSetMB)")
+                    if ($null -eq $memory.gpuDedicatedMB) { Add-Failure "gpumem $($words[1]): the GPU counters do not list the game process" }
                 }
                 'key' { $hold = if ($words.Count -gt 2) { [int]$words[2] } else { 80 }; Send-GameKey $words[1] $hold; $steps.Add("key $($words[1]) $hold ms") }
                 { $_ -eq 'expect' -or $_ -eq 'expectmarked' } {
@@ -162,6 +174,10 @@ $result = [ordered]@{
     runnerError = $runnerError
     startedUtc = $startUtc.ToString('o')
     finishedUtc = [DateTime]::UtcNow.ToString('o')
+}
+if ($measurements.Count -gt 0) {
+    # `gpumem <label>` lines: tools/perf/Measure-Stage1.ps1 reads this next to run.log.
+    [IO.File]::WriteAllText((Join-Path $report 'measurements.json'), (ConvertTo-Json -InputObject $measurements.ToArray() -Depth 4), (New-Object Text.UTF8Encoding($false)))
 }
 $resultPath = Join-Path $report 'result.json'
 [IO.File]::WriteAllText($resultPath, ($result | ConvertTo-Json -Depth 4), (New-Object Text.UTF8Encoding($false)))

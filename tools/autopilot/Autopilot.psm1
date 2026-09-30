@@ -268,8 +268,27 @@ function Test-Boot([int] $Attempts = 6, [int] $WatchSeconds = 60, [string] $Scri
     return "NO_BOOT after $Attempts attempts"
 }
 
+# The game process's memory right now, for a scenario's `gpumem <label>` line (T-040): dedicated and shared GPU memory of
+# the GTAIV process (Windows "GPU Process Memory" counters, read through CIM so they do not depend on the Windows language),
+# private bytes and working set. GPU figures are $null when the counters do not list the process.
+function Get-GameMemory {
+    $process = Get-GameProcess
+    if (-not $process) { throw 'game not running' }
+    $process.Refresh()
+    $gpu = $null
+    try { $gpu = Select-GpuProcessMemory @(Get-CimInstance Win32_PerfFormattedData_GPUPerformanceCounters_GPUProcessMemory -ErrorAction Stop) $process.Id }
+    catch { Write-Host "autopilot: GPU counters unavailable ($($_.Exception.Message))" }
+    return [ordered]@{
+        processId = $process.Id
+        gpuDedicatedMB = $(if ($gpu -and $gpu.Found) { [math]::Round($gpu.DedicatedBytes / 1MB, 1) } else { $null })
+        gpuSharedMB = $(if ($gpu -and $gpu.Found) { [math]::Round($gpu.SharedBytes / 1MB, 1) } else { $null })
+        privateMB = [math]::Round($process.PrivateMemorySize64 / 1MB, 1)
+        workingSetMB = [math]::Round($process.WorkingSet64 / 1MB, 1)
+    }
+}
+
 # Left click at screen pixel coordinates (full resolution).
 function Send-Click([int] $X, [int] $Y) { [AutopilotNative]::Click($X, $Y) }
 
 Export-ModuleMember -Function Get-GameDialog, Test-Boot, Start-GameReady, Send-Click, Set-AutopilotGame, Get-GameProcess, Get-SessionLog, Start-Game, Stop-Game, Focus-Game, Send-GameKey,
-    Save-Screenshot, Wait-LogLine, Test-GameFrozen, Invoke-EngineCommand
+    Save-Screenshot, Wait-LogLine, Test-GameFrozen, Invoke-EngineCommand, Get-GameMemory

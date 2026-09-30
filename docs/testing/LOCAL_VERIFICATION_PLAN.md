@@ -16,7 +16,7 @@
 |---|---|---|
 | pc-offline | 13 | automatically (builds and tests that need Windows or the game's files) |
 | probe | 4 | automatically (read-only questions about the game's files; structure only) |
-| scenario | 18 | automatically (autopilot drives the game; about 2-4 minutes each) |
+| scenario | 24 | automatically (autopilot drives the game; about 2-4 minutes each) |
 | manual | 18 | you play and judge; about 162 minutes in total, grouped below |
 
 Statuses: QUEUED (never run on the current code), PASS, FAIL, ERROR, CRASH, NOT-RUN, NEEDS-REVIEW (a person or the review session must judge screenshots or log errors).
@@ -234,6 +234,12 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 | `T032-collision-borrow-report` | T-032 | pc-offline | report.json fields match: the build found a prop candidate and shipped its bounds as lf_col_crate.wbn | QUEUED |
 | `T033-world-wall-report` | T-033 | pc-offline | report.json fields match | QUEUED |
 | `T033-world-objects` | T-033 | scenario | autopilot PASS (spawned with a handle; the ray hits it) and the screenshot shows the wall | QUEUED |
+| `T040-capture-broker` | T-040 | scenario | autopilot PASS (every goto, expect and gpumem step); screenshots judged; the summary (tools/perf/Measure-Stage1.ps1) has frame statistics, costs, perf and GPU memory for every point and condition | QUEUED |
+| `T040-capture-city` | T-040 | scenario | autopilot PASS (every goto, expect and gpumem step); screenshots judged; the summary (tools/perf/Measure-Stage1.ps1) has frame statistics, costs, perf and GPU memory for every point and condition | QUEUED |
+| `T040-worst-case` | T-040 | scenario | autopilot PASS; screenshots judged; the summary has the worst_case section with p50/p95/p99, engine.frame cost, private bytes and dedicated GPU memory | QUEUED |
+| `T040-capture-broker-off` | T-040 | scenario | autopilot PASS (every goto, expect and gpumem step); screenshots judged; the summary (tools/perf/Measure-Stage1.ps1) has frame statistics, costs, perf and GPU memory for every point and condition; the final 'modules' reply shows no module off | QUEUED |
+| `T040-capture-city-off` | T-040 | scenario | autopilot PASS (every goto, expect and gpumem step); screenshots judged; the summary (tools/perf/Measure-Stage1.ps1) has frame statistics, costs, perf and GPU memory for every point and condition; the final 'modules' reply shows no module off | QUEUED |
+| `T040-worst-case-off` | T-040 | scenario | autopilot PASS; screenshots judged; the final 'modules' reply shows no module off | QUEUED |
 
 ## What each check proves, and what stays unproven
 
@@ -291,3 +297,9 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 - `T033-world-wall-report`: A type-object asset compiles, reads back and is packaged with its borrowed collision.
 - `T033-world-objects`: mods/Liberty.World loads config/world/objects.json, streams lf_world_wall in within 150 m, snaps it to the ground, and its borrowed collision stops the engine's ray. **Still unproven:** Removal beyond 180 m is not driven here (the verifier tests the decision); player collision is T033-world-walk.
 - `T033-world-walk`: Borrowed collision works for the player against a placed world object. **Still unproven:** Collision matching the wall's own outline needs the collision writer.
+- `T040-capture-broker`: The 8 Broker/Dukes capture points are reachable, stream in, sit on streets, and yield frame statistics, script cost, memory and VRAM in day/overcast and night/rain.
+- `T040-capture-city`: The Algonquin, Bohan and Alderney capture points work and are measured like the Broker/Dukes ones.
+- `T040-worst-case`: The scripted worst case (Hove Beach night rain, ambient traffic and pedestrians, 12 armed subjects fighting, 25 extra pedestrians, HUD on) runs for 60 s and is measured: frame statistics over the whole window, script cost, memory and VRAM every 10 s.
+- `T040-capture-broker-off`: The same measurement with the Liberty gameplay modules stopped (gunplay, combat, arsenal, holsters, atmosphere): the reference every Stage 1 budget is compared to. Restarts the modules at the end.
+- `T040-capture-city-off`: Mod-off measurement of the citywide points.
+- `T040-worst-case-off`: The worst case with the Liberty gameplay modules stopped: the reference for the frame-time budget (p95 +10%, p99 +15%) and the VRAM overhead.

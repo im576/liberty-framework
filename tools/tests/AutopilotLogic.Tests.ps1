@@ -43,6 +43,17 @@ Test-That 'runner error: ERROR' ((Get-ScenarioStatus 3 0 $true 'launch failed') 
 Test-That 'PASS with log errors needs review' ((Get-ReviewStatus 'PASS' 2) -eq 'NEEDS-REVIEW')
 Test-That 'FAIL stays FAIL with log errors' ((Get-ReviewStatus 'FAIL' 2) -eq 'FAIL')
 
+# GPU memory rows of the Windows "GPU Process Memory" counters (the gpumem scenario line)
+$gpuRows = @(
+    [pscustomobject]@{ Name = 'pid_100_luid_0x00000000_0x0000BB03_phys_0'; DedicatedUsage = 209715200; SharedUsage = 1048576 },
+    [pscustomobject]@{ Name = 'pid_1000_luid_0x00000000_0x0000BB03_phys_0'; DedicatedUsage = 999999999; SharedUsage = 0 },
+    [pscustomobject]@{ Name = 'pid_100_luid_0x00000000_0x0000BB04_phys_0'; DedicatedUsage = 104857600; SharedUsage = 2097152 }
+)
+$gpu = Select-GpuProcessMemory $gpuRows 100
+Test-That 'gpu: the rows of the process are summed, another pid (a longer number with the same prefix) is not' ($gpu.Found -and $gpu.DedicatedBytes -eq 314572800 -and $gpu.SharedBytes -eq 3145728) ($gpu | Out-String)
+Test-That 'gpu: a process with no row is not found (never 0 MB)' (-not (Select-GpuProcessMemory $gpuRows 7).Found)
+Test-That 'gpu: no rows at all is not found' (-not (Select-GpuProcessMemory @() 100).Found)
+
 # Reading a scenario's result (the old suite called this output PASS because it contains the word "pass")
 $resultFile = Join-Path $script:Scratch 'result.json'
 [IO.File]::WriteAllText($resultFile, '{ "status": "FAIL", "summary": "FAIL; steps=4 failed=1" }')

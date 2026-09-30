@@ -164,4 +164,20 @@ function Read-ScenarioResult([string] $Output) {
     return @{ Status = [string]$result.status; Detail = [string]$result.summary; Path = $path }
 }
 
-Export-ModuleMember -Function ConvertFrom-ExpectLine, Find-ExpectedLine, Test-CommandFailed, Get-ScenarioStatus, Get-ReviewStatus, Read-ScenarioResult, Resolve-ScenarioLine, Update-SessionLogCache, Get-SteamScreenshotFolders
+# GPU memory of one process from the rows of the Windows "GPU Process Memory" counters
+# (Win32_PerfFormattedData_GPUPerformanceCounters_GPUProcessMemory; instance names look like pid_1234_luid_0x0_0xBB03_phys_0).
+# Sums every adapter instance of the process. Returns @{ Found; DedicatedBytes; SharedBytes } (Found is $false when the
+# process has no row: a counter that is missing must never read as "0 MB").
+function Select-GpuProcessMemory([object[]] $Rows, [int] $ProcessId) {
+    $dedicated = [long]0; $shared = [long]0; $found = $false
+    foreach ($row in @($Rows)) {
+        if ($null -eq $row -or [string]$row.Name -notmatch '^pid_(?<id>\d+)_') { continue }
+        if ([int]$Matches['id'] -ne $ProcessId) { continue }
+        $found = $true
+        $dedicated += [long]$row.DedicatedUsage
+        $shared += [long]$row.SharedUsage
+    }
+    return @{ Found = $found; DedicatedBytes = $dedicated; SharedBytes = $shared }
+}
+
+Export-ModuleMember -Function Select-GpuProcessMemory, ConvertFrom-ExpectLine, Find-ExpectedLine, Test-CommandFailed, Get-ScenarioStatus, Get-ReviewStatus, Read-ScenarioResult, Resolve-ScenarioLine, Update-SessionLogCache, Get-SteamScreenshotFolders

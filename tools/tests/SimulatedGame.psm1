@@ -106,8 +106,21 @@ function Invoke-EngineCommand([string[]] $Lines, [int] $TimeoutSeconds = 20) {
     return $replies
 }
 
+# world.json "memory": { gpuDedicatedMB, gpuSharedMB, privateMB, workingSetMB } (defaults below).
+function Get-GameMemory {
+    if (-not (Get-GameProcess)) { throw 'game not running' }
+    $memory = Get-SimProperty (Get-SimWorld) 'memory' $null
+    return [ordered]@{
+        processId = 4242
+        gpuDedicatedMB = Get-SimProperty $memory 'gpuDedicatedMB' 1500.5
+        gpuSharedMB = Get-SimProperty $memory 'gpuSharedMB' 20.0
+        privateMB = Get-SimProperty $memory 'privateMB' 1800.0
+        workingSetMB = Get-SimProperty $memory 'workingSetMB' 1700.0
+    }
+}
+
 function Test-GameFrozen([int] $Seconds = 75) { return $false }
 function Wait-LogLine([string] $Pattern, [int] $TimeoutSeconds = 180) { return (Get-SessionLog | Where-Object { $_ -match $Pattern } | Select-Object -First 1) }
 
 Export-ModuleMember -Function Initialize-SimulatedGame, Set-AutopilotGame, Get-GameProcess, Get-SessionLog, Start-GameReady, Stop-Game,
-    Send-GameKey, Save-Screenshot, Invoke-EngineCommand, Test-GameFrozen, Wait-LogLine
+    Send-GameKey, Save-Screenshot, Invoke-EngineCommand, Test-GameFrozen, Wait-LogLine, Get-GameMemory

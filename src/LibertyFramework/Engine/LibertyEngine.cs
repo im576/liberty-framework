@@ -336,7 +336,8 @@ namespace LibertyFramework.Engine
             Commands.RegisterEngine("modules", "list modules: state, average/max ms, interval, throttles", args => ModulesReport());
             Commands.RegisterEngine("perf", "frame time, pressure and memory", args => PerfReport());
             Commands.RegisterEngine("costs", "named cost samples since the last call (resets them)", args => CostMeter.ReportAndReset());
-            Commands.RegisterEngine("pools", "game pool occupancy (peds, vehicles, objects)", args => PoolsReport());
+            Commands.RegisterEngine("framestats", "frame time statistics (avg, p50, p95, p99, max, slow frames, stalls) since the last call (resets them)", args => Perf.FrameStatsReportAndReset());
+            Commands.RegisterEngine("pools","game pool occupancy (peds, vehicles, objects)", args => PoolsReport());
             Commands.RegisterEngine("natives", "raw native calls made through the SDK, per module", args => Natives.Report());
             Commands.RegisterEngine("hooks", "code hooks the core installed (ADR-0007)", args => core.HooksReport());
             Commands.RegisterEngine("owned", "owned <module> - resources a module holds", args => OwnedReport(args));

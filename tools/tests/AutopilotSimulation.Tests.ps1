@@ -74,6 +74,15 @@ Test-That 'sim: a failed launch is ERROR with a result file' ($r.Status -eq 'ERR
 $r = Invoke-SimScenario 'badexpect' @('god on', 'expect "(unclosed" 1') $world
 Test-That 'sim: an unparseable expect fails' ($r.Status -eq 'FAIL') $r.Output
 
+$r = Invoke-SimScenario 'gpumem' @('god on', 'gpumem s1_test_day', 'gpumem s1_test_night') (@{ knownCommands = @('god'); memory = @{ gpuDedicatedMB = 1234.5; privateMB = 2000 } })
+$reportDir = if ($r.Json) { Get-ChildItem -LiteralPath $runs -Directory -Filter 'gpumem-*' | Sort-Object LastWriteTime -Descending | Select-Object -First 1 } else { $null }
+$measurements = if ($reportDir -and (Test-Path (Join-Path $reportDir.FullName 'measurements.json'))) { @(Get-Content -LiteralPath (Join-Path $reportDir.FullName 'measurements.json') -Raw | ConvertFrom-Json) } else { @() }
+Test-That 'sim: gpumem passes and writes both labelled measurements' ($r.Status -eq 'PASS' -and $measurements.Count -eq 2 -and $measurements[0].label -eq 's1_test_day' -and $measurements[0].gpuDedicatedMB -eq 1234.5) $r.Output
+$r = Invoke-SimScenario 'gpumem-nolabel' @('god on', 'gpumem') (@{ knownCommands = @('god') })
+Test-That 'sim: gpumem without a label fails' ($r.Status -eq 'FAIL') $r.Output
+$r = Invoke-SimScenario 'gpumem-nogpu' @('god on', 'gpumem x') (@{ knownCommands = @('god'); memory = @{ gpuDedicatedMB = $null } })
+Test-That 'sim: gpumem fails when the GPU counters do not list the process (never a silent 0 MB)' ($r.Status -eq 'FAIL') $r.Output
+
 # The suite: statuses from result files, continues after a broken scenario, exit code 1 unless all pass.
 Initialize-SimulatedGame (Join-Path $simRoot 'state-suite') $world @()
 $suiteScenarios = Join-Path $simRoot 'suite'

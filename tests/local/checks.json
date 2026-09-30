@@ -1132,6 +1132,166 @@
       "reference": "docs/tasks/T-033-world-objects.md",
       "status": "QUEUED",
       "addedIn": "claude/confident-hopper-16pan1 (sessions 5-6)"
+    },
+    {
+      "id": "T040-capture-broker",
+      "task": "T-040",
+      "title": "Stage 1 capture: the 8 Broker/Dukes points, day and night (mod-on)",
+      "kind": "scenario",
+      "run": {
+        "scenario": "stage1-capture-broker"
+      },
+      "proves": "The 8 Broker/Dukes capture points are reachable, stream in, sit on streets, and yield frame statistics, script cost, memory and VRAM in day/overcast and night/rain.",
+      "pass": "autopilot PASS (every goto, expect and gpumem step); screenshots judged; the summary (tools/perf/Measure-Stage1.ps1) has frame statistics, costs, perf and GPU memory for every point and condition",
+      "review": {
+        "screenshots": {
+          "s1_hove_beach_a_day": "Hove Beach, Beachgate side street, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_hove_beach_a_night": "Hove Beach, Beachgate side street, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_hove_beach_b_day": "Hove Beach, inland avenue, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_hove_beach_b_night": "Hove Beach, inland avenue, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_firefly_island_day": "Firefly Island, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_firefly_island_night": "Firefly Island, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_rotterdam_hill_day": "Rotterdam Hill, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_rotterdam_hill_night": "Rotterdam Hill, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_boabo_day": "BOABO, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_boabo_night": "BOABO, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_east_hook_day": "East Hook, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_east_hook_night": "East Hook, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_dukes_meadow_hills_day": "Dukes, Meadow Hills road, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_dukes_meadow_hills_night": "Dukes, Meadow Hills road, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_east_island_city_day": "East Island City, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_east_island_city_night": "East Island City, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night"
+        }
+      },
+      "reference": "docs/tasks/T-040-stage1-foundation.md#human-test-steps",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-040"
+    },
+    {
+      "id": "T040-capture-city",
+      "task": "T-040",
+      "title": "Stage 1 capture: the 4 points elsewhere in the city, day and night (mod-on)",
+      "kind": "scenario",
+      "run": {
+        "scenario": "stage1-capture-city"
+      },
+      "proves": "The Algonquin, Bohan and Alderney capture points work and are measured like the Broker/Dukes ones.",
+      "pass": "autopilot PASS (every goto, expect and gpumem step); screenshots judged; the summary (tools/perf/Measure-Stage1.ps1) has frame statistics, costs, perf and GPU memory for every point and condition",
+      "review": {
+        "screenshots": {
+          "s1_algonquin_star_junction_day": "Algonquin, Star Junction, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_algonquin_star_junction_night": "Algonquin, Star Junction, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_algonquin_chinatown_day": "Algonquin, Chinatown, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_algonquin_chinatown_night": "Algonquin, Chinatown, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_bohan_boulevard_day": "Bohan, Boulevard, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_bohan_boulevard_night": "Bohan, Boulevard, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_alderney_city_day": "Alderney City, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_alderney_city_night": "Alderney City, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night"
+        }
+      },
+      "reference": "docs/tasks/T-040-stage1-foundation.md#human-test-steps",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-040"
+    },
+    {
+      "id": "T040-worst-case",
+      "task": "T-040",
+      "title": "Stage 1 worst-case scene: 60 s sample (mod-on)",
+      "kind": "scenario",
+      "run": {
+        "scenario": "stage1-worst-case"
+      },
+      "proves": "The scripted worst case (Hove Beach night rain, ambient traffic and pedestrians, 12 armed subjects fighting, 25 extra pedestrians, HUD on) runs for 60 s and is measured: frame statistics over the whole window, script cost, memory and VRAM every 10 s.",
+      "pass": "autopilot PASS; screenshots judged; the summary has the worst_case section with p50/p95/p99, engine.frame cost, private bytes and dedicated GPU memory",
+      "review": {
+        "screenshots": {
+          "worst_case_mid": "Hove Beach at night in rain, armed pedestrians fighting, Niko with a rifle, muzzle flashes and blood visible, HUD on",
+          "worst_case_end": "the same scene 30 s later: bodies and blood remain, the frame is not black or frozen"
+        }
+      },
+      "reference": "docs/tasks/T-040-stage1-foundation.md#human-test-steps",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-040"
+    },
+    {
+      "id": "T040-capture-broker-off",
+      "task": "T-040",
+      "title": "Stage 1 capture: the 8 Broker/Dukes points, day and night (mod-off)",
+      "kind": "scenario",
+      "run": {
+        "scenario": "stage1-capture-broker-off"
+      },
+      "proves": "The same measurement with the Liberty gameplay modules stopped (gunplay, combat, arsenal, holsters, atmosphere): the reference every Stage 1 budget is compared to. Restarts the modules at the end.",
+      "pass": "autopilot PASS (every goto, expect and gpumem step); screenshots judged; the summary (tools/perf/Measure-Stage1.ps1) has frame statistics, costs, perf and GPU memory for every point and condition; the final 'modules' reply shows no module off",
+      "review": {
+        "screenshots": {
+          "s1_hove_beach_a_day": "Hove Beach, Beachgate side street, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_hove_beach_a_night": "Hove Beach, Beachgate side street, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_hove_beach_b_day": "Hove Beach, inland avenue, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_hove_beach_b_night": "Hove Beach, inland avenue, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_firefly_island_day": "Firefly Island, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_firefly_island_night": "Firefly Island, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_rotterdam_hill_day": "Rotterdam Hill, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_rotterdam_hill_night": "Rotterdam Hill, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_boabo_day": "BOABO, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_boabo_night": "BOABO, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_east_hook_day": "East Hook, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_east_hook_night": "East Hook, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_dukes_meadow_hills_day": "Dukes, Meadow Hills road, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_dukes_meadow_hills_night": "Dukes, Meadow Hills road, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_east_island_city_day": "East Island City, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_east_island_city_night": "East Island City, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night"
+        }
+      },
+      "reference": "docs/tasks/T-040-stage1-foundation.md#human-test-steps",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-040"
+    },
+    {
+      "id": "T040-capture-city-off",
+      "task": "T-040",
+      "title": "Stage 1 capture: the 4 points elsewhere in the city, day and night (mod-off)",
+      "kind": "scenario",
+      "run": {
+        "scenario": "stage1-capture-city-off"
+      },
+      "proves": "Mod-off measurement of the citywide points.",
+      "pass": "autopilot PASS (every goto, expect and gpumem step); screenshots judged; the summary (tools/perf/Measure-Stage1.ps1) has frame statistics, costs, perf and GPU memory for every point and condition; the final 'modules' reply shows no module off",
+      "review": {
+        "screenshots": {
+          "s1_algonquin_star_junction_day": "Algonquin, Star Junction, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_algonquin_star_junction_night": "Algonquin, Star Junction, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_algonquin_chinatown_day": "Algonquin, Chinatown, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_algonquin_chinatown_night": "Algonquin, Chinatown, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_bohan_boulevard_day": "Bohan, Boulevard, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_bohan_boulevard_night": "Bohan, Boulevard, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night",
+          "s1_alderney_city_day": "Alderney City, 13:00 overcast: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); overcast daylight",
+          "s1_alderney_city_night": "Alderney City, 23:00 rain: Niko stands on a road at ground level in front of streamed-in city (not inside geometry, under water or on a roof); dark, wet night"
+        }
+      },
+      "reference": "docs/tasks/T-040-stage1-foundation.md#human-test-steps",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-040"
+    },
+    {
+      "id": "T040-worst-case-off",
+      "task": "T-040",
+      "title": "Stage 1 worst-case scene: 60 s sample (mod-off)",
+      "kind": "scenario",
+      "run": {
+        "scenario": "stage1-worst-case-off"
+      },
+      "proves": "The worst case with the Liberty gameplay modules stopped: the reference for the frame-time budget (p95 +10%, p99 +15%) and the VRAM overhead.",
+      "pass": "autopilot PASS; screenshots judged; the final 'modules' reply shows no module off",
+      "review": {
+        "screenshots": {
+          "worst_case_mid": "Hove Beach at night in rain, armed pedestrians fighting, Niko with a rifle, muzzle flashes and blood visible, HUD on",
+          "worst_case_end": "the same scene 30 s later: bodies and blood remain, the frame is not black or frozen"
+        }
+      },
+      "reference": "docs/tasks/T-040-stage1-foundation.md#human-test-steps",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-040"
     }
   ]
 }

@@ -60,6 +60,9 @@ namespace Liberty.Autopilot
             Register("hud", "hud on|off - hide HUD and radar for clean screenshots", a => { Liberty.Ui.SetHudVisible(this, Args.On(a)); return "hud " + (Args.On(a) ? "on" : "off"); });
             Register("anim", "anim <dictionary> <clip> - play a clip on the player", a => Liberty.Animation.Play(Liberty.Player.Ped, new AnimClip(a[0], a[1]), AnimOptions.Default) ? "playing" : "failed");
             Register("events", "events on|off - log every engine event", a => { events.Enabled = Args.On(a); return "event log " + (events.Enabled ? "on" : "off"); });
+            // No effect: the command line itself is logged, which is how tools/perf/Measure-Stage1.ps1 groups the perf,
+            // framestats and costs replies that follow it into one measured section.
+            Register("label", "label <name> - start a named measurement section (perf tooling reads it from the log)", a => "label " + (a.Length > 0 ? a[0] : ""));
             Register("status", "engine status", a => Liberty.Commands.Execute("engine", "autopilot"));
             Register("selftest", "run the SDK self-test (about 30 s); results in the log as 'selftest ...'", a => { Liberty.Scheduler.Start(this, "selftest", new SdkSelfTest(this, Liberty).Run()); return "selftest started"; });
             Register("stress", "stress <count> - spawn random peds around the player (performance)", Stress);
