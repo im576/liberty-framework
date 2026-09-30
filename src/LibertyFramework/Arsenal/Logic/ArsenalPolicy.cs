@@ -10,16 +10,48 @@ namespace LibertyFramework.Arsenal.Logic
         {
             return !mission && !cutsceneOrFade;
         }
+        internal static bool LoadoutActive(ArsenalConfig config)
+        {
+            return config.Loadout != null && config.Loadout.Enabled;
+        }
+
+        // The loadout's override of a category wins while the loadout is active; otherwise the general mapping applies.
+        private static CategoryRule RuleFor(ArsenalConfig config, WeaponCategory category)
+        {
+            if (LoadoutActive(config) && config.Loadout.CategoryOverrides != null)
+            {
+                foreach (CategoryRule rule in config.Loadout.CategoryOverrides) { if (rule.Category == category) { return rule; } }
+            }
+            foreach (CategoryRule rule in config.Categories) { if (rule.Category == category) { return rule; } }
+            return null;
+        }
+
         internal static string Group(ArsenalConfig config, WeaponCategory category)
         {
-            foreach (CategoryRule rule in config.Categories) { if (rule.Category == category) { return rule.Group; } }
-            return "uncounted";
+            CategoryRule rule = RuleFor(config, category);
+            return rule == null ? "uncounted" : rule.Group;
         }
 
         internal static BodySlot Slot(ArsenalConfig config, WeaponCategory category)
         {
-            foreach (CategoryRule rule in config.Categories) { if (rule.Category == category) { return rule.BodySlot; } }
-            return BodySlot.None;
+            CategoryRule rule = RuleFor(config, category);
+            return rule == null ? BodySlot.None : rule.BodySlot;
+        }
+
+        internal static int Limit(ArsenalConfig config, string group)
+        {
+            bool loadout = LoadoutActive(config);
+            if (group == "sidearm") { return loadout ? config.Loadout.SidearmLimit : config.SidearmLimit; }
+            if (group == "longGun") { return loadout ? config.Loadout.LongGunLimit : config.LongGunLimit; }
+            return config.MeleeLimit;
+        }
+
+        // Most rounds the loadout lets Niko carry for a category; -1 when unlimited (no loadout, or no entry for it).
+        internal static int AmmoCap(ArsenalConfig config, WeaponCategory category)
+        {
+            if (!LoadoutActive(config) || config.Loadout.AmmoCaps == null) { return -1; }
+            foreach (AmmoCap cap in config.Loadout.AmmoCaps) { if (cap.Category == category) { return cap.MaximumRounds; } }
+            return -1;
         }
 
         internal static int OverflowIndex(ArsenalConfig config, IList<WeaponRecord> carried, IDictionary<int, long> lastUsed)
@@ -37,8 +69,7 @@ namespace LibertyFramework.Arsenal.Logic
                     if (!lastUsed.TryGetValue(carried[index].WeaponId, out used)) { used = 0; }
                     if (oldest < 0 || used < age) { oldest = index; age = used; }
                 }
-                int limit = group == "sidearm" ? config.SidearmLimit : group == "longGun" ? config.LongGunLimit : config.MeleeLimit;
-                if (count > limit) { return oldest; }
+                if (count > Limit(config, group)) { return oldest; }
             }
             return -1;
         }

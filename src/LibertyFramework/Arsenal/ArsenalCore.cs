@@ -283,6 +283,8 @@ namespace LibertyFramework.Arsenal
                     if (string.IsNullOrEmpty(record.Finish)) { record.Finish = entry.Finishes[0]; }
                 }
             }
+            // Mission weapons and cutscenes are the game's business: the ammunition limit only applies in free play.
+            if (!mission && !gated) { ClampAmmunition(ped, observed); }
             SetCarried(observed, current);
             if (CarriedIdentityChanged()) { Persist(); }
             if ((DateTime.UtcNow - lastSnapshotUtc).TotalSeconds >= 5)
@@ -325,6 +327,21 @@ namespace LibertyFramework.Arsenal
                 carried.RemoveAt(overflow);
                 Persist();
                 RefreshPresentation((int)ped.Weapons.CurrentType);
+            }
+        }
+
+        // T-044 limited carried ammunition: rounds beyond the loadout's cap for the weapon's category are removed.
+        private void ClampAmmunition(Ped ped, List<WeaponRecord> observed)
+        {
+            foreach (WeaponRecord record in observed)
+            {
+                int cap = ArsenalPolicy.AmmoCap(config, record.Category);
+                if (cap < 0 || record.Ammo <= cap) { continue; }
+                GTA.value.Weapon weapon = ped.Weapons.FromType((Weapon)record.WeaponId);
+                if (weapon == null || !weapon.isPresent) { continue; }
+                weapon.Ammo = cap;
+                RuntimeLog.Info("arsenal_ammo_capped id=" + record.WeaponId + " category=" + record.Category + " from=" + record.Ammo + " to=" + cap);
+                record.Ammo = cap;
             }
         }
 

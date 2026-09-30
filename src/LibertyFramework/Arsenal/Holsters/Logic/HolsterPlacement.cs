@@ -13,5 +13,7 @@ namespace LibertyFramework.Arsenal.Holsters.Logic
         [DataMember(Name = "rotation", IsRequired = true)] internal float[] Rotation;
         [DataMember(Name = "category", IsRequired = false)] internal string Category;
         [DataMember(Name = "model", IsRequired = false)] internal string Model;
+        // T-044: only for Niko wearing an outfit of this class (HolsterOutfitClass.Id); empty = every outfit.
+        [DataMember(Name = "outfit", IsRequired = false)] internal string Outfit;
     }
 }

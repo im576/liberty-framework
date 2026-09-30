@@ -30,6 +30,8 @@ namespace LibertyFramework.Arsenal.Logic
         [DataMember(Name = "inventoryRefreshMilliseconds", IsRequired = false)] internal int InventoryRefreshMilliseconds;
         [DataMember(Name = "stateRefreshMilliseconds", IsRequired = false)] internal int StateRefreshMilliseconds;
         [DataMember(Name = "trunkTimings", IsRequired = true)] internal TrunkTimings TrunkTimings;
+        // T-044: the Stage 1 loadout; absent in files that predate it (general limits apply then).
+        [DataMember(Name = "loadout", IsRequired = false)] internal LoadoutRules Loadout;
     }
 
 }

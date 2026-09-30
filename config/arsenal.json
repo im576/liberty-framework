@@ -34,6 +34,22 @@
     {"category": 7, "group": "longGun", "bodySlot": 4},
     {"category": 8, "group": "uncounted", "bodySlot": 0}
   ],
+  "loadout": {
+    "enabled": true,
+    "sidearmLimit": 1,
+    "longGunLimit": 2,
+    "categoryOverrides": [
+      {"category": 4, "group": "longGun", "bodySlot": 3}
+    ],
+    "ammoCaps": [
+      {"category": 2, "maximumRounds": 150},
+      {"category": 3, "maximumRounds": 60},
+      {"category": 4, "maximumRounds": 240},
+      {"category": 5, "maximumRounds": 240},
+      {"category": 6, "maximumRounds": 40},
+      {"category": 7, "maximumRounds": 12}
+    ]
+  },
   "safehouses": [],
   "safehouseBlipSprite": 29,
   "discoveredSafehouseRadiusMeters": 12.0

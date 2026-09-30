@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using GTA;
+using GTA.Native;
 using LibertyFramework.Arsenal.Contracts;
 using LibertyFramework.Arsenal.Holsters.Logic;
 using LibertyFramework.Core.Config;
@@ -38,6 +39,14 @@ namespace LibertyFramework.Arsenal.Holsters
         private BodySlot selectedSlot = BodySlot.SidearmPrimary;
         private string configHash;
         private DateTime lastConfigCheckUtc = DateTime.MinValue;
+        // T-044: why the props are hidden right now ("" while shown), the outfit class the placements were resolved for, and
+        // the cutscene state from the engine's CutsceneChanged event (no native polling).
+        private string hiddenReason = "";
+        private string outfit = HolsterConfig.DefaultOutfit;
+        private int lastOutfitReadTicks;
+        private bool cutscenePlaying;
+        private bool syncing;
+        private int lastHeldWeapon = -1;
 
         public HolsterController()
         {
@@ -49,6 +58,31 @@ namespace LibertyFramework.Arsenal.Holsters
             DevToolsPages.Register("Holsters", MenuItems);
             Tick += OnTick;
             AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
+        }
+
+        // T-044: the holster props react in the frame the engine reports the change instead of waiting for the next 50 ms tick.
+        protected internal override void OnStart()
+        {
+            Engine.Events.Subscribe<global::Liberty.Sdk.Events.PlayerWeaponChanged>(this, e => SyncNow());
+            Engine.Events.Subscribe<global::Liberty.Sdk.Events.PlayerEnteredVehicle>(this, e => SyncNow());
+            Engine.Events.Subscribe<global::Liberty.Sdk.Events.PlayerExitedVehicle>(this, e => SyncNow());
+            Engine.Events.Subscribe<global::Liberty.Sdk.Events.CutsceneChanged>(this, e => { cutscenePlaying = e.Playing; SyncNow(); });
+            Engine.Commands.Register(this, "holsters", "holsters [status] | outfits | outfit <component> <drawable> [texture] - visible-loadout state and outfit test", HolsterCommand);
+        }
+
+        // A stopped module must not leave props on Niko (mod-off runs and restarts stop it mid-session).
+        protected internal override void OnStop()
+        {
+            ArsenalRegistry.WeaponsRemoving -= OnWeaponsRemoving;
+            try { Clear(); } catch (Exception error) { RuntimeLog.Error("holsters_stop_cleanup_failed error=" + error); }
+        }
+
+        private void SyncNow()
+        {
+            if (syncing) { return; }
+            syncing = true;
+            try { OnTick(this, EventArgs.Empty); }
+            finally { syncing = false; }
         }
 
         private void LoadConfig()
@@ -64,7 +98,7 @@ namespace LibertyFramework.Arsenal.Holsters
                 configHash = hash;
                 HolsterConfig candidate = JsonStore.Parse<HolsterConfig>(bytes);
                 candidate.Validate();
-                foreach (HolsterPlacement placement in candidate.Placements)
+                foreach (HolsterPlacement placement in candidate.AllPlacements())
                 {
                     Bone bone;
                     if (!Enum.TryParse<Bone>(placement.Bone, out bone) || !Enum.IsDefined(typeof(Bone), bone))
@@ -93,29 +127,44 @@ namespace LibertyFramework.Arsenal.Holsters
             {
                 if (!recovered) { RecoverPreviousProps(); recovered = true; }
                 LoadConfig();
-                if (config == null || !config.Enabled) { Clear(); return; }
+                if (config == null || !config.Enabled) { hiddenReason = "disabled"; Clear(); return; }
                 Player player = Player;
                 Ped ped = player == null ? null : player.Character;
-                if (ped == null) { Clear(); return; }
+                if (ped == null) { hiddenReason = "no player"; Clear(); return; }
                 bool inVehicle = Natives.IsInAnyCar(ped);
                 bool onBike = inVehicle && ped.CurrentVehicle != null && ped.CurrentVehicle.Model.isBike;
-                bool visible = HolsterRules.Visible(false, !Natives.PedDead(ped),
+                bool alive = !Natives.PedDead(ped);
+                bool faded = Natives.IsScreenFadedOut();
+                bool visible = HolsterRules.Visible(false, alive,
                     // DevTools locks player control while open; keep props visible so Holsters nudges show live.
-                    Natives.IsPlayerPlaying(player) && (Natives.IsPlayerControlOn(player) || DevToolsMenu.IsOpen || ArsenalCore.StorageOpen),
-                    Natives.IsScreenFadedOut(), inVehicle, onBike, config.ShowOnBikes);
-                if (!visible) { Clear(); return; }
+                    Natives.IsPlayerPlaying(player) && !cutscenePlaying && (Natives.IsPlayerControlOn(player) || DevToolsMenu.IsOpen || ArsenalCore.StorageOpen),
+                    faded, inVehicle, onBike, config.ShowOnBikes);
+                if (!visible)
+                {
+                    hiddenReason = !alive ? "dead" : inVehicle ? "vehicle" : cutscenePlaying ? "cutscene" : faded ? "fade" : "no control";
+                    Clear();
+                    return;
+                }
+                hiddenReason = "";
                 long probe = Stopwatch.GetTimestamp();
                 ICarriedWeaponsSource source = ArsenalRegistry.CarriedWeapons;
                 if (removing && source != null && source.Revision <= removingRevision) { Clear(); return; }
                 removing = false;
                 int held = Natives.CurrentWeapon(ped);
+                if (held != lastHeldWeapon)
+                {
+                    RuntimeLog.Info("holsters_held_changed from=" + lastHeldWeapon + " to=" + held);
+                    lastHeldWeapon = held;
+                }
+                RefreshOutfit(ped);
                 IList<CarriedWeapon> carried = source != null ? source.Carried : ReadInventory(ped, held);
                 if (carried == null) { Clear(); return; }
                 LibertyFramework.Core.Performance.Logic.CostMeter.Add("ho.carried", probe); probe = Stopwatch.GetTimestamp();
                 HashSet<BodySlot> wanted = new HashSet<BodySlot>();
                 foreach (CarriedWeapon weapon in carried)
                 {
-                    if (weapon == null || weapon.Slot == BodySlot.None || weapon.InHand || weapon.WeaponId == held) { continue; }
+                    // The weapon in Niko's hands is read live (an engine event can arrive before Arsenal refreshes its list).
+                    if (weapon == null || weapon.Slot == BodySlot.None || weapon.WeaponId == held) { continue; }
                     if (!wanted.Add(weapon.Slot)) { continue; }
                     Show(ped, weapon);
                     if (props.ContainsKey(weapon.Slot)) { ShowSling(ped, weapon.Slot); }
@@ -129,6 +178,80 @@ namespace LibertyFramework.Arsenal.Holsters
                 try { Clear(); } catch (Exception restoreError) { RuntimeLog.Error("holsters_cleanup_failed error=" + restoreError); }
                 disabled = true;
             }
+        }
+
+        // Niko's outfit class from the drawables he wears in the components the classes look at (at most twice a second; the
+        // component read is one native per component). A change re-attaches every prop with the new class's offsets.
+        private void RefreshOutfit(Ped ped)
+        {
+            if (config.OutfitClasses == null || config.OutfitClasses.Count == 0) { return; }
+            int now = Environment.TickCount;
+            if (lastOutfitReadTicks != 0 && unchecked(now - lastOutfitReadTicks) < 500) { return; }
+            lastOutfitReadTicks = now;
+            string resolved = config.OutfitFor(ReadDrawables(ped));
+            if (resolved == outfit) { return; }
+            RuntimeLog.Info("holsters_outfit_changed from=" + outfit + " to=" + resolved);
+            outfit = resolved;
+            Clear();
+        }
+
+        private Dictionary<int, int> ReadDrawables(Ped ped)
+        {
+            Dictionary<int, int> drawables = new Dictionary<int, int>();
+            foreach (HolsterOutfitClass outfitClass in config.OutfitClasses)
+            {
+                if (drawables.ContainsKey(outfitClass.Component)) { continue; }
+                drawables[outfitClass.Component] = Function.Call<int>("GET_CHAR_DRAWABLE_VARIATION", ped, outfitClass.Component);
+            }
+            return drawables;
+        }
+
+        private string HolsterCommand(string[] args)
+        {
+            string verb = args.Length > 0 ? args[0] : "status";
+            Ped ped = Player == null ? null : Player.Character;
+            if (verb == "outfits")
+            {
+                if (ped == null) { return "no player"; }
+                List<string> parts = new List<string>();
+                for (int component = 0; component < 11; component++)
+                {
+                    parts.Add(component + "=" + Function.Call<int>("GET_CHAR_DRAWABLE_VARIATION", ped, component) + "/" +
+                        Function.Call<int>("GET_CHAR_TEXTURE_VARIATION", ped, component));
+                }
+                string line = "holsters_outfit_components model=" + ped.Model.Hash.ToString("X8") + " drawable/texture " + string.Join(" ", parts.ToArray());
+                RuntimeLog.Info(line);
+                return line;
+            }
+            if (verb == "outfit")
+            {
+                int component, drawable, texture = 0;
+                if (ped == null || args.Length < 3 || !int.TryParse(args[1], out component) || !int.TryParse(args[2], out drawable) ||
+                    (args.Length > 3 && !int.TryParse(args[3], out texture)))
+                { return "holsters outfit <component> <drawable> [texture]"; }
+                Function.Call("SET_CHAR_COMPONENT_VARIATION", ped, component, drawable, texture);
+                int now = Function.Call<int>("GET_CHAR_DRAWABLE_VARIATION", ped, component);
+                string line = "holsters_outfit_set component=" + component + " requested=" + drawable + " now=" + now;
+                RuntimeLog.Info(line);
+                lastOutfitReadTicks = 0;
+                return line;
+            }
+            if (verb != "status") { return "holsters [status] | outfits | outfit <component> <drawable> [texture]"; }
+            int existing = 0;
+            List<string> slots = new List<string>();
+            foreach (KeyValuePair<BodySlot, GTA.Object> pair in props)
+            {
+                bool exists = pair.Value != null && pair.Value.Exists();
+                if (exists) { existing++; }
+                slots.Add(pair.Key + ":" + shownIds[pair.Key] + (exists ? "" : "!missing"));
+            }
+            int slings = 0;
+            foreach (GTA.Object sling in slingProps.Values) { if (sling != null && sling.Exists()) { slings++; } }
+            string status = "holsters_status props=" + props.Count + " existing=" + existing + " slings=" + slingProps.Count + " slings_existing=" + slings +
+                " hidden=" + (hiddenReason.Length == 0 ? "none" : hiddenReason) + " outfit=" + outfit + " disabled=" + disabled +
+                " slots=" + (slots.Count == 0 ? "none" : string.Join(",", slots.ToArray())) + " held=" + lastHeldWeapon;
+            RuntimeLog.Info(status);
+            return status;
         }
 
         private IList<CarriedWeapon> ReadInventory(Ped ped, int held)
@@ -204,7 +327,7 @@ namespace LibertyFramework.Arsenal.Holsters
             if (!model.isValid) { RuntimeLog.Error("holster_model_invalid " + modelName); return; }
             HolsterNatives.RequestModel(model);
             if (!HolsterNatives.HasModelLoaded(model)) { return; }
-            HolsterPlacement placement = config.FindPlacement(weapon.Slot, weapon.Category, modelName);
+            HolsterPlacement placement = config.FindPlacement(weapon.Slot, weapon.Category, modelName, outfit);
             if (placement == null) { return; }
             GTA.Object prop = World.CreateObject(model, ped.Position);
             if (prop == null) { return; }

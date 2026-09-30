@@ -7,6 +7,19 @@ namespace LibertyFramework.Arsenal.Logic
 {
     internal static class ArsenalConfigValidator
     {
+        // A submachine gun may count as a sidearm (general mapping) or as a long gun (Stage 1 loadout, slung on the back).
+        private static bool ValidRule(CategoryRule rule)
+        {
+            bool sidearmSlot = rule.BodySlot == BodySlot.SidearmPrimary || rule.BodySlot == BodySlot.SidearmSecondary;
+            bool longGunSlot = rule.BodySlot == BodySlot.LongGun1 || rule.BodySlot == BodySlot.LongGun2;
+            return (rule.Category == WeaponCategory.Melee && rule.Group == "melee" && rule.BodySlot == BodySlot.Melee) ||
+                (rule.Category == WeaponCategory.Handgun && rule.Group == "sidearm" && sidearmSlot) ||
+                (rule.Category == WeaponCategory.SMG && ((rule.Group == "sidearm" && sidearmSlot) || (rule.Group == "longGun" && longGunSlot))) ||
+                ((rule.Category == WeaponCategory.Shotgun || rule.Category == WeaponCategory.Rifle || rule.Category == WeaponCategory.Sniper ||
+                    rule.Category == WeaponCategory.Heavy) && rule.Group == "longGun" && longGunSlot) ||
+                (rule.Category == WeaponCategory.Thrown && rule.Group == "uncounted" && rule.BodySlot == BodySlot.None);
+        }
+
         internal static void Validate(ArsenalConfig config)
         {
             if (config == null || config.SchemaVersion != 1 || config.SidearmLimit < 1 || config.SidearmLimit > 2 ||
@@ -22,14 +35,33 @@ namespace LibertyFramework.Arsenal.Logic
             {
                 if (rule == null || !seen.Add(rule.Category) || (rule.Group != "sidearm" && rule.Group != "longGun" && rule.Group != "melee" && rule.Group != "uncounted"))
                     { throw new InvalidDataException("Invalid Arsenal category mapping."); }
-                bool valid = (rule.Category == WeaponCategory.Melee && rule.Group == "melee" && rule.BodySlot == BodySlot.Melee) ||
-                    ((rule.Category == WeaponCategory.Handgun || rule.Category == WeaponCategory.SMG) && rule.Group == "sidearm" &&
-                        (rule.BodySlot == BodySlot.SidearmPrimary || rule.BodySlot == BodySlot.SidearmSecondary)) ||
-                    ((rule.Category == WeaponCategory.Shotgun || rule.Category == WeaponCategory.Rifle || rule.Category == WeaponCategory.Sniper ||
-                        rule.Category == WeaponCategory.Heavy) && rule.Group == "longGun" &&
-                        (rule.BodySlot == BodySlot.LongGun1 || rule.BodySlot == BodySlot.LongGun2)) ||
-                    (rule.Category == WeaponCategory.Thrown && rule.Group == "uncounted" && rule.BodySlot == BodySlot.None);
-                if (!valid) { throw new InvalidDataException("Category mapped to wrong Arsenal group or body slot: " + rule.Category); }
+                if (!ValidRule(rule)) { throw new InvalidDataException("Category mapped to wrong Arsenal group or body slot: " + rule.Category); }
+            }
+            LoadoutRules loadout = config.Loadout;
+            if (loadout != null)
+            {
+                if (loadout.SidearmLimit < 1 || loadout.SidearmLimit > 2 || loadout.LongGunLimit < 1 || loadout.LongGunLimit > 4)
+                    { throw new InvalidDataException("loadout sidearmLimit must be 1-2 and longGunLimit 1-4."); }
+                HashSet<WeaponCategory> overridden = new HashSet<WeaponCategory>();
+                if (loadout.CategoryOverrides != null)
+                {
+                    foreach (CategoryRule rule in loadout.CategoryOverrides)
+                    {
+                        if (rule == null || !overridden.Add(rule.Category) || !ValidRule(rule))
+                            { throw new InvalidDataException("loadout categoryOverrides has an invalid or duplicate category."); }
+                    }
+                }
+                HashSet<WeaponCategory> capped = new HashSet<WeaponCategory>();
+                if (loadout.AmmoCaps != null)
+                {
+                    foreach (AmmoCap cap in loadout.AmmoCaps)
+                    {
+                        // Melee and thrown weapons have no magazine rules here; a cap would only clip grenades.
+                        if (cap == null || !capped.Add(cap.Category) || cap.MaximumRounds < 1 || cap.MaximumRounds > 9999 ||
+                            cap.Category < WeaponCategory.Handgun || cap.Category > WeaponCategory.Heavy)
+                            { throw new InvalidDataException("loadout ammoCaps needs a unique firearm category and 1-9999 rounds."); }
+                    }
+                }
             }
             foreach (WeaponCategory category in new WeaponCategory[] { WeaponCategory.Melee, WeaponCategory.Handgun, WeaponCategory.SMG,
                 WeaponCategory.Shotgun, WeaponCategory.Rifle, WeaponCategory.Sniper, WeaponCategory.Heavy, WeaponCategory.Thrown })
