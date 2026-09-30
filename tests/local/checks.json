@@ -1201,7 +1201,7 @@
       "run": {
         "scenario": "stage1-worst-case"
       },
-      "proves": "The scripted worst case (Hove Beach night rain, ambient traffic and pedestrians, 12 armed subjects fighting, 25 extra pedestrians, HUD on) runs for 60 s and is measured: frame statistics over the whole window, script cost, memory and VRAM every 10 s.",
+      "proves": "The scripted worst case (Hove Beach night rain, ambient traffic and pedestrians, 12 armed subjects fighting, 25 extra pedestrians, the player shooting the nearest subject so the gore and effect modules work, HUD on) runs for 60 s and is measured: frame statistics over the whole window, script cost, memory and VRAM every 10 s.",
       "pass": "autopilot PASS; screenshots judged; the summary has the worst_case section with p50/p95/p99, engine.frame cost, private bytes and dedicated GPU memory",
       "review": {
         "screenshots": {

@@ -157,7 +157,10 @@ function Get-ReportSummary([string] $ReportDirectory, [string] $Condition = '') 
     # The atmosphere module's density governor lowers ped and car density when frames are slow (atmosphere.json density):
     # a sample taken while it was below 1.0 measured a thinner city. Its 30 s log lines show the lowest values.
     $densityPeds = @(); $densityCars = @()
+    $firstLabel = @($records | Where-Object { $_.Command -like 'label *' })[0]
     foreach ($line in $lines) {
+        # Only the period being measured: the governor's lines from before the first label (or before a mod-off scenario stopped it) do not count.
+        if ($null -eq $firstLabel -or [string]::CompareOrdinal($line.Substring(0, [Math]::Min(24, $line.Length)), $firstLabel.Time) -lt 0) { continue }
         $m = [regex]::Match($line, '\bdensity frame_ms=\S+ peds=(?<p>[0-9.]+) cars=(?<c>[0-9.]+)')
         if ($m.Success) { $densityPeds += ConvertTo-Number $m.Groups['p'].Value; $densityCars += ConvertTo-Number $m.Groups['c'].Value }
     }
@@ -171,6 +174,9 @@ function Get-ReportSummary([string] $ReportDirectory, [string] $Condition = '') 
         reportDirectory = (Split-Path -Leaf $ReportDirectory)
         engineStalls = @($lines | Where-Object { $_ -match 'engine_stall' }).Count
         logErrors = @($lines | Where-Object { $_ -match '\[ERROR\]' }).Count
+        # Evidence that the gore and effect modules were working during the run (0 for mod-off, and for scenes with no violence).
+        combatHits = @($lines | Where-Object { $_ -match '\bcombat_hit\b' }).Count
+        ptfxEffects = @($lines | Where-Object { $_ -match '\bptfx effect=' }).Count
         densityLines = $densityPeds.Count
         densityMinPeds = $(if ($densityPeds.Count -gt 0) { ($densityPeds | Measure-Object -Minimum).Minimum } else { $null })
         densityMinCars = $(if ($densityCars.Count -gt 0) { ($densityCars | Measure-Object -Minimum).Minimum } else { $null })
@@ -183,9 +189,10 @@ function Get-ReportSummary([string] $ReportDirectory, [string] $Condition = '') 
 # (or another tool) using the game during the measurement, and the section it falls in is not a clean sample. A scenario
 # that spawns or arms subjects legitimately causes some of them: only the storage and menu lines count there.
 function Get-InterferenceLines([string[]] $Lines, [object[]] $Records) {
-    $actors = @($Records | ForEach-Object { ($_.Command -split '\s+')[0] } | Where-Object { $_ -in @('give', 'select', 'spawn', 'fight', 'fire', 'hurt', 'kill', 'gore', 'anim', 'stress') })
+    $actors = @($Records | ForEach-Object { ($_.Command -split '\s+')[0] } | Where-Object { $_ -in @('give', 'select', 'spawn', 'fight', 'fire', 'hurt', 'kill', 'gore', 'anim', 'stress', 'pfire') })
     $pattern = if ($actors.Count -eq 0) { 'weapon_changed|combat_hit|arsenal_storage_open|choreography_begin|ui_input|gore_test|shoulder_swap' } else { 'arsenal_storage_open|choreography_begin trunk|ui_input|gore_test|shoulder_swap' }
-    return @($Lines | Where-Object { $_ -match $pattern -and $_ -notmatch ' command source=' })
+    # A restarted gunplay module reports its first weapon as a change from -1: the scenario's own restart, not outside input.
+    return @($Lines | Where-Object { $_ -match $pattern -and $_ -notmatch ' command source=' -and $_ -notmatch 'weapon_changed from=-1 ' })
 }
 
 # Budgets from STAGE1.md section 10 Pillar 5 (proposals until the owner confirms them; the VRAM one is confirmed).

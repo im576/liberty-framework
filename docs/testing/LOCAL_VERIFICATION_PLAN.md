@@ -299,7 +299,7 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 - `T033-world-walk`: Borrowed collision works for the player against a placed world object. **Still unproven:** Collision matching the wall's own outline needs the collision writer.
 - `T040-capture-broker`: The 8 Broker/Dukes capture points are reachable, stream in, sit on streets, and yield frame statistics, script cost, memory and VRAM in day/overcast and night/rain.
 - `T040-capture-city`: The Algonquin, Bohan and Alderney capture points work and are measured like the Broker/Dukes ones.
-- `T040-worst-case`: The scripted worst case (Hove Beach night rain, ambient traffic and pedestrians, 12 armed subjects fighting, 25 extra pedestrians, HUD on) runs for 60 s and is measured: frame statistics over the whole window, script cost, memory and VRAM every 10 s.
+- `T040-worst-case`: The scripted worst case (Hove Beach night rain, ambient traffic and pedestrians, 12 armed subjects fighting, 25 extra pedestrians, the player shooting the nearest subject so the gore and effect modules work, HUD on) runs for 60 s and is measured: frame statistics over the whole window, script cost, memory and VRAM every 10 s.
 - `T040-capture-broker-off`: The same measurement with the Liberty gameplay modules stopped (gunplay, combat, arsenal, holsters, atmosphere): the reference every Stage 1 budget is compared to. Restarts the modules at the end.
 - `T040-capture-city-off`: Mod-off measurement of the citywide points.
 - `T040-worst-case-off`: The worst case with the Liberty gameplay modules stopped: the reference for the frame-time budget (p95 +10%, p99 +15%) and the VRAM overhead.

@@ -76,11 +76,15 @@ Test-That 'report summary: no density lines means no density figure, not 1.0' ($
 $densityReport = Join-Path $script:Scratch 'stage1-report-density'
 New-Item -ItemType Directory -Force -Path $densityReport | Out-Null
 [IO.File]::WriteAllLines((Join-Path $densityReport 'run.log'), @(
-    '2026-09-30T10:00:00.000Z [INFO] density frame_ms=22.0 peds=1.00 cars=1.00',
+    '2026-09-30T09:59:00.000Z [INFO] density frame_ms=50.0 peds=0.40 cars=0.40',
+    '2026-09-30T10:00:00.000Z [INFO] command source=file:c1 line="label s1_x_day" reply="label s1_x_day"',
+    '2026-09-30T10:00:10.000Z [INFO] density frame_ms=22.0 peds=1.00 cars=1.00',
     '2026-09-30T10:00:30.000Z [INFO] density frame_ms=38.0 peds=0.72 cars=0.80',
-    '2026-09-30T10:01:00.000Z [INFO] density frame_ms=30.0 peds=0.90 cars=0.85'))
+    '2026-09-30T10:01:00.000Z [INFO] density frame_ms=30.0 peds=0.90 cars=0.85',
+    '2026-09-30T10:01:10.000Z [INFO] weapon_changed from=-1 to=12 profile=vanilla'))
 $density = Get-ReportSummary $densityReport
-Test-That 'report summary: the lowest density the governor reached is reported' ($density.densityMinPeds -eq 0.72 -and $density.densityMinCars -eq 0.8 -and $density.densityLines -eq 3)
+Test-That 'report summary: the lowest density the governor reached while measuring is reported (lines before the first label do not count)' ($density.densityMinPeds -eq 0.72 -and $density.densityMinCars -eq 0.8 -and $density.densityLines -eq 3)
+Test-That 'report summary: the first weapon of a restarted gunplay module is not outside input' ($density.interferenceLines -eq 0)
 
 # ---- the script end to end: summarise, then compare (through JSON, as the owner uses it)
 $measure = Join-Path $script:RepoRoot 'tools/perf/Measure-Stage1.ps1'

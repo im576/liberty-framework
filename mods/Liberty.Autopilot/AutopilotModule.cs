@@ -71,6 +71,7 @@ namespace Liberty.Autopilot
             Register("menu-close", "close the menus this module opened", a => { int n = menus.Count; foreach (IMenu m in menus) { m.Close(); } menus.Clear(); return "closed " + n; });
             Register("fight", "fight <subject> <subject> - two subjects attack each other (exact damage events)", Fight);
             Register("fire", "fire <subject|all> [ms] - armed subjects shoot at a point beside them (bullet events)", Fire);
+            Register("pfire", "pfire <subject index|near> [ms] - the player shoots at a spawned subject, so the damage is the player's (gore, exact events)", PlayerFire);
             Register("hideprop", "hideprop [on|off] - hide (default) or show the last spawned prop (collision proxies stay solid)", HideProp);
             Register("rayto", "rayto <subject index|car|prop> [mask: all|world,peds,vehicles,objects] - Query.Raycast from the player to a spawned target", RayTo);
             Register("los", "los <subject index> - Query.HasLineOfSight from the player to a subject (and back)", LineOfSight);
@@ -370,6 +371,35 @@ namespace Liberty.Autopilot
                 Liberty.Tasks.ShootAt(ped, at, ms);
             }
             return "firing " + targets.Count;
+        }
+
+        // The player fires a burst at one subject (the nearest living one for "near"). Subjects' own shooting never counts as
+        // the player's, so the gore and effect modules only see violence the player causes; the worst-case scene uses this.
+        private string PlayerFire(string[] args)
+        {
+            string which = args.Length > 0 ? args[0] : "near";
+            int ms = Args.Int(args, 1, 3000);
+            PedRef player = Liberty.Player.Ped;
+            PedRef target = PedRef.None;
+            subjects.RemoveAll(p => !Liberty.Peds.Exists(p));
+            if (which == "near")
+            {
+                float best = float.MaxValue;
+                foreach (PedRef subject in subjects)
+                {
+                    if (Liberty.Peds.IsDead(subject)) { continue; }
+                    float distance = Liberty.Peds.GetPosition(subject).DistanceTo(Liberty.World.Player.Position);
+                    if (distance < best) { best = distance; target = subject; }
+                }
+            }
+            else
+            {
+                List<PedRef> picked = Targets(which);
+                if (picked.Count > 0) { target = picked[0]; }
+            }
+            if (target.IsNone) { return "no living subject to shoot at"; }
+            Liberty.Tasks.ShootAt(player, Liberty.Peds.GetPosition(target) + new Vec3(0, 0, 0.4f), ms);
+            return "player shooting at " + target.Handle + " for " + ms + " ms";
         }
 
         // ---- SDK 1.1 raycast ----

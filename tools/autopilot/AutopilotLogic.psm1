@@ -90,52 +90,80 @@ function Resolve-ScenarioLine([string] $Line, [string] $ProbeDirectory) {
 
 # The session log, read incrementally: only bytes appended since the previous call are read and decoded (the expect
 # loops poll every 500 ms; re-reading a long log each time was slow). $Cache is a hashtable the caller keeps between
-# calls. A log that got shorter (rotated or truncated), another path or another session start resets it. Only complete
-# lines are returned (a line still being written waits for its newline), and only lines stamped at or after $Since
-# (the log's UTC timestamps, yyyy-MM-ddTHH:mm:ss).
+# calls. Another path or another session start resets it. Only complete lines are returned (a line still being written
+# waits for its newline), and only lines stamped at or after $Since (the log's UTC timestamps, yyyy-MM-ddTHH:mm:ss).
+# The game rotates its log at 1 MB (LibertyFramework.log becomes LibertyFramework.1.log, a new file starts). A log that got
+# shorter is read like that when the .1.log next to it still holds the bytes not read yet: the rest of the old file is
+# added, then the new file from its start, and lines already returned stay (so a scenario's marks keep their meaning and a
+# long measurement run loses nothing). Without such a backup (truncated, or replaced) the cache is reset.
+function Add-LogBytes([hashtable] $Cache, [byte[]] $Bytes, [string] $Since) {
+    # Up to the last newline byte: complete lines (a UTF-8 sequence never contains 0x0A, so none is split).
+    $end = [Array]::LastIndexOf($Bytes, [byte]10)
+    if ($end -lt 0) { $Cache['Pending'] = $Bytes; return }
+    $text = [Text.Encoding]::UTF8.GetString($Bytes, 0, $end + 1)
+    $rest = New-Object byte[] ($Bytes.Length - $end - 1)
+    [Array]::Copy($Bytes, $end + 1, $rest, 0, $rest.Length)
+    $Cache['Pending'] = $rest
+    $lines = $Cache['Lines']
+    foreach ($line in $text.Split([char]10)) {
+        $clean = $line.TrimEnd([char]13)
+        if ($clean.Length -ge 19 -and [string]::CompareOrdinal($clean.Substring(0, 19), $Since) -ge 0) { $lines.Add($clean) }
+    }
+}
+
+function Read-LogBytes([IO.FileStream] $Stream, [long] $Offset) {
+    [void]$Stream.Seek($Offset, 'Begin')
+    $fresh = New-Object byte[] ($Stream.Length - $Offset)
+    $read = 0
+    while ($read -lt $fresh.Length) {
+        $n = $Stream.Read($fresh, $read, $fresh.Length - $read)
+        if ($n -le 0) { break }
+        $read += $n
+    }
+    if ($read -lt $fresh.Length) { $short = New-Object byte[] $read; [Array]::Copy($fresh, $short, $read); return $short }
+    return $fresh
+}
+
+function Join-LogBytes([byte[]] $Pending, [byte[]] $Fresh) {
+    $bytes = New-Object byte[] ($Pending.Length + $Fresh.Length)
+    [Array]::Copy($Pending, 0, $bytes, 0, $Pending.Length)
+    [Array]::Copy($Fresh, 0, $bytes, $Pending.Length, $Fresh.Length)
+    return $bytes
+}
+
 function Update-SessionLogCache([hashtable] $Cache, [string] $Path, [string] $Since) {
     if (-not (Test-Path -LiteralPath $Path)) { $Cache.Clear(); return @() }
     $stream = [IO.File]::Open($Path, 'Open', 'Read', 'ReadWrite')
     try {
         $length = $stream.Length
+        $sameSession = $Cache['Path'] -eq $Path -and $Cache['Since'] -eq $Since
+        if ($sameSession -and $length -lt [long]$Cache['Offset']) {
+            # Rotated: take what was not read yet from the backup, keep the lines already returned, restart at the new file.
+            $backup = [IO.Path]::ChangeExtension($Path, '.1.log')
+            $tail = $null
+            if (Test-Path -LiteralPath $backup) {
+                $backupStream = [IO.File]::Open($backup, 'Open', 'Read', 'ReadWrite')
+                try { if ($backupStream.Length -ge [long]$Cache['Offset']) { $tail = Read-LogBytes $backupStream ([long]$Cache['Offset']) } }
+                finally { $backupStream.Dispose() }
+            }
+            if ($null -ne $tail) {
+                Add-LogBytes $Cache (Join-LogBytes ([byte[]]$Cache['Pending']) $tail) $Since
+                $Cache['Offset'] = [long]0; $Cache['Pending'] = [byte[]]@()
+            }
+        }
         if ($Cache['Path'] -ne $Path -or $Cache['Since'] -ne $Since -or $length -lt [long]$Cache['Offset']) {
             $Cache['Path'] = $Path; $Cache['Since'] = $Since; $Cache['Offset'] = [long]0
             $Cache['Pending'] = [byte[]]@(); $Cache['Lines'] = New-Object System.Collections.Generic.List[string]
         }
         $offset = [long]$Cache['Offset']
         if ($length -gt $offset) {
-            [void]$stream.Seek($offset, 'Begin')
-            $fresh = New-Object byte[] ($length - $offset)
-            $read = 0
-            while ($read -lt $fresh.Length) {
-                $n = $stream.Read($fresh, $read, $fresh.Length - $read)
-                if ($n -le 0) { break }
-                $read += $n
-            }
-            $Cache['Offset'] = $offset + $read
-            $pending = [byte[]]$Cache['Pending']
-            $bytes = New-Object byte[] ($pending.Length + $read)
-            [Array]::Copy($pending, 0, $bytes, 0, $pending.Length)
-            [Array]::Copy($fresh, 0, $bytes, $pending.Length, $read)
-            # Up to the last newline byte: complete lines (a UTF-8 sequence never contains 0x0A, so none is split).
-            $end = [Array]::LastIndexOf($bytes, [byte]10)
-            if ($end -ge 0) {
-                $text = [Text.Encoding]::UTF8.GetString($bytes, 0, $end + 1)
-                $rest = New-Object byte[] ($bytes.Length - $end - 1)
-                [Array]::Copy($bytes, $end + 1, $rest, 0, $rest.Length)
-                $Cache['Pending'] = $rest
-                $lines = $Cache['Lines']
-                foreach ($line in $text.Split([char]10)) {
-                    $clean = $line.TrimEnd([char]13)
-                    if ($clean.Length -ge 19 -and [string]::CompareOrdinal($clean.Substring(0, 19), $Since) -ge 0) { $lines.Add($clean) }
-                }
-            }
-            else { $Cache['Pending'] = $bytes }
+            $fresh = Read-LogBytes $stream $offset
+            $Cache['Offset'] = $offset + $fresh.Length
+            Add-LogBytes $Cache (Join-LogBytes ([byte[]]$Cache['Pending']) $fresh) $Since
         }
     } finally { $stream.Dispose() }
     return $Cache['Lines'].ToArray()
 }
-
 # Steam screenshot folders for the game (Steam app 12210, GTA IV: The Complete Edition): <root>\userdata\<account>\760\
 # remote\<app>\screenshots for every Steam root given (the registry's install path, an override, the default folder).
 function Get-SteamScreenshotFolders([string[]] $SteamRoots, [string] $AppId = '12210') {

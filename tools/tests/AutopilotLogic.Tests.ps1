@@ -106,6 +106,23 @@ Test-That 'log: a new session start resets the cache' ($read.Count -eq 0) ($read
 $read = @(Update-SessionLogCache $cache (Join-Path $script:Scratch 'missing.log') '2026-09-26T10:00:00')
 Test-That 'log: a missing log reads as empty' ($read.Count -eq 0)
 
+# The game rotates its log at 1 MB: LibertyFramework.log -> LibertyFramework.1.log. A long measurement scenario must not lose
+# the lines written between the last poll and the rotation, nor the ones it already saw.
+$rotating = Join-Path $script:Scratch 'rotating.log'
+$rotated = Join-Path $script:Scratch 'rotating.1.log'
+[IO.File]::WriteAllText($rotating, "2026-09-26T10:00:01.000Z [INFO] one`n2026-09-26T10:00:02.000Z [INFO] two`n2026-09-26T10:00:03.000Z [INFO] thr", $utf8)
+$cache2 = @{}
+$read = @(Update-SessionLogCache $cache2 $rotating '2026-09-26T10:00:00')
+Test-That 'log rotation: two complete lines read, the third waits' ($read.Count -eq 2)
+[IO.File]::AppendAllText($rotating, "ee`n2026-09-26T10:00:04.000Z [INFO] four`n", $utf8)
+Move-Item -LiteralPath $rotating -Destination $rotated -Force
+[IO.File]::WriteAllText($rotating, "2026-09-26T10:00:05.000Z [INFO] five`n", $utf8)
+$read = @(Update-SessionLogCache $cache2 $rotating '2026-09-26T10:00:00')
+Test-That 'log rotation: nothing lost (the unread end of the old file, then the new file) and nothing repeated' ($read.Count -eq 5 -and $read[2] -like '*three' -and $read[3] -like '*four' -and $read[4] -like '*five') ($read -join ' | ')
+[IO.File]::AppendAllText($rotating, "2026-09-26T10:00:06.000Z [INFO] six`n", $utf8)
+$read = @(Update-SessionLogCache $cache2 $rotating '2026-09-26T10:00:00')
+Test-That 'log rotation: reading continues in the new file' ($read.Count -eq 6 -and $read[5] -like '*six') ($read -join ' | ')
+
 # Steam screenshot folders
 $steamA = Join-Path $script:Scratch 'SteamA'; $steamB = Join-Path $script:Scratch 'Steam B'
 New-Item -ItemType Directory -Force -Path (Join-Path $steamA 'userdata/111'), (Join-Path $steamA 'userdata/222'), (Join-Path $steamB 'userdata/333') | Out-Null

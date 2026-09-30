@@ -73,7 +73,8 @@ function New-CaptureScenario([string] $Title, [object[]] $Points, [bool] $ModOff
         $lines.Add("expect `"teleport_done id=$($point.id)`" 90")
         # Algonquin, Bohan and Alderney can raise a wanted level for an armed player on a locked island: clear it.
         $lines.Add('wanted 0')
-        $lines.Add("wait $streamingWaitMs")
+        # Alderney streams in slowly on the hard disk (a 9 s LOAD_SCENE and the road surface still missing 14 s later).
+        $lines.Add("wait $(if ($point.id -eq 's1_alderney_city') { $streamingWaitMs * 3 } else { $streamingWaitMs })")
         foreach ($condition in $conditions) {
             $label = "$($point.id)_$($condition.Name)"
             # Clock first, weather after a pause: the weather director (atmosphere module) counts an hour change and may
@@ -136,14 +137,16 @@ function New-WorstCaseScenario([bool] $ModOff) {
     $lines.Add('fight 6 7')
     $lines.Add('fight 8 9')
     $lines.Add('fight 10 11')
+    $lines.Add('pfire near 5000')
     for ($second = 10; $second -le 60; $second += 10) {
         $lines.Add('wait 10000')
         $lines.Add('perf')
         $lines.Add('costs')
         $lines.Add('pools')
         $lines.Add('gpumem worst_case_' + $second.ToString('00'))
-        # Keep the shooting going: subjects still standing fire again; the survivors of the pairs keep fighting.
-        if ($second -lt 60) { $lines.Add('fire all 4000') }
+        # Keep the shooting going: subjects still standing fire again, the survivors of the pairs keep fighting, and the
+        # player shoots the nearest subject (only the player's violence reaches the gore and effect modules).
+        if ($second -lt 60) { $lines.Add('fire all 4000'); $lines.Add('pfire near 4000') }
         if ($second -eq 30) { $lines.Add('shot worst_case_mid') }
     }
     $lines.Add('framestats')

@@ -62,7 +62,7 @@ foreach ($group in $byCondition) {
         schemaVersion = 1
         condition = $group.Name
         generatedUtc = [DateTime]::UtcNow.ToString('o')
-        scenarios = @($group.Group | ForEach-Object { [ordered]@{ scenario = $_['scenario']; report = $_['reportDirectory']; engineStalls = $_['engineStalls']; logErrors = $_['logErrors']; densityMinPeds = $_['densityMinPeds']; densityMinCars = $_['densityMinCars']; interferenceLines = $_['interferenceLines']; interferenceFirst = $_['interferenceFirst'] } })
+        scenarios = @($group.Group | ForEach-Object { [ordered]@{ scenario = $_['scenario']; report = $_['reportDirectory']; engineStalls = $_['engineStalls']; logErrors = $_['logErrors']; combatHits = $_['combatHits']; ptfxEffects = $_['ptfxEffects']; densityMinPeds = $_['densityMinPeds']; densityMinCars = $_['densityMinCars']; interferenceLines = $_['interferenceLines']; interferenceFirst = $_['interferenceFirst'] } })
         budgets = Get-Stage1Budgets
         sections = @($group.Group | ForEach-Object { $_['sections'] })
     }

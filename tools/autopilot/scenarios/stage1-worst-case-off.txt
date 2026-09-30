@@ -36,24 +36,28 @@ fight 4 5
 fight 6 7
 fight 8 9
 fight 10 11
+pfire near 5000
 wait 10000
 perf
 costs
 pools
 gpumem worst_case_10
 fire all 4000
+pfire near 4000
 wait 10000
 perf
 costs
 pools
 gpumem worst_case_20
 fire all 4000
+pfire near 4000
 wait 10000
 perf
 costs
 pools
 gpumem worst_case_30
 fire all 4000
+pfire near 4000
 shot worst_case_mid
 wait 10000
 perf
@@ -61,12 +65,14 @@ costs
 pools
 gpumem worst_case_40
 fire all 4000
+pfire near 4000
 wait 10000
 perf
 costs
 pools
 gpumem worst_case_50
 fire all 4000
+pfire near 4000
 wait 10000
 perf
 costs

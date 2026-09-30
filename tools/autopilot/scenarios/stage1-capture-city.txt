@@ -132,7 +132,7 @@ hud on
 goto s1_alderney_city
 expect "teleport_done id=s1_alderney_city" 90
 wanted 0
-wait 8000
+wait 24000
 time 13 0
 wait 1500
 weather 3
