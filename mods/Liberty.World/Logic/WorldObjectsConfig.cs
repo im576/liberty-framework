@@ -13,6 +13,16 @@ namespace Liberty.World
     public sealed class WorldObjectsConfig
     {
         [DataContract]
+        public sealed class Proxy
+        {
+            // Vanilla model name (a prop the game gives solid collision).
+            [DataMember(Name = "model", Order = 0)] public string Model;
+            // Offset from the object's origin, metres along the world axes (the object's heading is not applied to it).
+            [DataMember(Name = "offset", Order = 1, EmitDefaultValue = false)] public float[] Offset;
+            // Added to the object's heading, degrees.
+            [DataMember(Name = "headingOffsetDegrees", Order = 2, EmitDefaultValue = false)] public float HeadingOffsetDegrees;
+        }
+        [DataContract]
         public sealed class Placement
         {
             // Unique id for logs and the "world" command.
@@ -26,13 +36,10 @@ namespace Liberty.World
             // Put the origin on the ground under position (when the game reports a ground height there); position's z
             // is then only where the search starts. False places the origin exactly at position.
             [DataMember(Name = "snapToGround", Order = 4)] public bool SnapToGround;
-            // Collision without authored bounds: a vanilla prop that already has solid collision is placed invisibly at the
-            // same spot and heading (a "collision proxy"). Null/empty = none. The model must be one whose collision fits
-            // the visible object; which models do is established by the proxy-probe scenario, not assumed.
-            [DataMember(Name = "collisionProxyModel", Order = 5, EmitDefaultValue = false)] public string CollisionProxyModel;
-            // Proxy position relative to the object's origin, metres along the world axes (the heading is not applied to it).
-            [DataMember(Name = "collisionProxyOffset", Order = 6, EmitDefaultValue = false)] public float[] CollisionProxyOffset;
-
+            // Collision without authored bounds: vanilla props that already have solid collision are placed hidden at the
+            // object's spot (each with its own offset and heading), so the object is solid. Several proxies tile a bigger
+            // shape. Which vanilla models are solid is established by the proxy-probe scenario, not assumed.
+            [DataMember(Name = "collisionProxies", Order = 5, EmitDefaultValue = false)] public List<Proxy> CollisionProxies;
             public Placement() { SetDefaults(); }
 
             // DataContractJsonSerializer runs no constructor or field initialiser: members absent from the JSON would be
@@ -77,6 +84,7 @@ namespace Liberty.World
         // Limits that keep the config sane, not tuning: the streaming radius stays inside the draw distances the
         // compiler accepts (drawDistanceMeters at most 1500).
         public const float MaxStreamMeters = 1500, MaxCoordinateMeters = 10000, MaxProxyOffsetMeters = 50;
+        public const int MaxProxiesPerObject = 16;
         public const int MinCheckIntervalMilliseconds = 50, MaxCheckIntervalMilliseconds = 10000;
 
         public static WorldObjectsConfig Defaults() { return new WorldObjectsConfig(); }
@@ -104,10 +112,18 @@ namespace Liberty.World
                     throw new ArgumentException(label + ": position must be three finite coordinates within " + MaxCoordinateMeters.ToString(CultureInfo.InvariantCulture) + " m");
                 }
                 if (float.IsNaN(p.HeadingDegrees) || float.IsInfinity(p.HeadingDegrees)) { throw new ArgumentException(label + ": headingDegrees must be finite"); }
-                if (!string.IsNullOrEmpty(p.CollisionProxyModel) && !ModelName.IsMatch(p.CollisionProxyModel)) { throw new ArgumentException(label + ": collisionProxyModel must be 1-23 letters, digits or _"); }
-                if (p.CollisionProxyOffset != null && (p.CollisionProxyOffset.Length != 3 || p.CollisionProxyOffset.Any(v => float.IsNaN(v) || float.IsInfinity(v) || Math.Abs(v) > MaxProxyOffsetMeters)))
+                if (p.CollisionProxies != null)
                 {
-                    throw new ArgumentException(label + ": collisionProxyOffset must be three finite offsets within " + MaxProxyOffsetMeters.ToString(CultureInfo.InvariantCulture) + " m");
+                    foreach (Proxy proxy in p.CollisionProxies)
+                    {
+                        if (proxy == null || proxy.Model == null || !ModelName.IsMatch(proxy.Model)) { throw new ArgumentException(label + ": every collision proxy needs a model of 1-23 letters, digits or _"); }
+                        if (proxy.Offset != null && (proxy.Offset.Length != 3 || proxy.Offset.Any(v => float.IsNaN(v) || float.IsInfinity(v) || Math.Abs(v) > MaxProxyOffsetMeters)))
+                        {
+                            throw new ArgumentException(label + ": collision proxy offset must be three finite offsets within " + MaxProxyOffsetMeters.ToString(CultureInfo.InvariantCulture) + " m");
+                        }
+                        if (float.IsNaN(proxy.HeadingOffsetDegrees) || float.IsInfinity(proxy.HeadingOffsetDegrees)) { throw new ArgumentException(label + ": collision proxy heading must be finite"); }
+                    }
+                    if (p.CollisionProxies.Count > MaxProxiesPerObject) { throw new ArgumentException(label + ": at most " + MaxProxiesPerObject + " collision proxies"); }
                 }
             }
         }

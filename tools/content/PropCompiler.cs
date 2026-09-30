@@ -22,8 +22,9 @@ namespace LibertyFramework.Content
     // bytes the writer does not compute are captured from the template's own dictionary.
     internal static class PropCompiler
     {
-        // Size of the texture written when the material has no image (its base colour fills it): one DXT block.
-        internal const int SolidColourTextureSizePixels = 4;
+        // Size of the texture written when the material has no image (its base colour fills it). A single 4x4 DXT block was
+        // written first; the first game run with two materials crashed at spawn, so a size with a short mip chain is used.
+        internal const int SolidColourTextureSizePixels = 16;
 
         internal sealed class Result
         {

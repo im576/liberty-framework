@@ -211,6 +211,5 @@ The verifier checks the shipped file, and that every `model` it places is an ass
 | `objects[].position` | — | `[x, y, z]` metres: where the model's origin goes |
 | `objects[].headingDegrees` | 0 | 0 = north, counter-clockwise |
 | `objects[].snapToGround` | true | put the origin on the ground under `position` when the game reports a ground height there; `z` is where the search starts |
-| `objects[].collisionProxyModel` | none | a vanilla prop with solid collision, placed hidden at the same spot and heading so the object is solid without authored bounds |
-| `objects[].collisionProxyOffset` | 0,0,0 | proxy offset from the origin in metres along the world axes |
+| `objects[].collisionProxies` | none | list of hidden vanilla props with solid collision placed at the object so it is solid without authored bounds; each `{ model, offset [x,y,z] (world axes, metres), headingOffsetDegrees }`, at most 16. Solid models: see `proxy-probe` in [Collision.md](../research/Collision.md) |
 

@@ -11,7 +11,11 @@
       "model": "lf_world_wall",
       "position": [-64.8, 671.4, 15.0],
       "headingDegrees": 90,
-      "snapToGround": true
+      "snapToGround": true,
+      "collisionProxies": [
+        { "model": "corpbarrier1", "offset": [0, -0.6, 0] },
+        { "model": "corpbarrier1", "offset": [0, 0.6, 0] }
+      ]
     }
   ]
 }

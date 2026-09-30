@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "name": "lf_st_2tex",
+  "type": "prop",
+  "source": "lf_fx_multimat.gltf",
+  "template": {
+    "archive": "pc/models/cdimages/weapons.img",
+    "model": "amb_nailgun"
+  },
+  "textureDictionary": "lf_st_2tex",
+  "drawDistanceMeters": 120.0
+}

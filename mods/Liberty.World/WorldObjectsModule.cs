@@ -16,7 +16,7 @@ namespace Liberty.World
         {
             internal WorldObjectsConfig.Placement Placement;
             internal PropRef Prop = PropRef.None;
-            internal PropRef Proxy = PropRef.None; // invisible vanilla prop that supplies the collision (Placement.CollisionProxyModel)
+            internal readonly List<PropRef> Proxies = new List<PropRef>(); // hidden vanilla props that supply the collision (Placement.CollisionProxies)
             internal bool Pending;
             internal bool Unavailable; // the model is not in the game's model index: reported once, never retried
         }
@@ -97,40 +97,42 @@ namespace Liberty.World
                 Liberty.Props.SetCollision(prop, config.Collision);
                 slot.Prop = prop;
                 Liberty.Log.Info(this, "world_object spawned name=" + p.Name + " model=" + p.Model + " handle=" + prop.Handle + " at=" + position + " heading=" + p.HeadingDegrees);
-                SpawnProxy(slot, position, spawnedIn);
+                SpawnProxies(slot, position, spawnedIn);
             });
         }
 
-        // The collision proxy: a vanilla prop with solid collision, frozen at the object's spot and hidden. Its failure never
-        // removes the visible object; it is logged and the object simply has no collision.
-        private void SpawnProxy(Slot slot, Vec3 position, int spawnedIn)
+        // The collision proxies: vanilla props with solid collision, frozen at the object's spot and hidden. A proxy's failure
+        // never removes the visible object; it is logged and the object simply has less collision.
+        private void SpawnProxies(Slot slot, Vec3 position, int spawnedIn)
         {
             WorldObjectsConfig.Placement p = slot.Placement;
-            if (string.IsNullOrEmpty(p.CollisionProxyModel)) { return; }
-            ModelRef model = p.CollisionProxyModel;
-            if (!Liberty.Streaming.IsValidModel(model))
+            if (p.CollisionProxies == null) { return; }
+            foreach (WorldObjectsConfig.Proxy proxy in p.CollisionProxies)
             {
-                Liberty.Log.Warn(this, "world_proxy_failed name=" + p.Name + " model=" + p.CollisionProxyModel + " reason=not in the game's model index");
-                return;
+                ModelRef model = proxy.Model;
+                if (!Liberty.Streaming.IsValidModel(model))
+                {
+                    Liberty.Log.Warn(this, "world_proxy_failed name=" + p.Name + " model=" + proxy.Model + " reason=not in the game's model index");
+                    continue;
+                }
+                float[] o = proxy.Offset ?? new float[3];
+                Vec3 at = new Vec3(position.X + o[0], position.Y + o[1], position.Z + o[2]);
+                float heading = p.HeadingDegrees + proxy.HeadingOffsetDegrees;
+                string modelName = proxy.Model;
+                Liberty.Props.Spawn(this, model, at, spawned =>
+                {
+                    if (spawned.IsNone) { Liberty.Log.Warn(this, "world_proxy_failed name=" + p.Name + " model=" + modelName + " reason=spawn failed"); return; }
+                    if (spawnedIn != generation || slot.Prop.IsNone) { Liberty.Props.Delete(spawned); return; }
+                    Liberty.Props.SetFrozen(spawned, true);
+                    Liberty.Props.SetPosition(spawned, at);
+                    Liberty.Props.SetRotation(spawned, new Vec3(0, 0, heading));
+                    Liberty.Props.SetCollision(spawned, true);
+                    Liberty.Props.SetVisible(spawned, false);
+                    slot.Proxies.Add(spawned);
+                    Liberty.Log.Info(this, "world_proxy spawned name=" + p.Name + " model=" + modelName + " handle=" + spawned.Handle + " at=" + at);
+                });
             }
-            float[] o = p.CollisionProxyOffset ?? new float[3];
-            Vec3 at = new Vec3(position.X + o[0], position.Y + o[1], position.Z + o[2]);
-            slot.Pending = true;
-            Liberty.Props.Spawn(this, model, at, proxy =>
-            {
-                slot.Pending = false;
-                if (proxy.IsNone) { Liberty.Log.Warn(this, "world_proxy_failed name=" + p.Name + " model=" + p.CollisionProxyModel + " reason=spawn failed"); return; }
-                if (spawnedIn != generation || slot.Prop.IsNone) { Liberty.Props.Delete(proxy); return; }
-                Liberty.Props.SetFrozen(proxy, true);
-                Liberty.Props.SetPosition(proxy, at);
-                Liberty.Props.SetRotation(proxy, new Vec3(0, 0, p.HeadingDegrees));
-                Liberty.Props.SetCollision(proxy, true);
-                Liberty.Props.SetVisible(proxy, false);
-                slot.Proxy = proxy;
-                Liberty.Log.Info(this, "world_proxy spawned name=" + p.Name + " model=" + p.CollisionProxyModel + " handle=" + proxy.Handle + " at=" + at);
-            });
         }
-
         // How far above the configured point the ground search starts: a placement's z may sit slightly under the surface.
         private const float GroundSearchMeters = 2f;
         // The ray aims this far above the object's origin, inside a prop resting on the ground rather than at its base.
@@ -145,7 +147,7 @@ namespace Liberty.World
             PlayerState self = Liberty.World.Player;
             Vec3 target = Liberty.Props.GetPosition(slot.Prop) + new Vec3(0, 0, RayAimHeightMeters);
             RayHit hit = Liberty.Query.Raycast(self.Position, target, RayMask.All, RayIgnore.Of(self.Ped).And(self.Vehicle));
-            bool match = hit.IsHit && hit.Kind == RayEntityKind.Object && (hit.EntityHandle == slot.Prop.Handle || (!slot.Proxy.IsNone && hit.EntityHandle == slot.Proxy.Handle));
+            bool match = hit.IsHit && hit.Kind == RayEntityKind.Object && (hit.EntityHandle == slot.Prop.Handle || slot.Proxies.Any(x => x.Handle == hit.EntityHandle));
             string line = "world_ray name=" + name + " handle=" + slot.Prop.Handle + " status=" + hit.Status + " kind=" + hit.Kind + " hit_handle=" + hit.EntityHandle +
                 " distance=" + hit.Distance.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) + " of=" +
                 self.Position.DistanceTo(target).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) + " match=" + match;
@@ -155,7 +157,8 @@ namespace Liberty.World
 
         private void Remove(Slot slot, string reason)
         {
-            if (!slot.Proxy.IsNone) { Liberty.Props.Delete(slot.Proxy); slot.Proxy = PropRef.None; }
+            foreach (PropRef proxy in slot.Proxies) { Liberty.Props.Delete(proxy); }
+            slot.Proxies.Clear();
             if (slot.Prop.IsNone) { return; }
             Liberty.Props.Delete(slot.Prop);
             slot.Prop = PropRef.None;
