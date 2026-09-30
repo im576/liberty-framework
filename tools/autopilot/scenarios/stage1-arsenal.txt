@@ -26,7 +26,7 @@ expect "catalog_offer money=99999 progress=1.0 offered=6" 20
 # --- 7 Glock 17 (pistol, common)
 spawn 1 15 0
 expect "autopilot_spawned count=1" 30
-catalog give service-pistol 200
+catalog give service-pistol 200 clear
 expect "weapon_changed from=\d+ to=7 profile=glock_stage1 catalog=service-pistol" 20
 wait 1500
 shot stage1_arsenal_service-pistol
@@ -38,7 +38,7 @@ clear
 # --- 9 .44 AutoMag (pistol, less common)
 spawn 1 15 0
 expect "autopilot_spawned count=1" 30
-catalog give combat-pistol 200
+catalog give combat-pistol 200 clear
 expect "weapon_changed from=\d+ to=9 profile=automag_stage1 catalog=combat-pistol" 20
 wait 1500
 shot stage1_arsenal_combat-pistol
@@ -50,7 +50,7 @@ clear
 # --- 10 Street Sweeper (shotgun, less common)
 spawn 1 15 0
 expect "autopilot_spawned count=1" 30
-catalog give street-sweeper 200
+catalog give street-sweeper 200 clear
 expect "weapon_changed from=\d+ to=10 profile=sweeper_stage1 catalog=street-sweeper" 20
 wait 1500
 shot stage1_arsenal_street-sweeper
@@ -62,7 +62,7 @@ clear
 # --- 11 Remington 1100 (shotgun, common)
 spawn 1 15 0
 expect "autopilot_spawned count=1" 30
-catalog give remington-1100 200
+catalog give remington-1100 200 clear
 expect "weapon_changed from=\d+ to=11 profile=remington_stage1 catalog=remington-1100" 20
 wait 1500
 shot stage1_arsenal_remington-1100
@@ -74,7 +74,7 @@ clear
 # --- 12 IMI Uzi (SMG, common)
 spawn 1 15 0
 expect "autopilot_spawned count=1" 30
-catalog give imi-uzi 200
+catalog give imi-uzi 200 clear
 expect "weapon_changed from=\d+ to=12 profile=uzi_stage1 catalog=imi-uzi" 20
 wait 1500
 shot stage1_arsenal_imi-uzi
@@ -86,7 +86,7 @@ clear
 # --- 14 AK-47 (rifle, rare)
 spawn 1 15 0
 expect "autopilot_spawned count=1" 30
-catalog give ak-47 200
+catalog give ak-47 200 clear
 expect "weapon_changed from=\d+ to=14 profile=ak47_stage1 catalog=ak-47" 20
 wait 1500
 shot stage1_arsenal_ak-47
@@ -96,20 +96,20 @@ expect "gunplay_state weapon=14 profile=ak47_stage1" 15
 clear
 
 # --- controls: restricted weapons, a test weapon and a vanilla weapon outside the catalog
-catalog give m40a1 25 force
+catalog give m40a1 25 force clear
 expect "weapon_changed from=\d+ to=16 profile=vanilla" 20
-catalog give fn-p90 100 force
+catalog give fn-p90 100 force clear
 expect "weapon_changed from=\d+ to=13 profile=vanilla" 20
-catalog give hk-mg36 100 force
+catalog give hk-mg36 100 force clear
 expect "weapon_changed from=\d+ to=15 profile=vanilla" 20
 give 1 1
 expect "weapon_changed from=\d+ to=1 profile=vanilla" 20
-catalog give gold-test-pistol 100 force
+catalog give gold-test-pistol 100 force clear
 expect "weapon_changed from=\d+ to=58 profile=pistol_gta4plus" 20
 # Back to a Stage 1 weapon: the accuracy the model wrote for the previous catalog weapon was given back to the game.
-catalog give service-pistol 100
-expect "weapon_changed from=58 to=7 profile=glock_stage1" 20
-catalog give ak-47 100
+catalog give service-pistol 100 clear
+expect "weapon_changed from=\d+ to=7 profile=glock_stage1" 20
+catalog give ak-47 100 clear
 expect "weaponinfo_restored id=7 " 20
 catalog check
 expect "catalog ok: 6 Stage 1 weapons of 13 entries" 20

@@ -25,7 +25,7 @@ namespace LibertyFramework.Weapons
         protected internal override void OnStart()
         {
             Engine.Commands.Register(this, "catalog",
-                "catalog [list] | give <catalog id|weapon id> [ammo] [force] | offer <money> <story progress 0-1|unknown> [contacts,comma|-] [override] | check - Stage 1 arsenal",
+                "catalog [list] | give <catalog id|weapon id> [ammo] [force] [clear] | offer <money> <story progress 0-1|unknown> [contacts,comma|-] [override] | check - Stage 1 arsenal",
                 Run);
         }
 
@@ -65,16 +65,19 @@ namespace LibertyFramework.Weapons
 
         private string Give(WeaponCatalog catalog, string[] args)
         {
-            if (args.Length < 2) { return "error: catalog give <catalog id|weapon id> [ammo] [force]"; }
+            if (args.Length < 2) { return "error: catalog give <catalog id|weapon id> [ammo] [force] [clear]"; }
             WeaponCatalogEntry entry = catalog.FindById(args[1]);
             int numeric;
             if (entry == null && int.TryParse(args[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out numeric)) { entry = catalog.Find(numeric); }
             if (entry == null) { return "error: no catalog entry " + args[1]; }
             bool force = Array.IndexOf(args, "force") >= 0;
+            bool clear = Array.IndexOf(args, "clear") >= 0;
             if (!entry.Stage1 && !force) { return "error: " + entry.Id + " is not a Stage 1 weapon (add force to give it for a test)"; }
             int ammo = DefaultAmmo;
-            if (args.Length > 2 && args[2] != "force" && !int.TryParse(args[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out ammo)) { return "error: bad ammo " + args[2]; }
+            if (args.Length > 2 && args[2] != "force" && args[2] != "clear" && !int.TryParse(args[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out ammo)) { return "error: bad ammo " + args[2]; }
             global::Liberty.Sdk.PedRef player = Liberty.Player.Ped;
+            // For tests: start from an empty inventory, so the Arsenal's loadout limits do not move the weapon being tested.
+            if (clear) { Liberty.Weapons.RemoveAll(player); }
             Liberty.Weapons.Give(player, entry.WeaponId, ammo);
             Liberty.Weapons.Select(player, entry.WeaponId);
             RuntimeLog.Info("catalog_give id=" + entry.Id + " weapon=" + entry.WeaponId + " ammo=" + ammo + " stage1=" + entry.Stage1);
