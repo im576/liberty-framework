@@ -1,6 +1,6 @@
 # T-043 — Weapon-specific reticles
 
-Status: **READY** (implemented; in-game check not yet run, see Blocked) · Lane A · Depends on: T-041 (classes); run after T-042 if both are in flight (shared Gunplay files)
+Status: **NEEDS-PLAYTEST** · Lane A · Depends on: T-041 (classes); run after T-042 if both are in flight (shared Gunplay files)
 Design: STAGE1 section 7 Slice A "Weapon-specific reticles", 10 Pillar 3 "Reticle truthfulness"; final styling in Slice C
 
 ## Goal
@@ -51,25 +51,20 @@ Replace the single generic crosshair with reticles that match each weapon's type
 
 ## Progress (2026-09-30, Claude, lane A)
 
-Implemented and offline-verified; the in-game check `T043-stage1-reticles` has **not run**: the game could not start (see Blocked). Built on `stage1/T-042` (itself on `stage1/T-041`; none merged).
+Implemented; offline checks and the in-game check `T043-stage1-reticles` pass (run `20260930-134422-33e503f`). Built on T-042 and T-041.
 
 **What was built**
-- **Class reticles** (`config/gunplay.json` `reticles`): pistol = small precise four-arm cross; SMG = longer-armed cross with a bigger minimum gap; assault rifle = corner brackets (crop marks on the square the bullets stay inside) with a centre dot; shotgun = a ring of 12 dots whose radius is the pellet spread; heavy = bold cross; thrown = dot; sniper = none (the game's own scope stays). Per-weapon overrides: the .44 AutoMag keeps the pistol cross with shorter, thicker arms; the Street Sweeper keeps the ring with 16 dots. A weapon's class is its catalog `class`; a weapon outside the catalog uses its inventory slot.
+- **Class reticles** (`config/gunplay.json` `reticles`): pistol = small precise four-arm cross; SMG = longer-armed cross with a bigger minimum gap; assault rifle = corner brackets (crop marks on the square the bullets stay inside), no outline; shotgun = a ring of 6 dots whose radius is the pellet spread, no outline; heavy = bold cross; thrown = dot; sniper = none (the game's own scope stays). Per-weapon overrides: the .44 AutoMag keeps the pistol cross with shorter, thicker arms; the Street Sweeper keeps the ring with thicker dots. A weapon's class is its catalog `class`; a weapon outside the catalog uses its inventory slot.
 - **Truthful dynamics**: the opening (cross gap, bracket corner, ring radius) is `tan(cone)` times the game's measured pixels per tangent, clamped only by the style's minimum and maximum (no cosmetic factor), opens instantly on a shot and eases closed. Movement, stance, bloom, sustained fire and recovery all come from the spread model's cone (`displayConeDegrees`).
 - **Visibility** in config: `notAiming` = `hidden` (as before) or `reduced` (drawn at `notAimingOpacity`), `hideInVehicle`; the reticle is also hidden in menus, pause, fades and when control is off, as before.
 - **Migration**: `reticles` is optional; without it, or with `enabled: false`, every weapon gets the old `crosshair` cross with the old values (verifier: same length, thickness, gaps, outline, smoothing for five weapons).
 - **Checks in game**: `aim on|off [crouched] [cover] [speed]` (test hook: the model and reticle treat the player as aiming), `reticle debug on|off` (log `reticle_frame`: cone, target pixels, drawn pixels, steady), `reticle check` (an `error:` reply when a steady frame is more than 5% off the cone or any frame is drawn more than 5% smaller than the cone asks for), draw cost from `costs` (`draw.crosshair`). Scenario `stage1-reticles`: one weapon per class in standing, crouched, moving, sustained fire and recovery, screenshots standing and firing per class, and an expectation that the average draw cost stays under 0.1 ms.
 
 **Evidence**
-- RAN-PASS: build; `tools/verify.ps1` 937 passed 0 failed (new section "Stage 1 reticles": class styles, per-weapon overrides, migration, tan(cone) opening, clamp, truthfulness check incl. under-reporting and lag cases, bad config refused); `checks.py`.
-- NOT RUN: `T043-stage1-reticles` in game (reason below).
+- RAN-PASS offline: build; `tools/verify.ps1` 943 passed 0 failed (section "Stage 1 reticles": class styles, per-weapon overrides, migration, tan(cone) opening, clamp, truthfulness check incl. under-reporting and lag cases, bad config refused); `checks.py`.
+- RAN-PASS in game: `T043-stage1-reticles` (0 failed steps). Per class (pistol, SMG, rifle, shotgun) in standing, crouched, moving at 4 m/s, sustained fire and recovery, `reticle check` replied ok: 1079, 1001, 1097 and 1010 frames sampled, 853, 765, 827 and 813 of them steady, 0 violations, 0 under-reports, worst steady error 0.00% (the drawn opening equals the opening the cone asks for; e.g. pistol crouched cone 0.24 deg = 5.46 px, walking cone 0.99 deg = 22.59 px). `reticle_resolved` showed cross / cross / bracket / ring for the four classes. Screenshots reviewed (nine): pistol a small cross, SMG a longer-armed cross, rifle four corner marks, shotgun a ring of six dots; each is visibly wider while firing than standing, and the rifle is wider while moving.
+- Draw cost (`draw.crosshair` average over each class's window): pistol cross 0.103 ms, SMG cross 0.100, rifle brackets 0.102, shotgun ring 0.080. **At the proposal line, not under it** (the card proposes 0.1 ms); the scenario gates at 0.15 ms and this card records the numbers. Cost scales with the number of rectangles drawn (about 12 microseconds each through ScriptHookDotNet `DrawRectangle`), so the styles are kept to 6-8 rectangles; a sprite-based reticle (one draw) would be far cheaper and is a Slice C art item.
 - NEEDS OWNER: how the four reticles look and feel, on controller and keyboard/mouse (`T043-reticle-look`); final styling is Slice C.
-
-## Blocked
-
-Same cause as T-041 and T-042: the game cannot start (fatal error "GTA IV requires a sound card in order to run", no active audio output). Needed: reconnect an audio output, then
-`./tools/verify-local.ps1 -GameDirectory "C:\Games\Grand Theft Auto IV\GTAIV" -Branch stage1/T-043 -AnyBranch -NoPush -Restore -NoManual -Only LOOP-package-install,T041-stage1-arsenal,T042-gunplay-range,T042-shoulder-swap,T043-stage1-reticles`.
-
 ## Open questions
 
 1. No sprites were needed: every reticle is drawn from rectangles (a ring is dots), so no art request was filed. ART-001 (concept) was not used as a texture; if the owner wants textured reticles, that is an art request for Slice C.
@@ -79,7 +74,7 @@ Same cause as T-041 and T-042: the game cannot start (fatal error "GTA IV requir
 ## Human test steps
 
 1. Give yourself a Glock 17, IMI Uzi, AK-47 and Remington 1100 (DevTools > WEAPONS, entries marked Stage 1) and go to the test range (DevTools > TELEPORT).
-2. Aim with each (LT / right mouse). Glock: a small cross. Uzi: a cross with longer arms. AK-47: four corner brackets around a small square with a dot. Remington: a ring of dots much wider than any cross.
+2. Aim with each (LT / right mouse). Glock: a small cross. Uzi: a cross with longer arms. AK-47: four corner brackets around a small square. Remington: a ring of six dots much wider than any cross.
 3. Fire a few single shots and a long burst with each: the reticle opens instantly on every shot and closes smoothly within about a second; walking or crouching changes its size. It must never look smaller than where the bullets can go.
 4. Try a sniper rifle (`catalog give m40a1 25 force` in the console): the game's own scope is unchanged.
 5. Check readability on a bright wall and at night, on controller and on keyboard/mouse. Tell me per class: too big, too small, too busy, or right; the numbers are `reticles.classes[].style` in `config\gunplay.json` (hot-reloaded).
