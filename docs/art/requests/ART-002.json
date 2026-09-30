@@ -1,7 +1,7 @@
 {
   "id": "ART-002",
   "title": "Blood spatter decal atlas",
-  "status": "requested",
+  "status": "generated",
   "priority": "P0",
   "kind": "decal",
   "prompt": "A 2 by 2 atlas of four realistic blood spatter decals seen straight on (orthographic), each centred in its quarter with empty margin, on a fully transparent background. Dark realistic blood: deep red to near-black where thick, thin brownish-red where it has run or dried, fine satellite droplets and a few directional streaks consistent with a gunshot spray, one variant a heavier pool-like splash. Photographic material detail, no surface texture behind the blood, no lighting, no shadows. Grounded forensic realism, not cartoon or horror-movie exaggeration.",
@@ -62,6 +62,49 @@
         {
           "path": "art/generated/ART-002/r1/art_002_2.png",
           "sha256": "5889ed937296240ef1ff515b1ca1218698b1bfb131e569af2348ed593d976a0d",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        }
+      ]
+    },
+    {
+      "at": "2026-09-30T06:40:39+00:00",
+      "event": "generated",
+      "revision": 1,
+      "by": "Codex",
+      "notes": "Current prompt plus verbatim constraints, square real alpha; two fresh generations (_3,_4), earlier candidates retained and all four registered. _1: white specular highlights and raised shaded droplets. _2: glossy highlights on droplets and pooled splash. _3: numerous bright highlights, raised droplets, lower-left splash has tight bottom margin. _4: shiny droplets and broad highlights on heavier lower-left splash. No alpha, tiling, resizing or review decisions performed; seeds unavailable.",
+      "model": "OpenAI image_gen built-in (model/version not exposed)",
+      "prompt": "A 2 by 2 atlas of four realistic blood spatter decals seen straight on (orthographic), each centred in its quarter with empty margin, on a fully transparent background. Dark realistic blood: deep red to near-black where thick, thin brownish-red where it has run or dried, fine satellite droplets and a few directional streaks consistent with a gunshot spray, one variant a heavier pool-like splash. Photographic material detail, no surface texture behind the blood, no lighting, no shadows. Grounded forensic realism, not cartoon or horror-movie exaggeration.",
+      "files": [
+        {
+          "path": "art/generated/ART-002/r1/art_002_1.png",
+          "sha256": "b87072cc32434698613b1c26d65d045392c711d7381182fb8457a5413420917e",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-002/r1/art_002_2.png",
+          "sha256": "5889ed937296240ef1ff515b1ca1218698b1bfb131e569af2348ed593d976a0d",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-002/r1/art_002_3.png",
+          "sha256": "2acc580bb46c3bc795caa99b118a908738898a1e2ae7129a4d9f4032188c4a91",
+          "width": 1254,
+          "height": 1254,
+          "mode": "RGBA",
+          "hasAlpha": true
+        },
+        {
+          "path": "art/generated/ART-002/r1/art_002_4.png",
+          "sha256": "a29809cac07c8a2a8f96e5077a51ab3413ffba82b958e3436fcba1575a45b81a",
           "width": 1254,
           "height": 1254,
           "mode": "RGBA",
