@@ -248,7 +248,8 @@
         }
       },
       "reference": "docs/research/Raycast.md",
-      "status": "RETIRED", "retiredReason": "no propCandidates on this install; RayMask.Objects against vanilla props is covered by T032-proxy-probe",
+      "status": "RETIRED",
+      "retiredReason": "no propCandidates on this install; RayMask.Objects against vanilla props is covered by T032-proxy-probe",
       "addedIn": "claude/nice-edison-xyxc6j (Session 2 audit)"
     },
     {
@@ -315,7 +316,8 @@
       "proves": "For every drawable of the game the structure writer can use (layout 0x59 everywhere, own buffers, measurable sphere records): per-geometry patching of several geometries, shaders and LOD models reproduces Rockstar's files; the report says which buffer order (Interleaved or VerticesFirst) and which sphere-record layout the files use.",
       "unproven": "Trimming (dropped geometries, models, LOD slots and shaders) and renamed textures have no counterpart in the game's files; the lod-review scenario tests a trimmed build in game.",
       "reference": "docs/tasks/T-031-structure-writer.md",
-      "status": "RETIRED", "retiredReason": "byte-exact round trip is not a release gate (decision 2026-09-30)",
+      "status": "RETIRED",
+      "retiredReason": "byte-exact round trip is not a release gate (decision 2026-09-30)",
       "addedIn": "claude/confident-hopper-16pan1 (session 4)"
     },
     {
@@ -345,13 +347,23 @@
       "task": "T-031",
       "title": "Structure-writer repro: single geometry spawns; multi-geometry crashes (KNOWN FAIL until Phase 3)",
       "kind": "scenario",
-      "run": { "scenario": "structure-bisect" },
+      "run": {
+        "scenario": "structure-bisect"
+      },
       "pass": "today: CRASH at lf_st_2tex after lf_st_weap and lf_st_map render (known). PASS once multi-geometry drawables are fixed",
       "proves": "Which structure-writer output the game accepts: the log shows the last spawn that survived if the game exits.",
       "unproven": "Multiple LODs and authored collision.",
-      "review": { "screenshots": { "lf_st_weap": "textured crate", "lf_st_map": "textured crate", "lf_st_2tex": "textured crate, both material groups", "lf_fx_multimat": "textured sides and red lid" } },
+      "review": {
+        "screenshots": {
+          "lf_st_weap": "textured crate",
+          "lf_st_map": "textured crate",
+          "lf_st_2tex": "textured crate, both material groups",
+          "lf_fx_multimat": "textured sides and red lid"
+        }
+      },
       "reference": "docs/tasks/T-031-structure-writer.md",
-      "status": "RETIRED", "retiredReason": "known crash repro; run by hand: tools/autopilot/scenarios/structure-bisect.txt",
+      "status": "RETIRED",
+      "retiredReason": "known crash repro; run by hand: tools/autopilot/scenarios/structure-bisect.txt",
       "addedIn": "engine-cleanup"
     },
     {
@@ -359,7 +371,9 @@
       "task": "T-032",
       "title": "Collision proxy candidates: which vanilla props stop the engine's ray",
       "kind": "scenario",
-      "run": { "scenario": "proxy-probe" },
+      "run": {
+        "scenario": "proxy-probe"
+      },
       "pass": "autopilot PASS; the log lists autopilot_rayto lines per candidate (Hit kind=Object match=True marks a solid prop)",
       "proves": "Vanilla props usable as invisible collision proxies for custom objects (the authored-collision fallback).",
       "unproven": "Player and vehicle collision (inferred from the shared physics bounds).",
@@ -385,7 +399,8 @@
         }
       },
       "reference": "docs/tasks/T-031-structure-writer.md",
-      "status": "RETIRED", "retiredReason": "known crash (multi-geometry, T-031); repro kept in T031-structure-bisect scenario file",
+      "status": "RETIRED",
+      "retiredReason": "known crash (multi-geometry, T-031); repro kept in T031-structure-bisect scenario file",
       "addedIn": "codex/pr7-verification-fixes"
     },
     {
@@ -397,7 +412,8 @@
         "tool": "content-report",
         "asset": "lf_lod_post",
         "expect": {
-          "status": "RETIRED", "retiredReason": "multi-LOD drawables dropped: every sampled game drawable uses LOD slot 0",
+          "status": "RETIRED",
+          "retiredReason": "multi-LOD drawables dropped: every sampled game drawable uses LOD slot 0",
           "compiled.drawableWriter": "structure",
           "compiled.lodCount": 4,
           "compiled.textureFormat": "DXT1"
@@ -431,7 +447,8 @@
         }
       },
       "reference": "docs/tasks/T-031-structure-writer.md",
-      "status": "RETIRED", "retiredReason": "multi-LOD drawables dropped by decision (2026-09-30)",
+      "status": "RETIRED",
+      "retiredReason": "multi-LOD drawables dropped by decision (2026-09-30)",
       "addedIn": "claude/confident-hopper-16pan1 (session 4)"
     },
     {
@@ -1045,7 +1062,8 @@
         "tool": "content-report",
         "asset": "lf_col_crate",
         "expect": {
-          "status": "RETIRED", "retiredReason": "no borrow candidate exists on this install; superseded by collision proxies (T032-proxy-probe, T033-world-objects)",
+          "status": "RETIRED",
+          "retiredReason": "no borrow candidate exists on this install; superseded by collision proxies (T032-proxy-probe, T033-world-objects)",
           "compiled.collision.mode": "borrowed",
           "compiled.collision.file": "lf_col_crate.wbn"
         }
@@ -1074,7 +1092,8 @@
         }
       },
       "reference": "docs/tasks/T-032-collision.md",
-      "status": "RETIRED", "retiredReason": "same-name borrowed bounds do not exist on this install; superseded by collision proxies",
+      "status": "RETIRED",
+      "retiredReason": "same-name borrowed bounds do not exist on this install; superseded by collision proxies",
       "addedIn": "claude/confident-hopper-16pan1 (sessions 5-6)"
     },
     {
@@ -1086,7 +1105,8 @@
         "tool": "content-report",
         "asset": "lf_world_wall",
         "expect": {
-          "status": "RETIRED", "retiredReason": "the wall gets collision from proxies, not a borrowed resource",
+          "status": "RETIRED",
+          "retiredReason": "the wall gets collision from proxies, not a borrowed resource",
           "type": "object",
           "compiled.collision.mode": "borrowed"
         }
@@ -1613,7 +1633,7 @@
       "run": {
         "scenario": "hud-components"
       },
-      "proves": "The engine lists every hud.dat component it resolved (hud_component lines with live position/size/alpha, hud_unparsed calls with their bytes), and hiding the weapon icon, ammo, wanted stars, cash, radar, anything named HEALTH or ARMOUR/ARMOR, and finally the whole table, one group at a time, shows in the screenshots what each component is and whether the game honours the hud.dat globals for it. This answers which vanilla elements can be hidden without the radar and records where the player's health and armour arcs live (docs/research/HudComponents.md).",
+      "proves": "The engine lists every hud.dat component it resolved (hud_component lines with live position/size/alpha, hud_unparsed calls with their bytes), and hiding the weapon icon, ammo, wanted stars, cash, radar, anything named HEALTH or ARMOUR/ARMOR, and finally the whole table, one group at a time, shows in the screenshots what each component is and whether the game honours the hud.dat globals for it. This answers which vanilla elements can be hidden without the radar and records where the player's health and armour arcs live (docs/research/HudComponents.md). Probe mode suspends Liberty replacements for a genuine vanilla baseline and reapplies diagnostic hides every tick.",
       "pass": "autopilot PASS (hud_table reported, every step ran); then a person or the review session reads the hud_component lines and the nine screenshots and writes the answer into docs/research/HudComponents.md and vanillaComponents in config/hud.json. The run proves nothing about the look by itself.",
       "unproven": "Whether the radar's health and armour arcs are a hud.dat component at all: if no hide-matching screenshot removes them, they stay vanilla and the compact health/armour bars wait for R5 (T-054).",
       "review": {
@@ -1644,13 +1664,13 @@
       "run": {
         "scenario": "stage1-hud"
       },
-      "proves": "Under the shipped config the weapon and wanted elements have their vanilla components hidden and health and armour stay vanilla (no duplicate); with the layout test on, each element appears when its condition holds and fades when it does not: ammunition on weapon change, shot and reload (the clip / reserve line reads 17 / 383 for 400 rounds in a Glock 17, which settles whether the game's total counts the clip), health on damage and while low, armour while present, wanted stars while wanted, the help box with pad and keyboard button names; the HUD's own draw cost stays under 0.35 ms with everything shown; switching the layout test off returns to the shipped plan.",
-      "pass": "autopilot PASS (hud_check ok with the planned components hidden, every hud_element/hud_reload/hud_health_low/hud_prompt line, costs draw.hud under 0.35 ms); the ten screenshots judged against review.screenshots",
+      "proves": "Under the shipped config the weapon and wanted elements have their vanilla components hidden and health and armour stay vanilla (no duplicate); with the layout test on, each element appears when its condition holds and fades when it does not: ammunition on weapon change, shot and reload (the clip / reserve line reads 17 / 133 for 150 rounds (the T-044 pistol cap) in a Glock 17, which settles whether the game's total counts the clip), health on damage and while low, armour while present, wanted stars while wanted, the help box with pad and keyboard button names; the HUD's own draw cost stays under 0.35 ms with everything shown; switching the layout test off returns to the shipped plan. Config-off is tested by editing the installed JSON and normal polling, then restoring exact original bytes. Combined Liberty UI cost is explicitly gated at 0.5 ms.",
+      "pass": "Every scripted step passes, including draw.hud <0.35 ms and combined draw.ui <=0.5 ms in the final sample window; review all screenshots and log errors. Actual file config-off and exact-byte restoration pass through the normal poll and restore the vanilla components.",
       "unproven": "The health and armour bars under the shipped config: they stay vanilla until the component that draws the radar's arcs is known (T049-hud-components); the scenario draws them with the layout test.",
       "review": {
         "screenshots": {
           "hud_rest": "nothing of the Liberty group on screen while idle and unarmed; the vanilla radar at the bottom left",
-          "hud_weapon_change": "the Glock's silhouette with 17 / 383 right-aligned under it, in the top-right corner, with the vanilla weapon icon and ammo gone",
+          "hud_weapon_change": "the Glock's silhouette with 17 / 133 right-aligned under it, in the top-right corner, with the vanilla weapon icon and ammo gone",
           "hud_weapon_firing": "the ammunition line during the burst, top right",
           "hud_health_hit": "a thin sage-green health bar under the ammo line, shorter than full",
           "hud_health_low": "a short bar in the low-health red (it pulses, so it may look dimmer)",
@@ -1658,7 +1678,9 @@
           "hud_wanted": "three filled stars and three empty ones in a row at the right, under the bars",
           "hud_prompt_pad": "a dark help box at the top left reading Press X to open the weapon stash.",
           "hud_prompt_keyboard": "the same box reading Press E to open the weapon stash, Backspace to leave.",
-          "hud_everything": "weapon, ammo, health, armour and stars all shown as one compact group at the top right, the radar still at the bottom left, nothing in a lower corner, nothing overlapping"
+          "hud_everything": "weapon, ammo, health, armour and stars all shown as one compact group at the top right, the radar still at the bottom left, nothing in a lower corner, nothing overlapping",
+          "hud_config_off_vanilla": "Complete vanilla weapon/ammo/wanted HUD restored; radar remains bottom left; no Liberty group or help box.",
+          "hud_config_restored": "Shipped replacement plan resumed after restoring the config; no duplicate weapon/ammo/stars."
         }
       },
       "reference": "docs/tasks/T-049-stage1-hud.md#human-test-steps",

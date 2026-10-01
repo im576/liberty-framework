@@ -280,4 +280,6 @@ installer merges new top-level sections into an existing file and keeps the owne
 
 Test commands (`lf hudctl ...`, console and autopilot): `status`, `table` (every hud.dat component with its live values, and calls the resolver could not parse), `check`,
 `ammo`, `hide <NAME>` / `hide-matching <text>` / `restore [NAME]` (research), `force <element|all> on|off`, `hurt <n>`, `health <n>`, `armour <n>`, `prompt <text>`, `device auto|pad|keyboard`,
-`layout-test on|off` (draw every element even where its vanilla counterpart stays).
+`layout-test on|off` (draw every element even where its vanilla counterpart stays). `probe-mode on|off` suspends Liberty replacements for the component probe;
+manual hides are reapplied until restored. `config-test off|restore` saves the installed HUD config bytes, writes `enabled=false` for the normal poll,
+and restores the exact original bytes on `restore`, module stop/unload or failure. These hooks are diagnostic only; they do not change shipped policy.

@@ -12,7 +12,8 @@ namespace LibertyFramework.Verify
         {
             AtmosphereConfig config = JsonStore.Load<AtmosphereConfig>(Path.Combine(repoRoot, Path.Combine("config", "atmosphere.json")));
             config.Validate();
-            check.True("atmosphere.json validates", config.Enabled && config.Weather.Enabled && config.Breath.Enabled && config.Density.Enabled, "");
+            check.True("atmosphere.json validates", config.Enabled && config.Weather.Enabled && config.Breath.Enabled, "");
+            check.True("owner policy: adaptive population density stays disabled", !config.Density.Enabled, "");
 
             WeatherForecast forecast = new WeatherForecast(1234);
             int[] counts = new int[AtmosphereConfig.WeatherNames.Length];

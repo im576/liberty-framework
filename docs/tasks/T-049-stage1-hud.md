@@ -81,6 +81,19 @@ those checks unproven.
 
 ## Human test steps
 
+## Local continuation (2026-09-30, Codex)
+
+Continuation: `codex/T-049-hud-continuation`, isolated checkout `C:/Users/IM576/GTAIV-Reborn-lane-d`, based on `origin/stage1/T-049` at `e2f8181`.
+Current main, including `db08832` and `45561b4`, is already an ancestor. No B/C/research worktree was edited.
+The first run `20260930-194804-e2f8181` passed Windows build/native tests and content tests, then was stopped **before installation** because the recovered
+config still enabled population thinning. The continuation disables the atmosphere density governor per the owner's decision; T-040 evidence is preserved.
+The component probe now suspends replacement HUD drawing to capture a real vanilla baseline, reapplies probe hides every tick, and restores them between groups.
+The HUD scenario gates combined `draw.ui <=0.5 ms`, tests actual JSON config-off through normal polling, restores original bytes, and uses the existing
+T-044 pistol cap (150 total: expected `17 / 133`) rather than requesting 400 rounds that the loadout caps. Layout-test remains diagnostic only.
+Offline `-NoGame`: `passed=453 failed=0 notrun=7`; tooling tests: `passed=212 failed=0`; art lifecycle 18/18 and 12 requests valid. Local gameplay results pending.
+
+## Human test steps (continued)
+
 1. Install the build from this run (`tools/verify-local.ps1`, or `tools/install-phase2.ps1`), load a free-roam save and go to the test range (DevTools > TELEPORT).
 2. Unarmed and idle: the top-right corner shows nothing of Liberty's HUD. The radar is at the bottom left.
 3. Give yourself a Glock 17 (DevTools > WEAPONS, Stage 1 entry). Its silhouette and `17 / 383` (clip / reserve) appear at the top right, stay about four seconds and fade. The vanilla weapon icon and ammo

@@ -238,6 +238,8 @@ namespace LibertyFramework.Verify
         private static void CheckWeaponXml(string repoRoot, Checker check)
         {
             string staged = Path.Combine(repoRoot, Path.Combine("staging", Path.Combine("phase1", Path.Combine("update", Path.Combine("common", Path.Combine("data", "WeaponInfo.xml"))))));
+            string phase2 = Path.Combine(repoRoot, "staging/phase2/update/common/data/WeaponInfo.xml");
+            if (File.Exists(phase2)) { staged = phase2; }
             if (!File.Exists(staged)) { staged = Path.Combine(repoRoot, Path.Combine("staging", Path.Combine("t007", "WeaponInfo.xml"))); }
             if (!File.Exists(staged) && check.NoGame) { check.Skip("WeaponInfo.xml accuracies", "staging WeaponInfo.xml is generated from the game's files"); return; }
             Dictionary<string, float> accuracies = WeaponInfoXml.ReadAccuracies(staged);

@@ -7,6 +7,7 @@ await-alive 60000
 expect "autopilot_player_ready" 65
 god on
 wanted 0
+select 0
 goto gun_test_range
 expect "teleport_done id=gun_test_range" 90
 wait 4000
@@ -34,12 +35,12 @@ hudctl health 100
 wait 1500
 
 # Weapon: appears on change with the ammunition, then fades.
-catalog give service-pistol 400 clear
+catalog give service-pistol 150 clear
 expect "weapon_changed from=\d+ to=7" 20
 expect "hud_element weapon shown reason=change" 10
 wait 1500
 hudctl ammo
-expect "hud_ammo weapon=7 clip=17 total=400 includes_clip=True shown=.17 / 383." 10
+expect "hud_ammo weapon=7 clip=17 total=150 includes_clip=True shown=.17 / 133." 10
 shot hud_weapon_change
 expect "hud_element weapon hidden" 15
 
@@ -109,6 +110,7 @@ costs
 wait 4000
 costs
 expect "costs_ms.*draw\.hud=0\.([0-2]\d|3[0-4])\d/" 10
+expect "costs_ms.*draw\.ui=(0\.[0-4]\d\d|0\.500)/" 10
 hudctl force all off
 wanted 0
 
@@ -117,3 +119,21 @@ hudctl layout-test off
 expect "hud_element_plan element=health mode=vanilla_kept" 10
 hudctl check
 expect "hud_check ok weapon=liberty health=vanilla_kept armour=vanilla_kept wanted=liberty" 10
+
+# Config-off is a real file edit, read by the normal poll. The hook restores exact original bytes.
+hudctl config-test off
+expect "hud_config_loaded enabled=False" 10
+wait 1200
+hudctl status
+expect "hud_status enabled=False disabled=False.*hidden=0 help_by_hud=False drawn=$" 10
+wanted 3
+wait 800
+shot hud_config_off_vanilla
+hudctl table
+hudctl config-test restore
+expect "hud_config_loaded enabled=True" 10
+wait 1200
+hudctl check
+expect "hud_check ok weapon=liberty health=vanilla_kept armour=vanilla_kept wanted=liberty" 10
+shot hud_config_restored
+wanted 0

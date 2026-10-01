@@ -93,6 +93,9 @@ namespace LibertyFramework.Hud
         private string ammoShownText = "";
         // Test hook (`hudctl layout-test on`): draw every element even where its vanilla counterpart stays, to see the Liberty layout.
         private bool layoutTest;
+        // Diagnostic probe suspends replacement so each screenshot starts from vanilla.
+        private bool probeMode;
+        private byte[] configTestOriginal;
         private bool aiming, padActive, keyboardActive;
         private string deviceOverride;
         private string promptText = "";
@@ -124,6 +127,8 @@ namespace LibertyFramework.Hud
         private void Release(string reason)
         {
             frame = null;
+            try { RestoreConfigTest(); }
+            catch (Exception error) { RuntimeLog.Error("hud_config_test_restore_failed error=" + error.Message); }
             try { if (hider != null) { hider.RestoreAll(); } }
             catch (Exception error) { RuntimeLog.Error("hud_restore_failed error=" + error.Message); }
             planHidden.Clear();
@@ -196,10 +201,11 @@ namespace LibertyFramework.Hud
         private void ApplyPlan()
         {
             Func<string, bool> canHide = name => hider != null && hider.Knows(name) && !IsReticleComponent(name);
-            weaponPlan = HudPlan.Decide(config.Weapon.Enabled, config.HideVanilla, config.Weapon.VanillaComponents, config.Weapon.DrawWithoutHidingVanilla || layoutTest, canHide);
-            healthPlan = HudPlan.Decide(config.Health.Enabled, config.HideVanilla, config.Health.VanillaComponents, config.Health.DrawWithoutHidingVanilla || layoutTest, canHide);
-            armourPlan = HudPlan.Decide(config.Armour.Enabled, config.HideVanilla, config.Armour.VanillaComponents, config.Armour.DrawWithoutHidingVanilla || layoutTest, canHide);
-            wantedPlan = HudPlan.Decide(config.Wanted.Enabled, config.HideVanilla, config.Wanted.VanillaComponents, config.Wanted.DrawWithoutHidingVanilla || layoutTest, canHide);
+            string hiding = probeMode ? HudConfig.HideNone : config.HideVanilla;
+            weaponPlan = HudPlan.Decide(config.Weapon.Enabled, hiding, config.Weapon.VanillaComponents, !probeMode && (config.Weapon.DrawWithoutHidingVanilla || layoutTest), canHide);
+            healthPlan = HudPlan.Decide(config.Health.Enabled, hiding, config.Health.VanillaComponents, !probeMode && (config.Health.DrawWithoutHidingVanilla || layoutTest), canHide);
+            armourPlan = HudPlan.Decide(config.Armour.Enabled, hiding, config.Armour.VanillaComponents, !probeMode && (config.Armour.DrawWithoutHidingVanilla || layoutTest), canHide);
+            wantedPlan = HudPlan.Decide(config.Wanted.Enabled, hiding, config.Wanted.VanillaComponents, !probeMode && (config.Wanted.DrawWithoutHidingVanilla || layoutTest), canHide);
             planVerified = false;
             LogPlan("weapon", weaponPlan);
             LogPlan("health", healthPlan);
@@ -340,13 +346,15 @@ namespace LibertyFramework.Hud
                 if (config == null || !config.Enabled)
                 {
                     // Switched off: the vanilla HUD comes back whole (RestoreAll also covers a config reload while hidden).
-                    if (hider != null) { hider.RestoreAll(); planHidden.Clear(); }
+                    if (hider != null) { hider.RestoreAll(); planHidden.Clear(); probeHidden.Clear(); }
                     Engine.Ui.HelpDrawnByHud = false;
                     frame = null;
                     return;
                 }
-                Engine.Ui.HelpDrawnByHud = config.Prompt.Enabled;
+                Engine.Ui.HelpDrawnByHud = !probeMode && config.Prompt.Enabled;
                 HideVanilla();
+                foreach (string name in probeHidden) { hider.Hide(name); }
+                if (probeMode) { frame = null; return; }
                 Step();
             }
             catch (Exception error) { Fail("tick", error); }
@@ -611,7 +619,7 @@ namespace LibertyFramework.Hud
         {
             Engine.Commands.Register(this, "hudctl",
                 "hudctl status | table | check | ammo | hide <NAME> | hide-matching <text> | restore [NAME] | force <weapon|health|armour|wanted|prompt|all> on|off | " +
-                "hurt <n> | health <n> | armour <n> | prompt <text> | device auto|pad|keyboard | layout-test on|off - Liberty HUD (T-049): state, hud.dat table probe, test hooks", HudCommand);
+                "hurt <n> | health <n> | armour <n> | prompt <text> | device auto|pad|keyboard | layout-test on|off | probe-mode on|off | config-test off|restore - Liberty HUD (T-049): state, hud.dat table probe, test hooks", HudCommand);
         }
 
         private string HudCommand(string[] args)
@@ -623,6 +631,23 @@ namespace LibertyFramework.Hud
                 case "table": return Table();
                 case "check": return Check();
                 case "ammo": return Ammo();
+                case "probe-mode":
+                    if (args.Length < 2 || (args[1] != "on" && args[1] != "off")) { return "error: hudctl probe-mode on|off"; }
+                    ProbeRestore(null);
+                    probeMode = args[1] == "on";
+                    ResetAll();
+                    ApplyPlan();
+                    return "hud_probe_mode " + args[1];
+                case "config-test":
+                    if (args.Length < 2) { return "error: hudctl config-test off|restore"; }
+                    if (args[1] == "restore") { RestoreConfigTest(); return "hud_config_test restored"; }
+                    if (args[1] != "off") { return "error: hudctl config-test off|restore"; }
+                    if (configTestOriginal != null) { return "error: config test already active"; }
+                    configTestOriginal = JsonStore.ReadBytes(LibertyPaths.HudConfig);
+                    HudConfig testConfig = JsonStore.Parse<HudConfig>(configTestOriginal);
+                    testConfig.Enabled = false;
+                    JsonStore.Save(LibertyPaths.HudConfig, testConfig);
+                    return "hud_config_test wrote enabled=False (await normal config poll)";
                 case "hide": return args.Length < 2 ? "error: hudctl hide <NAME>" : ProbeHide(args[1]);
                 case "hide-matching": return args.Length < 2 ? "error: hudctl hide-matching <text>" : ProbeHideMatching(args[1]);
                 case "restore": return ProbeRestore(args.Length > 1 ? args[1] : null);
@@ -656,6 +681,14 @@ namespace LibertyFramework.Hud
             return int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out value) ? value : 0;
         }
 
+        private void RestoreConfigTest()
+        {
+            if (configTestOriginal == null) { return; }
+            System.IO.File.WriteAllBytes(LibertyPaths.HudConfig, configTestOriginal);
+            configTestOriginal = null;
+            RuntimeLog.Info("hud_config_test original bytes restored");
+        }
+
         private string SetPlayerHealth(int amount, bool relative)
         {
             if (!Liberty.World.HasPlayer) { return "error: no player"; }
@@ -687,14 +720,15 @@ namespace LibertyFramework.Hud
         private string Status()
         {
             StringBuilder text = new StringBuilder();
-            text.Append("hud enabled=").Append(config != null && config.Enabled).Append(" disabled=").Append(disabled);
+            text.Append("enabled=").Append(config != null && config.Enabled).Append(" disabled=").Append(disabled);
             text.Append(" table=").Append(hider != null ? addresses.HudComponents.Count.ToString(CultureInfo.InvariantCulture) : "none");
             if (weaponPlan != null)
             {
                 text.Append(" weapon=").Append(ModeText(weaponPlan.Mode)).Append(" health=").Append(ModeText(healthPlan.Mode));
                 text.Append(" armour=").Append(ModeText(armourPlan.Mode)).Append(" wanted=").Append(ModeText(wantedPlan.Mode));
             }
-            text.Append(" device=").Append(device.Current.ToString().ToLowerInvariant()).Append(" layout_test=").Append(layoutTest);
+            text.Append(" device=").Append(device.Current.ToString().ToLowerInvariant()).Append(" layout_test=").Append(layoutTest).Append(" probe_mode=").Append(probeMode);
+            text.Append(" hidden=").Append(planHidden.Count + probeHidden.Count).Append(" help_by_hud=").Append(Engine.Ui.HelpDrawnByHud);
             Frame now = frame;
             if (now != null)
             {

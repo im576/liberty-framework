@@ -13,9 +13,10 @@ wait 4000
 time 13 0
 weather 1
 hudctl force all off
+hudctl probe-mode on
 hudctl table
 expect "hud_table components=\d+" 10
-catalog give service-pistol 400 clear
+catalog give service-pistol 150 clear
 wait 1500
 wanted 3
 wait 1500
@@ -59,6 +60,7 @@ shot hud_hidden_everything_in_table
 hudctl restore
 wait 800
 shot hud_restored
+hudctl probe-mode off
 hudctl status
 expect "hud_status enabled=True" 10
 wanted 0
