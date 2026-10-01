@@ -92,3 +92,25 @@ contains main **c01f0da** with no conflicts. All four held diagnostic files were
 The additional UiService hunk is only the task-specific owner query. Required production/full checks and all native
 text/unload/game evidence remain NOT RUN. No D game/install/restoration was performed. This receipt commit only
 updates documentation; the runtime source/check queue remains the tested offline 046801f tree.
+
+## Latest full assigned slot — 2026-10-01 16:03 Pacific
+
+Clean main2fac4cd merge **1f6c289** tested in full **20261001-155808-1f6c289**. Build PASS (zero errors), package/install
+PASS; LOOP-verify initially FAIL 1119/1/1 because generated staged WeaponInfo.xml was absent before Stage. Stage
+produced the prerequisite; independent full tools/verify.ps1 -GameDirectory after restoration **1134/0**. Original
+summary/log failure remains unchanged; no weakened assertion, gameplay source patch or extra game batch.
+
+Native-display runner PASS **95/0 steps, zero log errors**, game alive; startup attempt 2 after attempt1 failed.
+All **nine** JPGs opened individually. Cash/wanted disappear, radar retained, config-off/explicit-off/public-on/
+expiry/stop restore visible cash/stars/radar; public-off hides radar too. Weapon/ammo absent in the baseline ->
+**unproven**. Native help/subtitle/mission/location and domain unload absent/unrun -> **unproven**. Guard unchanged.
+Config saved/readback hash 0119BAA5575BC80E7F3AC85660065E39689087AF04E7FBDF9501F15D1F5CFD64 matches.
+Wallet original86/pulse87 restored explicitly and on stop; idle pistol clip17/total150 is numerical evidence only.
+
+Normal verifier restoration and installed-build.json confirm **phase2-20261001-155855**; finished23:03:02 UTC.
+No game/verifier/compiler remains from D. **Heavy/game slot released.** No batchB and no other heavy/game batch.
+Evidence: docs/reports/2026-10-01-lane-d-native-display-full.md and preserved results-local run summary/report/logs/
+nine captures; LOOP-verify-after-stage.log is a separate successful file-only recheck, not replacement batch evidence.
+Next pending check IDs only after orchestrator review: T049-hud-components,T049-stage1-hud; diagnostic visible weapon/
+ammo baseline fix/review; manual T049-hud-native-story-text and T049-hud-look. Native policy still blocked pending
+complete baseline/text preservation. Original budgets, density OFF and all failed history preserved.

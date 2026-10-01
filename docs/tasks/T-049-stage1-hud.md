@@ -174,3 +174,13 @@ Full automated proposal after a slot is assigned: `LOOP-build`, `LOOP-verify`, `
 and full mode; inspect all captures and restoration. Real story text/unload remains `T049-hud-native-story-text`.
 Owner feel/style remains `T049-hud-look`; neither manual check is automatically accepted. Combined wheel/trunk/HUD
 budgets stay unchanged and require later integrated feature evidence. No T-040 rerun or density reduction.
+
+### October 1 full diagnostic result (partial, guard unchanged)
+
+Full 20261001-155808-1f6c289 ran95 steps/zero failures/zero errors and restored phase2-20261001-155855.
+Nine captures reviewed: cash/wanted disappear while radar remains; off/config-off/public-on/expiry/stop restore them.
+Weapon/ammo absent from the baseline, native story text and domain unload not tested: all unproven. No acceptance or
+hiding policy adoption. Production build PASS; first file verifier1119/1/1 failed missing generated XML; package Stage
+created it and standalone full file recheck1134/0 passed, original failure retained. BatchB was not run; slot released.
+[Complete receipt](../reports/2026-10-01-lane-d-native-display-full.md). Need a visible weapon/ammo baseline and
+T049-hud-native-story-text before adopting any native hiding. Existing task remains BLOCKED on complete evidence.

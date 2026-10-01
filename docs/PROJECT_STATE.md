@@ -116,3 +116,8 @@ runtime receipts: [orchestrator integration review](reports/2026-10-01-orchestra
 **T-049 Sol feature-first continuation (October 1):** bounded native HUD-off/radar-on diagnostic queued with lease,
 public-owner/config-off/stop restoration and separate real story-text/domain-unload comparisons. Offline-only patch;
 production compile/runtime pending scheduled slot. Shipped vanilla guard unchanged; all historical failures retained.
+
+**T-049 assigned full native diagnostic (October 1):** 20261001-155808-1f6c289 ran95/0 steps, zero errors, restored.
+Cash/wanted hide while radar remains; off/config-off/public-off/expiry/stop reviewed in all9 captures. Weapon/ammo
+baseline and native story text/unload unproven, vanilla guard unchanged. Build PASS; initial generated-XML verifier
+FAIL preserved, post-stage standalone full verifier1134/0 PASS. Slot released; batchB awaits orchestrator review.

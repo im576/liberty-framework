@@ -1728,8 +1728,15 @@
         }
       },
       "reference": "docs/tasks/T-049-stage1-hud.md#native-display-diagnostic",
-      "status": "QUEUED",
-      "addedIn": "codex/T-049-hud-continuation"
+      "status": "NEEDS-REVIEW",
+      "addedIn": "codex/T-049-hud-continuation",
+      "lastRun": "20261001-155808-1f6c289",
+      "evidence": [
+        "docs/reports/2026-10-01-lane-d-native-display-full.md",
+        "results-local/20261001-155808-1f6c289/T049-hud-native-display/report.md",
+        "results-local/20261001-155808-1f6c289/T049-hud-native-display/run.log",
+        "results-local/20261001-155808-1f6c289/T049-hud-native-display/result.json"
+      ]
     },
     {
       "id": "T049-hud-native-story-text",

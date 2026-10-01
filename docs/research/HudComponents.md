@@ -65,3 +65,13 @@ active and records baseline/hiding/config-off/restore/public-off/expiry/stop cap
 owners; unrelated raw-native visibility state has no documented getter and cannot be claimed restored. Real native
 story text/domain unload is a separate T049-hud-native-story-text review. All these runtime results remain unproven;
 no disappearance capability, replacement policy, changed budget or restyling is adopted.
+
+## Full native pair experiment — October 1, partial visual evidence
+
+Full 20261001-155808-1f6c289: 95 steps passed, zero errors; all nine captures individually reviewed.
+**Cash/wanted hiding and radar preservation observed**, with config-off/explicit-off/public-on/expiry/stop restoration.
+Public hud off wins and removes radar. Weapon/ammo had no visible baseline, so their hiding remains unproven.
+No native story text/domain unload trial; do not adopt blanket suppression or change the shipped guard.
+Config-byte saved/readback hashes matched and installation restored from phase2-20261001-155855.
+See [full receipt and capture review](../reports/2026-10-01-lane-d-native-display-full.md). Initial file-verifier
+missing staged XML FAIL remains preserved; separate post-stage full file verifier passed1134/0.
