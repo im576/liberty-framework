@@ -2,6 +2,10 @@
 
 Nothing in this repository vendors a mod binary, proprietary game asset, or copied third-party source. Install game dependencies from their official releases and record local versions in playtest reports.
 
+T-057 host audio recovery uses the owner's existing SteelSeries Sonar driver as an unattended playback output.
+No SteelSeries binary or source is bundled. Windows COM interop declarations are written locally from the published
+PolicyConfig ABI signatures ([AudioDeviceCmdlets interface](https://github.com/frgnca/AudioDeviceCmdlets/blob/master/SOURCE/IPolicyConfig.cs)); no implementation is copied.
+
 | Project | Role | License/permission | Handling |
 |---|---|---|---|
 | [FusionFix](https://github.com/ThirteenAG/GTAIV.EFLC.FusionFix) | CE fixes/overloader | GPL-3.0 in repository | Dependency and research reference; no source copied |
