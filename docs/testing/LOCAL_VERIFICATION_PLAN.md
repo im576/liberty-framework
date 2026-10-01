@@ -16,8 +16,8 @@
 |---|---|---|
 | pc-offline | 13 | automatically (builds and tests that need Windows or the game's files) |
 | probe | 4 | automatically (read-only questions about the game's files; structure only) |
-| scenario | 34 | automatically (autopilot drives the game; about 2-4 minutes each) |
-| manual | 20 | you play and judge; about 187 minutes in total, grouped below |
+| scenario | 36 | automatically (autopilot drives the game; about 2-4 minutes each) |
+| manual | 21 | you play and judge; about 197 minutes in total, grouped below |
 
 Statuses: QUEUED (never run on the current code), PASS, FAIL, ERROR, CRASH, NOT-RUN, NEEDS-REVIEW (a person or the review session must judge screenshots or log errors).
 
@@ -219,6 +219,24 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 - Pass when: the wall blocks the player at least where the borrowed shape is (its exact outline is the vanilla prop's, not the wall's)
 - Full steps: [docs/tasks/T-033-world-objects.md](../../docs/tasks/T-033-world-objects.md)
 
+### Liberty HUD (about 10 minutes)
+
+Free roam on foot with a weapon and some health to lose; the build from this run installed. A controller is optional but needed for the pad half of the prompt check.
+
+**Look, timing and readability of the Liberty HUD (keyboard/mouse and controller)** `T049-hud-look` (T-049, 10 min)
+
+1. Load a free-roam save with the build from this run. Walk around unarmed: the top-right corner shows nothing of Liberty's HUD, the radar is at the bottom left.
+2. Equip a pistol (DevTools > Weapons, Stage 1 entry): its silhouette and a clip / reserve count appear top right, stay a few seconds and fade. Aim (LT / right mouse), shoot, reload: they come back each time.
+3. Get hurt (let a pedestrian hit you, or fall from a low height): a thin health bar appears under the ammo line and fades; stay under a third of your health: it stays and pulses. Pick up armour: a pale bar appears under it.
+4. Get a wanted level (hit a cop): stars appear at the top right while it lasts and fade when it ends.
+5. Walk behind a parked car and look at the help box (top left): it must say Press X (controller) or Press E (keyboard) according to what you last touched.
+6. Open the weapon wheel / trunk: no panel may cover the top-right group.
+7. Set "enabled": false in scripts/LibertyFramework/config/hud.json: within a second the whole vanilla HUD is back and nothing of Liberty's is drawn. Put it back to true.
+8. Tell me per element: too big, too small, too faint, too busy, too slow or too fast to fade, or right (hud.json layout, palette and each element's holdSeconds and fade times).
+
+- Pass when: each element reads as right or you name the value to change
+- Full steps: [docs/tasks/T-049-stage1-hud.md#human-test-steps](../../docs/tasks/T-049-stage1-hud.md#human-test-steps)
+
 ## Automated checks
 
 | Id | Task | Kind | What passes | Status |
@@ -275,6 +293,8 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 | `T044-loadout-deaths-b` | T-044 | scenario | autopilot PASS: "autopilot_death_cycles_done cycles=25 lost_owned=0 failed_cycles=0 timeouts=0" with stored_growth equal to owned_expected (at least 40 of the 50 bought weapons counted as owned), and "arsenal_roundtrip identical=True" found | QUEUED |
 | `T044-loadout-outfits` | T-044 | scenario | autopilot PASS (every outfit set, every status line with the expected class); the screenshots judged by the owner for clipping | QUEUED |
 | `T044-loadout-review` | T-044 | scenario | autopilot PASS; the screenshots judged by the owner for clipping | QUEUED |
+| `T049-hud-components` | T-049 | scenario | autopilot PASS (hud_table reported, every step ran); then a person or the review session reads the hud_component lines and the nine screenshots and writes the answer into docs/research/HudComponents.md and vanillaComponents in config/hud.json. The run proves nothing about the look by itself. | QUEUED |
+| `T049-stage1-hud` | T-049 | scenario | autopilot PASS (hud_check ok with the planned components hidden, every hud_element/hud_reload/hud_health_low/hud_prompt line, costs draw.hud under 0.35 ms); the ten screenshots judged against review.screenshots | QUEUED |
 
 ## What each check proves, and what stays unproven
 
@@ -350,3 +370,6 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 - `T044-loadout-deaths-b`: The second 25 wasted cycles (50 in total with part 1): 0 lost owned weapons and an identical state after saving and loading. Runs after `T044-loadout-deaths-a` in the same run.
 - `T044-loadout-outfits`: All 17 upper-body outfits Niko can wear are classified as config/holsters.json says (holster module reports the class), the holster props are re-attached with the class offsets, and front, side and back screenshots exist for each.
 - `T044-loadout-review`: Rifle + shotgun, SMG + rifle and SMG + shotgun are each slung on both body slots without sharing a position, on a slim and on a bulky outfit.
+- `T049-hud-components`: The engine lists every hud.dat component it resolved (hud_component lines with live position/size/alpha, hud_unparsed calls with their bytes), and hiding the weapon icon, ammo, wanted stars, cash, radar, anything named HEALTH or ARMOUR/ARMOR, and finally the whole table, one group at a time, shows in the screenshots what each component is and whether the game honours the hud.dat globals for it. This answers which vanilla elements can be hidden without the radar and records where the player's health and armour arcs live (docs/research/HudComponents.md). **Still unproven:** Whether the radar's health and armour arcs are a hud.dat component at all: if no hide-matching screenshot removes them, they stay vanilla and the compact health/armour bars wait for R5 (T-054).
+- `T049-stage1-hud`: Under the shipped config the weapon and wanted elements have their vanilla components hidden and health and armour stay vanilla (no duplicate); with the layout test on, each element appears when its condition holds and fades when it does not: ammunition on weapon change, shot and reload (the clip / reserve line reads 17 / 383 for 400 rounds in a Glock 17, which settles whether the game's total counts the clip), health on damage and while low, armour while present, wanted stars while wanted, the help box with pad and keyboard button names; the HUD's own draw cost stays under 0.35 ms with everything shown; switching the layout test off returns to the shipped plan. **Still unproven:** The health and armour bars under the shipped config: they stay vanilla until the component that draws the radar's arcs is known (T049-hud-components); the scenario draws them with the layout test. Runs after `T049-hud-components` in the same run.
+- `T049-hud-look`: Owner sign-off of the HUD's look, readability and timing on both input devices, and of the vanilla HUD coming back when it is switched off.

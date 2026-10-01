@@ -236,3 +236,48 @@ The verifier checks the shipped file, and that every `model` it places is an ass
 | `objects[].snapToGround` | true | put the origin on the ground under `position` when the game reports a ground height there; `z` is where the search starts |
 | `objects[].collisionProxies` | none | list of hidden vanilla props with solid collision placed at the object so it is solid without authored bounds; each `{ model, offset [x,y,z] (world axes, metres), headingOffsetDegrees }`, at most 16. Solid models: see `proxy-probe` in [Collision.md](../research/Collision.md) |
 
+
+## Liberty HUD: config/hud.json (T-049)
+
+Read by the `hud` module (`src/LibertyFramework/Hud`) as `scripts\LibertyFramework\config\hud.json`; polled once per second and applied live. Every member is
+optional: one absent from an older file takes the default below (a check keeps `config/hud.json` and the code defaults identical), so an install that has
+the file keeps working when a field is added. An invalid file is rejected and logged (`hud_config_rejected`) and the last good configuration stays. The
+installer merges new top-level sections into an existing file and keeps the owner's values. All sizes are virtual units (720 high, 720 x aspect wide); colours are
+`[alpha, red, green, blue]`; times are seconds; the smallest text drawn is 14 px.
+
+| Field | Default | Meaning |
+|---|---|---|
+| `schemaVersion` | 1 | must be 1 |
+| `enabled` | true | **false restores the complete vanilla HUD** (every hidden component put back, nothing drawn, the help box drawn by the engine again) |
+| `hideVanilla` | `components` | `components`: hide the vanilla elements Liberty replaces (hud.dat globals, see [HudComponents.md](../research/HudComponents.md)); `none`: leave the vanilla HUD alone and draw nothing that would duplicate it |
+| `layout.marginRight` / `marginTop` | 28 / 24 | the top-right group's distance from the screen edges |
+| `layout.iconWidth` / `iconHeight` | 96 / 48 | weapon silhouette (the 2:1 icons of `ui\icons`) |
+| `layout.ammoHeight` | 22 | height of the clip / reserve line, at least 14 |
+| `layout.barWidth` / `barHeight` / `barGap` / `rowGap` | 112 / 5 / 4 / 6 | health and armour bars and the spacing of the rows (icon, ammo, health, armour, stars) |
+| `layout.starSize` / `starGap` | 16 / 4 | wanted stars |
+| `layout.promptX` / `promptY` / `promptWidth` / `promptHeight` | 34 / 30 / 360 / 44 | the help box (top left, where the IV one is) |
+| `layout.shadowOffset` | 1 | dark offset copy behind icon and text, 0 = none |
+| `palette.*` | see file | `text`, `textShadow`, `icon`, `barBack`, `health`, `healthLow`, `armour`, `wantedStar`, `wantedEmpty`, `promptBack`, `promptText`, `lowClip` |
+| `weapon.enabled` | true | the icon + clip / reserve group |
+| `weapon.fadeInSeconds` / `fadeOutSeconds` / `holdSeconds` | 0.15 / 0.6 / 4 | fade times and how long it stays after its latest trigger |
+| `weapon.showOnChange` / `showOnShot` / `showWhileReloading` / `showWhileAiming` | all true | what brings it up; `showWhileAiming` follows the left trigger above `aimTriggerLevel` or the right mouse button |
+| `weapon.alwaysWhenArmed` | false | keep it up whenever a weapon is held |
+| `weapon.lowClipFraction` | 0.25 | the clip count turns `lowClip` at or below this fraction of the largest clip seen for the weapon (empty always) |
+| `weapon.totalIncludesClip` | true | `GET_AMMO_IN_CHAR_WEAPON` counts the rounds in the clip: reserve = total - clip. The scenario `stage1-hud` reads `hud_ammo ... shown="17 / 383"` for 400 rounds to prove it; set false if it does not |
+| `weapon.aimTriggerLevel` | 0.3 | left-trigger level (0-1) that counts as aiming |
+| `weapon.vanillaComponents` | `HUD_WEAPON_ICON`, `HUD_AMMO` | hud.dat components hidden while Liberty draws this element |
+| `weapon.drawWithoutHidingVanilla` | false | draw even when a listed component cannot be hidden (a duplicate of the vanilla one) |
+| `health.*`, `armour.*` | see file | `enabled`, fades, `holdSeconds` (after a change or damage), `showOnChange`, `combatHoldSeconds` (after a shot fired or damage taken; 0 = off), `lowFraction` (health stays up at or below it; 0 = never), `pulsePerSecond` / `pulseDepth` (brightness pulse while low), `maximum` (the value that fills the bar; health is on the gameplay scale, the game's raw value minus 100), `hideWhenZero` (armour only: not drawn at zero), `vanillaComponents`, `drawWithoutHidingVanilla`. Armour defaults: `lowFraction` 0, `pulseDepth` 0, `hideWhenZero` true |
+| `health.vanillaComponents`, `armour.vanillaComponents` | empty | the vanilla health and armour arcs belong to the radar and no separable component is known, so **the bars are not drawn until a component is listed** (or `drawWithoutHidingVanilla` accepts a duplicate) |
+| `wanted.*` | see file | stars while wanted: fades (0.2 / 0.8), `holdSeconds` after the level drops to zero (1), `maximumStars` (6), `vanillaComponents` (`HUD_WANTED_BACK`, `HUD_WANTED_FRONT`), `drawWithoutHidingVanilla` |
+| `prompt.enabled` | true | the help box is drawn by the HUD (restyled, faded) with button names |
+| `prompt.fadeInSeconds` / `fadeOutSeconds` | 0.12 / 0.25 | |
+| `prompt.device` | `auto` | `auto` follows the device used last (pad buttons, sticks and triggers against keyboard keys); `pad` / `keyboard` force one |
+| `prompt.deviceSwitchMilliseconds` | 400 | minimum time between two automatic switches, so a stray key does not flip the names |
+| `prompt.glyphs[]` | `interact` X/E, `accept` A/Enter, `cancel` B/Backspace, `reload` X/R, `aim` LT/Right Mouse, `fire` RT/Left Mouse, `wheel` RB/Tab | `{token}` in a help text becomes `pad` or `keyboard` text; lower-case unique tokens. A token with no entry stays visible in braces |
+| `suppress.inCutscenes` / `whenPaused` / `whenFadedOut` / `whenDead` | all true | the Liberty elements are not drawn then (hidden vanilla components stay hidden) |
+| `sampling.wantedPollMilliseconds` / `ammoPollMilliseconds` / `inputPollMilliseconds` | 250 / 100 / 100 | how often the slower game readings are taken (16-5000) |
+
+Test commands (`lf hudctl ...`, console and autopilot): `status`, `table` (every hud.dat component with its live values, and calls the resolver could not parse), `check`,
+`ammo`, `hide <NAME>` / `hide-matching <text>` / `restore [NAME]` (research), `force <element|all> on|off`, `hurt <n>`, `health <n>`, `armour <n>`, `prompt <text>`, `device auto|pad|keyboard`,
+`layout-test on|off` (draw every element even where its vanilla counterpart stays).
