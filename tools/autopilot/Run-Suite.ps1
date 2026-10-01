@@ -19,20 +19,27 @@ $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'AutopilotLogic.psm1') -Force 3>$null
 if (-not $Scenarios) { $Scenarios = Get-ChildItem -LiteralPath $ScenarioDirectory -Filter '*.txt' | Sort-Object Name | ForEach-Object { $_.BaseName } }
 $results = @()
-foreach ($name in $Scenarios) {
-    $file = Join-Path $ScenarioDirectory "$name.txt"
-    if (-not (Test-Path -LiteralPath $file)) {
-        $results += [pscustomobject]@{ Scenario = $name; Result = 'ERROR'; Detail = "no scenario file $file"; Report = '' }
-        continue
+# The whole suite holds the game lock (tools/local/GameLock.psm1); each Run-Scenario call re-enters it.
+Import-Module (Join-Path (Split-Path -Parent $PSScriptRoot) 'local\GameLock.psm1') -Force
+$realGame = [IO.Path]::GetFullPath($AutopilotModule) -ieq [IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'Autopilot.psm1'))
+$gameLock = if ($realGame) { Enter-GameLock "Run-Suite $(Split-Path -Parent (Split-Path -Parent $PSScriptRoot))" } else { $null }
+try {
+    foreach ($name in $Scenarios) {
+        $file = Join-Path $ScenarioDirectory "$name.txt"
+        if (-not (Test-Path -LiteralPath $file)) {
+            $results += [pscustomobject]@{ Scenario = $name; Result = 'ERROR'; Detail = "no scenario file $file"; Report = '' }
+            continue
+        }
+        try {
+            $output = & (Join-Path $PSScriptRoot 'Run-Scenario.ps1') -GameDirectory $GameDirectory -Scenario $file -OutputDirectory $OutputDirectory -AutopilotModule $AutopilotModule 6>&1 | Out-String
+            $read = Read-ScenarioResult $output
+        }
+        catch { $read = @{ Status = 'ERROR'; Detail = "Run-Scenario threw: $($_.Exception.Message)"; Path = '' } }
+        $report = if ($read.Path) { Split-Path -Parent $read.Path } else { '' }
+        $results += [pscustomobject]@{ Scenario = $name; Result = $read.Status; Detail = $read.Detail; Report = $report }
     }
-    try {
-        $output = & (Join-Path $PSScriptRoot 'Run-Scenario.ps1') -GameDirectory $GameDirectory -Scenario $file -OutputDirectory $OutputDirectory -AutopilotModule $AutopilotModule 6>&1 | Out-String
-        $read = Read-ScenarioResult $output
-    }
-    catch { $read = @{ Status = 'ERROR'; Detail = "Run-Scenario threw: $($_.Exception.Message)"; Path = '' } }
-    $report = if ($read.Path) { Split-Path -Parent $read.Path } else { '' }
-    $results += [pscustomobject]@{ Scenario = $name; Result = $read.Status; Detail = $read.Detail; Report = $report }
 }
+finally { Exit-GameLock $gameLock }
 $results | Format-Table -AutoSize | Out-String -Width 200 | Write-Host
 if ($PassThru) { $results }
 if (@($results | Where-Object { $_.Result -ne 'PASS' }).Count -gt 0) { exit 1 }

@@ -19,6 +19,19 @@ New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
 $output = Join-Path $outputDirectory 'LibertyCore.dll'
 $sources = Get-ChildItem -LiteralPath (Join-Path $core 'src') -Filter '*.cpp' | Sort-Object Name | ForEach-Object { $_.FullName }
 
+# Up to date: the same core sources, headers, tests, build script and compiler as the last build whose tests passed
+# (tools/BuildCache.psm1). Neither the DLL nor the tests are rebuilt then: their result cannot differ.
+Import-Module (Join-Path $PSScriptRoot 'BuildCache.psm1') -Force
+$inputs = @(Get-ChildItem -LiteralPath $core -Recurse -File | Where-Object { $_.FullName -notmatch '[\\/]bin[\\/]' } | ForEach-Object { $_.FullName }) + @($PSCommandPath)
+$stamp = Join-Path $outputDirectory '.build-inputs'
+$key = Get-InputKey $repoRoot $inputs @("clang|$(Get-FileIdentity $compiler)", "host|$(Test-LibertyWindows)")
+if (Test-BuildStamp $stamp $key @($output)) {
+    Write-Host "Built $output (up to date; tests passed with these sources)"
+    Write-Host ("SHA256 " + (Get-FileHash -LiteralPath $output -Algorithm SHA256).Hash)
+    exit 0
+}
+Clear-BuildStamp $stamp
+
 & $compiler -std=c++20 -O2 -Wall -Wextra -Werror -fno-exceptions -fno-rtti -shared -static -s `
     "-I$(Join-Path $core 'include')" -o $output $sources '-Wl,--kill-at'
 if ($LASTEXITCODE -ne 0) { throw "LibertyCore build failed with exit code $LASTEXITCODE" }
@@ -42,3 +55,4 @@ foreach ($test in Get-ChildItem -LiteralPath $testDirectory -Filter '*.cpp' | So
     & $testExe
     if ($LASTEXITCODE -ne 0) { throw "$($test.BaseName) failed (exit $LASTEXITCODE)" }
 }
+Set-BuildStamp $stamp $key

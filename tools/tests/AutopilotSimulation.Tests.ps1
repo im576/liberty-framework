@@ -71,6 +71,17 @@ Test-That 'sim: a scenario that executes nothing is ERROR' ($r.Status -eq 'ERROR
 $r = Invoke-SimScenario 'nolaunch' @('god on') (@{ running = $false; launchFails = $true })
 Test-That 'sim: a failed launch is ERROR with a result file' ($r.Status -eq 'ERROR' -and $r.Json.runnerError -match 'did not reach the engine') $r.Output
 
+Test-That 'sim: a failed launch is marked GAME-UNAVAILABLE (verify-local skips the rest of the run)' ($r.Json.runnerError -like 'GAME-UNAVAILABLE*') $r.Output
+
+$r = Invoke-SimScenario 'noaudio' @('god on') (@{ running = $false; noAudio = $true })
+Test-That 'sim: no audio output device fails at once as GAME-UNAVAILABLE' ($r.Status -eq 'ERROR' -and $r.Json.runnerError -like 'GAME-UNAVAILABLE*audio*') $r.Output
+
+$started = Get-Date
+$r = Invoke-SimScenario 'frozen' @('god on', 'expect "never_logged" 60', 'god on', 'expect "never_logged" 60') (@{ knownCommands = @('god'); frozen = $true })
+$elapsed = ((Get-Date) - $started).TotalSeconds
+Test-That 'sim: a frozen game ends the scenario at the first wait instead of waiting out every expect' (
+    $r.Status -eq 'ERROR' -and $r.Json.runnerError -like 'GAME-FROZEN*' -and $r.Json.steps -eq 2 -and $elapsed -lt 30) "$($r.Status) $([int]$elapsed)s $($r.Output)"
+
 $r = Invoke-SimScenario 'badexpect' @('god on', 'expect "(unclosed" 1') $world
 Test-That 'sim: an unparseable expect fails' ($r.Status -eq 'FAIL') $r.Output
 

@@ -1,8 +1,8 @@
 # AGENTS.md — Rules for AI agents working in this repo
 
 You are an AI coding agent. On the owner's PC you run the game yourself through the autopilot and `tools/verify-local.ps1`
-(one run at a time: it waits on a machine-wide lock); cloud sessions cannot run it. The owner still signs off on feel
-and visuals.
+(one run at a time: installs, rollbacks and scenario runs all wait on one machine-wide lock, and a scenario refuses to run
+on a build installed from another worktree); cloud sessions cannot run it. The owner still signs off on feel and visuals.
 Read this whole file before doing anything. It is short on purpose.
 
 ## 1. Read these first, in this order

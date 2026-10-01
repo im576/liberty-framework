@@ -6,6 +6,8 @@
 #   world.json   how the "engine" behaves (all optional):
 #                  running            the game is running before the scenario (default true)
 #                  launchFails        Start-GameReady throws (no boot)
+#                  noAudio            Test-AudioOutput is false and Start-GameReady throws at once
+#                  frozen             Test-GameFrozen is true (the engine stopped writing its log)
 #                  screenshotFails    Save-Screenshot throws (no Steam screenshot)
 #                  commands           { "<command line>": { "reply": "...", "log": ["..."], "crash": true } }
 #                                     unknown commands reply "unknown command <word>"; known ones default to "ok"
@@ -65,7 +67,8 @@ function Get-SessionLog {
 }
 
 function Start-GameReady([int] $Attempts = 5, [int] $BootTimeoutSeconds = 240) {
-    if (Get-SimProperty (Get-SimWorld) 'launchFails' $false) { throw "GTA IV did not reach the engine after $Attempts attempts" }
+    if (Get-SimProperty (Get-SimWorld) 'noAudio' $false) { throw 'GAME-UNAVAILABLE: no audio output device is active (simulated)' }
+    if (Get-SimProperty (Get-SimWorld) 'launchFails' $false) { throw "GAME-UNAVAILABLE: GTA IV did not reach the engine after $Attempts attempts" }
     New-Item -ItemType File -Force -Path (Join-Path (Get-SimState) 'alive') | Out-Null
     Add-SimLog 'engine_booted'
     return 1
@@ -122,8 +125,10 @@ function Get-GameMemory {
     }
 }
 
-function Test-GameFrozen([int] $Seconds = 75) { return $false }
+function Test-GameFrozen([int] $Seconds = 75) { return [bool](Get-SimProperty (Get-SimWorld) 'frozen' $false) -and [bool](Get-GameProcess) }
+function Test-AudioOutput { return -not [bool](Get-SimProperty (Get-SimWorld) 'noAudio' $false) }
+function Get-GameDialog { return $null }
 function Wait-LogLine([string] $Pattern, [int] $TimeoutSeconds = 180) { return (Get-SessionLog | Where-Object { $_ -match $Pattern } | Select-Object -First 1) }
 
 Export-ModuleMember -Function Initialize-SimulatedGame, Set-AutopilotGame, Get-GameProcess, Get-SessionLog, Start-GameReady, Stop-Game,
-    Send-GameKey, Save-Screenshot, Invoke-EngineCommand, Test-GameFrozen, Wait-LogLine, Get-GameMemory
+    Send-GameKey, Save-Screenshot, Invoke-EngineCommand, Test-GameFrozen, Wait-LogLine, Get-GameMemory, Test-AudioOutput, Get-GameDialog
