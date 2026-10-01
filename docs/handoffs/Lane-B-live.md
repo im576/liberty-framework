@@ -10,6 +10,8 @@ This section supersedes the historical next-step instructions below. No game slo
 - Entry was clean at `1744416`; no non-output files had changed in the preceding five minutes. Process inspection
   found no game/verifier/compiler. Fetched origin and fast-forwarded to current main `7058612`, preserving all history.
   Read main's continuation, rules, B prompt and integration review; reviewed the isolated six-file `1f6f501` diff.
+  Main advanced during review to docs-only `0189d02`; reviewed and merged that dispatch/roster/completion-gates update
+  without conflicts in this handoff commit. Focused checks need no rerun for those documentation-only changes.
 - Cherry-picked **only** `1f6f501` as `192bd503a33f4bb12d9d8f0beaf9cf8c05f0cdbb`; no conflicts. The integration
   branch was not merged. Wheel start loads config and registers an owner-scoped shared-file watch; idle ticks no longer
   read/hash arsenal.json. The accepted hash is assigned after successful parse/validation, retaining last-valid config.
