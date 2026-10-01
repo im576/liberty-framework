@@ -7,6 +7,9 @@
 $ErrorActionPreference = 'Stop'
 $script:FinalStatuses = @('PASS', 'FAIL', 'ERROR', 'CRASH', 'NEEDS-REVIEW')
 $script:KindOrder = @{ 'pc-offline' = 0; 'probe' = 1; 'scenario' = 3; 'manual' = 4 }
+# Tools that read nothing from the game folder: they run first, before the game lock is taken (tools/local/GameLock.psm1).
+$script:LockFreeTools = @('build', 'content-selftest')
+Import-Module (Join-Path $PSScriptRoot 'GameLock.psm1') 3>$null
 
 # A path from parts, with the platform's separator (the same code runs on the PC and, simulated, in the cloud).
 function Join-Parts([string] $Base) {
@@ -28,9 +31,15 @@ function Read-CheckQueue([string] $Path) {
 # Stage of a check in the run: offline tools, probes, then package/install, the checks that read the package, the
 # scenarios (need the install), and last the owner's manual checks.
 function Get-CheckStage($check) {
+    if (-not (Test-CheckNeedsGame $check)) { return -1 }
     if ($check.kind -eq 'pc-offline' -and $check.run.tool -eq 'package-install') { return 2 }
     if ($check.kind -eq 'pc-offline' -and $check.run.tool -eq 'content-report') { return 2.5 }
     return $script:KindOrder[[string]$check.kind]
+}
+
+# Whether a check reads or drives the game (and so runs under the game lock).
+function Test-CheckNeedsGame($check) {
+    return -not ($check.kind -eq 'pc-offline' -and $script:LockFreeTools -contains [string]$check.run.tool)
 }
 
 # The checks this run executes, in run order.
@@ -80,7 +89,9 @@ function ConvertTo-CommandArgument([string] $Value) {
 
 # Runs a program with a timeout; stdout and stderr go to $LogPath. A timed-out process (and its children) is killed.
 # Returns @{ ExitCode; TimedOut; Output }.
-function Invoke-ChildProcess([string] $FilePath, [string[]] $Arguments, [int] $TimeoutSeconds, [string] $LogPath, [string] $WorkingDirectory) {
+# $Priority (e.g. 'BelowNormal'): the child's priority class; its own children inherit it on Windows. Builds that run
+# while another session's game test runs use it, so the game keeps the CPU.
+function Invoke-ChildProcess([string] $FilePath, [string[]] $Arguments, [int] $TimeoutSeconds, [string] $LogPath, [string] $WorkingDirectory, [string] $Priority = '') {
     $argumentText = (@($Arguments) | ForEach-Object { ConvertTo-CommandArgument ([string]$_) }) -join ' '
     $out = "$LogPath.out"; $err = "$LogPath.err"
     $options = @{ FilePath = $FilePath; PassThru = $true; NoNewWindow = $true; RedirectStandardOutput = $out; RedirectStandardError = $err }
@@ -88,6 +99,9 @@ function Invoke-ChildProcess([string] $FilePath, [string[]] $Arguments, [int] $T
     if ($WorkingDirectory) { $options.WorkingDirectory = $WorkingDirectory }
     $process = Start-Process @options
     $null = $process.Handle  # Windows PowerShell 5.1 loses ExitCode unless the handle is opened while the process runs.
+    if ($Priority -and $env:OS -eq 'Windows_NT') {
+        try { $process.PriorityClass = $Priority } catch { Write-Host "[verify-local] could not set priority $Priority on $($process.Id): $($_.Exception.Message)" }
+    }
     $timedOut = -not $process.WaitForExit([Math]::Max(1, $TimeoutSeconds) * 1000)
     if ($timedOut) { Stop-ProcessTree $process; $process.WaitForExit(10000) | Out-Null }
     else { $process.WaitForExit() }
@@ -237,26 +251,48 @@ function Invoke-ContentReportCheck($Context, $Check) {
     return New-Result 'PASS' 'all expected fields match' @($Check.id)
 }
 
+function Get-PackageArguments($Context, [string] $Phase) {
+    # -Fast: the offline verifier and the self-tests are checks of their own (LOOP-verify, LOOP-content-selftest); repeating
+    # them inside every package step held the game lock for minutes while parallel sessions waited.
+    $package = (Get-ScriptArguments (Join-Parts $Context.Repo 'tools' 'package-phase2.ps1')) + @('-GameDirectory', $Context.Game, '-ScriptHookDotNetReference', $Context.Shdn, '-Fast', '-Phase', $Phase)
+    if ($Context.Lvs) { $package += @('-LvsDirectory', $Context.Lvs) }
+    return $package
+}
+
+# Package step 1, before the game lock: compile and generate every artifact (package-phase2.ps1 -Phase Build reads only the
+# repository and the game's own archives, and snapshots what the install step needs). Runs at below-normal priority so a
+# game test of another session keeps the CPU. The outcome is reported by the package-install check.
+function Invoke-PackageBuild($Context, $Check) {
+    if ($Context.Simulate) { $Context.PackageBuild = @{ Ok = $true; Detail = 'simulated' }; return }
+    $log = Join-Path $Context.Results ($Check.id + '.log')
+    Write-Host '[verify-local] building the package before taking the game (package-phase2.ps1 -Phase Build)'
+    $started = Get-Date
+    $run = Invoke-ChildProcess (Get-PowerShellPath) (Get-PackageArguments $Context 'Build') 2400 $log $Context.Repo 'BelowNormal'
+    $seconds = [int]((Get-Date) - $started).TotalSeconds
+    $Context.PackageBuild = @{ Ok = (-not $run.TimedOut -and $run.ExitCode -eq 0); Detail = "build exit $($run.ExitCode) in $seconds s"; Log = $log }
+    Write-Host "               -> package build $(if ($Context.PackageBuild.Ok) { 'done' } else { 'FAILED' }) ($seconds s)"
+}
+
 function Invoke-PackageInstall($Context, $Check) {
     if ($Context.Simulate) { return Invoke-SimulatedPackageInstall $Context $Check }
     $ps = Get-PowerShellPath
     $tools = Join-Path $Context.Repo 'tools'
     $log = Join-Path $Context.Results ($Check.id + '.log')
-    # -Fast: the offline verifier and the self-tests are checks of their own (LOOP-verify, LOOP-content-selftest); repeating
-    # them inside every package step held the game lock for minutes while parallel sessions waited.
-    $package = (Get-ScriptArguments (Join-Path $tools 'package-phase2.ps1')) + @('-GameDirectory', $Context.Game, '-ScriptHookDotNetReference', $Context.Shdn, '-Fast')
-    if ($Context.Lvs) { $package += @('-LvsDirectory', $Context.Lvs) }
-    $run = Invoke-ChildProcess $ps $package 2400 $log $Context.Repo
-    if ($run.TimedOut -or $run.ExitCode -ne 0) { return New-Result 'FAIL' "package-phase2.ps1 failed (exit $($run.ExitCode))" @((Split-Path -Leaf $log)) }
+    if (-not $Context.PackageBuild) { Invoke-PackageBuild $Context $Check }
+    if (-not $Context.PackageBuild.Ok) { return New-Result 'FAIL' "package-phase2.ps1 -Phase Build failed ($($Context.PackageBuild.Detail))" @((Split-Path -Leaf $log)) }
+    # Package step 2, under the game lock: stage the snapshot against the installed files (seconds), then install.
+    $stageLog = Join-Path $Context.Results ($Check.id + '-stage.log')
+    $run = Invoke-ChildProcess $ps (Get-PackageArguments $Context 'Stage') 600 $stageLog $Context.Repo
+    if ($run.TimedOut -or $run.ExitCode -ne 0) { return New-Result 'FAIL' "package-phase2.ps1 -Phase Stage failed (exit $($run.ExitCode))" @((Split-Path -Leaf $log), (Split-Path -Leaf $stageLog)) }
     $installLog = Join-Path $Context.Results ($Check.id + '-install.log')
     $before = Get-Date
     $install = Invoke-ChildProcess $ps ((Get-ScriptArguments (Join-Path $tools 'install-phase2.ps1')) + @('-GameDirectory', $Context.Game)) 900 $installLog $Context.Repo
     $backups = Join-Parts $Context.Game 'scripts' 'LibertyFramework' 'backups'
     $backup = Get-ChildItem -LiteralPath $backups -Directory -Filter 'phase2-*' -ErrorAction SilentlyContinue | Where-Object { $_.CreationTime -ge $before.AddSeconds(-5) } | Sort-Object CreationTime -Descending | Select-Object -First 1
     if ($backup) { $Context.Backup = $backup.FullName }
-    if ($install.TimedOut -or $install.ExitCode -ne 0) { return New-Result 'FAIL' "install-phase2.ps1 failed (exit $($install.ExitCode)); it rolls itself back" @((Split-Path -Leaf $log), (Split-Path -Leaf $installLog)) }
+    if ($install.TimedOut -or $install.ExitCode -ne 0) { return New-Result 'FAIL' "install-phase2.ps1 failed (exit $($install.ExitCode)); it rolls itself back" @((Split-Path -Leaf $log), (Split-Path -Leaf $stageLog), (Split-Path -Leaf $installLog)) }
     $Context.Installed = $true
-    return New-Result 'PASS' "installed; backup $($Context.Backup)" @((Split-Path -Leaf $log), (Split-Path -Leaf $installLog))
+    return New-Result 'PASS' "installed; backup $($Context.Backup); $($Context.PackageBuild.Detail)" @((Split-Path -Leaf $log), (Split-Path -Leaf $stageLog), (Split-Path -Leaf $installLog))
 }
 
 function Invoke-ScenarioCheck($Context, $Check) {
@@ -283,9 +319,43 @@ function Invoke-ScenarioCheck($Context, $Check) {
     if ($status -eq 'PASS' -and $Check.PSObject.Properties['review'] -and $Check.review.screenshots) {
         $status = 'NEEDS-REVIEW'; $detail = "passed; screenshots to judge: $((@($Check.review.screenshots.PSObject.Properties) | ForEach-Object { $_.Name }) -join ', ')"
     }
+    # A game that cannot start (no audio device, its own fatal error, every launch attempt failed) will not start for the
+    # next scenario either: the remaining scenarios of this run are NOT-RUN instead of each retrying for minutes.
+    if ($read.Path -and (Test-Path -LiteralPath $read.Path)) {
+        try {
+            $runnerError = [string](Get-Content -LiteralPath $read.Path -Raw | ConvertFrom-Json).runnerError
+            if ($runnerError -like 'GAME-UNAVAILABLE*') { $Context.LaunchBlocked = $runnerError }
+        } catch { Write-Host "[verify-local] could not read $($read.Path): $($_.Exception.Message)" }
+    }
     # A crashed, errored or hung game must not poison the next scenario: stop it so the next one relaunches cleanly.
     if (@('CRASH', 'ERROR') -contains $read.Status -or $run.TimedOut) { Stop-TestGame $Context }
     return New-Result $status $detail $evidence
+}
+
+# The game phase runs from the first check that reads or drives the game to the end of the run's game work (restore).
+# It holds the machine-wide game lock, so everything before it (builds, the package build) overlaps other sessions' game
+# tests. On entry: a game an earlier autopilot run left running is stopped; the owner's own game is never touched (the
+# install and scenarios are NOT-RUN then); without an audio output device the scenarios are NOT-RUN at once.
+function Enter-GamePhase($Context, $Checks) {
+    $Context.GamePhase = $true
+    if (-not $Context.Simulate) {
+        try { $Context.Lock = Enter-GameLock "verify-local $($Context.Repo)" }
+        catch { $Context.LockFailed = "the game was not free in time ($($_.Exception.Message))"; return }
+        if (Get-Process GTAIV -ErrorAction SilentlyContinue) {
+            if (Test-AutopilotGameRunning $Context.Game) { Write-Host '[verify-local] stopping the game an earlier test left running'; Stop-TestGame $Context }
+            else { $Context.GameBlocked = 'GTA IV is running and was not started by the autopilot (the owner may be playing); close it and run again' }
+        }
+    }
+    if (@($Checks | Where-Object { $_.kind -eq 'scenario' }).Count -gt 0) {
+        try {
+            Import-Module $Context.GameModule -Force 3>$null
+            if (-not (Test-AudioOutput)) { $Context.LaunchBlocked = 'GAME-UNAVAILABLE: no audio output device is active; GTA IV refuses to start without one (connect speakers, a headset or the controller)' }
+        } catch { Write-Host "[verify-local] audio check failed: $($_.Exception.Message)" }
+    }
+}
+
+function Exit-GamePhase($Context) {
+    if ($Context.Lock) { Exit-GameLock $Context.Lock; $Context.Lock = $null }
 }
 
 function Stop-TestGame($Context) {
@@ -325,9 +395,16 @@ function Invoke-ManualCheck($Context, $Check) {
 function Invoke-Check($Context, $Check) {
     $started = Get-Date
     try {
-        if ($Check.kind -eq 'manual' -and $Context.SkipManual) { $result = New-Result 'NOT-RUN' 'skipped by the owner' @() }
+        if ($Context.LockFailed -and (Test-CheckNeedsGame $Check)) { $result = New-Result 'NOT-RUN' $Context.LockFailed @() }
+        elseif ($Check.kind -eq 'manual' -and $Context.SkipManual) { $result = New-Result 'NOT-RUN' 'skipped by the owner' @() }
+        elseif ($Context.GameBlocked -and ($Check.kind -eq 'scenario' -or $Check.run.tool -eq 'package-install')) {
+            $result = New-Result 'NOT-RUN' $Context.GameBlocked @()
+        }
         elseif (($Check.kind -eq 'scenario' -or $Check.run.tool -eq 'content-report') -and -not $Context.Installed) {
             $result = New-Result 'NOT-RUN' 'LOOP-package-install did not pass in this run' @()
+        }
+        elseif ($Check.kind -eq 'scenario' -and $Context.LaunchBlocked) {
+            $result = New-Result 'NOT-RUN' "the game could not start earlier in this run: $($Context.LaunchBlocked)" @()
         }
         elseif ($Check.kind -eq 'scenario') { $result = Invoke-ScenarioCheck $Context $Check }
         elseif ($Check.kind -eq 'manual') { $result = Invoke-ManualCheck $Context $Check }
@@ -519,41 +596,55 @@ function Invoke-VerifyLocal([hashtable] $Options) {
         selected = @($checks | ForEach-Object { $_.id })
     }
 
-    foreach ($check in $checks) {
-        if ($previous.ContainsKey([string]$check.id) -and $script:FinalStatuses -contains [string]$previous[[string]$check.id].status) {
-            [void]$context.Checks.Add($previous[[string]$check.id]); continue
-        }
-        if ($check.kind -eq 'manual' -and -not $context.ManualStarted -and $context.Interactive -and -not $context.SkipManual -and -not $context.Simulate) {
-            $context.ManualStarted = $true
-            if ($context.Installed) { Stop-TestGame $context }
-            Write-Host ''
-            Write-Host '==== Manual checks. Launch GTA IV through Steam now and load a save. Each check says what to do; answer when done.'
-        }
-        Write-Host ("[verify-local] {0,-34} {1}" -f $check.id, $check.title)
-        $row = Invoke-Check $context $check
-        [void]$context.Checks.Add($row)
-        Write-Host ("               -> {0}  {1}" -f $row.status, $row.detail)
-        $context.Run.install = $(if ($context.Installed) { "installed; backup $($context.Backup)" } else { 'not installed' })
-        $context.Run.installBackup = $context.Backup
-        Write-Summary $context
-    }
-    if ($context.Installed -and -not $context.Simulate) { Stop-TestGame $context }
-
-    # Keep or restore the tested build.
-    if ($context.Installed -and $context.Backup) {
-        $restore = [bool]$Options.Restore -or ([bool]$Options.Smoke -and -not $Options.KeepInstall)
-        if (-not $restore -and -not $Options.KeepInstall -and $context.Interactive -and -not $context.Simulate) {
-            $restore = (Read-Host 'Restore your previous install? The tested build stays if you answer n [y/N]').Trim().ToLowerInvariant() -eq 'y'
-        }
-        if ($restore) {
-            if ($context.Simulate) { $context.Run.install = "restored (simulated) from $($context.Backup)" }
-            else {
-                $log = Join-Path $results 'restore.log'
-                $run = Invoke-ChildProcess (Get-PowerShellPath) ((Get-ScriptArguments (Join-Parts $repo 'tools' 'rollback-phase2.ps1')) + @('-GameDirectory', $context.Game, '-BackupDirectory', $context.Backup)) 900 $log $repo
-                $context.Run.install = $(if ($run.ExitCode -eq 0) { "restored from $($context.Backup)" } else { "RESTORE FAILED (exit $($run.ExitCode)); run tools/rollback-phase2.ps1 -BackupDirectory $($context.Backup)" })
+    $installCheck = $checks | Where-Object { $_.run.tool -eq 'package-install' } | Select-Object -First 1
+    try {
+        foreach ($check in $checks) {
+            if ($previous.ContainsKey([string]$check.id) -and $script:FinalStatuses -contains [string]$previous[[string]$check.id].status) {
+                [void]$context.Checks.Add($previous[[string]$check.id]); continue
             }
+            if (-not $context.GamePhase -and (Test-CheckNeedsGame $check)) {
+                # Build the package while another session may still be using the game, then take the game.
+                if ($installCheck -and -not ($previous.ContainsKey([string]$installCheck.id) -and $script:FinalStatuses -contains [string]$previous[[string]$installCheck.id].status)) {
+                    Invoke-PackageBuild $context $installCheck
+                }
+                Enter-GamePhase $context $checks
+            }
+            if ($check.kind -eq 'manual' -and -not $context.ManualStarted -and $context.Interactive -and -not $context.SkipManual -and -not $context.Simulate) {
+                $context.ManualStarted = $true
+                if ($context.Installed) { Stop-TestGame $context }
+                Write-Host ''
+                Write-Host '==== Manual checks. Launch GTA IV through Steam now and load a save. Each check says what to do; answer when done.'
+            }
+            Write-Host ("[verify-local] {0,-34} {1}" -f $check.id, $check.title)
+            $row = Invoke-Check $context $check
+            [void]$context.Checks.Add($row)
+            Write-Host ("               -> {0}  {1}" -f $row.status, $row.detail)
+            $context.Run.install = $(if ($context.Installed) { "installed; backup $($context.Backup)" } else { 'not installed' })
+            $context.Run.installBackup = $context.Backup
+            Write-Summary $context
         }
-        else { $context.Run.install = "kept the tested build; to undo: tools/rollback-phase2.ps1 -GameDirectory <game> -BackupDirectory $($context.Backup)" }
+        if ($context.Installed -and -not $context.Simulate) { Stop-TestGame $context }
+
+        # Keep or restore the tested build.
+        if ($context.Installed -and $context.Backup) {
+            $restore = [bool]$Options.Restore -or ([bool]$Options.Smoke -and -not $Options.KeepInstall)
+            if (-not $restore -and -not $Options.KeepInstall -and $context.Interactive -and -not $context.Simulate) {
+                $restore = (Read-Host 'Restore your previous install? The tested build stays if you answer n [y/N]').Trim().ToLowerInvariant() -eq 'y'
+            }
+            if ($restore) {
+                if ($context.Simulate) { $context.Run.install = "restored (simulated) from $($context.Backup)" }
+                else {
+                    $log = Join-Path $results 'restore.log'
+                    $run = Invoke-ChildProcess (Get-PowerShellPath) ((Get-ScriptArguments (Join-Parts $repo 'tools' 'rollback-phase2.ps1')) + @('-GameDirectory', $context.Game, '-BackupDirectory', $context.Backup)) 900 $log $repo
+                    $context.Run.install = $(if ($run.ExitCode -eq 0) { "restored from $($context.Backup)" } else { "RESTORE FAILED (exit $($run.ExitCode)); run tools/rollback-phase2.ps1 -BackupDirectory $($context.Backup)" })
+                }
+            }
+            else { $context.Run.install = "kept the tested build; to undo: tools/rollback-phase2.ps1 -GameDirectory <game> -BackupDirectory $($context.Backup)" }
+        }
+    }
+    finally {
+        # Compressing, scrubbing and publishing the results need no game: other sessions get it now.
+        Exit-GamePhase $context
     }
     $context.Run.finishedUtc = [DateTime]::UtcNow.ToString('o')
     Write-Summary $context

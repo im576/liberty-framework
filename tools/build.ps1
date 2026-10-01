@@ -30,22 +30,42 @@ function Invoke-Compiler([string] $name, [string[]] $arguments) {
     if ($LASTEXITCODE -ne 0) { throw "$name failed to compile (exit $LASTEXITCODE)" }
 }
 
-# 1. SDK
 $sdkRoot = Join-Path $repoRoot 'sdk\Liberty.Sdk'
 $sdkOut = Join-Path $sdkRoot 'bin'
-New-Item -ItemType Directory -Force -Path $sdkOut | Out-Null
 $sdkDll = Join-Path $sdkOut 'Liberty.Sdk.dll'
 $sdkSources = @(Get-Sources $sdkRoot)
+$sourceRoot = Join-Path $repoRoot 'src\LibertyFramework'
+$outputDirectory = Join-Path $sourceRoot 'bin\Release'
+$output = Join-Path $outputDirectory 'LibertyFramework.net.dll'
+$sources = @(Get-Sources $sourceRoot)
+$modsRoot = Join-Path $repoRoot 'mods'
+$mods = @(if (Test-Path -LiteralPath $modsRoot) { Get-ChildItem -LiteralPath $modsRoot -Directory | Where-Object { @(Get-Sources $_.FullName).Count -gt 0 } })
+
+# Up to date: same sources, build script, compiler and ScriptHookDotNet reference as the last successful build, and every
+# output still there (tools/BuildCache.psm1). Nothing is compiled then.
+Import-Module (Join-Path $PSScriptRoot 'BuildCache.psm1') -Force
+$modSources = @($mods | ForEach-Object { Get-Sources $_.FullName })
+$outputs = @($sdkDll, (Join-Path $sdkOut 'Liberty.Sdk.xml'), $output, (Join-Path $outputDirectory 'Liberty.Sdk.dll')) + @($mods | ForEach-Object { Join-Path $_.FullName ('bin\' + $_.Name + '.dll') })
+$stamp = Join-Path $outputDirectory '.build-inputs'
+$key = Get-InputKey $repoRoot (@($sdkSources) + @($sources) + $modSources + @($PSCommandPath, (Join-Path $PSScriptRoot 'toolchains.ps1'))) @(
+    "csc|$(Get-FileIdentity $compiler)", "shdn|$((Get-FileHash -LiteralPath $reference -Algorithm SHA256).Hash)", "mods|$(($mods | ForEach-Object { $_.Name }) -join ',')")
+if (Test-BuildStamp $stamp $key $outputs) {
+    Write-Host "Built $sdkDll (up to date)"
+    Write-Host "Built $output (up to date)"
+    Write-Host ("SHA256 " + (Get-FileHash -LiteralPath $output -Algorithm SHA256).Hash)
+    foreach ($mod in $mods) { Write-Host "Built mod $(Join-Path $mod.FullName ('bin\' + $mod.Name + '.dll')) (up to date)" }
+    exit 0
+}
+Clear-BuildStamp $stamp
+
+# 1. SDK
+New-Item -ItemType Directory -Force -Path $sdkOut | Out-Null
 Invoke-Compiler 'Liberty.Sdk' (@('/nologo', '/target:library', '/platform:anycpu', '/optimize+', '/langversion:7.3', '/warn:4', '/warnaserror+',
     '/nowarn:1591', "/doc:$(Join-Path $sdkOut 'Liberty.Sdk.xml')", "/out:$sdkDll", '/reference:System.Core.dll') + $sdkSources)
 Write-Host "Built $sdkDll from $($sdkSources.Count) source files"
 
 # 2. Engine
-$sourceRoot = Join-Path $repoRoot 'src\LibertyFramework'
-$outputDirectory = Join-Path $sourceRoot 'bin\Release'
-$output = Join-Path $outputDirectory 'LibertyFramework.net.dll'
 New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
-$sources = @(Get-Sources $sourceRoot)
 Invoke-Compiler 'LibertyFramework.net' (@('/nologo', '/target:library', '/platform:x86', '/optimize+', '/unsafe', '/langversion:7.3', '/warn:4', '/warnaserror+',
     "/out:$output", "/reference:$reference", "/reference:$sdkDll",
     '/reference:System.Runtime.Serialization.dll', '/reference:System.Xml.dll', '/reference:System.Drawing.dll', '/reference:System.Windows.Forms.dll',
@@ -55,16 +75,13 @@ Write-Host "Built $output from $($sources.Count) source files"
 Write-Host ("SHA256 " + (Get-FileHash -LiteralPath $output -Algorithm SHA256).Hash)
 
 # 3. SDK mods
-$modsRoot = Join-Path $repoRoot 'mods'
-if (Test-Path -LiteralPath $modsRoot) {
-    foreach ($mod in Get-ChildItem -LiteralPath $modsRoot -Directory) {
-        $modSources = @(Get-Sources $mod.FullName)
-        if ($modSources.Count -eq 0) { continue }
-        $modOut = Join-Path $mod.FullName 'bin'
-        New-Item -ItemType Directory -Force -Path $modOut | Out-Null
-        $modDll = Join-Path $modOut ($mod.Name + '.dll')
-        Invoke-Compiler $mod.Name (@('/nologo', '/target:library', '/platform:anycpu', '/optimize+', '/langversion:7.3', '/warn:4', '/warnaserror+',
-            "/out:$modDll", "/reference:$sdkDll", '/reference:System.Core.dll', '/reference:System.Runtime.Serialization.dll') + $modSources)
-        Write-Host "Built mod $modDll from $($modSources.Count) source files"
-    }
+foreach ($mod in $mods) {
+    $modSources = @(Get-Sources $mod.FullName)
+    $modOut = Join-Path $mod.FullName 'bin'
+    New-Item -ItemType Directory -Force -Path $modOut | Out-Null
+    $modDll = Join-Path $modOut ($mod.Name + '.dll')
+    Invoke-Compiler $mod.Name (@('/nologo', '/target:library', '/platform:anycpu', '/optimize+', '/langversion:7.3', '/warn:4', '/warnaserror+',
+        "/out:$modDll", "/reference:$sdkDll", '/reference:System.Core.dll', '/reference:System.Runtime.Serialization.dll') + $modSources)
+    Write-Host "Built mod $modDll from $($modSources.Count) source files"
 }
+Set-BuildStamp $stamp $key
