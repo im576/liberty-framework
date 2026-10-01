@@ -676,6 +676,7 @@ namespace Liberty.Autopilot
         {
             ListMenu list = new ListMenu();
             list.Title = "LIBERTY SDK";
+            list.LockPlayerControl = args.Length == 0 || args[0] != "unlocked";
             int value = 5;
             list.Items = () => new List<ListItem>
             {

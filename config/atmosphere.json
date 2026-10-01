@@ -26,7 +26,7 @@
     "scanIntervalMilliseconds": 1000
   },
   "density": {
-    "enabled": true,
+    "enabled": false,
     "fullDensityFrameMilliseconds": 25.0,
     "minimumDensityFrameMilliseconds": 45.0,
     "minimumPedDensity": 0.55,

@@ -25,6 +25,8 @@ namespace LibertyFramework.Engine.Ui
         public float Width { get; private set; }
         public float Height { get { return 720f; } }
         public float Opacity { get; set; }
+        // Developer bisect only; normal rendering is always "all" after engine restart.
+        internal string DiagnosticMode = "all";
 
         // Returns false when the screen size is not known yet.
         internal bool Begin(GTA.Graphics target, Size screen)
@@ -45,18 +47,20 @@ namespace LibertyFramework.Engine.Ui
 
         public void Rect(float x, float y, float width, float height, Rgba colour)
         {
+            if (DiagnosticMode == "none" || DiagnosticMode == "text") { return; }
             graphics.DrawRectangle(R(x, y, width, height), C(colour));
         }
 
         public void Text(string text, float x, float y, float width, float height, TextStyle style, TextAlign align, Rgba colour)
         {
-            if (string.IsNullOrEmpty(text)) { return; }
+            if (DiagnosticMode == "none" || DiagnosticMode == "primitives" || string.IsNullOrEmpty(text)) { return; }
             TextAlignment alignment = align == TextAlign.Center ? TextAlignment.Center : align == TextAlign.Right ? TextAlignment.Right : TextAlignment.Left;
             graphics.DrawText(text, R(x, y, width, height), alignment, C(colour), Font(style));
         }
 
         public void Sprite(TextureRef texture, float x, float y, float width, float height, Rgba tint)
         {
+            if (DiagnosticMode == "none" || DiagnosticMode == "text") { return; }
             GTA.Texture t = textures.Get(texture);
             if (t != null) { graphics.DrawSprite(t, R(x, y, width, height), C(tint)); }
         }
@@ -64,6 +68,7 @@ namespace LibertyFramework.Engine.Ui
         // ScriptHookDotNet's rotated overload takes the sprite centre, size and rotation.
         public void Sprite(TextureRef texture, float x, float y, float width, float height, Rgba tint, float rotationDegrees)
         {
+            if (DiagnosticMode == "none" || DiagnosticMode == "text") { return; }
             if (rotationDegrees == 0f) { Sprite(texture, x, y, width, height, tint); return; }
             GTA.Texture t = textures.Get(texture);
             if (t == null) { return; }
@@ -73,6 +78,7 @@ namespace LibertyFramework.Engine.Ui
 
         public void Line(float x1, float y1, float x2, float y2, float thickness, Rgba colour)
         {
+            if (DiagnosticMode == "none" || DiagnosticMode == "text") { return; }
             graphics.DrawLine(x1 * scale, y1 * scale, x2 * scale, y2 * scale, Math.Max(1f, thickness * scale), C(colour));
         }
 
