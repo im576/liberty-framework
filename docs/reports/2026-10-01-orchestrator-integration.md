@@ -43,6 +43,21 @@ Full clean integration run `20261001-100907-1f6f501` is queued through verify-lo
 trunk. Package preparation passed in 624 s outside the lock. Runtime evidence is pending; keep the follow-up isolated
 until reviewed. This is not a claim that all engine stalls are fixed.
 
+### Runtime review and host log fix
+
+Full `20261001-100907-1f6f501` restored successfully: package/audio/SDK selftest/events PASS; hot reload FAIL because
+the spawned self-test ped did not become the driver (48 passed / 1 failed). Wheel/trunk NOT-RUN after fail-fast.
+Full `20261001-103726-1f6f501` also restored: hot reload PASS (24 steps, selftest 49/0), wheel FAIL on a missing log
+expect despite its command returning `pass=True` (avg 21.09 ms, p95 32.3, p99 35.0, draw.ui 0.224 ms), trunk FAIL on
+an actual frame-average budget miss (avg 24.37 ms, p99 69.3, combat peak 258.1 ms). These runs remain failures.
+
+The host log cache clears its history if it observes the gap between the writer moving the old log and opening the
+replacement. A deterministic temporary-file reproduction failed three existing/new rotation assertions. Fixed by
+retaining the same session's history/partial line during that gap and opening current/backup logs with delete sharing.
+A different missing path still returns no cached evidence. Four new regression checks; full PowerShell suite 234/0.
+This confirms a reader defect; it does not prove that defect caused the wheel's missing line. All scenario assertions,
+freshness checks and production budget limits remain unchanged. Full wheel/trunk acceptance is still required.
+
 ## Kept separate
 
 - **C:** full `20261001-094219-2db0bf5` completed: package PASS, head/trauma NEEDS-REVIEW, dismember CRASH,
