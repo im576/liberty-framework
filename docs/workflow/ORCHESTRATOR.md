@@ -49,6 +49,21 @@ free, and the game was restored (`installed-build.json`: restored from `phase2-2
   (git bundle, patches, uncommitted diff) is in `research\lane-d-review-bundle-2026-09-30`. Owner to choose: link the cloud
   session, or start a local Sonnet Lane D thread.
 
+## Cleanup and review (2026-09-30 ~21:45 Pacific)
+
+- Worktrees retired (all merged and clean; their branches stay): lane-0, lane-a, lane-a2, lane-a3, art-generator. Their
+  test evidence was moved to `D:\GTAIV-Reborn-Tools\archive\results\<lane>`. Active worktrees now: main, lane-b2 (B), lane-b
+  (B, diagnostic; retire after B merges), lane-c-t048 (C), lane-c (older T-047, contained in T-048; retire after C merges),
+  lane-d (D), research.
+- Bloat moved, not deleted, to `D:\GTAIV-Reborn-Tools\_to-delete` (8.6 GB; the owner deletes it): the extracted mod archives
+  from the other-mods research (7.6 GB; the findings are in `research/OtherModsDeepDive.md`), installer zips that were already
+  extracted, 72 old game install backups (kept: the oldest phase2, everything from 2026-09-30, the single dxvk/phase1/weapon
+  backups, and the oldest and newest violent backup), and stale temp test folders. `C:\Users\IM576\GTAIV-Reborn-pr7-macfix` is
+  an orphan non-git folder with one locked file; delete it after a reboot.
+- The research worktree's 8 uncommitted notes were committed on `research/stage1` (`67414a6`, local only, not merged).
+- Main bug found by Codex: `config/atmosphere.json` on main still has `density.enabled: true`, against the owner's
+  "density governor off". Lanes B, C and D each switch it off; take it once when integrating.
+
 ## Status (reviewed 2026-10-01 ~00:35Z by the second orchestrator thread)
 
 | Lane | Tasks | State |
