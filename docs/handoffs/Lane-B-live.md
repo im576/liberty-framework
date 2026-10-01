@@ -70,10 +70,18 @@ No new wheel/trunk acceptance result was collected. Coordinator restored exact b
 44 affected files/actions matched saved originals or expected absence. No game/launcher/verifier remains.
 All feature integration, physical controller/save-load/B-D coexistence and owner judgment remain pending. No push.
 
-## Resumed 2026-10-01 (Claude) - WAITING FOR AUDIO, NOT READY FOR MERGE YET
+## Resumed 2026-10-01 (Claude) - READY FOR MERGE (run 20261001-092349-e470758)
 
 - Merged origin/main (`868368b`, log writes and config timestamp checks off the game thread) into this branch (`e986a88`). Offline on the merged tip: verifier 1012/0, PowerShell tests 224/0, `checks.py plan` ok, `artq.py validate` ok (12 requests, 0 problems).
 - Orchestrator held game runs: Windows has no audio output device, GTA IV cannot start (GAME-UNAVAILABLE). No game run was attempted. When the orchestrator says audio is back, run once, full (no -Quick):
   `./tools/verify-local.ps1 -GameDirectory "C:\Games\Grand Theft Auto IV\GTAIV" -Branch codex/lane-b-validation -AnyBranch -NoPush -Restore -NoManual -Only LOOP-package-install,T045-ui-text,T045-weapon-wheel,T046-trunk-ui`
   Look at every screenshot. On a failure fix with `-Quick -StopOnFailure`, then rerun full. Then write "READY FOR MERGE" plus the run id here and commit. Do not merge, do not touch ConfigService polling.
 - Cards T-045/T-046: human test steps rewritten (controller, real save/load, safehouse, owner-only) and an "Owner questions" section added (Back/Tab, trunk sizes 8/4/16/unlimited, ammo caps, melee/thrown). Defaults unchanged.
+
+## READY FOR MERGE - run `20261001-092349-e470758` (2026-10-01, commit e470758, full, no -Quick, audio back, no ColAccel noted)
+
+- LOOP-package-install PASS; T045-ui-text PASS (133 steps, 0 failed, 0 log errors); T045-weapon-wheel and T046-trunk-ui passed every step (NEEDS-REVIEW only for screenshots, all 12 viewed by Claude: text legible, highlight and centre text correct, trunk list/capacity/"Full" and "Trunk full (4)" and swap preview correct; cosmetic: the knife shows its raw name `Melee_Knife`).
+- Budgets (unchanged thresholds): wheel window frames=459 avg 22.75 ms p95 34.4 p99 36.2 max 76.1, draw.ui 0.217 ms avg / 0.7 max, 0 stalls over 1 s; trunk window frames=404 avg 25.45 p95 37.5 p99 46.0 max 81.8, draw.ui 0.303 ms avg / 1.2 max, 0 stalls over 1 s. Wheel open to first draw: 0-1 frames (15-47 ms wall, one 47 ms on the very first open). No engine_stall, no [ERROR] lines in either scenario log.
+- This run includes main `868368b` (log writes and config checks off the game thread): no 11-14 s stall, no crash.
+- Still owner-only: physical controller (Back/stick/A/B/X/LB/RB), a real game save and load, safehouse stash and gunsmith, Lane D HUD/radar coexistence, judgement at the owner's resolution. Exact steps are in the T-045 and T-046 cards, with the owner questions (Back/Tab, trunk sizes 8/4/16/unlimited, ammo caps, melee/thrown).
+- Install restored after the run. Not merged, not pushed. Next: orchestrator integrates with Lane D and R.

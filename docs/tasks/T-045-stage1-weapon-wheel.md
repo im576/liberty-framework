@@ -94,3 +94,7 @@ would avoid that and are a recommendation for D, not done here).
 
 - Wheel bindings: controller **Back/View** and keyboard **Tab** (`weaponWheel.padButton`, `keyboardKey` in `config/arsenal.json`). Acceptable, or does either collide with something you use on foot?
 - Melee and thrown weapons keep their current rules (no loadout limit); confirm.
+
+### Full acceptance run 20261001-092349-e470758 (2026-10-01, includes main 868368b)
+
+RAN-PASS: wheel scenario (12/12 equips, keyboard hold and tap), trunk scenario (store, take, swap, capacity, round trips), ui-text. Budgets: wheel avg 22.75 ms, p95 34.4, draw.ui 0.217 ms; trunk avg 25.45 ms, p95 37.5, draw.ui 0.303 ms; no 1 s stalls. All screenshots reviewed. NEEDS OWNER: controller, real save/load, safehouse, HUD coexistence (steps above).
