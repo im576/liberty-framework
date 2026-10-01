@@ -31,7 +31,7 @@ storage wheel (`Arsenal/Ui/StorageWheel.cs`), weapon HUD icons extracted at inst
 
 ## Human test steps
 
-Owner instructions currently prohibit game testing. Do these steps only after the owner explicitly reauthorizes it; source/offline results do not establish gameplay acceptance.
+Owner reauthorized bounded game verification at 8:51 p.m. Pacific on September 30. Source/offline results alone do not establish gameplay acceptance; only checks that actually finish and restore before the 9:30 p.m. hard stop can supply new evidence.
 
 1. In free play on foot, carry pistol, shotgun, AK and knife. Hold **Tab** about one second, press **Right**, release **Tab**: the wheel closes and equips the highlight. Tap **Tab**, release, press **Right**, then **Enter**: the tap keeps it open until confirm.
 2. Repeat with controller **Back/View**, right stick or D-pad left/right, **A** to confirm and **B** to cancel. Check no unwanted vanilla phone/cycling action. Physical controller input remains unverified.

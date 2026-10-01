@@ -2,8 +2,7 @@
 
 ## Read this before continuing
 
-The owner prohibits ALL further in-game testing: no launches, new installs, gameplay scenarios/probes or verify-local game
-checks. Research remains deferred. Offline builds/checks only unless the owner explicitly changes this instruction.
+At 8:51 p.m. Pacific the owner explicitly lifted the earlier no-game-testing restriction. Bounded lane-specific gameplay verification is authorized again through the normal machine-wide verifier lock, with prior-install restoration. The historical prohibition/cancellation below remains an accurate record of the earlier session. Research remains deferred.
 Hard stop for this Codex session: **September 30, 9:30 p.m. America/Los_Angeles / October 1, 04:30 UTC**.
 The matching Claude Sonnet Lane B must review **all Codex changes, including any uncommitted work**, before continuing;
 if work is complete, review only. T-045/T-046 remain **NEEDS-PLAYTEST**; implementation and acceptance are incomplete.
@@ -171,3 +170,7 @@ Do not accept prior overlapped B/C runs or old scripted PASS windows without enf
 
 Uncommitted state at delivery: intended tracked changes are committed; ignored build/results folders are intentionally
 retained. Verify with `git status --short` in both worktrees. The final response records the actual final commit IDs.
+
+## Reauthorized bounded continuation (8:51 p.m. Pacific)
+
+Both B worktrees inspected clean at `5e2ca95`; game closed, no active verifier, installed metadata records restoration from `phase2-20260930-195909`. Starting only T045-ui-path with a five-minute scenario limit and normal verifier restoration. Results will be recorded below before the 9:30 p.m. hard stop.

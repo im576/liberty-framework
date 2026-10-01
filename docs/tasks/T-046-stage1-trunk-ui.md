@@ -30,7 +30,7 @@ spawning the car and accepts whichever weapon the wheel starts on).
 
 ## Human test steps
 
-Owner instructions currently prohibit game testing. Do these steps only after the owner explicitly reauthorizes it; source/offline results do not establish gameplay acceptance.
+Owner reauthorized bounded game verification at 8:51 p.m. Pacific on September 30. Source/offline results alone do not establish gameplay acceptance; only checks that actually finish and restore before the 9:30 p.m. hard stop can supply new evidence.
 
 1. Behind an Admiral on foot, press **E** (controller **X**); wait for lid animation and carried/trunk groups. Select the AK with arrows/right stick and press **Space** (**X**) to store; sling vanishes, trunk gains it with unchanged ammo, carried slot reads Empty.
 2. Fill both long-gun slots, highlight the stored AK with **Page Up/Down** (**LB/RB**) and press **Enter** (**A**). Preview names the outgoing gun; check ammo/ownership/physical identity and sling changes. Repeat with a non-round ammo count.
