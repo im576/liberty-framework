@@ -50,6 +50,21 @@
       {"category": 7, "maximumRounds": 12}
     ]
   },
+  "weaponWheel": {
+    "enabled": true,
+    "padButton": "Back",
+    "keyboardKey": "Tab",
+    "tapMilliseconds": 250,
+    "allowInVehicle": false
+  },
+  "trunkCapacity": {
+    "defaultSlots": 8,
+    "safehouseSlots": 0,
+    "classes": [
+      {"id": "sports", "slots": 4, "models": ["banshee", "comet", "coquette", "infernus", "turismo", "sultanrs", "feroci", "futo", "stalion"]},
+      {"id": "utility", "slots": 16, "models": ["burrito", "burrito2", "speedo", "mule", "pony", "steed", "stockade", "rancher", "landstalker", "huntley", "cavalcade", "patriot"]}
+    ]
+  },
   "safehouses": [],
   "safehouseBlipSprite": 29,
   "discoveredSafehouseRadiusMeters": 12.0

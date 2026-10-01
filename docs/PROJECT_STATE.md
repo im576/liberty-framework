@@ -25,6 +25,8 @@ integration and acceptance come before any Phase 3 work. Offline passes do not m
 
 ## Stage 1 progress
 
+- **T-045/T-046 Lane B, NEEDS-PLAYTEST (2026-10-01):** weapon wheel and trunk interface pass their full in-game scenarios (12/12 equips with readback, store/take/swap/capacity/persistence, frame budgets met). The shared UI text stall is fixed by drawing canvas text as cached sprites (SHDN DrawText costs 15-90 ms per string per frame; cause inside it not established); Lane D HUD text uses the same canvas. Pad input, real save/load, safehouse and owner screenshot review remain open. See [T-045](tasks/T-045-stage1-weapon-wheel.md), [T-046](tasks/T-046-stage1-trunk-ui.md).
+
 - **T-044 physical loadout (lane B), NEEDS-PLAYTEST (2026-09-30):** 1 sidearm + 2 long guns (SMGs slung), ammo caps, holster props react in the event frame, outfit classes; in game: 100 vehicle enter/exit cycles with 0 orphaned props, 50 death cycles with 0 lost owned weapons (a death with no known safehouse now goes to an unassigned stash), save/load state identical. Card: [T-044](tasks/T-044-stage1-physical-weapons.md).
 
 ## Cleanup and fixes in progress
