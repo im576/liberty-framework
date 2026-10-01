@@ -36,6 +36,9 @@ There is no persistent watcher or background helper. If Sonar is later disabled,
   The committed smoke scenario instead requires a fresh engine heartbeat after startup.
 - Another fresh-boot run was deferred because lane C acquired the game lock for its authorized verification run.
   Do not interrupt another lane to run this check. No gameplay acceptance is claimed by this host fix.
+- Full `20261001-100907-1f6f501`: audio-output-smoke PASS, fresh engine heartbeat, no failed steps or log errors.
+  The verifier restored its installation. SDK selftest/events passed in that batch; its later hot-reload driver-fixture
+  failure remains recorded in the integration report and does not invalidate the separate audio assertion.
 
 ## Human test steps
 

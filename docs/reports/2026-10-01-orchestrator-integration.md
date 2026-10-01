@@ -38,10 +38,10 @@ Build PASS; verifier 431 passed / 0 failed / 7 not-run. Seven temporary-file tes
 reload, no game-thread stamp detection, both owners see a shared-file change, consumption once, owner removal, stopped
 owner and timer disposal. No game directory is touched by these tests.
 
-Full clean integration run `20261001-100907-1f6f501` is queued through verify-local with `-AnyBranch -NoPush -Restore
+Full clean integration run `20261001-100907-1f6f501` ran through verify-local with `-AnyBranch -NoPush -Restore
 -NoManual -StopOnFailure -MaxGameMinutes 20`, no Quick: package, audio smoke, SDK selftest/events/hot reload, wheel,
-trunk. Package preparation passed in 624 s outside the lock. Runtime evidence is pending; keep the follow-up isolated
-until reviewed. This is not a claim that all engine stalls are fixed.
+trunk. Package preparation passed in 624 s outside the lock. Results are below; the config follow-up remains isolated.
+This is not a claim that all engine stalls are fixed.
 
 ### Runtime review and host log fix
 
@@ -58,15 +58,41 @@ A different missing path still returns no cached evidence. Four new regression c
 This confirms a reader defect; it does not prove that defect caused the wheel's missing line. All scenario assertions,
 freshness checks and production budget limits remain unchanged. Full wheel/trunk acceptance is still required.
 
+Full `20261001-105259-9be5315` restored successfully: package PASS; wheel CRASH at `time 13 0`, after teleport and
+before opening the wheel; trunk PASS, 133 steps, no failed steps/log errors. All six fresh trunk captures inspected:
+legible, correct highlights/swap preview/capacity refusal. Trunk avg 33.80 ms, p95 62.7, p99 112.9, within the unchanged
+relative budget gates; this is not a claim of good absolute frame pacing. Sidecar `crash-20261001-110613` names
+`GTAIV.exe` at offset `0x664503`; dump/text/hash copies preserved with the earlier evidence. No further gameplay retries.
+
+**Decision:** keep config commit `1f6f501` unmerged on the integration branch (tip `9be5315`). Its offline fix and
+watcher tests are useful, but it still lacks a successful full wheel run. No running lane/worktree was stopped, reset,
+retired or edited. All three integration runs completed restoration.
+
+Host-tool fixes are on main: `1cf9098` retains history across the rotation gap; `632642e` also handles a fully consumed
+backup (PowerShell otherwise enumerates an empty byte array into null). Both defects have deterministic reproductions
+and regression tests. `0bdf1ea` isolates lock self-test holder notes as well as their mutex, so tests cannot obscure
+the real lane's holder note. Final tooling suite **236/0**, focused autopilot tests **88/0**.
+
+### Concurrent main merge (preserved)
+
+Claude's coordinating session merged T-050 in `e547d92` while this review finished. It is an additive SDK 1.2 API,
+material mapping and probe tooling, not the broader SDK 1.3 radar work. Reviewed the receipt for quick coverage
+`20261001-104655-2ae2a31`: wood confirmed; glass/water/object-hit correctness remains unproven (corpbarrier1 reported
+GLASS_MEDIUM). Preserve that merge and keep **full SDK 1.2/material acceptance pending**; the earlier SDK runtime
+passes in this report exercised SDK 1.1. Final current-main build PASS, offline verifier **433/0/5 not-run**. Logs:
+`research/integration-review-2026-10-01/final-main-{build,verify,tool-tests}.log` in the coordination workspace.
+All five quick-run captures were inspected: targets/surfaces are not visibly established in those frames, so the
+wood confirmation comes from the numeric probe logs; these captures do not prove glass, water or object correctness.
+
 ## Kept separate
 
 - **C:** full `20261001-094219-2db0bf5` completed: package PASS, head/trauma NEEDS-REVIEW, dismember CRASH,
   firefight/effects-night FAIL. Earlier full firefight measured average 0.533 ms / peak 57.259 ms against 0.8/4 ms limits.
-  Follow-up `dd8d380`, full `20261001-101856-dd8d380`, is active; its dismember check also crashed, at `gore clear`.
+  Follow-up `dd8d380`, full `20261001-101856-dd8d380`, also crashed at `gore clear`. Latest full
+  `20261001-103314-0b4f558` restored with dismember CRASH and firefight/effects-night FAIL.
   No C source was changed or merged by this review. Do not weaken budgets.
-- **R:** additive SDK 1.2 material API reviewed on `research/t050-material` (`e538722`). Full wood/glass/water/prop
-  and SDK acceptance still required. Broader `research/stage1` (`b899b71`) contains SDK 1.3 radar ownership/probes;
-  merge separately after the material work and renderer coexistence review. Quick runs are not acceptance.
+- **R rest:** SDK 1.3 radar ownership/probes remain separate; merge after full validation and renderer coexistence
+  review. T-050's concurrent merge and remaining acceptance are recorded above. Quick runs are not acceptance.
 - **D:** `codex/T-049-hud-continuation` remains unmerged. Saved full `20260930-205120-4ac4fcc` HUD FAIL;
   component evidence needs review and the clean hiding experiment is unrun. Preserve vanilla HUD through the guard.
 

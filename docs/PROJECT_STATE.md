@@ -6,7 +6,7 @@ overrides older docs.
 
 **Agent audio startup (T-057, 2026-10-01):** missing playback output is recovered through the already-installed Sonar
 Gaming virtual endpoint before game launches. Healthy physical outputs are preserved. Tool tests 230/0; production x86
-disable/recover and game boot verified. Full heartbeat smoke remains queued while lane C owns the game lock.
+disable/recover and game boot verified. Full heartbeat smoke PASS in `20261001-100907-1f6f501`; no log errors.
 [Task and evidence](tasks/T-057-test-audio-output.md). This is host tooling, not gameplay acceptance.
 
 ## Current phase
@@ -30,11 +30,19 @@ before any Phase 3 work. Offline passes do not mark a lane DONE.
   Lane B `1744416` and cached sprite text, preserving newer main tooling. Full `20261001-092349-e470758` passed all
   wheel/trunk/text assertions and budgets; orchestrator reviewed all 12 wheel/trunk captures. Combined build PASS,
   verifier 424/0/7 not-run, tooling tests 230/0. Physical controller, real save/load, safehouse/gunsmith, B/D coexistence
-  and owner judgement remain. A further wheel config polling fix is isolated pending full runtime validation.
+  and owner judgement remain. A further wheel config polling fix is isolated: its last wheel run crashed in scene
+  setup before opening; trunk passed 133/133 steps. No new wheel acceptance is claimed.
 - **T-047/T-048 (lane C):** active, unmerged. Full `20261001-094219-2db0bf5` includes dismember CRASH and
-  firefight/effects-night FAIL; follow-up on `dd8d380` is running. Budgets remain unchanged.
-- **T-050 and remaining Stage 1 research (lane R):** active, unmerged; full material and SDK acceptance still required.
+  firefight/effects-night FAIL; latest full `20261001-103314-0b4f558` also restored with the same failed check categories.
+  Budgets remain unchanged; lane work continues separately.
+- **T-050 (lane R), merged by the parallel Claude coordinator in `e547d92`:** SDK 1.2's additive material API and mapping
+  are on main. Quick coverage confirms wood; direct glass/water rows and object-hit correctness remain unproven.
+  Full SDK 1.2/material acceptance remains pending. SDK 1.3 radar/probes and remaining research are still separate.
 - **T-049 HUD (lane D):** unmerged; clean hiding and coexistence require further runtime evidence.
+
+Latest main build PASS; offline verifier 433/0/5 not-run; tooling tests 236/0. Host log reading now preserves history
+through rotation gaps and empty unread tails, and lock self-tests use isolated holder notes. Details and failed/full
+runtime receipts: [orchestrator integration review](reports/2026-10-01-orchestrator-integration.md).
 
 - **T-044 physical loadout (lane B), NEEDS-PLAYTEST (2026-09-30):** 1 sidearm + 2 long guns (SMGs slung), ammo caps, holster props react in the event frame, outfit classes; in game: 100 vehicle enter/exit cycles with 0 orphaned props, 50 death cycles with 0 lost owned weapons (a death with no known safehouse now goes to an unassigned stash), save/load state identical. Card: [T-044](tasks/T-044-stage1-physical-weapons.md).
 

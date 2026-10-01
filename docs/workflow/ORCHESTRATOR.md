@@ -63,18 +63,21 @@ free, and the game was restored (`installed-build.json`: restored from `phase2-2
 
 | Order | Item | Branch / worktree | State |
 |---|---|---|---|
-| 1 | Engine stall fix and audio recovery | main `868368b`, `55e70b8`, `ee71eba` | merged; focused engine/audio full-run integration check queued under the shared lock |
+| 1 | Engine stall fix and audio recovery | main `868368b`, `55e70b8`, `ee71eba` | merged; full audio/SDK 1.1 selftest/events PASS; hot reload 24/24 PASS on repeat (first driver fixture failed); broader stalls/crashes remain |
 | 2 | T-045/T-046 wheel, trunk, sprite text | main `f823e45` from Lane B `1744416` | merged; full `20261001-092349-e470758` passed assertions/budgets; orchestrator viewed all 12 captures; NEEDS-PLAYTEST |
-| 3 | Wheel config polling follow-up | `codex/orchestrator-stage1-integration` `1f6f501`, `GTAIV-Reborn-orchestrator` | build PASS, verifier 431/0/7 not-run; full `20261001-100907-1f6f501` waiting/running; merge after review |
-| 4 | T-050 hit material (SDK 1.2) | `research/t050-material` `e538722`, `GTAIV-Reborn-research-t050` | reviewed additive API; fresh wood/glass/water/prop full run and SDK self-test required; research's latest attempt is quick, not acceptance |
-| 5 | T-047/T-048 gore, effects | `stage1/T-048`, `GTAIV-Reborn-lane-c-t048` | active; full `20261001-094219-2db0bf5` has dismember CRASH, firefight/effects-night FAIL; follow-up `dd8d380` running; do not merge yet |
+| 3 | Wheel config polling follow-up | `codex/orchestrator-stage1-integration` (`1f6f501`, tip `9be5315`), `GTAIV-Reborn-orchestrator` | isolated, NOT merged; build/verifier PASS; last full run wheel CRASH before opening, trunk 133/133 PASS; all runs restored; require fresh wheel acceptance |
+| 4 | T-050 hit material (SDK 1.2) | main `e547d92`, merged by the concurrent Claude coordinator | additive API reviewed; quick coverage confirms wood, not glass/water/object correctness; preserve merge, full SDK 1.2/material acceptance pending |
+| 5 | T-047/T-048 gore, effects | `stage1/T-048`, `GTAIV-Reborn-lane-c-t048` | unmerged; full `20261001-103314-0b4f558` restored with dismember CRASH, firefight/effects-night FAIL; lane continues independently; budgets unchanged |
 | 6 | T-049 HUD | `codex/T-049-hud-continuation`, `GTAIV-Reborn-lane-d` | unmerged; full `20260930-205120-4ac4fcc` HUD FAIL; clean DISPLAY_HUD experiment and B/D coexistence unrun |
-| 7 | Research rest (T-052/T-054 probes, notes) | `research/stage1` `b899b71` | review after T-050; SDK 1.3 builds on 1.2; old READY FOR MERGE signal does not establish full acceptance |
+| 7 | Research rest (T-052/T-054 probes, notes) | `research/stage1` | still separate; SDK 1.3 radar ownership/probes need full validation and renderer coexistence review |
 | then | T-056 performance pass, owner playtest | main | after 1-7 |
 
 Active workers and their worktrees are preserved. Do not stop their verifiers or overwrite their source. Integration runs
 use `verify-local -AnyBranch -NoPush -Restore -NoManual`, the same machine-wide lock and a clean committed build.
 B's controller, real save/load, safehouse/gunsmith and HUD coexistence still need checking; only the owner marks DONE.
+Host log-history fixes and isolated lock-test metadata are merged (`1cf9098`, `0bdf1ea`, `632642e`): tooling 236/0.
+Current main (including the peer's SDK 1.2 merge): build PASS, offline verifier 433/0/5 not-run. These are not full-mod
+runtime acceptance. Own verifier runs are finished; the last restored backup was `phase2-20261001-110404`.
 Recent C/R crash receipts name `GTAIV.EFLC.FusionFix.asi` at relative offset `0xA24E0`; this identifies the faulting module,
 not the cause. Dumps and hashes are preserved in the coordination workspace's `research/integration-review-2026-10-01`.
 
