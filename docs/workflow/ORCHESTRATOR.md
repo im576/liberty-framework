@@ -7,6 +7,13 @@ Evidence and limits: [integration review](../reports/2026-10-01-orchestrator-int
 
 ## Current continuation after usage interruption
 
+Latest independent source/evidence review: [Sol lane review](../reports/2026-10-01-sol-lane-review.md).
+D's bounded diagnostic finished/restored `phase2-20261001-155855`: cash/wanted/radar release paths corroborated,
+weapon/ammo baseline absent and native story text/unload still unproven. C now has the single heavy/game slot for
+production checks followed only by the quick setup control. B/D fix their identified timing/baseline gaps offline;
+R awaits runtime scheduling. Reviewed tips: B `2544b12`, C `a167da5`, D `15d91db`, R `1316142`; none of these new
+unvalidated patches is merged. The review records the generated XML prerequisite failure separately from HUD evidence.
+
 The same four Sol 6.1 agents continue with their original worktrees and effort settings. B's reviewed watcher fixes
 and receipt are integrated in main `f816a87`; full `20261001-122159-4330603` passed scripted wheel/trunk/text checks,
 and the orchestrator independently viewed all 12 wheel/trunk captures. One later wheel opening took 2 frames / 359 ms,
