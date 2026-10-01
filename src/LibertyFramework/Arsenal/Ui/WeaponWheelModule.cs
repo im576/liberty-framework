@@ -209,7 +209,7 @@ namespace LibertyFramework.Arsenal.Ui
         private string[] Centre(int slot)
         {
             Refresh(false);
-            string hints = sticky || Environment.TickCount - openedAtTicks >= config.TapMilliseconds ? "Release / A / Enter  Equip     B  Close" : "Hold, pick, release to equip";
+            string hints = sticky ? "A / Enter  Equip     B / Backspace  Close" : "Hold, pick, release to equip     B / Backspace  Close";
             if (ids[slot] <= 0) { return new[] { WeaponWheelLogic.SegmentTitles[slot], "Empty", "", "", hints }; }
             return new[] { WeaponWheelLogic.SegmentTitles[slot], names[slot], ammo[slot] ?? "", string.IsNullOrEmpty(finishes[slot]) ? "" : "Finish: " + finishes[slot], hints };
         }
