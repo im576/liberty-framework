@@ -1,6 +1,7 @@
 # Sol prompt — Lane C (T-047 harsh gore, T-048 combat effects)
 
 ROLE
+Read main's `docs/handoffs/sol/CONTINUATION.md` first; its current milestone/state replaces the historical requests below.
 You are the Lane C engineer for Liberty Vanilla+ Stage 1, continuing work from a Claude Sonnet agent. You work alone in
 one git worktree on the owner's Windows PC and may run the game only through the shared verifier.
 
@@ -19,16 +20,15 @@ READ FIRST, IN ORDER
 OBJECTIVE
 Full-run acceptance for T-047 and T-048 without weakening any criterion, then leave both cards NEEDS-PLAYTEST.
 
-KNOWN STATE (verify against the live state)
+HISTORICAL STATE (2026-09-30; current CONTINUATION.md and live receipts supersede this)
 - Last full batch (20260930-213901): panic PASS; trauma, NPC and firefight-off NEEDS-REVIEW; dismember, persist, firefight,
   effects-day FAIL; gore-head and effects-night CRASH; cleanup ERROR. Later commits added faster bone scans, limb clones
   re-killed until dead, a settle wait, a `release` command for retention fixtures and split day/night effects scenarios.
 - Required, from the orchestrator's review:
   1. Floating limbs: deleting a floating limb hides the bug. Use the clone diagnostics (clone_dead, clone_air,
-     clone_origin_height) to split the causes. For a lying clone whose kept limb is still raised, ground-snap the limb:
-     you already write this clone's bone matrices every tick through the ADR-0005 path, so lower the cut bone's local
-     translation in parent space by (joint height - ground Z) and re-apply until confirmed. The safety removal stays a
-     counted failure. Acceptance: 50 completed cuts, 0 floating, 0 flashing, with screenshots of landed limbs.
+     clone_origin_height) to split the causes before selecting a fix. Any bone/memory change must stay within the
+     established ADR-0005 path and be supported by evidence. The safety removal stays a counted failure.
+     Acceptance: 50 completed cuts, 0 floating, 0 flashing, with screenshots of landed limbs.
   2. Fix the two crashes first (gore-head, effects-night): read the run logs and the LibertyFramework log for the cause.
   3. Retention 3-5 min, expiry and config-off release, tested with released (non-mission) fixtures. Never loosen the
      production ownership rule for real mission peds. In quick mode use a short test lifetime instead of waiting minutes.

@@ -43,8 +43,8 @@ There is no persistent watcher or background helper. If Sonar is later disabled,
 ## Human test steps
 
 1. Leave the physical headset/controller disconnected; leave the installed Sonar driver available.
-2. Run the local verifier with `-Only T057-audio-output-smoke` after the game becomes free, or run the scenario directly
-   with `-AllowOtherBuild` when deliberately checking the currently installed build. Do not bypass the game lock.
+2. Run the local verifier with `-AnyBranch -NoPush -Restore -NoManual -Only LOOP-package-install,T057-audio-output-smoke`
+   after the game becomes free. Use its installed build and shared lock.
 3. With no active output, expect the host to log `recovered audio output using installed SteelSeries Sonar - Gaming`.
 4. GTA IV must reach the engine and emit a fresh `T-001 heartbeat`; the smoke report must say PASS.
 5. With a working physical output selected, repeat preflight and confirm the helper leaves that output alone.

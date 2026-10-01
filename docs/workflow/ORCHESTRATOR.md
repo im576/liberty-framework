@@ -18,6 +18,9 @@ powershell -ExecutionPolicy Bypass -File tools\handoff\Get-SolPrompt.ps1 -Lane B
 
 Use `-Lane Orchestrator` for this role; use `-NoClipboard` for a read-only printout. The command collects current git,
 run and lock state; it does not dispatch or stop a lane. Do not take over a lane while its worker is still active.
+For the next Codex workers, use [the current continuation brief](../handoffs/sol/CONTINUATION.md), included by the
+generator. Initial milestones are C's crash/cleanup review, D's clean hiding experiment and R's SDK 1.2 validation.
+No replacement worker has launched yet. Coding may run in parallel; heavy builds and game tests are scheduled centrally.
 
 ## How the work runs
 

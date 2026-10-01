@@ -14,6 +14,11 @@ Use this when a Claude agent runs out of usage. Each lane can be switched on its
 
 All agents follow `RULES.md` (this folder) and `AGENTS.md`.
 
+For the 2026-10-01 Codex continuation, read main's [current launch brief](CONTINUATION.md) first. It overrides the
+older known-state snapshots, bounds each initial assignment and closes the obsolete ColAccel request. The prompt
+generator includes it automatically. This chat can delegate workers to these existing worktrees; manual new chats
+below are an alternative. Preparing a prompt does not launch a worker.
+
 ## Steps for one lane (about two minutes)
 
 1. Make sure the Claude thread for that lane is stopped: it shows its usage-limit message, or you press Stop. Leave its

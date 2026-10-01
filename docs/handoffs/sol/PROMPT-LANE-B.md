@@ -1,6 +1,7 @@
 # Sol prompt — Lane B (T-045 weapon wheel, T-046 trunk UI)
 
 ROLE
+Read main's `docs/handoffs/sol/CONTINUATION.md` first; its current milestone/state replaces the historical requests below.
 You are the Lane B engineer for Liberty Vanilla+ Stage 1, continuing work from a Claude Sonnet agent. You work alone in
 one git worktree on the owner's Windows PC and may run the game only through the shared verifier.
 
@@ -17,26 +18,22 @@ READ FIRST, IN ORDER
 5. The LIVE STATE block the owner pasted below this prompt.
 
 OBJECTIVE
-Get T-045 and T-046 to full-run acceptance: every queued check for both tasks passes in a full (non-quick) verify-local
-run, inside the UI frame budget, with screenshots you have looked at. Then leave both cards NEEDS-PLAYTEST.
+Preserve T-045/T-046's merged full-run acceptance. When assigned, review the isolated config follow-up and validate
+only the behavior it changes; leave the cards NEEDS-PLAYTEST for the owner's remaining checks.
 
-KNOWN STATE (verify against the live state; it may have moved on)
+KNOWN STATE (current integration record; verify against live state)
 - Root finding: ScriptHookDotNet `Graphics.DrawText` stalls frames (0.4-0.9 s with several strings). The shared canvas now
   draws text as cached GDI+ sprites (`engine.json uiTextRenderer`: `sprite` | `shdn`). `T045-ui-text` passed.
-- Open review items from the orchestrator, all still required:
-  1. The text-sprite cache evicts first-in-first-out; make it least-recently-used (HUD ammo strings would evict menu labels).
-  2. Cap new text textures created per frame (number in config) and pre-render a menu's labels when it opens; draw
-     changing numbers from per-character sprites created once.
-  3. Count text textures in the VRAM budget (4 GB card): log count and estimated bytes; release them on module stop/hot reload.
-  4. Root cause with evidence only: compare one font vs several sizes, a font without Effect, one string drawn N times vs N
-     different strings. Keep `sprite` the default only if it still wins.
-- Last runs: `T045-weapon-wheel` CRASHED (full run 20260930-213920) and `T046-trunk-ui` FAILED; a later quick run exists.
-  Find the real cause of the crash from the run log and the LibertyFramework log before changing code.
+- B 1744416 is merged in main f823e45. Full 20261001-092349-e470758 passed wheel/trunk/text assertions and budgets;
+  all 12 wheel/trunk captures were reviewed. LRU eviction, per-frame creation limits and texture accounting are present.
+  Whole-cache disposal on engine unload remains unproven; do not claim it was measured.
+- Config follow-up 1f6f501 is isolated at orchestrator-worktree tip 9be5315. Latest full run crashed before opening the
+  wheel; trunk passed. Do not bring that change over until assigned, and do not attribute the crash from its module alone.
 - Lane D's HUD also draws text on the shared canvas: keep it compatible.
 
 WORKFLOW
 1. Do RULES.md section 2 (confirm the previous agent stopped; review everything; write Lane-B-live.md).
-2. Fix the wheel crash first. Then the trunk failures. Then items 1-4.
+2. Work on the bounded maintenance assignment in CONTINUATION.md; do not redo merged features or broaden its scope.
 3. Offline checks after each change: `./tools/build.ps1 -ScriptHookDotNetReference 'C:\Games\Grand Theft Auto IV\GTAIV\ScriptHookDotNet.asi'`,
    `./tools/verify.ps1 -NoGame`, `./tools/tests/Run-Tests.ps1`. All must pass.
 4. Game iteration: `./tools/verify-local.ps1 -GameDirectory 'C:\Games\Grand Theft Auto IV\GTAIV' -AnyBranch -NoPush -Restore -NoManual -Quick -StopOnFailure -Only LOOP-package-install,<ids>`.
