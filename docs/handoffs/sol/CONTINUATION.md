@@ -52,6 +52,19 @@ at 9be5315 contains the unmerged config change 1f6f501: do not copy or merge it 
 - D must keep the vanilla guard until clean hiding and important text preservation are proven. Its source/remote
   history may diverge: inspect both sides rather than replacing local work with the cloud branch.
 
+## Preparation receipt (11:53 Pacific)
+
+Prompt generator parsed successfully in Windows PowerShell; all five briefings were generated with this current brief
+and live state. R and orchestrator were checked again after assigning R to t050. Tooling suite: 236 passed / 0 failed.
+Full 20261001-114509-15cd2d9: package PASS, T057-audio-output-smoke PASS (one heartbeat assertion, zero failed steps/log
+errors), restored from phase2-20261001-115146. This proves that startup succeeded once; intermittent crashes remain.
+The tested build is clean 15cd2d9. The subsequent 485442a changes only the R assignment/docs/prompt generator, with
+no gameplay/SDK/config/runtime-tool source changes. No replacement worker was launched and no lane source was edited.
+
+C's earlier failed launch batch also has Windows Application access violations at 11:11:52, 11:14:10 and 11:16:26,
+module unknown, offsets 0x7f471a46 / 0x7f4c16ad. They do not establish the cause. Preserved events and tooling/startup
+logs are in the coordination workspace's research/integration-review-2026-10-01 directory.
+
 ## Delivery and communication
 
 Each assignment ends at its first milestone: commit the bounded patch on the lane branch and update the live handoff

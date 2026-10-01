@@ -39,6 +39,9 @@ There is no persistent watcher or background helper. If Sonar is later disabled,
 - Full `20261001-100907-1f6f501`: audio-output-smoke PASS, fresh engine heartbeat, no failed steps or log errors.
   The verifier restored its installation. SDK selftest/events passed in that batch; its later hot-reload driver-fixture
   failure remains recorded in the integration report and does not invalidate the separate audio assertion.
+- Pre-continuation full `20261001-114509-15cd2d9`: package and audio heartbeat PASS, zero failed steps/log errors,
+  restored from `phase2-20261001-115146`. Active Sonar render endpoint and running audio services were observed before
+  this run. C's earlier six-attempt launch failure has Windows access violations and is not proven to be an audio fault.
 
 ## Human test steps
 
