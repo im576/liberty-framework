@@ -7,7 +7,9 @@ only: no Phase 3 work, no Stage 2 design. You work alone in one git worktree and
 shared verifier.
 
 WORKTREE
-`C:\Users\IM576\GTAIV-Reborn-research`, branch `research/stage1`.
+For the initial SDK 1.2/material milestone: `C:\Users\IM576\GTAIV-Reborn-research-t050`, branch `research/t050-material`.
+Read `C:\Users\IM576\GTAIV-Reborn-research\docs\handoffs\Lane-R-live.md` and its research history, but leave that
+SDK 1.3 worktree/branch `research/stage1` unchanged until separately assigned. Write the new live handoff in t050.
 
 READ FIRST, IN ORDER
 1. `C:\Users\IM576\GTAIV-Reborn\docs\handoffs\sol\RULES.md` (binding rules)
@@ -29,7 +31,7 @@ WORKFLOW
    one small batch at a time.
 3. Offline checks before committing: `./tools/build.ps1 -ScriptHookDotNetReference 'C:\Games\Grand Theft Auto IV\GTAIV\ScriptHookDotNet.asi'`,
    `./tools/verify.ps1 -NoGame`, `./tools/tests/Run-Tests.ps1`.
-4. Commit on `research/stage1`; never merge or push main.
+4. Commit on the assigned `research/t050-material` branch; never merge or push main.
 
 DEFINITION OF DONE
 Each assigned Stage 1 research question has a plain answer backed by a run you looked at; the existing ColAccel verdict

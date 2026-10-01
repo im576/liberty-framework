@@ -10,12 +10,13 @@ Rules remain in RULES.md and AGENTS.md. No worker has been launched by preparing
 |---|---|---|
 | C | GTAIV-Reborn-lane-c-t048 / stage1/T-048 | Review c3e2b16 and the unfinished d96aaf2 changes; identify a supported crash/performance hypothesis and repair the effects cleanup fixture without weakening cleanup requirements. |
 | D | GTAIV-Reborn-lane-d / codex/T-049-hud-continuation | A bounded DISPLAY_HUD / DISPLAY_RADAR experiment with readable captures and explicit results for mission/help/subtitle text, vanilla fallback and config-off restoration. |
-| R | GTAIV-Reborn-research / research/stage1 | Separate full SDK 1.2/material validation from SDK 1.3 radar work; report glass, water and object-hit correctness honestly. No radar expansion in this milestone. |
+| R | GTAIV-Reborn-research-t050 / research/t050-material | Full SDK 1.2/material validation; report glass, water and object-hit correctness honestly. Keep the SDK 1.3 research worktree unchanged in this milestone. |
 | B (later) | GTAIV-Reborn-lane-b2 / codex/lane-b-validation | Preserve the merged wheel/trunk/text acceptance; review the isolated config follow-up only when explicitly assigned. |
 | Orchestrator | GTAIV-Reborn / main | Shared host-tool fixes, launch readiness, test scheduling, review, integration and status. |
 
 These are exclusive worktree assignments, not separate game installations. Do not write in another worker's worktree.
-R may read GTAIV-Reborn-research-t050 as evidence/history; its material API is already on main. The orchestrator worktree
+R owns the t050 worktree for this milestone and reads GTAIV-Reborn-research's live handoff/history; its material API is
+already on main. GTAIV-Reborn-research / research/stage1 stays unchanged until the SDK 1.3 assignment. The orchestrator worktree
 at 9be5315 contains the unmerged config change 1f6f501: do not copy or merge it incidentally.
 
 ## Shared readiness and test scheduling

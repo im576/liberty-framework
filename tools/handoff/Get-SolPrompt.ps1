@@ -15,7 +15,7 @@ $lanes = @{
     B = @{ Path = 'C:\Users\IM576\GTAIV-Reborn-lane-b2'; Prompt = 'PROMPT-LANE-B.md'; Live = 'Lane-B-live.md' }
     C = @{ Path = 'C:\Users\IM576\GTAIV-Reborn-lane-c-t048'; Prompt = 'PROMPT-LANE-C.md'; Live = 'Lane-C-live.md' }
     D = @{ Path = 'C:\Users\IM576\GTAIV-Reborn-lane-d'; Prompt = 'PROMPT-LANE-D.md'; Live = 'Lane-D-live.md' }
-    R = @{ Path = 'C:\Users\IM576\GTAIV-Reborn-research'; Prompt = 'PROMPT-LANE-R.md'; Live = 'Lane-R-live.md' }
+    R = @{ Path = 'C:\Users\IM576\GTAIV-Reborn-research-t050'; Prompt = 'PROMPT-LANE-R.md'; Live = 'Lane-R-live.md' }
     Orchestrator = @{ Path = $repo; Prompt = 'PROMPT-ORCHESTRATOR.md'; Live = '' }
 }
 function Invoke-Git { $ErrorActionPreference = 'Continue'; & git @args 2>$null }
@@ -69,7 +69,7 @@ $state.Add('')
 if ($Lane -eq 'Orchestrator') {
     $queue = Get-Content -LiteralPath (Join-Path $repo 'docs\workflow\ORCHESTRATOR.md') -ErrorAction SilentlyContinue | Select-String -Pattern '^\| \d|^\| then' | ForEach-Object { $_.Line }
     if ($queue) { $state.Add('merge queue (docs/workflow/ORCHESTRATOR.md):'); $queue | ForEach-Object { $state.Add('  ' + $_) }; $state.Add('') }
-    (Get-WorktreeState 'T-050 (research/t050-material)' 'C:\Users\IM576\GTAIV-Reborn-research-t050' '') | ForEach-Object { $state.Add($_) }; $state.Add('')
+    (Get-WorktreeState 'Research rest (SDK 1.3, not assigned yet)' 'C:\Users\IM576\GTAIV-Reborn-research' 'Lane-R-live.md') | ForEach-Object { $state.Add($_) }; $state.Add('')
     foreach ($key in 'B', 'C', 'D', 'R') { (Get-WorktreeState "Lane $key" $lanes[$key].Path $lanes[$key].Live) | ForEach-Object { $state.Add($_) }; $state.Add('') }
     (Get-WorktreeState 'main' $repo '') | ForEach-Object { $state.Add($_) }
 }
