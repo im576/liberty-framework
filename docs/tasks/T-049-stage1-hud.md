@@ -122,7 +122,7 @@ No guessed addresses, broad HUD suppression or unapproved duplicate bars added. 
 
 ## Human test steps
 
-1. After the required Sonnet review and session-appropriate authorization, install a fresh committed build through `tools/verify-local.ps1` with restoration; load a free-roam save and go to the test range (DevTools > TELEPORT).
+1. After source/offline review and assignment of the shared game slot, install a fresh committed build through `tools/verify-local.ps1` with restoration; load a free-roam save and go to the test range (DevTools > TELEPORT).
 2. Unarmed and idle: the top-right corner shows nothing of Liberty's HUD. The radar is at the bottom left.
 3. Give yourself a Glock 17 with 150 total rounds (`lf catalog give service-pistol 150 clear`). Shipped mode must retain vanilla weapon/ammo/wanted and draw no duplicate group (`hudctl check`: all four plans vanilla_kept, hidden=0).
    For authorized layout inspection, `lf hudctl layout-test on`: Liberty silhouette and `17 / 133` appear top right, hold about four seconds and fade. Aim (LT / right mouse), shoot, reload: the group returns; a low clip turns orange.
@@ -133,3 +133,44 @@ No guessed addresses, broad HUD suppression or unapproved duplicate bars added. 
 7. Open the weapon wheel and the trunk: nothing may cover the top-right group.
 8. Set `"enabled": false` in `scripts\LibertyFramework\config\hud.json`: within a second the complete vanilla HUD is back and nothing of Liberty's is drawn. Set it back to `true`.
 9. Tell me per element whether it is too big, too small, too faint, too busy or too slow/fast to fade; the numbers are in `hud.json` (`layout`, `palette`, each element's `holdSeconds` and fade times) and hot-reload.
+
+## Native display diagnostic
+
+October 1 Sol continuation: **diagnostic prepared; NOT RUN in game**. Functional HUD compatibility comes before
+styling. Shipped `HudPlan` still reports vanilla_kept for all replacements with zero hides; no default/config tuning
+has changed. The inherited ammo pair already refreshes on observed clip changes: no recurrence of the demonstrated
+mixed-age defect found in source. Pistol/other weapon runtime sampling still needs validation.
+
+`T049-hud-native-display` runs `hud-native-display.txt` using only registered DISPLAY_HUD/DISPLAY_RADAR and existing
+SDK player/weapon calls. `lf hudctl probe-mode on`, `lf hudctl layout-test off`, then
+`lf hudctl native-display on 60000` arms a maximum two-minute diagnostic. Every tick enforces HUD=false/radar=true;
+no Liberty replacement drawings are enabled. `lf hudctl native-display off` releases it. Config-off, expiry, public
+HUD-off, pause/cutscene/fade/death/no player, module stop/unload and failures cancel rather than rearm it. A small
+internal UiService owner query lets public HUD-off retain both HUD and radar suppression. This touches no renderer,
+material API, ConfigService or gameplay budgets.
+
+`cash-test pulse|restore` is restricted to probe mode and temporarily changes the wallet by one unit to produce a
+visible native cash baseline; it restores the original wallet on request/stop/unload/failure. Never transact/save or
+edit HUD config during these diagnostics. Config-test restores and independently reads/hashes original bytes.
+Normal verifier backup restoration remains necessary after a process crash. Do not use native calls as proof of
+visual disappearance. Every named capture must be readable; missing baseline elements make comparison inconclusive.
+
+Original visibility: the existing public visibility-owner ledger is preserved, including other HUD-off owners.
+The scenario starts from public `hud on` and verifies return to that visible baseline. The documented API has no
+getter for arbitrary raw DISPLAY_HUD/DISPLAY_RADAR state set by other scripts; exact restoration of such unknown
+external state is **unproven**, and this diagnostic must not be used alongside outside native visibility overrides.
+
+`T049-hud-native-story-text` is a required separate owner review, not inferred from the free-roam scenario. In the
+SHDN console use the commands above; capture with Steam F12 and confirm native_applied=True for each active capture.
+Record the chosen story mission/checkpoint and repeat the same native help, spoken subtitle, objective and
+street/location/vehicle-name triggers in baseline, active and restored states. No available baseline text means
+NOT-RUN for that category. SDK overlays are not substitutes. For domain unload, arm during gameplay then run
+`ReloadScripts` in the SHDN console; require `hud_released reason=unload`, restored vanilla and a default inactive
+lease on the next load. Stop evidence does not prove domain unload. Cutscene entry cancels the lease deliberately;
+this check proves gameplay text preservation only while active, plus safe release on cutscene transition.
+
+Full automated proposal after a slot is assigned: `LOOP-build`, `LOOP-verify`, `LOOP-package-install`,
+`T049-hud-native-display`, then `T049-hud-components` / `T049-stage1-hud`. Use -AnyBranch -NoPush -Restore -NoManual
+and full mode; inspect all captures and restoration. Real story text/unload remains `T049-hud-native-story-text`.
+Owner feel/style remains `T049-hud-look`; neither manual check is automatically accepted. Combined wheel/trunk/HUD
+budgets stay unchanged and require later integrated feature evidence. No T-040 rerun or density reduction.

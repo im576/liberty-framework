@@ -51,9 +51,17 @@ Probe commands still suspend Liberty drawing, isolate existing writes and restor
 | Can player health/armour arcs hide without radar? | Unresolved; default bars remain off. Future T-054 radar redraw may be needed. |
 | Are other components' globals reread each frame like reticle globals? | Current write path did not remove wanted/radar. Exact cause unknown; deeper research deferred. |
 | Are all registrations parsed? | No, 23 unparsed; table not exhaustive. |
-| What would `DISPLAY_HUD(false)` with radar enabled remove? | Not tested, no new native/spike built. Broad suppression is not an accepted fallback. |
+| What would `DISPLAY_HUD(false)` with radar enabled remove? | Diagnostic native-display scenario/check prepared offline October 1; no runtime result. Real native text comparisons required separately; broad suppression remains unaccepted. |
 | Does configuration-off restore every changed path? | Current script and image support disable/re-enable; failure/death/unload and independent byte-hash checks remain. |
 | Does wheel/trunk coexist with the group and radar? | No combined current B/D runtime evidence. B source y=220 vs HUD bottom=142 is static clearance only. |
 
 Future work needs evidence-backed isolated hiding, appropriate owner authorization after Sonnet review, fresh committed-build normal verification and all named screenshot review.
 Do not solve the blocker by accepting table ownership as visible disappearance, weakening gates, broad HUD suppression or approving duplicate bars implicitly.
+
+## October 1 Sol diagnostic (offline only)
+
+The queued T049-hud-native-display experiment enforces documented HUD=false/radar=true while an explicit lease is
+active and records baseline/hiding/config-off/restore/public-off/expiry/stop captures. It preserves public visibility
+owners; unrelated raw-native visibility state has no documented getter and cannot be claimed restored. Real native
+story text/domain unload is a separate T049-hud-native-story-text review. All these runtime results remain unproven;
+no disappearance capability, replacement policy, changed budget or restyling is adopted.

@@ -1704,6 +1704,57 @@
       "addedIn": "stage1/T-049"
     },
     {
+      "id": "T049-hud-native-display",
+      "task": "T-049",
+      "title": "Diagnostic native HUD-off / radar-on: disappearance and restoration",
+      "kind": "scenario",
+      "run": {
+        "scenario": "hud-native-display"
+      },
+      "proves": "An explicitly armed, time-limited diagnostic enforces DISPLAY_HUD(false) and DISPLAY_RADAR(true) on each tick. Tests config polling and byte-hash readback, explicit off, expiry, other public HUD-off ownership and module-stop release. Shipped vanilla guard remains unchanged.",
+      "pass": "Every scenario step passes with zero log errors. Review every paired capture: visible baseline is mandatory for weapon/ammo/wanted/cash; radar/arcs remain during the diagnostic; complete vanilla returns after config-off, explicit-off, expiry and stop. Public hud off hides radar too. Compare saved/restored config hashes and wallet logs. Native call/log success alone is not visual acceptance.",
+      "unproven": "Native mission/help/subtitle/location text requires T049-hud-native-story-text; module/domain unload requires its owner review. No replacement policy adopted, no performance acceptance or new styling. Arbitrary external native visibility flags cannot be read/snapshotted through the currently documented API.",
+      "review": {
+        "screenshots": {
+          "hud_native_baseline": "Weapon icon, pistol ammo, wanted stars and cash visibly present; radar and health/armour arcs bottom left. Missing baseline element makes that comparison INCONCLUSIVE.",
+          "hud_native_hidden": "Vanilla weapon/ammo/wanted/cash disappear under the native pair, with no Liberty duplicates; radar and arcs retained. Record every surviving or missing element individually.",
+          "hud_native_config_off": "Config-off cancels the native lease: complete vanilla weapon/ammo/wanted/cash and radar return.",
+          "hud_native_config_restored": "Restoring config does not rearm native hiding or draw duplicates; vanilla remains complete.",
+          "hud_native_explicit_off": "Explicit native-display off restores the visible vanilla baseline.",
+          "hud_native_public_off": "Public hud off wins: both vanilla HUD and radar absent; the diagnostic has cancelled.",
+          "hud_native_public_restored": "Public hud on restores the original visible vanilla baseline, without rearming the diagnostic.",
+          "hud_native_expired": "Expiry returns vanilla HUD and radar automatically.",
+          "hud_native_stopped": "Stopping HUD releases native hiding and wallet mutation; vanilla HUD/radar restored."
+        }
+      },
+      "reference": "docs/tasks/T-049-stage1-hud.md#native-display-diagnostic",
+      "status": "QUEUED",
+      "addedIn": "codex/T-049-hud-continuation"
+    },
+    {
+      "id": "T049-hud-native-story-text",
+      "task": "T-049",
+      "title": "Native story text and HUD unload restoration comparisons",
+      "kind": "manual",
+      "session": "hud",
+      "minutes": 15,
+      "run": {
+        "steps": [
+          "Use a verifier-installed committed build during an assigned slot and a separate story save. Record mission name/checkpoint and baseline help, spoken subtitle, mission objective and location/street/vehicle name captures with Steam F12. A text category absent in the baseline is NOT-RUN, never PASS.",
+          "Run lf hudctl layout-test off then lf hudctl probe-mode on. During safe gameplay (not paused/cutscene/dead), arm lf hudctl native-display on 120000. Close the console and confirm hudctl status reports native_applied=True before each comparison; if console or a cutscene cancels it, rearm only after gameplay resumes.",
+          "Repeat the SAME checkpoint/help/subtitle/objective/location triggers with the native lease active. Capture with F12 and compare text, timing and readability to baseline. All four categories must survive. SDK ShowHelp/Subtitle/Notify drawings do not prove native story text.",
+          "Run lf hudctl native-display off and recapture the same native text triggers and weapon/ammo/wanted/cash/radar baseline. Set HUD config enabled=false through lf hudctl config-test off, wait for enabled=False in the log, and repeat. Run lf hudctl config-test restore; saved/restored byte hashes must match and the lease must remain cancelled.",
+          "Arm again during free roam, then run ReloadScripts in the SHDN console to unload the engine. Require hud_released reason=unload, complete vanilla HUD/radar restored, no errors, and native hiding inactive on the next load. If native calls are unavailable during domain unload, report FAIL with the log; do not substitute stop evidence.",
+          "Finish with lf hudctl native-display off, lf hudctl cash-test restore, lf hudctl config-test restore and lf hudctl probe-mode off; allow verifier backup restoration. Report each text category and unload separately, with image/log paths."
+        ]
+      },
+      "proves": "Real native help/subtitle/mission/location preservation under the diagnostic and restoration after off/config-off/domain unload, separately from SDK overlay text.",
+      "pass": "Every native text category has readable paired baseline/active/restored captures with active-state logs; no category disappears or is obscured. Config readback hashes match. Domain unload and subsequent load restore vanilla with zero errors. Missing text, inactive leases or missing unload evidence remain NOT-RUN/FAIL.",
+      "reference": "docs/tasks/T-049-stage1-hud.md#native-display-diagnostic",
+      "status": "QUEUED",
+      "addedIn": "codex/T-049-hud-continuation"
+    },
+    {
       "id": "T049-hud-look",
       "task": "T-049",
       "session": "hud",

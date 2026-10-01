@@ -64,6 +64,7 @@ namespace LibertyFramework.Hud
         private readonly HudPresence promptPresence = new HudPresence();
         private readonly HudPromptText promptExpansion = new HudPromptText();
         private readonly HudAmmoSample ammoSample = new HudAmmoSample();
+        private readonly HudNativeDisplayProbe nativeDisplay = new HudNativeDisplayProbe();
         private readonly HashSet<string> probeHidden = new HashSet<string>();
         private readonly HashSet<string> planHidden = new HashSet<string>();
         private readonly Dictionary<string, string> forced = new Dictionary<string, string>();
@@ -99,6 +100,7 @@ namespace LibertyFramework.Hud
         // Diagnostic probe suspends replacement so each screenshot starts from vanilla.
         private bool probeMode;
         private byte[] configTestOriginal;
+        private int? cashTestOriginal;
         private bool aiming, padActive, keyboardActive;
         private string deviceOverride;
         private string promptText = "";
@@ -130,8 +132,13 @@ namespace LibertyFramework.Hud
         private void Release(string reason)
         {
             frame = null;
+            nativeDisplay.Cancel();
+            try { UpdateNativeDisplay(); }
+            catch (Exception error) { RuntimeLog.Error("hud_native_display_restore_failed error=" + error.Message); }
             try { RestoreConfigTest(); }
             catch (Exception error) { RuntimeLog.Error("hud_config_test_restore_failed error=" + error.Message); }
+            try { RestoreCashTest(); }
+            catch (Exception error) { RuntimeLog.Error("hud_cash_test_restore_failed error=" + error.Message); }
             try { if (hider != null) { hider.RestoreAll(); } }
             catch (Exception error) { RuntimeLog.Error("hud_restore_failed error=" + error.Message); }
             planHidden.Clear();
@@ -348,6 +355,7 @@ namespace LibertyFramework.Hud
             {
                 if (disabled) { return; }
                 LoadConfig(false);
+                UpdateNativeDisplay();
                 if (config == null || !config.Enabled)
                 {
                     // Switched off: the vanilla HUD comes back whole (RestoreAll also covers a config reload while hidden).
@@ -364,6 +372,38 @@ namespace LibertyFramework.Hud
             }
             catch (Exception error) { Fail("tick", error); }
             finally { CostMeter.Add("tick.hud", started); }
+        }
+
+        private void UpdateNativeDisplay()
+        {
+            bool safe = false;
+            if (nativeDisplay.Requested && Liberty.World.HasPlayer)
+            {
+                PlayerState player = Liberty.World.Player;
+                WorldInfo info = Liberty.World.Info;
+                safe = probeMode && !layoutTest && !Engine.Ui.HudHiddenByOtherOwner(this) && player.IsPlaying && !player.IsDead && player.Health > 0 &&
+                    !info.Paused && !info.CutscenePlaying && !info.FadedOut;
+            }
+            bool wasApplied = nativeDisplay.Applied;
+            int action = nativeDisplay.Update(clock.ElapsedMilliseconds, !disabled && config != null && config.Enabled, safe);
+            if (action > 0)
+            {
+                // Use the existing owner ledger for unload/failure restoration. The explicit pair is held every tick for this experiment.
+                Engine.Ui.SetHudVisible(this, false);
+                GTA.Native.Function.Call("DISPLAY_HUD", false);
+                GTA.Native.Function.Call("DISPLAY_RADAR", true);
+                if (!wasApplied) { RuntimeLog.Info("hud_native_display applied hud=False radar=True visual=unproven"); }
+            }
+            else if (action < 0)
+            {
+                Engine.Ui.SetHudVisible(this, true);
+                if (Engine.Ui.HudHiddenByOtherOwner(this))
+                {
+                    GTA.Native.Function.Call("DISPLAY_HUD", false);
+                    GTA.Native.Function.Call("DISPLAY_RADAR", false);
+                }
+                RuntimeLog.Info("hud_native_display released owner (vanilla returns when no other owner hides it)");
+            }
         }
 
         private void Step()
@@ -625,7 +665,7 @@ namespace LibertyFramework.Hud
         {
             Engine.Commands.Register(this, "hudctl",
                 "hudctl status | table | check | ammo | hide <NAME> | hide-matching <text> | restore [NAME] | force <weapon|health|armour|wanted|prompt|all> on|off | " +
-                "hurt <n> | health <n> | armour <n> | prompt <text> | device auto|pad|keyboard | layout-test on|off | probe-mode on|off | config-test off|restore - Liberty HUD (T-049): state, hud.dat table probe, test hooks", HudCommand);
+                "hurt <n> | health <n> | armour <n> | prompt <text> | device auto|pad|keyboard | layout-test on|off | probe-mode on|off | native-display on <milliseconds>|off | cash-test pulse|restore | config-test off|restore - Liberty HUD (T-049): state, hud.dat table probe, test hooks", HudCommand);
         }
 
         private string HudCommand(string[] args)
@@ -637,6 +677,29 @@ namespace LibertyFramework.Hud
                 case "table": return Table();
                 case "check": return Check();
                 case "ammo": return Ammo();
+                case "cash-test":
+                    if (args.Length == 2 && args[1] == "restore") { RestoreCashTest(); return "hud_cash_test restored"; }
+                    if (args.Length != 2 || args[1] != "pulse" || !probeMode || disabled || !Liberty.World.HasPlayer)
+                    { return "error: hudctl cash-test pulse|restore (pulse requires probe-mode and a player)"; }
+                    if (!cashTestOriginal.HasValue) { cashTestOriginal = Liberty.Player.Money; }
+                    // Change the score so the vanilla cash counter has a visible baseline; restore the exact wallet afterwards.
+                    int original = cashTestOriginal.Value;
+                    Liberty.Player.Money = original == int.MaxValue ? original - 1 : original + 1;
+                    return "hud_cash_test pulse original=" + original + " current=" + Liberty.Player.Money;
+                case "native-display":
+                    if (args.Length == 2 && args[1] == "off")
+                    {
+                        nativeDisplay.Cancel();
+                        UpdateNativeDisplay();
+                        return "hud_native_display off";
+                    }
+                    int duration;
+                    if (args.Length != 3 || args[1] != "on" || !int.TryParse(args[2], out duration) || duration <= 0 || duration > 120000)
+                    { return "error: hudctl native-display on <1..120000 milliseconds>|off"; }
+                    if (disabled || !config.Enabled || !probeMode || layoutTest)
+                    { return "error: native-display requires enabled HUD, probe-mode on and layout-test off"; }
+                    nativeDisplay.Arm(clock.ElapsedMilliseconds, duration);
+                    return "hud_native_display armed milliseconds=" + duration + " visual=unproven";
                 case "probe-mode":
                     if (args.Length < 2 || (args[1] != "on" && args[1] != "off")) { return "error: hudctl probe-mode on|off"; }
                     ProbeRestore(null);
@@ -650,6 +713,7 @@ namespace LibertyFramework.Hud
                     if (args[1] != "off") { return "error: hudctl config-test off|restore"; }
                     if (configTestOriginal != null) { return "error: config test already active"; }
                     configTestOriginal = JsonStore.ReadBytes(LibertyPaths.HudConfig);
+                    RuntimeLog.Info("hud_config_test saved hash=" + JsonStore.Hash(configTestOriginal));
                     HudConfig testConfig = JsonStore.Parse<HudConfig>(configTestOriginal);
                     testConfig.Enabled = false;
                     JsonStore.Save(LibertyPaths.HudConfig, testConfig);
@@ -691,8 +755,18 @@ namespace LibertyFramework.Hud
         {
             if (configTestOriginal == null) { return; }
             System.IO.File.WriteAllBytes(LibertyPaths.HudConfig, configTestOriginal);
+            string restoredHash = JsonStore.Hash(JsonStore.ReadBytes(LibertyPaths.HudConfig));
+            if (restoredHash != JsonStore.Hash(configTestOriginal)) { throw new System.IO.IOException("HUD config restore readback differs"); }
             configTestOriginal = null;
-            RuntimeLog.Info("hud_config_test original bytes restored");
+            RuntimeLog.Info("hud_config_test original bytes restored hash=" + restoredHash);
+        }
+
+        private void RestoreCashTest()
+        {
+            if (!cashTestOriginal.HasValue) { return; }
+            Liberty.Player.Money = cashTestOriginal.Value;
+            cashTestOriginal = null;
+            RuntimeLog.Info("hud_cash_test original wallet restored");
         }
 
         private string SetPlayerHealth(int amount, bool relative)
@@ -737,6 +811,7 @@ namespace LibertyFramework.Hud
             }
             text.Append(" device=").Append(device.Current.ToString().ToLowerInvariant()).Append(" layout_test=").Append(layoutTest).Append(" probe_mode=").Append(probeMode);
             text.Append(" wanted_stars=").Append(wantedLevel);
+            text.Append(" native_requested=").Append(nativeDisplay.Requested).Append(" native_applied=").Append(nativeDisplay.Applied);
             text.Append(" hidden=").Append(planHidden.Count + probeHidden.Count).Append(" help_by_hud=").Append(Engine.Ui.HelpDrawnByHud);
             Frame now = frame;
             text.Append(" drawn=");

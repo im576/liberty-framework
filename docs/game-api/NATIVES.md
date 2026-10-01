@@ -20,7 +20,13 @@ Hashes and handler addresses are checked by `tools/verify.ps1` against `GTAIV.ex
 | `IS_CAR_IN_WATER(vehicle)` | discard sunk temporary trunks | registered 0x0FF342B2 | T-020 |
 | `GET_FIRST_BLIP_INFO_ID(sprite)` / `GET_NEXT_BLIP_INFO_ID(sprite)` / `DOES_BLIP_EXIST(blip)` / `GET_BLIP_COORDS(blip, Vector3*)` | discover the game's own safehouse radar blips (sprite 29 = SHDN `BlipIcon.Building_Safehouse`) as Arsenal safehouses; failure disables discovery only | registered 0x3BD729E9 / 0x154932F0 / 0x590A6FF4 / 0x4C1E75DB | T-020 |
 
-**T-049 (Liberty HUD):** no native of its own. The HUD module reads through the SDK services (`IWorld.Player`, `IWeapons.GetAmmo` = `GET_AMMO_IN_CHAR_WEAPON`, listed, `IPlayer.WantedLevel` = `STORE_WANTED_LEVEL`, already listed for the autopilot, `IUi.WeaponIcon`, `IPeds.SetHealth/SetArmour` for the test hooks only), and hides vanilla elements through hud.dat globals ([MEMORY.md](MEMORY.md)), not through `DISPLAY_HUD`/`DISPLAY_RADAR` (those hide the radar and the mission text with it; see [HudComponents.md](../research/HudComponents.md) question 5).
+**T-049 (Liberty HUD):** shipped replacements retain vanilla behind the visible-hiding guard. The module reads through
+SDK services (IWorld.Player, IWeapons.GetAmmo/GetAmmoInClip, IPlayer.WantedLevel) and the diagnostic uses the already
+registered `DISPLAY_HUD` / `DISPLAY_RADAR` pair (CE registration/API use documented below). Native-display is explicit,
+time-limited and never shipped on by default; exact removal/text preservation remains UNKNOWN until capture review.
+SDK Money uses registered STORE_SCORE/ADD_SCORE for the temporary cash baseline. No native mission/help/subtitle
+emitter or arbitrary native visibility getter is introduced; use real story text comparisons.
+See [HudComponents.md](../research/HudComponents.md) and [T-049 diagnostic](../tasks/T-049-stage1-hud.md#native-display-diagnostic).
 
 Resolver anchors (not called, used to locate engine data): `IS_AUTO_AIMING_ON`, `IS_HUD_RETICULE_COMPLEX`, `GET_ROOT_CAM`, `IS_BULLET_IN_AREA`, `SET_GAME_CAM_PITCH`, `SET_GAME_CAM_HEADING`.
 

@@ -128,6 +128,12 @@ namespace LibertyFramework.Engine.Services
 
         private readonly HashSet<LibertyModule> hudHiders = new HashSet<LibertyModule>();
 
+        // The T-049 radar-preserving diagnostic must yield to the public HUD-off owners.
+        internal bool HudHiddenByOtherOwner(LibertyModule owner)
+        {
+            return hudHiders.Count > (hudHiders.Contains(owner) ? 1 : 0);
+        }
+
         // DISPLAY_HUD / DISPLAY_RADAR persist until changed; the HUD returns when the last hiding module stops.
         public void SetHudVisible(LibertyModule owner, bool visible)
         {

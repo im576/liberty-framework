@@ -27,6 +27,7 @@ namespace LibertyFramework.Verify
             PromptCache(check);
             AcceptanceBudgets(repoRoot, check);
             AmmoSampling(check);
+            NativeDisplayProbe(check);
             TableResolver(check);
         }
 
@@ -199,6 +200,28 @@ namespace LibertyFramework.Verify
             check.True("one visually unverified component prevents the entire replacement", partial.Mode == HudElementMode.VanillaKept && partial.ToHide.Count == 0, partial.Reason);
             HudDecision diagnostic = HudPlan.Decide(true, "components", weapon, true, all, none);
             check.True("explicit diagnostic override draws without writing unverified globals", diagnostic.Mode == HudElementMode.Liberty && diagnostic.ToHide.Count == 0, diagnostic.Reason);
+        }
+
+        private static void NativeDisplayProbe(Checker check)
+        {
+            HudNativeDisplayProbe probe = new HudNativeDisplayProbe();
+            check.True("native display diagnostic starts inactive and writes nothing", !probe.Requested && !probe.Applied && probe.Update(0, true, true) == 0, "");
+            probe.Arm(10, 100);
+            check.True("explicit lease enforces every frame before expiry", probe.Update(10, true, true) == 1 && probe.Update(109, true, true) == 1, "");
+            check.True("expiry releases exactly once", probe.Update(110, true, true) == -1 && probe.Update(111, true, true) == 0, "");
+            probe.Arm(200, 100);
+            probe.Update(200, true, true);
+            check.True("config off cancels and releases", probe.Update(201, false, true) == -1 && !probe.Requested && !probe.Applied, "");
+            check.True("restoring config does not rearm native hiding", probe.Update(202, true, true) == 0, "");
+            probe.Arm(300, 100);
+            probe.Update(300, true, true);
+            check.True("unsafe gameplay releases and does not resume automatically", probe.Update(301, true, false) == -1 && probe.Update(302, true, true) == 0, "");
+            probe.Arm(400, 100);
+            probe.Update(400, true, true);
+            probe.Cancel();
+            check.True("stop or failure cancel releases applied lease once", probe.Update(401, true, true) == -1 && probe.Update(402, true, true) == 0, "");
+            probe.Arm(500, 100);
+            check.True("unsafe start cancels without taking ownership", probe.Update(500, true, false) == 0 && !probe.Requested, "");
         }
 
         private static void AmmoSampling(Checker check)

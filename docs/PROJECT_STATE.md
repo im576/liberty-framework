@@ -100,3 +100,7 @@ runtime receipts: [orchestrator integration review](reports/2026-10-01-orchestra
 - Research and game API: [research/](research/README.md), [game-api/NATIVES.md](game-api/NATIVES.md), [game-api/MEMORY.md](game-api/MEMORY.md).
 - Reports: `docs/reports/`; tool index: [../tools/README.md](../tools/README.md).
 - History and the original spec: [docs/archive/](archive/) (`HANDOFF.md`, `PHASE2_PLAN.md`, `PHASE2_PATCHNOTES.md`, agent reports).
+
+**T-049 Sol feature-first continuation (October 1):** bounded native HUD-off/radar-on diagnostic queued with lease,
+public-owner/config-off/stop restoration and separate real story-text/domain-unload comparisons. Offline-only patch;
+production compile/runtime pending scheduled slot. Shipped vanilla guard unchanged; all historical failures retained.
