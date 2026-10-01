@@ -38,6 +38,7 @@ Update this file after every game run and meaningful commit. Rules for a success
 | `20260930-224612-186ed36` | wheel, trunk, ui-text (quick) | all pass. |
 | `20261001-000645` (7d63be6) | ui-text (quick) | PASS; probe table in the T-045 card. |
 | `20261001-001218-7d63be6` | wheel, trunk (full) | both passed (NEEDS-REVIEW for screenshots only): wheel 12/12 equips, window avg 28.8 vs 31.1 ms closed; trunk store/take/swap/capacity/2 round trips, window avg 30.3 vs 28.7, p95 +7.4%, p99 +11.6%. Codex notes ColAccel was installed during this batch (07:11-08:03 UTC), so isolated performance numbers need a fresh controlled run. |
+| `20261001-023630-4ab6fbd` | wheel, trunk, ui-text (full) | NO EVIDENCE. Package installed; the wheel scenario had started when the coordinator paused the lane at about 02:41 and restored the install (`coordinator-pause-restore.log`: rollback waiting on the lock held by the main checkout). No check result, crash or failure was produced by the game. The text-cache fixes (`4ab6fbd`) are therefore still unproven in game. |
 
 ## Unproven
 
