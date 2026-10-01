@@ -65,6 +65,11 @@ Required `schemaVersion:1`; `sidearmLimit:2`, `longGunLimit:2`, `meleeLimit:1`. 
 
 **Weapon wheel (T-045).** Optional block `weaponWheel` (an install that predates it gets the block from packaging, and the defaults below apply without it): `enabled`, `padButton` (a `PadButton` name, default `Back`) and `keyboardKey` (a `VirtualKey` name, default `Tab`) are held to open the wheel on foot; `tapMilliseconds` (50-1000, default 250): a press shorter than this keeps the wheel open for stick/arrows and A/Enter, a longer hold equips the highlighted slot on release (a stalled frame counts as at most 100 ms of the press); `allowInVehicle` (default false). The navigation buttons and keys (A, B, D-pad, Enter, Escape, Backspace, arrows) are rejected as bindings. The wheel shows sidearm, two long guns, melee and thrown (`Arsenal/Logic/WeaponWheelLogic.cs`). The defaults are not checked against the game's own on-foot mapping: the owner confirms the Back button and Tab do nothing else.
 
+<<<<<<< HEAD
+=======
+**Trunk interface (T-046).** Optional block `trunkCapacity` (without it every trunk holds 8 and stashes are unlimited): `defaultSlots` (1-99), `safehouseSlots` (0 = unlimited) and `classes[]` (`id`, `slots` 1-99, `models[]` game model names, each in one class only; shipped: `sports` 4, `utility` 16). A full container refuses a store (`arsenal_store_refused`) but a take that swaps one weapon out for one in is allowed; unknown model names are logged once (`arsenal_trunk_class_unknown_model`). A take swaps out the carried weapon of the same category, else the least recently used carried weapon of the incoming weapon's group when that group is at its limit.
+
+>>>>>>> stage1/T-046
 Phase 2 contextual storage uses the existing `trunkDistanceMeters` for both the vehicle rear and a capped safehouse prompt radius. Controller **Square/X** or keyboard **E** opens the compact panel; **A/Enter** transfers, **B/Backspace** closes. This binding is fixed for the first playtest and should be exposed in config after control-conflict feedback. Nearby vehicle searches run every 250 ms.
 
 The `performance` log line every 30 seconds records ScriptHook tick interval p50/p95/p99, counts over 33/50 ms, and gunplay-loop average/maximum CPU time. Tick intervals are a frame pacing proxy; use PresentMon for final presented-frame comparisons.

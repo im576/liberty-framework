@@ -87,7 +87,18 @@ namespace LibertyFramework.Arsenal
             Engine.Events.Subscribe<global::Liberty.Sdk.Events.PlayerShot>(this, e => inventoryDirty = true);
             Engine.Events.Subscribe<global::Liberty.Sdk.Events.ReloadFinished>(this, e => inventoryDirty = true);
             Engine.Events.Subscribe<global::Liberty.Sdk.Events.PlayerDied>(this, e => inventoryDirty = true);
-            Engine.Commands.Register(this, "arsenal", "arsenal [status] | roundtrip - carried and stored weapons; roundtrip saves the state, loads it back and compares (T-044)", ArsenalCommand);
+            Engine.Commands.Register(this, "storage", "storage status | select <slot 0-4> | store | take [index] - the open trunk/stash interface through its own actions (T-046)", StorageCommand);
+            Engine.Commands.Register(this, "arsenal","arsenal [status] | roundtrip - carried and stored weapons; roundtrip saves the state, loads it back and compares (T-044)", ArsenalCommand);
+        }
+
+        private string StorageCommand(string[] args)
+        {
+            string verb = args.Length > 0 ? args[0] : "status";
+            int number;
+            if (verb == "select") { return args.Length > 1 && int.TryParse(args[1], out number) ? wheel.SelectSegment(number) : "storage select <slot 0-4>"; }
+            if (verb == "store") { return RunAction(() => wheel.StoreHighlighted()); }
+            if (verb == "take") { number = 0; if (args.Length > 1) { int.TryParse(args[1], out number); } int index = number; return RunAction(() => wheel.TakeAt(index)); }
+            return wheel.StatusLine();
         }
 
         // Test surface of T-044: what Niko carries and what every storage bin holds, and the save/load identity check.
@@ -615,6 +626,36 @@ namespace LibertyFramework.Arsenal
             return "temporary:" + vehicle.GetHashCode().ToString("X8");
         }
 
+        // T-046: weapons the open container holds at most (0 = unlimited): the trunk's by vehicle class, the stash's from config.
+        private TrunkCapacityRules capacityRules;
+        private Dictionary<int, int> trunkSlotsByModel;
+
+        private int ContainerCapacity()
+        {
+            if (capacityRules == null) { capacityRules = config.TrunkCapacity ?? TrunkCapacityRules.Defaults(); }
+            if (openedTrunk == null) { return capacityRules.SafehouseSlots; }
+            if (trunkSlotsByModel == null)
+            {
+                trunkSlotsByModel = new Dictionary<int, int>();
+                if (capacityRules.Classes != null)
+                {
+                    foreach (TrunkClass vehicleClass in capacityRules.Classes)
+                    {
+                        foreach (string name in vehicleClass.Models)
+                        {
+                            Model model = new Model(name);
+                            if (!model.isValid) { RuntimeLog.Error("arsenal_trunk_class_unknown_model class=" + vehicleClass.Id + " model=" + name); continue; }
+                            trunkSlotsByModel[model.Hash] = vehicleClass.Slots;
+                        }
+                    }
+                }
+            }
+            int slots;
+            return trunkSlotsByModel.TryGetValue(openedTrunk.Model.Hash, out slots) ? slots : capacityRules.DefaultSlots;
+        }
+
+        protected internal override void OnDraw(global::Liberty.Sdk.ICanvas canvas) { wheel.Draw(canvas); }
+
         private StorageBin Trunk(Vehicle vehicle)
         {
             string key = VehicleKey(vehicle);
@@ -786,6 +827,20 @@ namespace LibertyFramework.Arsenal
                 { get { return core.activeStorage != null ? (IList<WeaponRecord>)core.activeStorage.Weapons : new List<WeaponRecord>(); } }
             public bool GunsmithAvailable { get { return core.openedTrunk == null; } }
             public string Name(int weaponId) { return core.WeaponName(weaponId); }
+            public int Capacity { get { return core.ContainerCapacity(); } }
+            public int Segment(WeaponRecord carried)
+            {
+                foreach (CarriedWeapon item in core.presentation)
+                {
+                    if (item.WeaponId == carried.WeaponId) { return LibertyFramework.Arsenal.Logic.WeaponWheelLogic.SegmentOf(item.Slot, item.Category); }
+                }
+                return -1;
+            }
+            public WeaponRecord DisplacedBy(WeaponRecord stored)
+            {
+                int index = ArsenalPolicy.DisplacedOnTake(core.config, core.carried, stored, core.lastUsed);
+                return index >= 0 ? core.carried[index] : null;
+            }
 
             public string Store(WeaponRecord record)
             {
@@ -976,6 +1031,8 @@ namespace LibertyFramework.Arsenal
             if (Player == null || Player.Character == null || !StorageAllowed()) { return "Storage unavailable"; }
             GTA.value.Weapon weapon = Player.Character.Weapons.FromType((Weapon)record.WeaponId);
             if (!weapon.isPresent) { return "Weapon no longer carried"; }
+            int capacity = ContainerCapacity();
+            if (!TrunkCapacityRules.CanStore(bin.Weapons.Count, capacity)) { RuntimeLog.Info("arsenal_store_refused full id=" + record.WeaponId + " bin=" + bin.Id + " capacity=" + capacity); return (openedTrunk != null ? "Trunk full (" : "Stash full (") + capacity + ")"; }
             ArsenalRegistry.RaiseWeaponsRemoving("store");
             WeaponRecord stored = record.Clone(); stored.Owned = true; stored.Ammo = weapon.Ammo;
             weapon.Remove(); bin.Weapons.Add(stored);
@@ -1026,17 +1083,24 @@ namespace LibertyFramework.Arsenal
         {
             if (Player == null || Player.Character == null || !StorageAllowed()) { return "Storage unavailable"; }
             if (!WeaponIdentity.CanTake(carried, record)) { return "Already carrying this weapon type; store it first"; }
-            WeaponRecord displaced = null;
-            foreach (WeaponRecord carriedRecord in carried)
-            {
-                if (carriedRecord.Category == record.Category && carriedRecord.WeaponId != record.WeaponId)
-                    { displaced = carriedRecord; break; }
-            }
+            // T-046: the carried weapon this take swaps out: the same category (the game holds one per category), else the least
+            // recently used of the incoming weapon's group when that group is full.
+            int displacedIndex = ArsenalPolicy.DisplacedOnTake(config, carried, record, lastUsed);
+            WeaponRecord displaced = displacedIndex >= 0 ? carried[displacedIndex] : null;
+            // A displaced weapon of another category (the group was full) is taken off Niko here and always kept in the container
+            // (as the overflow rule does); one of the same category is replaced by the game when the new weapon is selected.
+            bool crossCategory = displaced != null && displaced.Category != record.Category;
             WeaponRecord savedDisplaced = null;
-            if (displaced != null && displaced.Owned)
+            if (displaced != null && (displaced.Owned || crossCategory))
             {
                 GTA.value.Weapon priorWeapon = Player.Character.Weapons.FromType((Weapon)displaced.WeaponId);
-                savedDisplaced = displaced.Clone(); savedDisplaced.Ammo = priorWeapon.Ammo;
+                savedDisplaced = displaced.Clone(); savedDisplaced.Ammo = priorWeapon.Ammo; savedDisplaced.Owned = true;
+            }
+            if (crossCategory)
+            {
+                ArsenalRegistry.RaiseWeaponsRemoving("swap");
+                GTA.value.Weapon outgoing = Player.Character.Weapons.FromType((Weapon)displaced.WeaponId);
+                if (outgoing.isPresent) { outgoing.Remove(); }
             }
             Player.Character.Weapons.Select((Weapon)record.WeaponId);
             Player.Character.Weapons.FromType((Weapon)record.WeaponId).Ammo = record.Ammo;
@@ -1053,8 +1117,8 @@ namespace LibertyFramework.Arsenal
             carried.Add(restored);
             if (!state.OwnedCarried.Contains(record.WeaponId)) { state.OwnedCarried.Add(record.WeaponId); }
             Persist(); RefreshPresentation((int)Player.Character.Weapons.CurrentType);
-            RuntimeLog.Info("arsenal_take id=" + record.WeaponId + " instance=" + record.InstanceId + " from=" + bin.Id);
-            return "Taken " + WeaponName(record.WeaponId);
+            RuntimeLog.Info("arsenal_take id=" + record.WeaponId + " instance=" + record.InstanceId + " from=" + bin.Id + (displaced != null ? " swapped=" + displaced.WeaponId : ""));
+            return savedDisplaced != null ? "Swapped " + WeaponName(savedDisplaced.WeaponId) + " for " + WeaponName(record.WeaponId) : "Taken " + WeaponName(record.WeaponId);
         }
 
         private string MarkSafehouse()
