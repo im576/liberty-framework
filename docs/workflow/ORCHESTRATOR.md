@@ -56,7 +56,10 @@ repeatable surfaces procedural or CC0"; gore very harsh but grounded, bodies 3-5
    answer yet.
 2. VRAM ceiling: the GPU is an RX 570 **4 GB** (driver and registry), not 8 GB as STAGE1 says. Proposed: hard ceiling
    +300 MB. Not answered; STAGE1 still says 8 GB / +350 MB.
-3. Monitor refresh rate (for a frame cap: 40 fps needs 120 Hz, else 30).
+3. Monitor refresh rate (for a frame cap: 40 fps needs 120 Hz, else 30). Found 2026-10-01: Windows lists an ASUS VG279QM
+   and a VG248 (both 144 Hz or faster), so the 40 fps cap is possible; the owner still has to confirm which one is the main screen.
+   Testing speed (45561b4, 2026-10-01): package 411 s cold / 4 s cached, build outside the lock, fail-fast on frozen or
+   unstartable games. Lanes must merge main to get it; tell lanes to batch checks in one verify-local run and not poll.
 4. T-044 open questions (melee/thrown rule, ammo caps, unassigned stash), T-040 and T-043 test steps (owner playtests).
 5. T-049: if the in-game probe finds no hideable component for the radar's health/armour arcs, either show Liberty's
    top-right bars as well as the vanilla arcs (`drawWithoutHidingVanilla: true`), or keep the vanilla arcs until the
