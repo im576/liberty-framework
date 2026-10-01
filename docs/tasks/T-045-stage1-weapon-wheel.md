@@ -98,3 +98,16 @@ would avoid that and are a recommendation for D, not done here).
 ### Full acceptance run 20261001-092349-e470758 (2026-10-01, includes main 868368b)
 
 RAN-PASS: wheel scenario (12/12 equips, keyboard hold and tap), trunk scenario (store, take, swap, capacity, round trips), ui-text. Budgets: wheel avg 22.75 ms, p95 34.4, draw.ui 0.217 ms; trunk avg 25.45 ms, p95 37.5, draw.ui 0.303 ms; no 1 s stalls. All screenshots reviewed. NEEDS OWNER: controller, real save/load, safehouse, HUD coexistence (steps above).
+
+### Orchestrator review and config follow-up (2026-10-01)
+
+Reviewed Lane B tip `1744416`, all 12 wheel/trunk screenshots and the completed full-run summaries, reports and logs.
+Integrated wheel/trunk and sprite text in `f823e45`; build warnings-as-errors PASS, repository verifier 424/0/7 not-run,
+tooling tests 230/0. Main's newer handoff/recovery rules and audio check were preserved; combined plan regenerated.
+
+Review found `WeaponWheelModule.LoadConfig` rereading and hashing arsenal.json on the game thread every second.
+The follow-up loads it once at module start and reuses ConfigService's background stamp watcher for subsequent changes.
+Only changed files are reloaded on the engine thread; invalid wheel config retains the last valid value. Existing
+engine cleanup removes the wheel's watch on stop. Seven real temporary-file watcher checks passed, including idle
+polling, both owners of a shared file, stopped/removed owners and timer disposal. Verifier 431/0/7 not-run; build PASS.
+Fresh full wheel/trunk and engine checks on this integration are pending; no new runtime acceptance claimed yet.

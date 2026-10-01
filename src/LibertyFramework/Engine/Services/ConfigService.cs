@@ -68,11 +68,20 @@ namespace LibertyFramework.Engine.Services
         public void Watch<T>(LibertyModule owner, string name, Func<T> defaults, Action<T> validate, Action<T> onChanged) where T : class
         {
             if (owner == null) { throw new ArgumentNullException("owner"); }
+            WatchFile(owner, PathOf(owner, name), () => onChanged(Load(owner, name, defaults, validate)));
+        }
+
+        // Engine-internal modules share root config files such as arsenal.json. Reuse the background stamp watcher
+        // instead of rereading those files on every idle poll; the caller keeps its existing validation/rejection policy.
+        internal void WatchFile(LibertyModule owner, string path, Action reload)
+        {
+            if (owner == null) { throw new ArgumentNullException("owner"); }
+            if (reload == null) { throw new ArgumentNullException("reload"); }
             Watcher watch = new Watcher();
             watch.Owner = owner;
-            watch.Path = PathOf(owner, name);
+            watch.Path = path;
             watch.Stamp = Stamp(watch.Path);
-            watch.Reload = () => onChanged(Load(owner, name, defaults, validate));
+            watch.Reload = reload;
             watches.Add(watch);
             lock (gate)
             {
