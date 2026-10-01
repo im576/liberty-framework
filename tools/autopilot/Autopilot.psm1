@@ -7,6 +7,7 @@ $script:LaunchedUtc = [DateTime]::MinValue
 $script:LogCache = @{}
 Import-Module (Join-Path $PSScriptRoot 'AutopilotLogic.psm1') 3>$null
 Import-Module (Join-Path (Split-Path -Parent $PSScriptRoot) 'local\GameLock.psm1') 3>$null
+Import-Module (Join-Path (Split-Path -Parent $PSScriptRoot) 'local\AudioOutput.psm1') 3>$null
 
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Windows.Forms
@@ -64,6 +65,7 @@ function Get-SessionLog {
 
 function Start-Game {
     if (Get-GameProcess) { throw 'GTA IV is already running' }
+    Assert-AudioOutput
     Stop-Game
     $script:LaunchedUtc = [DateTime]::UtcNow
     Start-Process 'steam://rungameid/12210'
@@ -203,13 +205,11 @@ function Invoke-EngineCommand([string[]] $Lines, [int] $TimeoutSeconds = 20) {
     throw "no reply to $name within $TimeoutSeconds s"
 }
 
-# $true when Windows has an active audio playback device. GTA IV refuses to start without one ("GTA IV requires a sound
-# card"), and nothing the autopilot can do fixes it: the owner has to connect speakers, a headset or the controller.
-# Playback endpoints are the MMDEVAPI devices whose id starts with {0.0.0.00000000} (capture is {0.0.1...}).
+# $true when Windows has an active playback endpoint, recovering the installed Sonar Gaming virtual output if needed.
+# Both verify-local and standalone scenarios call this, so disconnected headphones no longer block unattended tests.
 function Test-AudioOutput {
     try {
-        $endpoints = @(Get-PnpDevice -Class AudioEndpoint -ErrorAction Stop | Where-Object { $_.InstanceId -like 'SWD\MMDEVAPI\{0.0.0.00000000}*' -and $_.Status -eq 'OK' })
-        return $endpoints.Count -gt 0
+        return Initialize-TestAudioOutput
     }
     catch {
         # No PnP module (or no permission): do not block a launch on a check that cannot run.
@@ -221,10 +221,14 @@ function Test-AudioOutput {
 # Launches until the engine boots, retrying the known early startup crash (MTLX.DLL, before any mod loads).
 # Returns the number of attempts used; throws after $Attempts failures. Fails at once, without retrying, when a retry
 # cannot help: no audio output device, or the game shows its own "Fatal Error" box.
-function Start-GameReady([int] $Attempts = 5, [int] $BootTimeoutSeconds = 240, [int] $NotSeenSeconds = 90) {
+function Assert-AudioOutput {
     if (-not (Test-AudioOutput)) {
-        throw 'GAME-UNAVAILABLE: no audio output device is active; GTA IV refuses to start without one (connect speakers, a headset or the controller)'
+        throw 'GAME-UNAVAILABLE: no audio output device is active and the installed virtual output could not be recovered; connect speakers or a headset, or enable a virtual playback device'
     }
+}
+
+function Start-GameReady([int] $Attempts = 5, [int] $BootTimeoutSeconds = 240, [int] $NotSeenSeconds = 90) {
+    Assert-AudioOutput
     for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
         Stop-Game
         $script:LaunchedUtc = [DateTime]::UtcNow
@@ -270,6 +274,7 @@ function Get-GameDialog {
 # Launches (retrying startup crashes) until mod scripts log, then watches $WatchSeconds and classifies the session:
 # RUNNING (the log keeps advancing), DIALOG:<title> (a modal box blocks the game), FROZEN, or CRASHED.
 function Test-Boot([int] $Attempts = 6, [int] $WatchSeconds = 60, [string] $ScriptsPattern = 'engine_booted|arsenal_ready|gunplay_started') {
+    Assert-AudioOutput
     for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
         Stop-Game
         $script:LaunchedUtc = [DateTime]::UtcNow
