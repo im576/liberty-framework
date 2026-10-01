@@ -16,7 +16,7 @@
 |---|---|---|
 | pc-offline | 13 | automatically (builds and tests that need Windows or the game's files) |
 | probe | 4 | automatically (read-only questions about the game's files; structure only) |
-| scenario | 37 | automatically (autopilot drives the game; about 2-4 minutes each) |
+| scenario | 38 | automatically (autopilot drives the game; about 2-4 minutes each) |
 | manual | 20 | you play and judge; about 187 minutes in total, grouped below |
 
 Statuses: QUEUED (never run on the current code), PASS, FAIL, ERROR, CRASH, NOT-RUN, NEEDS-REVIEW (a person or the review session must judge screenshots or log errors).
@@ -278,6 +278,7 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 | `T045-weapon-wheel` | T-045 | scenario | autopilot PASS: first draw within one frame; 12 selections with no failures; keyboard hold and tap flows read back the requested equipped weapon; ui-budget check wheel passes (draw.ui <=0.5 ms, average/p95 <=+10%, p99 <=+15% vs paired closed menu, >=30 samples, no >=1 s stall); screenshots reviewed. | QUEUED |
 | `T046-trunk-ui` | T-046 | scenario | autopilot PASS: store/take/swap preserves logged ammunition and ownership, full trunk refuses store, two persisted state round trips identical; swap preview and keyboard capacity-refusal feedback captured; both closes release storage control and finish choreography; ui-budget check trunk passes; screenshots reviewed. | QUEUED |
 | `T045-ui-path` | T-045 | scenario | All steps execute; frame and draw-cost windows recorded for closed, locked no-draw, primitives, text, full, and unlocked full. Diagnostic evidence only, never gameplay acceptance. | QUEUED |
+| `T045-ui-text` | T-045 | scenario | autopilot PASS; in the report the second framestats of text_list_sprite and text_radial_sprite are within +10% average and +15% p99 of text_closed, and draw.ui average at most 0.5 ms; the other windows are the root-cause evidence | QUEUED |
 
 ## What each check proves, and what stays unproven
 
@@ -356,3 +357,4 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 - `T045-weapon-wheel`: The Liberty weapon wheel shows sidearm, two long guns, melee and thrown (empty slots read empty), opens within 1 frame of the request, every filled slot equips the right weapon (12 of 12), hold-to-open with the keyboard equips on release, tap-open with arrow keys and Enter equips, and the UI draw cost while open is logged. Acceptance performance is enforced by ui-budget, rather than inferred from a PASS word or low draw submission cost. **Still unproven:** Controller (pad) input cannot be injected: pad hold, stick selection and the Back button binding are for the owner to try. Whether the game itself reacts to the Back button or the Tab key on foot is not checked.
 - `T046-trunk-ui`: The trunk interface shows the carried loadout (wheel) and the trunk list with used/available capacity; Space stores the highlighted carried weapon, Enter takes the highlighted stored one and swaps out the least recently used long gun when both slots are full; a 4-slot sports-car trunk refuses the fifth weapon; the state saved to disk reads back identical. **Still unproven:** Controller (pad) input and the safehouse stash through this interface are not exercised by the scenario; a game save and load is not automated (the saved state file round trip is). Latest Codex fixes have no in-game evidence; HUD coexistence is only inspected in source geometry.
 - `T045-ui-path`: Separates control capture and deferred UI drawing cost in the same scene with normal density.
+- `T045-ui-text`: With the sample list menu (8 strings) open: frame statistics for sprite text (the shared canvas default), SHDN DrawText limited to 1 and 4 strings per frame and unlimited, a radial menu with sprite text, and the DevTools menu (its own SHDN text). Shows what the stall scales with and that sprite text keeps the frame time near the closed window.

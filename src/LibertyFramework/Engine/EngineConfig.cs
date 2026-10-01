@@ -40,6 +40,8 @@ namespace LibertyFramework.Engine
         [DataMember(Name = "raycastMaxPasses", IsRequired = false)] private int? raycastMaxPasses;
         [DataMember(Name = "raycastPassStepMeters", IsRequired = false)] public float RaycastPassStepMeters;
         [DataMember(Name = "raycastMaxLengthMeters", IsRequired = false)] public float RaycastMaxLengthMeters;
+        // How the shared UI canvas draws text: "sprite" (GDI+ text cached as textures; default) or "shdn" (ScriptHookDotNet DrawText, which stalls the frame in game).
+        [DataMember(Name = "uiTextRenderer", IsRequired = false)] public string UiTextRenderer;
 
         public bool BulletEvents { get { return bulletEvents ?? true; } }
         // ADR-0007: observe the game's damage routine (a code hook) for exact PedDamaged/PedDied.
@@ -77,6 +79,8 @@ namespace LibertyFramework.Engine
             if (RaycastMaxPasses < 0 || RaycastMaxPasses > 32) { throw new InvalidDataException("engine raycastMaxPasses must be 0-32"); }
             if (RaycastPassStepMeters == 0) { RaycastPassStepMeters = 0.05f; }
             if (!(RaycastPassStepMeters >= 0.01f && RaycastPassStepMeters <= 1f)) { throw new InvalidDataException("engine raycastPassStepMeters must be 0.01-1"); }
+            if (string.IsNullOrEmpty(UiTextRenderer)) { UiTextRenderer = "sprite"; }
+            if (UiTextRenderer != "sprite" && UiTextRenderer != "shdn") { throw new InvalidDataException("engine uiTextRenderer must be sprite or shdn"); }
             if (RaycastMaxLengthMeters == 0) { RaycastMaxLengthMeters = 1000f; }
             if (!(RaycastMaxLengthMeters >= 1f && RaycastMaxLengthMeters <= 5000f)) { throw new InvalidDataException("engine raycastMaxLengthMeters must be 1-5000"); }
         }

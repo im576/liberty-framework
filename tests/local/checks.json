@@ -1662,6 +1662,20 @@
       "proves": "Separates control capture and deferred UI drawing cost in the same scene with normal density.",
       "status": "QUEUED",
       "reference": "docs/tasks/T-045-stage1-weapon-wheel.md"
+    },
+    {
+      "id": "T045-ui-text",
+      "task": "T-045",
+      "title": "Shared UI text stall: sprite text against SHDN DrawText, and the DevTools menu",
+      "kind": "scenario",
+      "run": {
+        "scenario": "stage1-ui-text"
+      },
+      "proves": "With the sample list menu (8 strings) open: frame statistics for sprite text (the shared canvas default), SHDN DrawText limited to 1 and 4 strings per frame and unlimited, a radial menu with sprite text, and the DevTools menu (its own SHDN text). Shows what the stall scales with and that sprite text keeps the frame time near the closed window.",
+      "pass": "autopilot PASS; in the report the second framestats of text_list_sprite and text_radial_sprite are within +10% average and +15% p99 of text_closed, and draw.ui average at most 0.5 ms; the other windows are the root-cause evidence",
+      "reference": "docs/tasks/T-045-stage1-weapon-wheel.md",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-045"
     }
   ]
 }

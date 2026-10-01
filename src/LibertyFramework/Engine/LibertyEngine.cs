@@ -170,6 +170,7 @@ namespace LibertyFramework.Engine
             LibertyHost.Current = engine;
             engine.LoadConfig();
             engine.hotReloadActive = engine.Config.HotReload;
+            engine.Ui.Canvas.TextRenderer = engine.Config.UiTextRenderer;
             // Crash capture is installed first, before anything else touches the game.
             engine.core.Load();
             engine.Governor = new Governor(engine.Config);
@@ -343,6 +344,13 @@ namespace LibertyFramework.Engine
                 if (args.Length != 1 || (args[0] != "all" && args[0] != "none" && args[0] != "text" && args[0] != "primitives")) { throw new ArgumentException("choose all, none, text or primitives"); }
                 Ui.Canvas.DiagnosticMode = args[0];
                 return "ui_render_diagnostic mode=" + args[0];
+            });
+            Commands.RegisterEngine("ui-text-renderer", "ui-text-renderer sprite|shdn [limit] - how the shared canvas draws text; the limit caps the strings per frame drawn through shdn (diagnostic)", args =>
+            {
+                if (args.Length < 1 || (args[0] != "sprite" && args[0] != "shdn")) { throw new ArgumentException("choose sprite or shdn"); }
+                Ui.Canvas.TextRenderer = args[0];
+                Ui.Canvas.ShdnTextLimit = args.Length > 1 ? int.Parse(args[1]) : int.MaxValue;
+                return "ui_text_renderer mode=" + args[0] + " limit=" + (args.Length > 1 ? args[1] : "none");
             });
             Commands.RegisterEngine("pools","game pool occupancy (peds, vehicles, objects)", args => PoolsReport());
             Commands.RegisterEngine("natives", "raw native calls made through the SDK, per module", args => Natives.Report());

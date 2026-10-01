@@ -33,6 +33,7 @@ namespace LibertyFramework.Engine.Ui
         {
             if (screen.Height <= 0 || screen.Width <= 0) { return false; }
             graphics = target;
+            shdnTextCalls = 0;
             graphics.Scaling = FontScaling.Pixel;
             scale = screen.Height / 720f;
             Width = screen.Width / scale;
@@ -51,9 +52,98 @@ namespace LibertyFramework.Engine.Ui
             graphics.DrawRectangle(R(x, y, width, height), C(colour));
         }
 
+        // "sprite" (default): text is rendered once with GDI+ into a cached texture and drawn as a sprite. "shdn": ScriptHookDotNet's
+        // Graphics.DrawText. Measured in game (T-045, 2026-10-01): every frame that drew several strings through DrawText took
+        // 0.4 to 0.9 s while rectangles and sprites cost nothing, and the cause inside DrawText is not established, so the
+        // shared canvas does not use it by default. Switch back with engine.json uiTextRenderer or `ui-text-renderer shdn`.
+        internal string TextRenderer = "sprite";
+        // Diagnostic: with "shdn", only this many strings are drawn per frame.
+        internal int ShdnTextLimit = int.MaxValue;
+        private int shdnTextCalls;
+        private const int TextSpriteCap = 600;
+        private sealed class TextSprite { internal TextureRef Texture; internal string Key; internal float Width, Height; }
+        private readonly Dictionary<string, TextSprite> textSprites = new Dictionary<string, TextSprite>();
+        private readonly Queue<string> textSpriteOrder = new Queue<string>();
+
+        private void SpriteText(string text, float x, float y, float width, TextStyle style, TextAlign align, Rgba colour)
+        {
+            int index = Math.Max(0, Math.Min(StyleSizes.Length - 1, (int)style));
+            float pixelSize = StyleSizes[index] * scale, rectWidth = width * scale;
+            string key = Logic.UiTextLogic.CacheKey(index, pixelSize, rectWidth, StyleBold[index], text);
+            TextSprite sprite;
+            if (!textSprites.TryGetValue(key, out sprite))
+            {
+                sprite = RenderText(text, pixelSize, rectWidth, StyleBold[index], key);
+                textSprites[key] = sprite;
+                textSpriteOrder.Enqueue(key);
+                while (textSprites.Count > TextSpriteCap)
+                {
+                    string oldest = textSpriteOrder.Dequeue();
+                    TextSprite gone;
+                    if (textSprites.TryGetValue(oldest, out gone)) { textSprites.Remove(oldest); textures.Release(gone.Texture, gone.Key); }
+                }
+            }
+            if (sprite.Texture.IsNone) { return; }
+            GTA.Texture t = textures.Get(sprite.Texture);
+            if (t == null) { return; }
+            float left = Logic.UiTextLogic.AlignedX(x * scale, rectWidth, sprite.Width, align);
+            graphics.DrawSprite(t, new RectangleF(left, y * scale, sprite.Width, sprite.Height), C(colour));
+        }
+
+        // White text with a one-pixel dark shadow, tight to its extent; the draw call tints it. Ellipsised to the rectangle.
+        private TextSprite RenderText(string text, float pixelSize, float rectWidth, bool bold, string key)
+        {
+            TextSprite sprite = new TextSprite();
+            sprite.Key = "text:" + key;
+            try
+            {
+                using (System.Drawing.Font font = new System.Drawing.Font("Arial", pixelSize, bold ? FontStyle.Bold : FontStyle.Regular, GraphicsUnit.Pixel))
+                using (StringFormat format = new StringFormat(StringFormat.GenericTypographic))
+                {
+                    format.FormatFlags |= StringFormatFlags.NoWrap | StringFormatFlags.MeasureTrailingSpaces;
+                    SizeF size;
+                    using (Bitmap probe = new Bitmap(1, 1))
+                    using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(probe))
+                    {
+                        g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+                        size = g.MeasureString(text, font, 4096, format);
+                        if (size.Width + 2f > rectWidth && text.Length > 1)
+                        {
+                            int fit = Logic.UiTextLogic.FittingCharacters(text.Length, size.Width / text.Length, rectWidth - 2f);
+                            text = text.Substring(0, Math.Max(1, fit)) + "...";
+                            size = g.MeasureString(text, font, 4096, format);
+                        }
+                    }
+                    int w = (int)Math.Ceiling(size.Width) + 3, h = (int)Math.Ceiling(size.Height) + 3;
+                    using (Bitmap bitmap = new Bitmap(w, h, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
+                    using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bitmap))
+                    {
+                        g.Clear(Color.Transparent);
+                        g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+                        using (Brush shadow = new SolidBrush(Color.FromArgb(170, 0, 0, 0))) { g.DrawString(text, font, shadow, 1f, 1f, format); }
+                        g.DrawString(text, font, Brushes.White, 0f, 0f, format);
+                        using (System.IO.MemoryStream stream = new System.IO.MemoryStream())
+                        {
+                            bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                            sprite.Texture = textures.Add(stream.ToArray(), sprite.Key);
+                        }
+                    }
+                    sprite.Width = w; sprite.Height = h;
+                }
+            }
+            catch (Exception error)
+            {
+                sprite.Texture = TextureRef.None;
+                LibertyFramework.Core.Logging.RuntimeLog.Error("ui_text_render_failed length=" + (text == null ? 0 : text.Length) + " error=" + error.Message);
+            }
+            return sprite;
+        }
+
         public void Text(string text, float x, float y, float width, float height, TextStyle style, TextAlign align, Rgba colour)
         {
             if (DiagnosticMode == "none" || DiagnosticMode == "primitives" || string.IsNullOrEmpty(text)) { return; }
+            if (TextRenderer == "sprite") { SpriteText(text, x, y, width, style, align, colour); return; }
+            if (++shdnTextCalls > ShdnTextLimit) { return; }
             TextAlignment alignment = align == TextAlign.Center ? TextAlignment.Center : align == TextAlign.Right ? TextAlignment.Right : TextAlignment.Left;
             graphics.DrawText(text, R(x, y, width, height), alignment, C(colour), Font(style));
         }

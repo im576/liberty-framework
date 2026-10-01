@@ -12,6 +12,7 @@ namespace LibertyFramework.Verify
         internal static void Run(string repoRoot, Checker check)
         {
             BudgetChecks(check);
+            TextLayoutChecks(check);
             check.True("wheel segments: sidearm, two long guns, melee, thrown",
                 WeaponWheelLogic.SegmentOf(BodySlot.SidearmPrimary, WeaponCategory.Handgun) == WeaponWheelLogic.Sidearm &&
                 WeaponWheelLogic.SegmentOf(BodySlot.LongGun1, WeaponCategory.Rifle) == WeaponWheelLogic.LongGun1 &&
@@ -61,6 +62,25 @@ namespace LibertyFramework.Verify
             check.True("UI budgets reject excessive p95", evaluate(good.Replace("p95_ms=27", "p95_ms=30"), costs) == "frame_p95", "");
             check.True("UI budgets reject excessive p99", evaluate(good.Replace("p99_ms=45", "p99_ms=50"), costs) == "frame_p99", "");
             check.True("UI budgets reject stalls and missing/empty windows", evaluate(good.Replace("stalls_1s=0", "stalls_1s=1"), costs) == "stall" && evaluate("frames=0", costs) != null && evaluate(good, "") != null, "");
+        }
+
+        // Sprite text layout (the shared canvas text renderer that replaced the stalling DrawText path).
+        private static void TextLayoutChecks(Checker check)
+        {
+            Func<float, float, float, Liberty.Sdk.TextAlign, float> x = LibertyFramework.Engine.Ui.Logic.UiTextLogic.AlignedX;
+            check.True("sprite text: left, centre and right alignment inside the rectangle",
+                x(100, 300, 120, Liberty.Sdk.TextAlign.Left) == 100 && x(100, 300, 120, Liberty.Sdk.TextAlign.Center) == 190 && x(100, 300, 120, Liberty.Sdk.TextAlign.Right) == 280, "");
+            check.True("sprite text: text as wide as its rectangle starts at the rectangle's edge", x(100, 300, 300, Liberty.Sdk.TextAlign.Center) == 100 && x(100, 300, 410, Liberty.Sdk.TextAlign.Right) == 100, "");
+            string a = LibertyFramework.Engine.Ui.Logic.UiTextLogic.CacheKey(1, 16f, 300f, false, "Glock 17");
+            check.True("sprite text cache key: equal requests share it, style, size, width bucket and text separate it",
+                a == LibertyFramework.Engine.Ui.Logic.UiTextLogic.CacheKey(1, 16f, 300f, false, "Glock 17") &&
+                a != LibertyFramework.Engine.Ui.Logic.UiTextLogic.CacheKey(2, 16f, 300f, false, "Glock 17") &&
+                a != LibertyFramework.Engine.Ui.Logic.UiTextLogic.CacheKey(1, 24f, 300f, false, "Glock 17") &&
+                a != LibertyFramework.Engine.Ui.Logic.UiTextLogic.CacheKey(1, 16f, 600f, false, "Glock 17") &&
+                a != LibertyFramework.Engine.Ui.Logic.UiTextLogic.CacheKey(1, 16f, 300f, false, "Glock 18"), "");
+            check.True("sprite text: ellipsis keeps at least one character and never grows the text",
+                LibertyFramework.Engine.Ui.Logic.UiTextLogic.FittingCharacters(40, 10f, 200f) == 19 && LibertyFramework.Engine.Ui.Logic.UiTextLogic.FittingCharacters(5, 10f, 200f) == 5 &&
+                LibertyFramework.Engine.Ui.Logic.UiTextLogic.FittingCharacters(40, 10f, 5f) == 1, "");
         }
 
         private static void Rejected(Checker check, string repoRoot, string name, Action<ArsenalConfig> mutate)

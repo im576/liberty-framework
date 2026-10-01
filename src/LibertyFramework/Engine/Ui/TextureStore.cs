@@ -55,6 +55,24 @@ namespace LibertyFramework.Engine.Ui
             lock (gate) { int handle; return byKey.TryGetValue(key, out handle) ? new TextureRef(handle) : TextureRef.None; }
         }
 
+        // Forgets a texture and frees its D3D object. Draw pass only (the texture is created and released there).
+        internal void Release(TextureRef texture, string key)
+        {
+            Entry entry;
+            lock (gate)
+            {
+                if (!entries.TryGetValue(texture.Handle, out entry)) { return; }
+                entries.Remove(texture.Handle);
+                if (key != null) { byKey.Remove(key); }
+            }
+            IDisposable disposable = entry.Texture as IDisposable;
+            if (disposable != null)
+            {
+                try { disposable.Dispose(); }
+                catch (Exception error) { RuntimeLog.Error("ui_texture_release_failed handle=" + texture.Handle + " error=" + error.Message); }
+            }
+        }
+
         // Draw pass only.
         internal GTA.Texture Get(TextureRef texture)
         {
