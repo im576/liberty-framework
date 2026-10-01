@@ -4,9 +4,12 @@ using LibertyFramework.Core.Memory;
 
 namespace LibertyFramework.GameApi
 {
-    // Hides vanilla hud.dat reticle components by shrinking them and zeroing their alpha.
+    // Hides vanilla hud.dat components by shrinking them and zeroing their alpha.
     // The HUD code copies these hud.dat globals into the live components every frame, so the
-    // change is order-independent and restoring the saved values brings the reticle back.
+    // change is order-independent and restoring the saved values brings the component back.
+    // Proven in game for the four reticle components (T-010). T-049 uses the same mechanism for the other components of the
+    // resolved hud.dat table; whether the game reads those globals every frame is established by the `hud-components` scenario (`hudctl hide`, screenshots),
+    // which is why the HUD module only draws an element after its vanilla counterpart was hidden (HudPlan).
     internal sealed class HudReticle
     {
         // Rendered size is scaled from this; a tiny non-zero value avoids any divide-by-zero.
@@ -34,6 +37,34 @@ namespace LibertyFramework.GameApi
             {
                 components[component.Name] = component;
             }
+        }
+
+        // T-049: every component of the resolved hud.dat table whose globals have the proven layout (size = position + 8,
+        // alpha = size + 8). The four reticle components are included, so a second instance sees the same names.
+        internal HudReticle(LiveMemory memory, IEnumerable<GameAddresses.HudComponentGlobals> table)
+        {
+            this.memory = memory;
+            foreach (GameAddresses.HudComponentGlobals component in table)
+            {
+                if (component.LayoutConsistent) { components[component.Name] = component; }
+            }
+        }
+
+        internal bool Knows(string name)
+        {
+            return components.ContainsKey(name);
+        }
+
+        // "alpha=255 size=0.12x0.05 pos=0.9,0.1" as the game holds it now, for the probe log; "unknown" for a name not in the table.
+        internal string Describe(string name)
+        {
+            GameAddresses.HudComponentGlobals component;
+            if (!components.TryGetValue(name, out component)) { return "unknown"; }
+            return "alpha=" + memory.ReadUInt32(component.AlphaGlobal) +
+                " size=" + memory.ReadSingle(component.SizeGlobal).ToString("0.#####", System.Globalization.CultureInfo.InvariantCulture) + "x" +
+                memory.ReadSingle(component.SizeGlobal + 4).ToString("0.#####", System.Globalization.CultureInfo.InvariantCulture) +
+                " pos=" + memory.ReadSingle(component.PositionGlobal).ToString("0.#####", System.Globalization.CultureInfo.InvariantCulture) + "," +
+                memory.ReadSingle(component.PositionGlobal + 4).ToString("0.#####", System.Globalization.CultureInfo.InvariantCulture);
         }
 
         internal bool IsHidden(string name)
