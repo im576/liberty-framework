@@ -175,11 +175,21 @@ function Wait-LogLine([string] $Pattern, [int] $TimeoutSeconds = 180) {
 }
 
 # Frozen = the process lives but the engine has written nothing for $Seconds (engine_status is logged every 30 s).
+# Judged by the log's growth, not its timestamp: the engine keeps the log open, and Windows may update an open file's
+# last-write time lazily. A rotation (the file got shorter) counts as growth.
+$script:LogGrowth = @{ Length = [long]-1; Changed = [DateTime]::MinValue }
 function Test-GameFrozen([int] $Seconds = 75) {
-    $path = Get-LogPath
     if (-not (Get-GameProcess)) { return $false }
-    $age = ((Get-Date) - (Get-Item -LiteralPath $path).LastWriteTime).TotalSeconds
-    return $age -gt $Seconds
+    $path = Get-LogPath
+    # Length from an open handle (directory metadata of a file another process keeps open can lag).
+    $length = [long]0
+    if (Test-Path -LiteralPath $path) {
+        try { $stream = [IO.File]::Open($path, 'Open', 'Read', 'ReadWrite, Delete'); try { $length = $stream.Length } finally { $stream.Dispose() } }
+        catch { return $false }
+    }
+    $now = Get-Date
+    if ($length -ne $script:LogGrowth.Length) { $script:LogGrowth.Length = $length; $script:LogGrowth.Changed = $now; return $false }
+    return ($now - $script:LogGrowth.Changed).TotalSeconds -gt $Seconds
 }
 
 # Runs engine commands through the file channel and returns the reply lines.
