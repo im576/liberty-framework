@@ -49,6 +49,21 @@ free, and the game was restored (`installed-build.json`: restored from `phase2-2
   (git bundle, patches, uncommitted diff) is in `research\lane-d-review-bundle-2026-09-30`. Owner to choose: link the cloud
   session, or start a local Sonnet Lane D thread.
 
+## Review of the Sol/Claude work (2026-10-01 06:40 Pacific)
+
+- main `b74ddc4` (Sol coordinator corrections + Sol kit) checked: tool tests 224/0, offline verifier 389/0/5, pushed.
+  Sol fixed the game cap to count only lock-held time, bounded scenario timeouts by the remaining cap, made restoration
+  run in `finally`, recorded ASI inventories, and set density OFF on main. All lanes merged it; nothing is uncommitted.
+- Evidence caveat: research installed ColAccel 07:11-08:03 UTC while B's and C's full runs ran; their functional results
+  stand, their timing numbers need a clean rerun. ColAccel is removed (only its backup receipt remains).
+- Shared risks for the performance pass (T-056), across lanes:
+  1. `ConfigService.Poll` (and module config polling) stats files on the game thread every second; an 11 s stall there
+     ended B's wheel run with a crash. Move the stamp checks off the game thread.
+  2. Repeated GTAIV.exe crashes at fault offsets 0x7f471a46 / 0x7f4c16ad in B, C and R runs (also before ColAccel).
+     Cause unknown; capture the faulting module (minidump/WER) before guessing.
+- Owner decisions now due: C's 4 ms per-frame peak (a thrown limb needs `CreatePed`, about 21 ms); B's wheel bindings
+  (Back/Tab), trunk sizes and ammo caps (proposals in the B live handoff); D's HUD policy once the DISPLAY_HUD experiment runs.
+
 ## Cleanup and review (2026-09-30 ~21:45 Pacific)
 
 - Worktrees retired (all merged and clean; their branches stay): lane-0, lane-a, lane-a2, lane-a3, art-generator. Their
