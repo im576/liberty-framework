@@ -2,7 +2,8 @@
 
 Use this brief with the lane prompt and LIVE STATE. It replaces older known-state snapshots and obsolete work
 requests in those prompts. The current main copy is authoritative; a lane's old copy is not sufficient.
-Rules remain in RULES.md and AGENTS.md. No worker has been launched by preparing this brief.
+Rules remain in RULES.md and AGENTS.md. Preparation itself launched no workers; the subsequent owner-authorized
+replacement dispatch is recorded in [AGENT-ROSTER.md](AGENT-ROSTER.md).
 
 ## Ownership and first milestone
 
@@ -11,7 +12,7 @@ Rules remain in RULES.md and AGENTS.md. No worker has been launched by preparing
 | C | GTAIV-Reborn-lane-c-t048 / stage1/T-048 | Review c3e2b16 and the unfinished d96aaf2 changes; identify a supported crash/performance hypothesis and repair the effects cleanup fixture without weakening cleanup requirements. |
 | D | GTAIV-Reborn-lane-d / codex/T-049-hud-continuation | A bounded DISPLAY_HUD / DISPLAY_RADAR experiment with readable captures and explicit results for mission/help/subtitle text, vanilla fallback and config-off restoration. |
 | R | GTAIV-Reborn-research-t050 / research/t050-material | Full SDK 1.2/material validation; report glass, water and object-hit correctness honestly. Keep the SDK 1.3 research worktree unchanged in this milestone. |
-| B (later) | GTAIV-Reborn-lane-b2 / codex/lane-b-validation | Preserve the merged wheel/trunk/text acceptance; review the isolated config follow-up only when explicitly assigned. |
+| B | GTAIV-Reborn-lane-b2 / codex/lane-b-validation | Preserve merged wheel/trunk/text acceptance; review/integrate only isolated 1f6f501 for watcher checks and fresh full wheel validation. Assigned in the replacement dispatch. |
 | Orchestrator | GTAIV-Reborn / main | Shared host-tool fixes, launch readiness, test scheduling, review, integration and status. |
 
 These are exclusive worktree assignments, not separate game installations. Do not write in another worker's worktree.
