@@ -13,6 +13,11 @@ overrides older docs.
 - **Stage 1 lane A (T-041 arsenal, T-042 gunplay, T-043 reticles) is done, awaiting playtest (2026-09-30):** six catalog weapons (Glock 17, .44 AutoMag, Street Sweeper, Remington 1100, IMI Uzi, AK-47) on vanilla ids with Liberty profiles behind a catalog gate (`config/weapon-catalog.json` tiers, availability and stats; `stage1Weapons` switch; restricted ids 13/15/16/17 stay vanilla), class targets with a model simulation, range/swap/aim/reticle test commands, per-class reticles (cross, bracket, ring) over the old crosshair. In game: all four lane scenarios pass (run 20260930-134422-33e503f); reticle drawing costs about 0.10 ms per frame (proposal 0.1 ms); delivered first-shot spread sits inside the written cone for pistols, shotguns and the AK. Open: P90/MP5 slot, availability levers without script control (research/WeaponAvailability.md), feel and look sign-off.
 - **Then Phase 3: reverse engineering** toward FiveM-level control (authored collision, structure writing, deeper hooks).
 
+The T-040 density result above describes the historical baseline. The owner's current density policy is **OFF** in every
+active checkout; that recorded baseline is preserved, not rerun. Current lane review and coordinator corrections are in
+[the October 1 handoff](handoffs/sol/Orchestrator-2026-10-01.md). B/C/D/R remain paused until owner dispatch; Stage 1
+integration and acceptance come before any Phase 3 work. Offline passes do not mark a lane DONE.
+
 ## Stage 1 progress
 
 - **T-045/T-046 Lane B, NEEDS-PLAYTEST (2026-10-01):** weapon wheel and trunk interface pass their full in-game scenarios (12/12 equips with readback, store/take/swap/capacity/persistence, frame budgets met). The shared UI text stall is fixed by drawing canvas text as cached sprites (SHDN DrawText costs 15-90 ms per string per frame; cause inside it not established); Lane D HUD text uses the same canvas. Pad input, real save/load, safehouse and owner screenshot review remain open. See [T-045](tasks/T-045-stage1-weapon-wheel.md), [T-046](tasks/T-046-stage1-trunk-ui.md).

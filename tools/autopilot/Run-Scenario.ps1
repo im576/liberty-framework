@@ -87,7 +87,8 @@ try {
         $attempts = Start-GameReady -Attempts 6
         $steps.Add("launch: engine booted on attempt $attempts")
         # Let the first frames settle (streaming, the FusionFix dialog the engine acknowledges).
-        Start-Sleep -Seconds 12
+        # Quick probes already await a live player in their scenario; retain the full acceptance warm-up unchanged.
+        Start-Sleep -Seconds $(if ($Quick) { 2 } else { 12 })
     }
     $startUtc = [DateTime]::UtcNow
     # expect only accepts log lines written after the most recent engine command was sent (a line count, not a clock).

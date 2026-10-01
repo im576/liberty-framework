@@ -76,7 +76,7 @@ def errors_in(queue):
                 problems.append("%s: scenario %r has no tools/autopilot/scenarios/*.txt" % (where, run.get("scenario")))
             for shot in (check.get("review") or {}).get("screenshots", {}):
                 text = open(os.path.join(SCENARIOS, run.get("scenario", "") + ".txt"), encoding="utf-8").read() if run.get("scenario") in scenarios else ""
-                if not re.search(r"(?m)^shot\s+%s\s*$" % re.escape(shot), text):
+                if not re.search(r"(?m)^(?:@(?:full|quick)\s+)?shot\s+%s\s*$" % re.escape(shot), text):
                     problems.append("%s: review screenshot %r is not taken by the scenario" % (where, shot))
         if kind == "manual":
             if not run.get("steps"):
