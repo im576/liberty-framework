@@ -214,8 +214,12 @@ function Invoke-SimRunArgs([hashtable] $World, [string[]] $Only, [hashtable] $Ex
 $s = Invoke-SimRunArgs @{ knownCommands = @('god'); commands = @{ 'selftest' = @{ reply = 'started'; log = @('selftest_done passed=3 failed=0') } } } @('T-scenario-good') @{ Quick = $true }
 Test-That 'quick run: the summary says quick (never confused with acceptance)' ([string]$s.run.mode -like '*quick*') ([string]$s.run.mode)
 $s = Invoke-SimRunArgs @{ knownCommands = @('god') } @('T-scenario-good', 'T-scenario-after-crash') @{ MaxGameMinutes = 0.0001 }
-$capped = @($s.checks | Where-Object { $_.kind -eq 'scenario' -and $_.status -eq 'NOT-RUN' -and $_.detail -like '*time cap*' })
-Test-That 'game time cap: scenarios past the cap are NOT-RUN with the reason' ($capped.Count -eq 2) ($s.checks | ConvertTo-Json -Compress)
+# The allowance (6 ms here) may run out before the first scenario starts or while it runs: either way no scenario
+# completes, each ends by the cap (killed with the cap as reason, or NOT-RUN), and the last one is NOT-RUN.
+$scenarioRows = @($s.checks | Where-Object { $_.kind -eq 'scenario' })
+$byCap = @($scenarioRows | Where-Object { ($_.status -eq 'NOT-RUN' -and $_.detail -like '*time cap*') -or ($_.status -eq 'ERROR' -and $_.detail -like '*remaining game time cap*') })
+Test-That 'game time cap: scenarios past the cap end by the cap, the rest NOT-RUN with the reason' (
+    $byCap.Count -eq 2 -and $scenarioRows[-1].status -eq 'NOT-RUN') ($s.checks | ConvertTo-Json -Compress)
 
 # A wait for another lane is not this lane's game allowance. Mock only acquisition/process discovery, never a real game.
 $phase = @{ Repo = 'mock'; Simulate = $false; Run = @{} }
