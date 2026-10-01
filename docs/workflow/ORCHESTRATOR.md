@@ -5,6 +5,23 @@ files task cards and art requests, and keeps docs and decisions current. It does
 Current review: 2026-10-01. The merge queue below overrides the historical snapshots further down.
 Evidence and limits: [integration review](../reports/2026-10-01-orchestrator-integration.md).
 
+## Current continuation after usage interruption
+
+The same four Sol 6.1 agents continue with their original worktrees and effort settings. B's reviewed watcher fixes
+and receipt are integrated in main `f816a87`; full `20261001-122159-4330603` passed scripted wheel/trunk/text checks,
+and the orchestrator independently viewed all 12 wheel/trunk captures. One later wheel opening took 2 frames / 359 ms,
+so the one-frame criterion is still unmet. Config rejection/recovery/restart, controller and combined HUD checks remain.
+B now prepares focused lifecycle and timing coverage offline. Earlier failed runs remain preserved.
+
+C prepared cleanup/admission and paired setup probes at `0c6d3ed`; D prepared the guarded HUD native-display diagnostic
+at `b955948`; R prepared SDK 1.2 target/handle fixtures at `c282095`. These remain unmerged and are not runtime passes.
+The orchestrator reviews them before integration. Main offline validation runs first, followed by D's bounded HUD
+diagnostic slot; C and R stay offline until assigned. No parallel heavy builds or game runs, no remaster implementation.
+The previous B game batch finished and restored `phase2-20261001-122209`; it holds no current slot.
+Main integration validation: production build PASS (zero errors), offline verifier **441/0/5 not-run**, tooling
+**236/0**. Receipts: `results-local/offline/orchestrator-b-integration/`. These confirm offline integration;
+they do not close the wheel timing gap or establish combined C/D/R runtime acceptance.
+
 **Current owner direction: gameplay features first; remaster later.** Finish all developed/in-progress feature modules,
 including functional HUD/menus/storage and supporting systems, then provide an integrated feature test build with
 controls and feedback steps. Art direction may continue independently. Environment remaster and atmosphere/visual
@@ -84,7 +101,7 @@ free, and the game was restored (`installed-build.json`: restored from `phase2-2
 |---|---|---|---|
 | 1 | Engine stall fix and audio recovery | main `868368b`, `55e70b8`, `ee71eba` | merged; full audio/SDK 1.1 selftest/events PASS; hot reload 24/24 PASS on repeat (first driver fixture failed); broader stalls/crashes remain |
 | 2 | T-045/T-046 wheel, trunk, sprite text | main `f823e45` from Lane B `1744416` | merged; full `20261001-092349-e470758` passed assertions/budgets; orchestrator viewed all 12 captures; NEEDS-PLAYTEST |
-| 3 | Wheel config polling follow-up | `codex/orchestrator-stage1-integration` (`1f6f501`, tip `9be5315`), `GTAIV-Reborn-orchestrator` | isolated, NOT merged; build/verifier PASS; last full run wheel CRASH before opening, trunk 133/133 PASS; all runs restored; require fresh wheel acceptance |
+| 3 | Wheel config polling follow-up | main `f816a87`, reviewed B `e7cf0f1` | merged; fresh full wheel/trunk/text scripted checks pass; 12 captures reviewed; later opening missed one-frame target, runtime config lifecycle pending |
 | 4 | T-050 hit material (SDK 1.2) | main `e547d92`, merged by the concurrent Claude coordinator | additive API reviewed; quick coverage confirms wood, not glass/water/object correctness; preserve merge, full SDK 1.2/material acceptance pending |
 | 5 | T-047/T-048 gore, effects | `stage1/T-048`, `GTAIV-Reborn-lane-c-t048` | unmerged; full `20261001-103314-0b4f558` restored with dismember CRASH, firefight/effects-night FAIL; lane continues independently; budgets unchanged |
 | 6 | T-049 HUD | `codex/T-049-hud-continuation`, `GTAIV-Reborn-lane-d` | unmerged; full `20260930-205120-4ac4fcc` HUD FAIL; clean DISPLAY_HUD experiment and B/D coexistence unrun |
