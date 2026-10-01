@@ -67,7 +67,10 @@ namespace LibertyFramework.Arsenal.Ui
                     if (down && !wasDown && sticky) { ConfirmAndClose(); }
                     else if (!down && wasDown && !sticky)
                     {
-                        if (WeaponWheelLogic.OnRelease(unchecked(Environment.TickCount - openedAtTicks), config.TapMilliseconds) == WeaponWheelLogic.Release.StayOpen) { sticky = true; }
+                        int heldMs = unchecked(Environment.TickCount - openedAtTicks), heldFrames = Engine.Frame - openedAtFrame;
+                        WeaponWheelLogic.Release decision = WeaponWheelLogic.OnRelease(heldMs, config.TapMilliseconds);
+                        RuntimeLog.Info("weapon_wheel_release held_ms=" + heldMs + " held_frames=" + heldFrames + " tap_ms=" + config.TapMilliseconds + " decision=" + decision);
+                        if (decision == WeaponWheelLogic.Release.StayOpen) { sticky = true; }
                         else { ConfirmAndClose(); }
                     }
                 }
@@ -222,7 +225,8 @@ namespace LibertyFramework.Arsenal.Ui
             if (slot == WeaponWheelLogic.Melee) { return null; }
             int total = Liberty.Weapons.GetAmmo(ped, weaponId);
             if (slot == WeaponWheelLogic.Thrown) { return total > 0 ? "x" + total : null; }
-            int clip = Liberty.Weapons.GetAmmoInClip(ped, weaponId);
+            // The game reports a magazine only for the weapon in hand; the others show their total.
+            int clip = weaponId == Liberty.Weapons.Current(ped) ? Liberty.Weapons.GetAmmoInClip(ped, weaponId) : -1;
             if (clip < 0 || total < clip) { return total + " rounds"; }
             return clip + " / " + (total - clip);
         }
