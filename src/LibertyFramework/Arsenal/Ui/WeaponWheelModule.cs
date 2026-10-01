@@ -20,7 +20,6 @@ namespace LibertyFramework.Arsenal.Ui
     {
         private WeaponWheelConfig config = WeaponWheelConfig.Defaults();
         private string configHash;
-        private DateTime lastConfigCheckUtc = DateTime.MinValue;
         private WeaponCatalog catalog;
         private bool catalogLoaded;
         private IMenu menu;
@@ -44,6 +43,8 @@ namespace LibertyFramework.Arsenal.Ui
 
         protected internal override void OnStart()
         {
+            LoadConfig();
+            Engine.ModuleConfig.WatchFile(this, LibertyPaths.ArsenalConfig, LoadConfig);
             Engine.Commands.Register(this, "wheel", "wheel [status] | open | select <slot 0-4> | confirm | close - weapon wheel (T-045)", WheelCommand);
         }
 
@@ -57,7 +58,6 @@ namespace LibertyFramework.Arsenal.Ui
                 RuntimeLog.Info("weapon_wheel_equipped requested=" + pendingEquipId + " actual=" + actual + " match=" + (actual == pendingEquipId));
                 pendingEquipId = 0;
             }
-            LoadConfig();
             if (!config.Enabled) { CloseMenu("disabled"); wasDown = false; return; }
             bool down = Engine.Input.Down(config.Pad) || Engine.Input.KeyDown(config.Key);
             // Measure the observed press in monotonic wall time. Capping elapsed frames incorrectly turns a real hold
@@ -93,18 +93,16 @@ namespace LibertyFramework.Arsenal.Ui
 
         private void LoadConfig()
         {
-            if ((DateTime.UtcNow - lastConfigCheckUtc).TotalMilliseconds < 1000) { return; }
-            lastConfigCheckUtc = DateTime.UtcNow;
             try
             {
                 byte[] bytes = JsonStore.ReadBytes(LibertyPaths.ArsenalConfig);
                 string hash = JsonStore.Hash(bytes);
                 if (hash == configHash) { return; }
-                configHash = hash;
                 ArsenalConfig parsed = JsonStore.Parse<ArsenalConfig>(bytes);
                 WeaponWheelConfig candidate = parsed.WeaponWheel ?? WeaponWheelConfig.Defaults();
                 candidate.Validate();
                 config = candidate;
+                configHash = hash;
                 RuntimeLog.Info("weapon_wheel_config enabled=" + config.Enabled + " pad=" + config.PadButtonName + " key=" + config.KeyboardKeyName + " tap_ms=" + config.TapMilliseconds);
             }
             catch (Exception error) { RuntimeLog.Error("weapon_wheel_config_rejected keeping previous error=" + error.Message); }

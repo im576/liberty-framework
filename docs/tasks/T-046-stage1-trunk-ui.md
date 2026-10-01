@@ -104,3 +104,18 @@ would avoid that and are a recommendation for D, not done here).
 ### Full acceptance run 20261001-092349-e470758 (2026-10-01, includes main 868368b)
 
 RAN-PASS: wheel scenario (12/12 equips, keyboard hold and tap), trunk scenario (store, take, swap, capacity, round trips), ui-text. Budgets: wheel avg 22.75 ms, p95 34.4, draw.ui 0.217 ms; trunk avg 25.45 ms, p95 37.5, draw.ui 0.303 ms; no 1 s stalls. All screenshots reviewed. NEEDS OWNER: controller, real save/load, safehouse, HUD coexistence (steps above).
+
+### Full follow-up build reviewed — 20261001-122159-4330603
+
+Full clean build `4330603` includes current main `c01f0da` plus the isolated wheel config watcher patch/casing fix.
+Trunk **133 steps / 0 failed / 0 log errors**: store/take/swap/capacity refusal, two identical state-file round trips,
+control release passed. Original relative budget gate passes: open avg 25.82 vs closed 24.72 ms (+4.45%),
+p95 35.5/41.9, p99 56.9/73.4, draw.ui avg/max 0.301/2.1 ms, max frame 123.0 ms, zero measured >=1 s stalls.
+All six stored JPGs individually reviewed: 0/8 empty, 1/8 stored AK, swap-in/out preview and post-swap list,
+4/4 full and Trunk full (4) refusal are visible without observed clipping. Summary retains NEEDS-REVIEW;
+this is the separate capture review. Available images are 960x540, not proof of owner-resolution text sizing.
+Full batch package/wheel/text assertions also passed; the wheel has a separate first-draw timing gap recorded in T-045.
+Restored from `phase2-20261001-122209`; slot is released and this run must not be repeated unchanged.
+Offline build PASS, verifier 441/0/5 not-run, tools 236/0. ASI hashes/inventory and exact evidence in
+[live handoff](../handoffs/Lane-B-live.md). Controller, real game save/load, safehouse/gunsmith and B/D coexistence
+remain owner/combined checks; state-file round trips do not prove real save/load. Status stays NEEDS-PLAYTEST.

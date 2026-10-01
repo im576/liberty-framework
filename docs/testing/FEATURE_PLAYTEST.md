@@ -42,6 +42,26 @@ styling is deferred. Experimental components must be explicitly described and sw
 These are testing categories; before delivery fill exact buttons/commands from the shipped binding configs and task
 cards, and expected outcomes from accepted evidence. Do not invent controls or report a playtest that has not happened.
 
+## Current documented controls for the integrated B features
+
+These are the current config/task-card bindings, not proof of a delivered combined test build. Recheck them against
+the final manifest/config before installation. Source: config/arsenal.json and T-045/T-046 Human test steps.
+
+| Test | Keyboard/mouse | Controller | Expected result / feedback |
+|---|---|---|---|
+| Held weapon wheel, on foot | Hold Tab, select with Left/Right, release Tab | Hold Back/View, right stick or D-pad, release Back | Highlight equips; report wrong slot, movement/phone interference or missed release. |
+| Sticky weapon wheel | Tap Tab, select, Enter; Backspace cancels | Tap Back/View, select, A; B cancels | Confirm equips; cancel retains weapon. Empty thrown slot changes no weapon. |
+| Open vehicle storage, behind trunk | E | X | Lid/animation completes and carried/trunk groups appear; player controls resume after close. |
+| Store highlighted carried weapon | Space | X | Gun leaves carried slot/sling, enters trunk with unchanged ammo. |
+| Choose stored weapon; take/swap | Page Up/Down, Enter | LB/RB, A | Preview identifies outgoing weapon; transfer preserves ammo/identity/ownership. |
+| Close storage | Backspace | B | Lid closes, movement returns; repeated open/close does not stick. |
+| Capacity refusal | Store a fifth gun in a four-capacity Banshee trunk | Same flow | Full/refusal shown; weapon remains carried; take/swap still works. |
+
+Owner-only next: real safehouse save/load of a noted trunk weapon/ammo count; safehouse/gunsmith storage and exit;
+physical controller navigation; story/cutscene compatibility; outfit clipping; B/D HUD/radar coexistence after D is
+integrated. Use the task cards for the longer exact sequences. Do not interpret autopilot round-trip checks as a real
+GTA save/load playtest. Gore/effects and the diagnostic HUD remain experimental until their separate gates pass.
+
 ## Independent art direction
 
 Use the existing approved references (ART-007 UI, ART-008 Hove Beach, ART-012 icons) to discuss palette, typography,

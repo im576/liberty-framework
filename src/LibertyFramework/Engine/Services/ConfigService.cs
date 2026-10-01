@@ -68,11 +68,20 @@ namespace LibertyFramework.Engine.Services
         public void Watch<T>(LibertyModule owner, string name, Func<T> defaults, Action<T> validate, Action<T> onChanged) where T : class
         {
             if (owner == null) { throw new ArgumentNullException("owner"); }
+            WatchFile(owner, PathOf(owner, name), () => onChanged(Load(owner, name, defaults, validate)));
+        }
+
+        // Engine-internal modules share root config files such as arsenal.json. Reuse the background stamp watcher
+        // instead of rereading those files on every idle poll; the caller keeps its existing validation/rejection policy.
+        internal void WatchFile(LibertyModule owner, string path, Action reload)
+        {
+            if (owner == null) { throw new ArgumentNullException("owner"); }
+            if (reload == null) { throw new ArgumentNullException("reload"); }
             Watcher watch = new Watcher();
             watch.Owner = owner;
-            watch.Path = PathOf(owner, name);
+            watch.Path = path;
             watch.Stamp = Stamp(watch.Path);
-            watch.Reload = () => onChanged(Load(owner, name, defaults, validate));
+            watch.Reload = reload;
             watches.Add(watch);
             lock (gate)
             {
@@ -131,17 +140,17 @@ namespace LibertyFramework.Engine.Services
         // removes its watches, so the loop walks a copy of the list.
         internal void Poll(Func<LibertyModule, Action, bool> runAs)
         {
-            string[] paths;
+            HashSet<string> paths;
             lock (gate)
             {
                 if (changed.Count == 0) { return; }
-                paths = new string[changed.Count];
-                changed.CopyTo(paths);
+                // Match the stamp dictionary's path identity so every owner of a shared file receives the change.
+                paths = new HashSet<string>(changed, StringComparer.OrdinalIgnoreCase);
                 changed.Clear();
             }
             foreach (Watcher watch in watches.ToArray())
             {
-                if (!watch.Owner.Running || Array.IndexOf(paths, watch.Path) < 0) { continue; }
+                if (!watch.Owner.Running || !paths.Contains(watch.Path)) { continue; }
                 DateTime stamp;
                 lock (gate) { stamp = stamps[watch.Path]; }
                 if (stamp == watch.Stamp) { continue; }

@@ -33,6 +33,9 @@ temporary build/edit hold is revoked. Reuse these same GPT-6.1 Sol workers/setti
 B abe600c (clean); C 64a191f with four cleanup fixture/test edits; D f6dff18 with four HUD diagnostic edits; R 7058612
 with three material probe/generator edits. Review/finish those edits without discarding them. No new agents are needed.
 
-Next scheduled slot: B gets the first heavy build and verifier batch for the reviewed watcher follow-up; C/D/R finish
-their bounded patches and focused lightweight checks offline. Their game/heavy-build slots follow explicitly.
+After usage interruption, these same four agents resumed. B's completed full run restored `phase2-20261001-122209`;
+its reviewed watcher patch/receipt is integrated in main `f816a87`. Main offline validation runs first, then D gets the
+bounded HUD diagnostic slot. B prepares config lifecycle/timing coverage; C reviews cleanup gate lifecycle and paired
+setup restoration; R reviews SDK 1.2 evidence/contract coverage. Those three remain offline until explicitly assigned.
+Prepared lane tips: B `e7cf0f1`, C `0c6d3ed`, D `b955948`, R `c282095`. These identify milestones, not task completion.
 No remaster implementation is assigned. Functional menus/HUD/storage and supporting gameplay features remain priority.

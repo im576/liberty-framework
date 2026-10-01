@@ -57,6 +57,8 @@ $sources = @(
     (Join-Path $src 'Engine\Scheduling\Scheduler.cs')
     (Join-Path $src 'Engine\ResourceLedger.cs')
     (Join-Path $src 'Engine\Services\CommandRegistry.cs')
+    (Join-Path $src 'Engine\Services\ConfigService.cs')
+    (Join-Path $src 'Engine\Services\StateService.cs')
     # The core's C ABI mirror and snapshot accessors, checked against native/LibertyCore/include/liberty_core.h.
     (Join-Path $src 'Engine\Core\CoreAbi.cs')
     (Join-Path $src 'Engine\Core\CoreBridge.cs')

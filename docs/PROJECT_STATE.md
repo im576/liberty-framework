@@ -37,8 +37,12 @@ before any Phase 3 work. Offline passes do not mark a lane DONE.
   Lane B `1744416` and cached sprite text, preserving newer main tooling. Full `20261001-092349-e470758` passed all
   wheel/trunk/text assertions and budgets; orchestrator reviewed all 12 wheel/trunk captures. Combined build PASS,
   verifier 424/0/7 not-run, tooling tests 230/0. Physical controller, real save/load, safehouse/gunsmith, B/D coexistence
-  and owner judgement remain. A further wheel config polling fix is isolated: its last wheel run crashed in scene
-  setup before opening; trunk passed 133/133 steps. No new wheel acceptance is claimed.
+  and owner judgement remain. The isolated follow-up's earlier integration wheel run crashed in scene
+  setup before opening; trunk passed 133/133 steps. That failed evidence is preserved separately from the new run below.
+  Assigned B follow-up: `192bd50` imports only the isolated watcher patch; `9dc7948` fixes missed shared-path callbacks
+  with differing casing (focused actual-service checks 8/0). Full `20261001-122159-4330603` restored: wheel 92/0,
+  trunk/text 133/0 each, all 12 captures reviewed; build PASS, verifier 441/0/5, tools 236/0. Wheel first-draw 2 frames/
+  359 ms remains an acceptance gap; config rejection/recovery/restart and owner/combined checks remain unproven.
 - **T-047/T-048 (lane C):** active, unmerged. Full `20261001-094219-2db0bf5` includes dismember CRASH and
   firefight/effects-night FAIL; latest full `20261001-103314-0b4f558` also restored with the same failed check categories.
   Budgets remain unchanged; lane work continues separately.
@@ -47,7 +51,9 @@ before any Phase 3 work. Offline passes do not mark a lane DONE.
   Full SDK 1.2/material acceptance remains pending. SDK 1.3 radar/probes and remaining research are still separate.
 - **T-049 HUD (lane D):** unmerged; clean hiding and coexistence require further runtime evidence.
 
-Latest main build PASS; offline verifier 433/0/5 not-run; tooling tests 236/0. Host log reading now preserves history
+Latest main integration `f816a87` build PASS (zero errors); offline verifier 441/0/5 not-run; tooling tests 236/0.
+Receipts: `results-local/offline/orchestrator-b-integration/`. B continues wheel timing/config-lifecycle coverage;
+C/D/R prepared patches remain unmerged pending their scheduled runtime evidence. Host log reading now preserves history
 through rotation gaps and empty unread tails, and lock self-tests use isolated holder notes. Details and failed/full
 runtime receipts: [orchestrator integration review](reports/2026-10-01-orchestrator-integration.md).
 
