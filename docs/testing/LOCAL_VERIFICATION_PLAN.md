@@ -16,7 +16,7 @@
 |---|---|---|
 | pc-offline | 13 | automatically (builds and tests that need Windows or the game's files) |
 | probe | 4 | automatically (read-only questions about the game's files; structure only) |
-| scenario | 35 | automatically (autopilot drives the game; about 2-4 minutes each) |
+| scenario | 41 | automatically (autopilot drives the game; about 2-4 minutes each) |
 | manual | 20 | you play and judge; about 187 minutes in total, grouped below |
 
 Statuses: QUEUED (never run on the current code), PASS, FAIL, ERROR, CRASH, NOT-RUN, NEEDS-REVIEW (a person or the review session must judge screenshots or log errors).
@@ -235,6 +235,7 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 | `PROBE-collision` | RESEARCH | probe | exit code 0 and a JSON report; the review session reads it | QUEUED |
 | `T027-raycast` | T-027 | scenario | autopilot PASS: ground hit, open sky clear, vehicle hit and filtered, ped hit and passed through, rayto matches, line of sight both ways, faults=0; screenshots judged | QUEUED |
 | `T027-raycast-spike` | T-027 | scenario | autopilot PASS (spawns succeed); the review session reads the raydebug/raybits lines for the vehicle | QUEUED |
+| `T057-audio-output-smoke` | T-057 | scenario | autopilot PASS: fresh T-001 heartbeat after startup | QUEUED |
 | `SDK-selftest` | T-027 | scenario | autopilot PASS: 'selftest_done passed=N failed=0' | QUEUED |
 | `T028-native-texture-review` | T-028 | scenario | autopilot PASS and the screenshots judged as described | QUEUED |
 | `T031-multimat-report` | T-031 | pc-offline | report fields match; inspect compiled.geometries and textures for two distinct material groups and readback [] | QUEUED |
@@ -275,7 +276,12 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 | `T044-loadout-deaths-b` | T-044 | scenario | autopilot PASS: "autopilot_death_cycles_done cycles=25 lost_owned=0 failed_cycles=0 timeouts=0" with stored_growth equal to owned_expected (at least 40 of the 50 bought weapons counted as owned), and "arsenal_roundtrip identical=True" found | QUEUED |
 | `T044-loadout-outfits` | T-044 | scenario | autopilot PASS (every outfit set, every status line with the expected class); the screenshots judged by the owner for clipping | QUEUED |
 | `T044-loadout-review` | T-044 | scenario | autopilot PASS; the screenshots judged by the owner for clipping | QUEUED |
+| `T045-weapon-wheel` | T-045 | scenario | autopilot PASS: first draw within one frame; 12 selections with no failures; keyboard hold and tap flows read back the requested equipped weapon; ui-budget check wheel passes (draw.ui <=0.5 ms, average/p95 <=+10%, p99 <=+15% vs paired closed menu, >=30 samples, no >=1 s stall); screenshots reviewed. | QUEUED |
+| `T046-trunk-ui` | T-046 | scenario | autopilot PASS: store/take/swap preserves logged ammunition and ownership, full trunk refuses store, two persisted state round trips identical; swap preview and keyboard capacity-refusal feedback captured; both closes release storage control and finish choreography; ui-budget check trunk passes; screenshots reviewed. | QUEUED |
+| `T045-ui-path` | T-045 | scenario | All steps execute; frame and draw-cost windows recorded for closed, locked no-draw, primitives, text, full, and unlocked full. Diagnostic evidence only, never gameplay acceptance. | QUEUED |
+| `T045-ui-text` | T-045 | scenario | autopilot PASS; in the report the second framestats of text_list_sprite and text_radial_sprite are within +10% average and +15% p99 of text_closed, and draw.ui average at most 0.5 ms; the other windows are the root-cause evidence | QUEUED |
 | `T050-material-probe` | T-050 | scenario | Raw 24-word results and screenshots; no surface name asserted until decoded | QUEUED |
+| `T050-material-coverage` | T-050 | scenario | autopilot PASS; every ray line has a material_id or UNKNOWN; the table in HitMaterial.md is filled from it | QUEUED |
 
 ## What each check proves, and what stays unproven
 
@@ -291,6 +297,7 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 - `PROBE-collision`: Which collision-related resources the game ships (by extension and resource type), in which archives, how many, their resource versions and top-level sizes. Input for collision research (Session 5) Also propCandidates: models shipped as a drawable with a same-named bounds resource, which the raycast-objects scenario spawns. **Still unproven:** The bound structures' field meanings; those need their own probes once the inventory is known.
 - `T027-raycast`: SDK 1.1 Query.Raycast / HasLineOfSight against world, a vehicle and a ped through the real game line test; filtering and ignore semantics; no faults. **Still unproven:** Objects (props with collision) are not tested in game yet (RayMask.Objects); research questions R1-R6 in docs/research/Raycast.md.
 - `T027-raycast-spike`: Raw line-test results per include bit for ground, sky, a vehicle and a ped: evidence for Raycast.md open questions. **Still unproven:** Research only; interpretation happens in the review session.
+- `T057-audio-output-smoke`: GTA IV reaches the engine and emits a fresh heartbeat with the audio preflight active. The installed Sonar Gaming endpoint is recovered if no playback output is active. **Still unproven:** Audible output and unrelated gameplay stability. Recovery from a disabled endpoint is recorded separately in T-057's native host evidence.
 - `SDK-selftest`: Every Liberty.Sdk service works in game on the new core ABI 5, including the ten raycast/line-of-sight checks. Since the engine audit also: the snapshot driver read from [vehicle+0xF50] (check vehicle-driver), capability refusal, and commands after the ownership and capability changes.
 - `T028-native-texture-review`: The game loads dictionaries written from scratch and draws DXT1; how gta_default treats DXT5 alpha. **Still unproven:** Alpha behaviour is an observation (translucent, cut-out or ignored); any of the three is a valid answer.
 - `T031-multimat-report`: The packaged authored fixture uses automatic structure writer selection and passes readback. The report names the real template and both material textures. **Still unproven:** In-game material appearance, culling and placement; tested by T031-multimat-review.
@@ -351,4 +358,9 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 - `T044-loadout-deaths-b`: The second 25 wasted cycles (50 in total with part 1): 0 lost owned weapons and an identical state after saving and loading. Runs after `T044-loadout-deaths-a` in the same run.
 - `T044-loadout-outfits`: All 17 upper-body outfits Niko can wear are classified as config/holsters.json says (holster module reports the class), the holster props are re-attached with the class offsets, and front, side and back screenshots exist for each.
 - `T044-loadout-review`: Rifle + shotgun, SMG + rifle and SMG + shotgun are each slung on both body slots without sharing a position, on a slim and on a bulky outfit.
+- `T045-weapon-wheel`: The Liberty weapon wheel shows sidearm, two long guns, melee and thrown (empty slots read empty), opens within 1 frame of the request, every filled slot equips the right weapon (12 of 12), hold-to-open with the keyboard equips on release, tap-open with arrow keys and Enter equips, and the UI draw cost while open is logged. Acceptance performance is enforced by ui-budget, rather than inferred from a PASS word or low draw submission cost. **Still unproven:** Controller (pad) input cannot be injected: pad hold, stick selection and the Back button binding are for the owner to try. Whether the game itself reacts to the Back button or the Tab key on foot is not checked.
+- `T046-trunk-ui`: The trunk interface shows the carried loadout (wheel) and the trunk list with used/available capacity; Space stores the highlighted carried weapon, Enter takes the highlighted stored one and swaps out the least recently used long gun when both slots are full; a 4-slot sports-car trunk refuses the fifth weapon; the state saved to disk reads back identical. **Still unproven:** Controller (pad) input and the safehouse stash through this interface are not exercised by the scenario; a game save and load is not automated (the saved state file round trip is). Latest Codex fixes have no in-game evidence; HUD coexistence is only inspected in source geometry.
+- `T045-ui-path`: Separates control capture and deferred UI drawing cost in the same scene with normal density.
+- `T045-ui-text`: With the sample list menu (8 strings) open: frame statistics for sprite text (the shared canvas default), SHDN DrawText limited to 1 and 4 strings per frame and unlimited, a radial menu with sprite text, and the DevTools menu (its own SHDN text). Shows what the stall scales with and that sprite text keeps the frame time near the closed window.
 - `T050-material-probe`: Raw results and stable resolver operation only; not material index semantics
+- `T050-material-coverage`: The ray-hit material id on side glass, wood props and water bodies, read against config/impact-surfaces.json; only what the log shows, no surface name is asserted from the model name

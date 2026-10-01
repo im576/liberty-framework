@@ -1,6 +1,6 @@
 # Liberty Vanilla+ — Stage 1 (first production mod)
 
-Status: **DESIGN, approved direction (owner, 2026-09-30). Not started.** Working title: *Liberty Vanilla+ / Gunplay V2 — Stage 1*.
+Status: **IMPLEMENTATION / INTEGRATION; approved direction (owner, 2026-09-30), awaiting full acceptance and owner playtest.** Working title: *Liberty Vanilla+ / Gunplay V2 — Stage 1*.
 This document is the build plan for the first mod on the Liberty Engine. Engine facts it relies on are in
 [PROJECT_STATE.md](../PROJECT_STATE.md) and the [regression report](../reports/2026-09-30-regression.md).
 
@@ -180,10 +180,11 @@ systems). Visual and performance comparisons always use these.
 | Citywide coverage | Shared road/sidewalk/glass/emissive textures replaced where used | Listed per texture in the pack manifest |
 
 Budget: UI draw ≤ **0.5 ms** average; no new streaming hitch > **100 ms** on the scripted Broker/Dukes drive.
-**VRAM (confirmed, RX 570 8 GB):** normal overhead **+250 to +300 MB** over vanilla; hard ceiling **+350 MB** in the
+**VRAM (measured GPU: RX 570 4 GB):** original budget: normal overhead **+250 to +300 MB** over vanilla; hard ceiling **+350 MB** in the
 worst-case scene (Pillar 5). 350 MB is a ceiling, not a target to fill. Every texture has proper mipmaps and sensible
-compression; no blanket 4K; higher resolution only where it visibly improves the result. VRAM has headroom on this GPU;
-CPU, streaming and frame pacing are the real constraints.
+compression; no blanket 4K; higher resolution only where it visibly improves the result. The owner's decision on a
+proposed **+300 MB hard ceiling** is pending; retain +350 MB as the written criterion until answered. Measure actual
+headroom on the 4 GB card alongside CPU, streaming and frame pacing.
 
 ### Pillar 2 — Harsh violence (gore, combat effects)
 
@@ -277,7 +278,8 @@ fixes apply everywhere (section 4). Each area is finished to the Hove Beach stan
 1. **Loadout:** 2 long guns + 1 sidearm; one long gun equipped, the other slung (section 7, Slice A). SMGs (Uzi, MP5) count as long guns.
 2. **Art sourcing:** identity-defining assets hand-designed; repeatable surfaces procedural or CC0 (section 3). GPT Image
    2.5 available through the owner's subscription.
-3. **VRAM:** RX 570 8 GB; +250 to +300 MB normal, +350 MB hard ceiling in the worst-case scene (Pillars 1 and 5).
+3. **VRAM:** original +250 to +300 MB normal, +350 MB hard ceiling in the worst-case scene (Pillars 1 and 5).
+   Hardware correction 2026-10-01: RX 570 **4 GB**; proposed +300 MB hard ceiling awaits the owner, not yet adopted.
    The other section 10 numbers remain proposals, tuned when their scenarios exist.
 4. **Gore:** very harsh, grounded; suffering, crawling and contextual executions allowed; bodies 3–5 minutes with hard
    caps and adaptive cleanup (Pillar 2).

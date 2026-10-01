@@ -262,6 +262,20 @@
       "addedIn": "claude/friendly-euler-m7hn4e (Session 1 seed)"
     },
     {
+      "id": "T057-audio-output-smoke",
+      "task": "T-057",
+      "title": "Game startup with an unattended playback output",
+      "kind": "scenario",
+      "run": {
+        "scenario": "audio-output-smoke"
+      },
+      "proves": "GTA IV reaches the engine and emits a fresh heartbeat with the audio preflight active. The installed Sonar Gaming endpoint is recovered if no playback output is active.",
+      "pass": "autopilot PASS: fresh T-001 heartbeat after startup",
+      "unproven": "Audible output and unrelated gameplay stability. Recovery from a disabled endpoint is recorded separately in T-057's native host evidence.",
+      "status": "QUEUED",
+      "addedIn": "T-057 local audio recovery"
+    },
+    {
       "id": "SDK-selftest",
       "task": "T-027",
       "title": "SDK self-test in game (all services, raycast checks included)",
@@ -1601,6 +1615,83 @@
       "addedIn": "stage1/T-044"
     },
     {
+      "id": "T045-weapon-wheel",
+      "task": "T-045",
+      "title": "Weapon wheel: opens, shows the physical loadout, equips every slot",
+      "kind": "scenario",
+      "run": {
+        "scenario": "stage1-weapon-wheel"
+      },
+      "proves": "The Liberty weapon wheel shows sidearm, two long guns, melee and thrown (empty slots read empty), opens within 1 frame of the request, every filled slot equips the right weapon (12 of 12), hold-to-open with the keyboard equips on release, tap-open with arrow keys and Enter equips, and the UI draw cost while open is logged. Acceptance performance is enforced by ui-budget, rather than inferred from a PASS word or low draw submission cost.",
+      "pass": "autopilot PASS: first draw within one frame; 12 selections with no failures; keyboard hold and tap flows read back the requested equipped weapon; ui-budget check wheel passes (draw.ui <=0.5 ms, average/p95 <=+10%, p99 <=+15% vs paired closed menu, >=30 samples, no >=1 s stall); screenshots reviewed.",
+      "unproven": "Controller (pad) input cannot be injected: pad hold, stick selection and the Back button binding are for the owner to try. Whether the game itself reacts to the Back button or the Tab key on foot is not checked.",
+      "review": {
+        "screenshots": {
+          "wheel_open_sidearm": "The wheel in the middle of the screen, dark translucent ring, five slots (pistol, two long guns, knife, empty thrown); the pistol slot highlighted with an amber accent, centre shows SIDEARM, the pistol name and rounds as magazine / reserve; text readable",
+          "wheel_long_gun_1": "Same wheel with the first long gun highlighted; centre shows its name, rounds and finish",
+          "wheel_long_gun_2": "Second long gun highlighted",
+          "wheel_melee": "Melee slot highlighted (knife), no ammunition line",
+          "wheel_empty_slot": "The thrown slot highlighted and reading Empty",
+          "wheel_keyboard_highlight": "The wheel opened by tapping Tab, highlight moved by the arrow keys, confirmation hint readable below the wheel"
+        }
+      },
+      "reference": "docs/tasks/T-045-stage1-weapon-wheel.md#human-test-steps",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-045"
+    },
+    {
+      "id": "T046-trunk-ui",
+      "task": "T-046",
+      "title": "Trunk interface: carried and trunk groups, store, take, swap, capacity",
+      "kind": "scenario",
+      "run": {
+        "scenario": "stage1-trunk-ui"
+      },
+      "proves": "The trunk interface shows the carried loadout (wheel) and the trunk list with used/available capacity; Space stores the highlighted carried weapon, Enter takes the highlighted stored one and swaps out the least recently used long gun when both slots are full; a 4-slot sports-car trunk refuses the fifth weapon; the state saved to disk reads back identical.",
+      "pass": "autopilot PASS: store/take/swap preserves logged ammunition and ownership, full trunk refuses store, two persisted state round trips identical; swap preview and keyboard capacity-refusal feedback captured; both closes release storage control and finish choreography; ui-budget check trunk passes; screenshots reviewed.",
+      "unproven": "Controller (pad) input and the safehouse stash through this interface are not exercised by the scenario; a game save and load is not automated (the saved state file round trip is). Latest Codex fixes have no in-game evidence; HUD coexistence is only inspected in source geometry.",
+      "review": {
+        "screenshots": {
+          "trunk_ui_open": "Trunk open behind Niko: the radial with pistol, shotgun and AK in their slots at the centre, the TRUNK panel at the right reading 0 / 8 and Empty; text readable",
+          "trunk_ui_after_store": "The AK gone from its slot, the TRUNK panel listing it with 1 / 8, the slung AK no longer on Niko",
+          "trunk_ui_swap_preview": "Before Enter, the centre previews taking the AK and swapping out the shotgun while the AK remains in the TRUNK list",
+          "trunk_ui_after_swap": "The AK back on Niko, the shotgun now in the TRUNK list (1 / 8); inspect the completed transfer and visible slings",
+          "trunk_ui_full": "A banshee trunk panel reading 4 / 4 in amber with the Full hint",
+          "trunk_ui_full_refused": "The shotgun still carried, the panel still 4 / 4, the message under the wheel says Trunk full (4)"
+        }
+      },
+      "reference": "docs/tasks/T-046-stage1-trunk-ui.md#human-test-steps",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-046"
+    },
+    {
+      "id": "T045-ui-path",
+      "task": "T-045",
+      "title": "Bounded shared UI control and primitive bisect",
+      "kind": "scenario",
+      "run": {
+        "scenario": "stage1-ui-path"
+      },
+      "pass": "All steps execute; frame and draw-cost windows recorded for closed, locked no-draw, primitives, text, full, and unlocked full. Diagnostic evidence only, never gameplay acceptance.",
+      "proves": "Separates control capture and deferred UI drawing cost in the same scene with normal density.",
+      "status": "QUEUED",
+      "reference": "docs/tasks/T-045-stage1-weapon-wheel.md"
+    },
+    {
+      "id": "T045-ui-text",
+      "task": "T-045",
+      "title": "Shared UI text stall: sprite text against SHDN DrawText, and the DevTools menu",
+      "kind": "scenario",
+      "run": {
+        "scenario": "stage1-ui-text"
+      },
+      "proves": "With the sample list menu (8 strings) open: frame statistics for sprite text (the shared canvas default), SHDN DrawText limited to 1 and 4 strings per frame and unlimited, a radial menu with sprite text, and the DevTools menu (its own SHDN text). Shows what the stall scales with and that sprite text keeps the frame time near the closed window.",
+      "pass": "autopilot PASS; in the report the second framestats of text_list_sprite and text_radial_sprite are within +10% average and +15% p99 of text_closed, and draw.ui average at most 0.5 ms; the other windows are the root-cause evidence",
+      "reference": "docs/tasks/T-045-stage1-weapon-wheel.md",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-045"
+    },
+    {
       "id": "T050-material-probe",
       "task": "T-050",
       "title": "Raw physics hit evidence against visible ground, ped, vehicle and solid prop",
@@ -1621,15 +1712,33 @@
           "material_world_hove": "Hove street: tarmac expected",
           "material_world_dukes": "Dukes road",
           "material_world_firefly": "Firefly Island: sand expected",
-          "material_world_range": "Gun range floor",
-          "material_car_side": "Admiral broadside: side glass should be at the ray heights",
+          "material_world_range": "Gun range floor"
+        }
+      },
+      "pass": "Raw 24-word results and screenshots; no surface name asserted until decoded"
+    },
+    {
+      "id": "T050-material-coverage",
+      "task": "T-050",
+      "title": "Material ids for car glass, wood crate and planks, a low prop hit and water",
+      "kind": "scenario",
+      "run": {
+        "scenario": "research-material-coverage"
+      },
+      "proves": "The ray-hit material id on side glass, wood props and water bodies, read against config/impact-surfaces.json; only what the log shows, no surface name is asserted from the model name",
+      "status": "QUEUED",
+      "addedIn": "research/stage1",
+      "reference": "docs/tasks/T-050-r2-hit-material.md",
+      "review": {
+        "screenshots": {
+          "material_car_side": "Admiral broadside: side glass at the ray heights",
           "material_crate": "cj_crate_1 wooden crate present ahead",
           "material_planks": "planksboardup2 present ahead",
           "material_water_pond": "Over the Algonquin pond (water.dat quad at z 9)",
           "material_water_pool": "Over the small water body at z 14"
         }
       },
-      "pass": "Raw 24-word results and screenshots; no surface name asserted until decoded"
+      "pass": "autopilot PASS; every ray line has a material_id or UNKNOWN; the table in HitMaterial.md is filled from it"
     }
   ]
 }

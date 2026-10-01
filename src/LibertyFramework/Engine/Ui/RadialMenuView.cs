@@ -38,6 +38,9 @@ namespace LibertyFramework.Engine.Ui
         }
 
         internal LibertyModule Owner { get; private set; }
+        // First draw of this menu (engine frame and tick), set on the draw thread; -1 until then. T-045 reads it to measure open-to-draw.
+        internal volatile int FirstDrawFrame = -1;
+        internal int FirstDrawTicks;
         private bool segmentFailureLogged;
         public bool IsOpen { get; private set; }
         public int Selected { get; set; }
@@ -113,6 +116,7 @@ namespace LibertyFramework.Engine.Ui
         {
             Snapshot s = snapshot;
             if (s == null) { return; }
+            if (FirstDrawFrame < 0) { FirstDrawTicks = Environment.TickCount; FirstDrawFrame = LibertyFramework.Engine.LibertyEngine.Current.Frame; }
             float fade = Math.Min(1f, (Environment.TickCount - s.OpenedAt) / 160f);
             float saved = canvas.Opacity;
             canvas.Opacity = saved * fade;
@@ -141,7 +145,7 @@ namespace LibertyFramework.Engine.Ui
                 }
                 if (!string.IsNullOrEmpty(s.Badges[i]))
                 {
-                    canvas.Text(s.Badges[i], ix - 30, iy + diameter * 0.055f, 60, 18, TextStyle.Small, TextAlign.Center, Rgba.Muted);
+                    canvas.Text(s.Badges[i], ix - 60, iy + diameter * 0.055f, 120, 22, TextStyle.Small, TextAlign.Center, Rgba.Muted);
                 }
             }
 
@@ -154,7 +158,11 @@ namespace LibertyFramework.Engine.Ui
                 for (int i = 0; i < s.Centre.Length; i++)
                 {
                     TextStyle style = i == 1 ? TextStyle.Emphasis : i == s.Centre.Length - 1 ? TextStyle.Small : TextStyle.Body;
-                    canvas.Text(s.Centre[i], cx - boxWidth / 2, y, boxWidth, 22, style, TextAlign.Center, i == s.Centre.Length - 1 ? Rgba.Muted : Rgba.White);
+                    // Navigation hints must not be squeezed into the centre disc (they were visibly truncated).
+                    bool hint = i == s.Centre.Length - 1;
+                    float lineWidth = hint ? diameter + 140f : i >= 3 ? diameter * 0.75f : boxWidth;
+                    float lineY = hint ? top + diameter + 16f : y;
+                    canvas.Text(s.Centre[i], cx - lineWidth / 2, lineY, lineWidth, 22, style, TextAlign.Center, hint ? Rgba.Muted : Rgba.White);
                     y += i == s.Centre.Length - 2 ? 30 : 24;
                 }
             }

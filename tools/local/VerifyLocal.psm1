@@ -366,7 +366,7 @@ function Enter-GamePhase($Context, $Checks) {
     if (@($Checks | Where-Object { $_.kind -eq 'scenario' }).Count -gt 0) {
         try {
             Import-Module $Context.GameModule -Force 3>$null
-            if (-not (Test-AudioOutput)) { $Context.LaunchBlocked = 'GAME-UNAVAILABLE: no audio output device is active; GTA IV refuses to start without one (connect speakers, a headset or the controller)' }
+            if (-not (Test-AudioOutput)) { $Context.LaunchBlocked = 'GAME-UNAVAILABLE: no audio output device is active and the installed virtual output could not be recovered; connect speakers or a headset, or enable a virtual playback device' }
         } catch { Write-Host "[verify-local] audio check failed: $($_.Exception.Message)" }
     }
 }

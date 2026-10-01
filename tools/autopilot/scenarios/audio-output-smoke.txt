@@ -1,0 +1,2 @@
+# Audio startup check against the installed build. No player, mission, inventory or world mutations.
+expect "T-001 heartbeat" 45

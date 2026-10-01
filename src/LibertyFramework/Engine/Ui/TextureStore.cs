@@ -21,19 +21,21 @@ namespace LibertyFramework.Engine.Ui
 
         private readonly object gate = new object();
         private readonly Dictionary<int, Entry> entries = new Dictionary<int, Entry>();
-        private readonly Dictionary<string, int> byKey = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        // Generated content (especially text) is case-sensitive. Only Windows file paths are normalised.
+        private readonly Dictionary<string, int> byKey = new Dictionary<string, int>(StringComparer.Ordinal);
         private int nextHandle = 1;
 
         internal TextureRef Load(string path)
         {
             string full = Path.IsPathRooted(path) ? path : Path.Combine(LibertyPaths.Root, path);
+            string key = "file:" + Path.GetFullPath(full).ToUpperInvariant();
             lock (gate)
             {
                 int known;
-                if (byKey.TryGetValue(full, out known)) { return new TextureRef(known); }
+                if (byKey.TryGetValue(key, out known)) { return new TextureRef(known); }
             }
             if (!File.Exists(full)) { RuntimeLog.Error("ui_texture_missing path=" + full); return TextureRef.None; }
-            return Add(File.ReadAllBytes(full), full);
+            return Add(File.ReadAllBytes(full), key);
         }
 
         internal TextureRef Add(byte[] png, string key)
@@ -53,6 +55,24 @@ namespace LibertyFramework.Engine.Ui
         internal TextureRef Find(string key)
         {
             lock (gate) { int handle; return byKey.TryGetValue(key, out handle) ? new TextureRef(handle) : TextureRef.None; }
+        }
+
+        // Forgets a texture and frees its D3D object. Draw pass only (the texture is created and released there).
+        internal void Release(TextureRef texture, string key)
+        {
+            Entry entry;
+            lock (gate)
+            {
+                if (!entries.TryGetValue(texture.Handle, out entry)) { return; }
+                entries.Remove(texture.Handle);
+                if (key != null) { byKey.Remove(key); }
+            }
+            IDisposable disposable = entry.Texture as IDisposable;
+            if (disposable != null)
+            {
+                try { disposable.Dispose(); }
+                catch (Exception error) { RuntimeLog.Error("ui_texture_release_failed handle=" + texture.Handle + " error=" + error.Message); }
+            }
         }
 
         // Draw pass only.
