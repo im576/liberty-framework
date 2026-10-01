@@ -24,6 +24,8 @@ namespace LibertyFramework.Verify
             Plan(check);
             Text(repoRoot, check);
             InputDevice(check);
+            PromptCache(check);
+            AcceptanceBudgets(repoRoot, check);
             TableResolver(check);
         }
 
@@ -228,6 +230,49 @@ namespace LibertyFramework.Verify
         }
 
         // --- the generic hud.dat table resolver against a synthetic image --------------------------------------------------------
+
+        private static void PromptCache(Checker check)
+        {
+            HudPromptText prompt = new HudPromptText();
+            List<HudGlyph> glyphs = HudConfig.Defaults().Prompt.Glyphs;
+            List<string> unknown;
+            check.True("prompt cache expands the first prompt", prompt.Update("Press {interact}", glyphs, HudDevice.Pad, out unknown) && prompt.Text == "Press X", "");
+            check.True("steady prompt needs no expansion or unknown-token list", !prompt.Update("Press {interact}", glyphs, HudDevice.Pad, out unknown) && unknown == null, "");
+            check.True("device switch rebuilds a held prompt", prompt.Update("Press {interact}", glyphs, HudDevice.Keyboard, out unknown) && prompt.Text == "Press E", "");
+            List<HudGlyph> replacement = HudConfig.Defaults().Prompt.Glyphs;
+            replacement.Find(g => g.Token == "interact").Keyboard = "F";
+            check.True("hot-reloaded glyphs rebuild even unchanged prompt text", prompt.Update("Press {interact}", replacement, HudDevice.Keyboard, out unknown) && prompt.Text == "Press F", "");
+            check.True("help expiry retains text for fade-out", !prompt.Update(null, replacement, HudDevice.Keyboard, out unknown) && prompt.Text == "Press F", "");
+            check.True("same help reopening is evaluated again", prompt.Update("Press {interact}", replacement, HudDevice.Keyboard, out unknown), "");
+            check.True("unknown glyph is reported on prompt change", prompt.Update("Press {missing}", glyphs, HudDevice.Keyboard, out unknown) && unknown != null && unknown.Count == 1, "");
+            check.True("held unknown glyph does not flood the log every frame", !prompt.Update("Press {missing}", glyphs, HudDevice.Keyboard, out unknown) && unknown == null, "");
+        }
+
+        private static void AcceptanceBudgets(string repoRoot, Checker check)
+        {
+            string scenario = File.ReadAllText(Path.Combine(repoRoot, "tools/autopilot/scenarios/stage1-hud.txt"));
+            foreach (string section in new[] { "hud", "ui" })
+            {
+                string pattern = null;
+                foreach (string raw in scenario.Split('\n'))
+                {
+                    string line = raw.Trim();
+                    if (line.StartsWith("expect \"costs_ms") && line.Contains("draw\\." + section + "="))
+                    {
+                        int end = line.LastIndexOf('"');
+                        pattern = line.Substring(8, end - 8);
+                    }
+                }
+                check.True("HUD scenario has an enforced draw." + section + " budget", pattern != null, "");
+                if (pattern == null) { continue; }
+                string prefix = "costs_ms(avg/max/count@thread) draw." + section + "=";
+                string inside = section == "hud" ? "0.349" : "0.500";
+                string outside = section == "hud" ? "0.350" : "0.501";
+                check.True("draw." + section + " accepts in-budget samples", Regex.IsMatch(prefix + inside + "/1.0/240@1 total=100", pattern), "");
+                check.True("draw." + section + " rejects over-budget and multi-ms samples", !Regex.IsMatch(prefix + outside + "/1.0/240@1 total=100", pattern) && !Regex.IsMatch(prefix + "840.000/900.0/8@1 total=6720", pattern), "");
+                check.True("draw." + section + " rejects missing cost evidence", !Regex.IsMatch("costs_ms(avg/max/count@thread)", pattern), "");
+            }
+        }
 
         private const uint ImageBase = 0x400000, TextVirtual = 0x1000, RdataVirtual = 0x2000;
 

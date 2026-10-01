@@ -24,6 +24,14 @@ shot hud_vanilla_baseline
 
 # Weapon icon and ammunition.
 hudctl hide HUD_WEAPON_ICON
+wait 800
+shot hud_hidden_weapon_only
+hudctl restore
+hudctl hide HUD_AMMO
+wait 800
+shot hud_hidden_ammo_only
+hudctl restore
+hudctl hide HUD_WEAPON_ICON
 hudctl hide HUD_AMMO
 wait 800
 shot hud_hidden_weapon_ammo

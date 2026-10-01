@@ -4,6 +4,36 @@ Question (T-049 scope): which vanilla HUD elements can be hidden individually wi
 what it replaces and never a duplicate? Status: **mechanism built, answer pending the PC run of `T049-hud-components`**. This note
 records what is known, what is not, and exactly how the open part gets answered. Confidence tags as in [README](README.md).
 
+## September 30 local evidence reconciliation (Codex)
+
+**No Lane D gameplay check or package-install completed. The owner subsequently prohibited in-game testing.** Keep `T049-hud-components`
+and `T049-stage1-hud` queued and T-049 NEEDS-PLAYTEST. Do not launch either check until the owner explicitly reauthorizes it; research remains deferred.
+
+- **[VERIFIED OFFLINE, real executable file]** Before the restriction, `tools/verify.ps1 -GameDirectory` read CE 1.2.0.59 with SHA-256
+  `08759A5516F9837920EA504436236BBAB89D0826A8E4D04FF106345177B5345D`. The existing resolver found **31 components, all with consistent globals, and 23 unparsed registrations**.
+  It includes `HUD_WEAPON_ICON`, `HUD_AMMO`, `HUD_WANTED_BACK`, `HUD_WANTED_FRONT`, `HUD_CASH`, `HUD_RADAR`, `HUD_HELP_MESSAGE`
+  and the four reticle components. This verifies parsing against the actual executable, **not visible hiding or restoration**.
+  Evidence: `results-local/offline/verify-game.log` in `C:/Users/IM576/GTAIV-Reborn-lane-d`.
+- That exploratory full offline run was **not a pass**: `passed=1029 failed=2 notrun=1`. It exposed a stale Phase 1 WeaponInfo staging lookup
+  and an old test that required density thinning. The continuation makes the verifier recognize `staging/phase2` and assert the owner's density-off policy.
+  A full packaged verifier rerun is still outstanding; the final repository-only verifier passes.
+- No separately hideable **player** health/armour component was established. The parsed HEALTH/ARMOUR names are target-reticle components,
+  excluded from HUD ownership. **The 23 unparsed registrations prevent treating the table as exhaustive.** Health/armour bars stay off under shipped policy.
+  Recommendation: retain vanilla radar arcs until a future authorized probe proves a clean replacement. The owner has not approved duplicate bars.
+- The recovered probe had a misleading baseline: Liberty replacement remained active, and restore skipped planned components. `probe-mode on`
+  now suspends replacements, resets presence, restores previous probes, and reapplies diagnostic hides on each tick. It draws no Liberty frame.
+  Icon-only, ammo-only and combined captures are queued separately. `probe-mode off` returns to the shipped plan.
+- `stage1-hud` now uses the existing T-044 pistol cap: **150 total rounds**, expected `17 / 133`. Total-includes-clip semantics remain an assumption
+  until live values and firing/reload captures establish them. The test no longer assumes an impossible 400 carried pistol rounds.
+- The final scenario adds actual JSON config-off polling, restoration of original bytes, and combined `draw.ui <=0.5 ms` gating alongside
+  `draw.hud <0.35 ms`. Negative offline tests reject over-budget, multi-ms and missing samples. These gates have **not run in the game**.
+- **[VERIFIED OFFLINE, generated local packaging output]** Pistol/SMG/rifle icons `7.png`, `10.png`, `14.png` are 256x128; the configured 96x48 draw ratio matches.
+- **[HISTORICAL SCREENSHOT REVIEW]** B's `stage1-trunk-ui-20260930-174525/trunk_ui_open.png` shows its wheel/panel but no radar or Liberty HUD.
+  It cannot establish coexistence. B's newer source at `9979355` positions the panel at virtual y=220; this HUD's default group ends at y=142,
+  leaving 78 units of vertical clearance offline. A combined installed-build screenshot, both input devices, real frame/UI cost and restoration remain unproven.
+
+No new registrations, memory offsets, hooks, natives or research experiments were added. The continuation retains the existing ADR-0004 mechanism.
+
 ## What is known
 
 - **[VERIFIED offline + owner report 2026-09-24] (T-010; [HudAndCrosshair.md](HudAndCrosshair.md), [MEMORY.md](../game-api/MEMORY.md))** The game registers

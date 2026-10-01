@@ -16,6 +16,8 @@ overrides older docs.
 
 ## Stage 1 progress
 
+- **T-049 Lane D, NEEDS-PLAYTEST (Codex, September 30):** HUD probe isolation, config restoration coverage, prompt caching/mouse glyph input and enforced combined UI gates are implemented. Windows builds and repository-only verifier pass (469/0, 7 unrun); no D install or gameplay check completed before the owner prohibited further in-game testing. Health/armour stay vanilla. [Handoff](handoffs/Codex-Lane-D-2026-09-30.md) requires Sonnet review of all Codex changes.
+
 - **T-044 physical loadout (lane B), NEEDS-PLAYTEST (2026-09-30):** 1 sidearm + 2 long guns (SMGs slung), ammo caps, holster props react in the event frame, outfit classes; in game: 100 vehicle enter/exit cycles with 0 orphaned props, 50 death cycles with 0 lost owned weapons (a death with no known safehouse now goes to an unassigned stash), save/load state identical. Card: [T-044](tasks/T-044-stage1-physical-weapons.md).
 
 ## Cleanup and fixes in progress

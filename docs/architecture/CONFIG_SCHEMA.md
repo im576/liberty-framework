@@ -263,7 +263,7 @@ installer merges new top-level sections into an existing file and keeps the owne
 | `weapon.showOnChange` / `showOnShot` / `showWhileReloading` / `showWhileAiming` | all true | what brings it up; `showWhileAiming` follows the left trigger above `aimTriggerLevel` or the right mouse button |
 | `weapon.alwaysWhenArmed` | false | keep it up whenever a weapon is held |
 | `weapon.lowClipFraction` | 0.25 | the clip count turns `lowClip` at or below this fraction of the largest clip seen for the weapon (empty always) |
-| `weapon.totalIncludesClip` | true | `GET_AMMO_IN_CHAR_WEAPON` counts the rounds in the clip: reserve = total - clip. The scenario `stage1-hud` reads `hud_ammo ... shown="17 / 383"` for 400 rounds to prove it; set false if it does not |
+| `weapon.totalIncludesClip` | true | Assumed pending gameplay evidence: reserve = total - clip. The scenario `stage1-hud` expects `hud_ammo ... shown="17 / 133"` for 150 rounds (T-044 pistol cap); the run must establish actual total semantics before accepting this setting |
 | `weapon.aimTriggerLevel` | 0.3 | left-trigger level (0-1) that counts as aiming |
 | `weapon.vanillaComponents` | `HUD_WEAPON_ICON`, `HUD_AMMO` | hud.dat components hidden while Liberty draws this element |
 | `weapon.drawWithoutHidingVanilla` | false | draw even when a listed component cannot be hidden (a duplicate of the vanilla one) |

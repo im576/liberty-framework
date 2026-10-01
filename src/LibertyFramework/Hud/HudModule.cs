@@ -33,6 +33,7 @@ namespace LibertyFramework.Hud
         private const int RightMouseButton = 0x02;
         private static readonly int[] DeviceKeys =
         {
+            0x01, 0x02, 0x04, // mouse fire, aim, middle button also switch glyphs back to keyboard/mouse
             0x57, 0x41, 0x53, 0x44, // W A S D
             0x45, 0x46, 0x52, 0x20, // E F R Space
             0x10, 0x11, 0x09, 0x0D, // Shift Control Tab Enter
@@ -61,6 +62,7 @@ namespace LibertyFramework.Hud
         private readonly HudPresence armourPresence = new HudPresence();
         private readonly HudPresence wantedPresence = new HudPresence();
         private readonly HudPresence promptPresence = new HudPresence();
+        private readonly HudPromptText promptExpansion = new HudPromptText();
         private readonly HashSet<string> probeHidden = new HashSet<string>();
         private readonly HashSet<string> planHidden = new HashSet<string>();
         private readonly Dictionary<string, string> forced = new Dictionary<string, string>();
@@ -212,7 +214,7 @@ namespace LibertyFramework.Hud
             LogPlan("armour", armourPlan);
             LogPlan("wanted", wantedPlan);
             // The prompt restyle needs no hiding: the help box is ours.
-            try { Engine.Ui.HelpDrawnByHud = config.Enabled && config.Prompt.Enabled; } catch (Exception error) { RuntimeLog.Error("hud_help_hook_failed error=" + error.Message); }
+            try { Engine.Ui.HelpDrawnByHud = !probeMode && config.Enabled && config.Prompt.Enabled; } catch (Exception error) { RuntimeLog.Error("hud_help_hook_failed error=" + error.Message); }
             ReleaseUnplanned();
         }
 
@@ -427,10 +429,10 @@ namespace LibertyFramework.Hud
             if (wantedLevel > 0) { wantedPresence.Trigger(now, config.Wanted.HoldSeconds); }
 
             string help = Engine.Ui.CurrentHelp();
-            if (help != null)
+            List<string> unknown;
+            if (promptExpansion.Update(help, config.Prompt.Glyphs, device.Current, out unknown))
             {
-                List<string> unknown;
-                promptText = HudText.ExpandGlyphs(help, config.Prompt.Glyphs, device.Current, out unknown);
+                promptText = promptExpansion.Text;
                 if (unknown != null) { RuntimeLog.Info("hud_prompt_unknown_glyph tokens=" + string.Join(",", unknown.ToArray())); }
             }
             promptPresence.Update(now, delta, (help != null && config.Prompt.Enabled) || Forced("prompt"), config.Prompt.FadeInSeconds, config.Prompt.FadeOutSeconds);
@@ -730,9 +732,10 @@ namespace LibertyFramework.Hud
             text.Append(" device=").Append(device.Current.ToString().ToLowerInvariant()).Append(" layout_test=").Append(layoutTest).Append(" probe_mode=").Append(probeMode);
             text.Append(" hidden=").Append(planHidden.Count + probeHidden.Count).Append(" help_by_hud=").Append(Engine.Ui.HelpDrawnByHud);
             Frame now = frame;
+            text.Append(" drawn=");
             if (now != null)
             {
-                text.Append(" drawn=").Append(now.DrawWeapon ? "weapon," : "").Append(now.DrawHealth ? "health," : "").Append(now.DrawArmour ? "armour," : "")
+                text.Append(now.DrawWeapon ? "weapon," : "").Append(now.DrawHealth ? "health," : "").Append(now.DrawArmour ? "armour," : "")
                     .Append(now.DrawWanted ? "wanted," : "").Append(now.DrawPrompt ? "prompt," : "");
             }
             string result = text.ToString();

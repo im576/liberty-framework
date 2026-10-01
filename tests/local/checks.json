@@ -1633,8 +1633,8 @@
       "run": {
         "scenario": "hud-components"
       },
-      "proves": "The engine lists every hud.dat component it resolved (hud_component lines with live position/size/alpha, hud_unparsed calls with their bytes), and hiding the weapon icon, ammo, wanted stars, cash, radar, anything named HEALTH or ARMOUR/ARMOR, and finally the whole table, one group at a time, shows in the screenshots what each component is and whether the game honours the hud.dat globals for it. This answers which vanilla elements can be hidden without the radar and records where the player's health and armour arcs live (docs/research/HudComponents.md). Probe mode suspends Liberty replacements for a genuine vanilla baseline and reapplies diagnostic hides every tick.",
-      "pass": "autopilot PASS (hud_table reported, every step ran); then a person or the review session reads the hud_component lines and the nine screenshots and writes the answer into docs/research/HudComponents.md and vanillaComponents in config/hud.json. The run proves nothing about the look by itself.",
+      "proves": "The engine lists every hud.dat component it resolved (hud_component lines with live position/size/alpha, hud_unparsed calls with their bytes), and hiding the weapon icon, ammo, wanted stars, cash, radar, anything named HEALTH or ARMOUR/ARMOR, and finally the whole table, one group at a time, shows in the screenshots what each component is and whether the game honours the hud.dat globals for it. This answers which vanilla elements can be hidden without the radar and records where the player's health and armour arcs live (docs/research/HudComponents.md). Probe mode suspends Liberty replacements for a genuine vanilla baseline and reapplies diagnostic hides every tick. The icon and ammunition are also hidden individually.",
+      "pass": "autopilot PASS (hud_table reported, every step ran); then a person or the review session reads the hud_component lines and the all listed screenshots and writes the answer into docs/research/HudComponents.md and vanillaComponents in config/hud.json. The run proves nothing about the look by itself.",
       "unproven": "Whether the radar's health and armour arcs are a hud.dat component at all: if no hide-matching screenshot removes them, they stay vanilla and the compact health/armour bars wait for R5 (T-054).",
       "review": {
         "screenshots": {
@@ -1646,7 +1646,9 @@
           "hud_hidden_health": "what disappears for components named HEALTH (the reticle's target health ring is expected to be among them)",
           "hud_hidden_armour": "what disappears for components named ARMOUR or ARMOR",
           "hud_hidden_everything_in_table": "everything the table can hide is hidden: note what is left (help text, mission text, street names)",
-          "hud_restored": "the vanilla HUD is back exactly as in the baseline"
+          "hud_restored": "the vanilla HUD is back exactly as in the baseline",
+          "hud_hidden_weapon_only": "Only vanilla weapon icon disappears; vanilla ammo, radar and wanted stars remain.",
+          "hud_hidden_ammo_only": "Only vanilla ammunition disappears; weapon icon, radar and wanted stars remain."
         }
       },
       "reference": "docs/research/HudComponents.md",
@@ -1698,7 +1700,7 @@
         "steps": [
           "Load a free-roam save with the build from this run. Walk around unarmed: the top-right corner shows nothing of Liberty's HUD, the radar is at the bottom left.",
           "Equip a pistol (DevTools > Weapons, Stage 1 entry): its silhouette and a clip / reserve count appear top right, stay a few seconds and fade. Aim (LT / right mouse), shoot, reload: they come back each time.",
-          "Get hurt (let a pedestrian hit you, or fall from a low height): a thin health bar appears under the ammo line and fades; stay under a third of your health: it stays and pulses. Pick up armour: a pale bar appears under it.",
+          "Health and armour stay in vanilla radar arcs under the shipped policy. Only after future explicit owner authorization, use lf hudctl layout-test on to inspect diagnostic top-right bars on damage/low health/armour, then turn it off; these are not shipped duplicate bars.",
           "Get a wanted level (hit a cop): stars appear at the top right while it lasts and fade when it ends.",
           "Walk behind a parked car and look at the help box (top left): it must say Press X (controller) or Press E (keyboard) according to what you last touched.",
           "Open the weapon wheel / trunk: no panel may cover the top-right group.",

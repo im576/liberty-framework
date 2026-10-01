@@ -74,12 +74,10 @@ those checks unproven.
    (R5 / T-054) or the owner accepts a duplicate (`drawWithoutHidingVanilla: true`). The scenario draws them with `hudctl layout-test on`, so the layout is reviewable either way.
 2. The names `HUD_WEAPON_ICON`, `HUD_AMMO`, `HUD_WANTED_BACK`, `HUD_WANTED_FRONT` come from the owner's hud.dat (reuse audit), but whether their registrations have the parsed
    shape and whether the game re-reads their globals every frame (as it does for the reticle) is not proven. If not, those two elements stay vanilla (log `hud_element_plan ... vanilla_kept`) and the card says what to change.
-3. `GET_AMMO_IN_CHAR_WEAPON` is assumed to include the clip (reserve = total - clip, `weapon.totalIncludesClip`); `stage1-hud` reads `17 / 383` for 400 rounds to settle it.
-4. Weapon icons are drawn at 2:1 (96 x 48) like the wheel's; the PNGs' real aspect is not recorded.
+3. `GET_AMMO_IN_CHAR_WEAPON` is assumed to include the clip (reserve = total - clip, `weapon.totalIncludesClip`); the current scenario expects `17 / 133` for the existing 150-round pistol cap. This remains unverified in game.
+4. Weapon icons are drawn at 2:1 (96 x 48) like the wheel's; Codex checked packaging output for ids 7/10/14: all are 256x128.
 5. `DISPLAY_HUD(false)` alone was not tried as a coarser fallback: it risks removing mission and help text (HudComponents question 5).
 6. No art was needed: the star is drawn in code, everything else is rectangles, text and the existing weapon icons. No art request filed (ART-007 r2 is the reference).
-
-## Human test steps
 
 ## Local continuation (2026-09-30, Codex)
 
@@ -90,13 +88,23 @@ config still enabled population thinning. The continuation disables the atmosphe
 The component probe now suspends replacement HUD drawing to capture a real vanilla baseline, reapplies probe hides every tick, and restores them between groups.
 The HUD scenario gates combined `draw.ui <=0.5 ms`, tests actual JSON config-off through normal polling, restores original bytes, and uses the existing
 T-044 pistol cap (150 total: expected `17 / 133`) rather than requesting 400 rounds that the loadout caps. Layout-test remains diagnostic only.
-Offline `-NoGame`: `passed=453 failed=0 notrun=7`; tooling tests: `passed=212 failed=0`; art lifecycle 18/18 and 12 requests valid. Local gameplay results pending.
+Final offline `-NoGame`: `passed=469 failed=0 notrun=7`; tooling tests: `passed=212 failed=0`; content selftest 364/364, fixtures 5/5; art lifecycle 18/18 and 12 requests valid.
+The Windows build succeeds with zero errors (SDK, 210 engine sources, both mods); native fault-containment and ray-walk tests pass. The package-flags model tool compiles with warnings as errors.
+The second verifier `20260930-195611-c07dbb5` also stopped before installation after the owner prohibited in-game testing. Both summaries remain incomplete and are not gameplay evidence.
+`LOOP-package-install`, `T049-hud-components` and `T049-stage1-hud` are **NOT RUN**. There is no Lane D installed build, measured gameplay/UI acceptance or new HUD screenshot.
+The pre-restriction file-only executable scan resolved 31 components and 23 unparsed registrations (see HudComponents); its full verifier had 2 failures and 1 NOT-RUN and was not accepted.
+Prompt text is now cached until text/device/glyph-table changes, preventing per-frame expansion and repeated unknown-token logs. Mouse buttons now select keyboard/mouse glyphs.
+Offline tests cover device/config changes, fade text retention and reopening, unknown-token log suppression, and rejection of missing/over-budget/multi-ms draw samples.
+Health/armour remain vanilla by default; layout-test is diagnostic only. Owner recommendation: keep the vanilla arcs until future evidence supports clean replacement, rather than approving duplicates implicitly.
+Matching Claude Sonnet must review **all** Codex changes (including any uncommitted files) before continuing. Handoff: [Codex-Lane-D-2026-09-30](../handoffs/Codex-Lane-D-2026-09-30.md).
 
-## Human test steps (continued)
+**Current owner restriction: no in-game testing. The steps below are future instructions, not authorization to run them.**
+
+## Human test steps
 
 1. Install the build from this run (`tools/verify-local.ps1`, or `tools/install-phase2.ps1`), load a free-roam save and go to the test range (DevTools > TELEPORT).
 2. Unarmed and idle: the top-right corner shows nothing of Liberty's HUD. The radar is at the bottom left.
-3. Give yourself a Glock 17 (DevTools > WEAPONS, Stage 1 entry). Its silhouette and `17 / 383` (clip / reserve) appear at the top right, stay about four seconds and fade. The vanilla weapon icon and ammo
+3. Give yourself a Glock 17 with 150 total rounds (`lf catalog give service-pistol 150 clear`). Its silhouette and the expected `17 / 133` (clip / reserve) appear at the top right, stay about four seconds and fade. The vanilla weapon icon and ammo
    must be gone (if they are still there, the log says `hud_element_plan element=weapon mode=vanilla_kept` and why). Aim (LT / right mouse), shoot, reload: the group returns each time; with the clip at 4 or fewer the
    clip number turns orange.
 4. Let a pedestrian hit you or drop from a low height: a thin green health bar appears under the ammo line and fades. This needs the radar-arc question (open question 1) to be answered in `config/hud.json`;
