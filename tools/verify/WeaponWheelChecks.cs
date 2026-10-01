@@ -11,6 +11,7 @@ namespace LibertyFramework.Verify
     {
         internal static void Run(string repoRoot, Checker check)
         {
+            BudgetChecks(check);
             check.True("wheel segments: sidearm, two long guns, melee, thrown",
                 WeaponWheelLogic.SegmentOf(BodySlot.SidearmPrimary, WeaponCategory.Handgun) == WeaponWheelLogic.Sidearm &&
                 WeaponWheelLogic.SegmentOf(BodySlot.LongGun1, WeaponCategory.Rifle) == WeaponWheelLogic.LongGun1 &&
@@ -41,6 +42,21 @@ namespace LibertyFramework.Verify
             Rejected(check, repoRoot, "wheel unknown key name is rejected", c => c.WeaponWheel.KeyboardKeyName = "NoSuchKey");
             Rejected(check, repoRoot, "wheel numeric button name is rejected", c => c.WeaponWheel.PadButtonName = "12345");
             Rejected(check, repoRoot, "wheel tap time outside 50-1000 ms is rejected", c => c.WeaponWheel.TapMilliseconds = 5000);
+        }
+
+        private static void BudgetChecks(Checker check)
+        {
+            string baseline = "frames=200 avg_ms=20 p95_ms=25 p99_ms=40 stalls_1s=0";
+            string good = "frames=180 avg_ms=21 p95_ms=27 p99_ms=45 stalls_1s=0";
+            string costs = "costs_ms(avg/max/count@thread) draw.ui=0.100/1.0/180@6 total=18";
+            Func<string, string, string> evaluate = (frames, draw) => LibertyFramework.Engine.Ui.Logic.UiBudgetLogic.Evaluate(frames, draw, baseline, 0.5, 1.10, 1.15, 30);
+            check.True("UI budgets accept bounded frame and draw samples", evaluate(good, costs) == null, "");
+            check.True("UI budgets reject the old 390 ms/menu frame sample", evaluate("frames=11 avg_ms=390 p95_ms=250.1 p99_ms=250.1 stalls_1s=0", costs) != null, "");
+            check.True("UI budgets reject excessive draw cost even with fast frames", evaluate(good, costs.Replace("0.100/", "0.800/")) == "draw_average", "");
+            check.True("UI budgets reject excessive frame cost even with cheap submission", evaluate(good.Replace("avg_ms=21", "avg_ms=390"), costs) == "frame_average", "");
+            check.True("UI budgets reject excessive p95", evaluate(good.Replace("p95_ms=27", "p95_ms=30"), costs) == "frame_p95", "");
+            check.True("UI budgets reject excessive p99", evaluate(good.Replace("p99_ms=45", "p99_ms=50"), costs) == "frame_p99", "");
+            check.True("UI budgets reject stalls and missing/empty windows", evaluate(good.Replace("stalls_1s=0", "stalls_1s=1"), costs) == "stall" && evaluate("frames=0", costs) != null && evaluate(good, "") != null, "");
         }
 
         private static void Rejected(Checker check, string repoRoot, string name, Action<ArsenalConfig> mutate)

@@ -337,6 +337,7 @@ namespace LibertyFramework.Engine
             Commands.RegisterEngine("perf", "frame time, pressure and memory", args => PerfReport());
             Commands.RegisterEngine("costs", "named cost samples since the last call of this command (resets them)", args => CostMeter.ReportAndReset(CostReader.Command));
             Commands.RegisterEngine("framestats", "frame time statistics (avg, p50, p95, p99, max, slow frames, stalls) since the last call (resets them)", args => Perf.FrameStatsReportAndReset());
+            Commands.RegisterEngine("ui-budget", "measure and enforce UI draw and closed/open frame budgets", args => Perf.UiBudgetCommand(args));
             Commands.RegisterEngine("ui-render-diagnostic", "ui-render-diagnostic all|none|text|primitives - temporary shared canvas bisect", args =>
             {
                 if (args.Length != 1 || (args[0] != "all" && args[0] != "none" && args[0] != "text" && args[0] != "primitives")) { throw new ArgumentException("choose all, none, text or primitives"); }

@@ -19,6 +19,7 @@ namespace LibertyFramework.Engine.Services
         private int frameIndex, frameCount;
         private long lastFrame;
         private float frameMs, p95Ms;
+        private string uiBaseline;
 
         internal PerfService(LibertyEngine engine) { this.engine = engine; }
 
@@ -109,6 +110,34 @@ namespace LibertyFramework.Engine.Services
             histogramTotalMs = 0; histogramMaxMs = 0;
             return text;
         }
+
+        internal string UiBudgetCommand(string[] args)
+        {
+            if (args.Length == 1 && args[0] == "begin")
+            {
+                FrameStatsReportAndReset(); CostMeter.ReportAndReset(CostReader.Command);
+                return "ui budget window started";
+            }
+            if (args.Length == 1 && args[0] == "baseline")
+            {
+                uiBaseline = FrameStatsReportAndReset(); CostMeter.ReportAndReset(CostReader.Command);
+                RuntimeLogBudget("ui_budget_baseline " + uiBaseline);
+                return "ui budget baseline recorded";
+            }
+            if (args.Length != 6 || args[0] != "check") { throw new ArgumentException("begin | baseline | check <label> <draw ms> <p95 ratio> <p99 ratio> <minimum frames>"); }
+            double draw = double.Parse(args[2], System.Globalization.CultureInfo.InvariantCulture);
+            double p95 = double.Parse(args[3], System.Globalization.CultureInfo.InvariantCulture);
+            double p99 = double.Parse(args[4], System.Globalization.CultureInfo.InvariantCulture);
+            int minimum = int.Parse(args[5]);
+            if (!(draw > 0) || !(p95 >= 1) || !(p99 >= 1) || minimum < 1) { throw new ArgumentException("invalid UI budget"); }
+            string framesReport = FrameStatsReportAndReset(), costsReport = CostMeter.ReportAndReset(CostReader.Command);
+            string failure = LibertyFramework.Engine.Ui.Logic.UiBudgetLogic.Evaluate(framesReport, costsReport, uiBaseline, draw, p95, p99, minimum);
+            string report = "ui_budget label=" + args[1] + " pass=" + (failure == null) + " reason=" + (failure ?? "within_budget") + " " + framesReport + " " + costsReport;
+            RuntimeLogBudget(report);
+            return (failure == null ? "" : "error ") + report;
+        }
+
+        private static void RuntimeLogBudget(string text) { LibertyFramework.Core.Logging.RuntimeLog.Info(text); }
 
         private float Percentile95()
         {
