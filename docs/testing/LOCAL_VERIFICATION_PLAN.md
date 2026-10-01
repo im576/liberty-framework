@@ -276,7 +276,7 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 | `T044-loadout-outfits` | T-044 | scenario | autopilot PASS (every outfit set, every status line with the expected class); the screenshots judged by the owner for clipping | QUEUED |
 | `T044-loadout-review` | T-044 | scenario | autopilot PASS; the screenshots judged by the owner for clipping | QUEUED |
 | `T045-weapon-wheel` | T-045 | scenario | autopilot PASS: first draw within one frame; 12 selections with no failures; keyboard hold and tap flows read back the requested equipped weapon; ui-budget check wheel passes (draw.ui <=0.5 ms, average/p95 <=+10%, p99 <=+15% vs paired closed menu, >=30 samples, no >=1 s stall); screenshots reviewed. | QUEUED |
-| `T046-trunk-ui` | T-046 | scenario | autopilot PASS: store/take/swap preserves logged ammunition and ownership, full trunk refuses store, two persisted state round trips identical; both closes release storage control and finish choreography; ui-budget check trunk passes; screenshots reviewed. | QUEUED |
+| `T046-trunk-ui` | T-046 | scenario | autopilot PASS: store/take/swap preserves logged ammunition and ownership, full trunk refuses store, two persisted state round trips identical; swap preview and keyboard capacity-refusal feedback captured; both closes release storage control and finish choreography; ui-budget check trunk passes; screenshots reviewed. | QUEUED |
 | `T045-ui-path` | T-045 | scenario | All steps execute; frame and draw-cost windows recorded for closed, locked no-draw, primitives, text, full, and unlocked full. Diagnostic evidence only, never gameplay acceptance. | QUEUED |
 
 ## What each check proves, and what stays unproven

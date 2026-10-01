@@ -1618,7 +1618,7 @@
           "wheel_long_gun_2": "Second long gun highlighted",
           "wheel_melee": "Melee slot highlighted (knife), no ammunition line",
           "wheel_empty_slot": "The thrown slot highlighted and reading Empty",
-          "wheel_keyboard_highlight": "The wheel opened by tapping Tab, highlight moved by the arrow keys, hint line in the centre"
+          "wheel_keyboard_highlight": "The wheel opened by tapping Tab, highlight moved by the arrow keys, confirmation hint readable below the wheel"
         }
       },
       "reference": "docs/tasks/T-045-stage1-weapon-wheel.md#human-test-steps",
@@ -1634,13 +1634,14 @@
         "scenario": "stage1-trunk-ui"
       },
       "proves": "The trunk interface shows the carried loadout (wheel) and the trunk list with used/available capacity; Space stores the highlighted carried weapon, Enter takes the highlighted stored one and swaps out the least recently used long gun when both slots are full; a 4-slot sports-car trunk refuses the fifth weapon; the state saved to disk reads back identical.",
-      "pass": "autopilot PASS: store/take/swap preserves logged ammunition and ownership, full trunk refuses store, two persisted state round trips identical; both closes release storage control and finish choreography; ui-budget check trunk passes; screenshots reviewed.",
+      "pass": "autopilot PASS: store/take/swap preserves logged ammunition and ownership, full trunk refuses store, two persisted state round trips identical; swap preview and keyboard capacity-refusal feedback captured; both closes release storage control and finish choreography; ui-budget check trunk passes; screenshots reviewed.",
       "unproven": "Controller (pad) input and the safehouse stash through this interface are not exercised by the scenario; a game save and load is not automated (the saved state file round trip is). Latest Codex fixes have no in-game evidence; HUD coexistence is only inspected in source geometry.",
       "review": {
         "screenshots": {
           "trunk_ui_open": "Trunk open behind Niko: the radial with pistol, shotgun and AK in their slots at the centre, the TRUNK panel at the right reading 0 / 8 and Empty; text readable",
           "trunk_ui_after_store": "The AK gone from its slot, the TRUNK panel listing it with 1 / 8, the slung AK no longer on Niko",
-          "trunk_ui_after_swap": "The AK back on Niko, the shotgun now in the TRUNK list (1 / 8); the centre line names the swap before it is made",
+          "trunk_ui_swap_preview": "Before Enter, the centre previews taking the AK and swapping out the shotgun while the AK remains in the TRUNK list",
+          "trunk_ui_after_swap": "The AK back on Niko, the shotgun now in the TRUNK list (1 / 8); inspect the completed transfer and visible slings",
           "trunk_ui_full": "A banshee trunk panel reading 4 / 4 in amber with the Full hint",
           "trunk_ui_full_refused": "The shotgun still carried, the panel still 4 / 4, the message under the wheel says Trunk full (4)"
         }

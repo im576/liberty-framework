@@ -61,6 +61,7 @@ expect "arsenal_gain id=12" 10
 wait 2000
 storage status
 expect "storage_status open=True .* stored=1 capacity=8 carried=7,(10,12|12,10),0,0 list=14" 10
+shot trunk_ui_swap_preview
 mark
 key Enter 1200
 expectmarked "arsenal_take id=14 .* ammo=100 owned=True swapped=10" 10
@@ -123,12 +124,11 @@ give 10 100
 wait 1500
 mark
 storage select 1
-storage store
+key Space 1200
 expectmarked "arsenal_store_refused full id=10 bin=.* capacity=4" 10
-wait 1500
+shot trunk_ui_full_refused
 storage status
 expect "storage_status open=True .* stored=4 capacity=4 carried=0,10,0,0,0" 10
-shot trunk_ui_full_refused
 arsenal roundtrip
 expect "arsenal_roundtrip identical=True" 15
 key Back 1200

@@ -178,3 +178,7 @@ Both B worktrees inspected clean at `5e2ca95`; game closed, no active verifier, 
 ### First resumed attempt: busy lock, no game evidence
 
 Run `lane-b/results-local/20260930-205201-908e3b7` built the package in 39 seconds, then waited for Lane D's machine-wide lock (PID 12496, held since 03:51:24 UTC). At 8:54 p.m. Pacific, Codex checked that Lane D still held it and stopped only Lane B's waiting verifier PID 24752. Lane B never acquired the lock, installed, launched, or ran a scenario; there is no summary or measured window. `results-local/resumed-ui-path-verifier.log` and that run's `LOOP-package-install.log` are retained. Lane D's installation and processes were untouched. A fresh short diagnostic will be attempted only through the normal verifier before the hard stop.
+
+### Screenshot-check correction during lock wait (9:05 p.m. Pacific)
+
+Reviewed the current runner and scenario while the primary worktree's diagnostic waited. In the idle implementation worktree, added `trunk_ui_swap_preview` before Enter so the prospective swap is captured separately from its outcome. The full-trunk refusal now uses real Space input through the menu callback (which displays the message) and captures immediately after the refusal log, before subsequent commands or a 1.5-second delay can consume the 2.6-second message. Review descriptions now match these captures and the relocated wheel footer. No runtime behavior or budget was changed. Queue and generated plan are validated; these prepared screenshots still require an actual run and visual review.
