@@ -9,9 +9,9 @@ await-alive 60000
 expect "autopilot_player_ready" 65
 god on
 wanted 0
-goto east_park
-expect "teleport_done id=east_park" 90
-wait 4000
+goto s1_hove_beach_a
+expect "teleport_done id=s1_hove_beach_a" 90
+wait 10000
 time 13 0
 wait 1500
 weather 1
@@ -79,13 +79,22 @@ expectmarked "weapon_wheel_equip slot=[1-3] id=\d+ from=7" 10
 wait 1500
 wheel status
 expect "weapon_wheel_status open=False selected=-1 sticky=False held=(?!7 )\d+" 10
-# Draw cost while open: UI draw average over a 6 s window.
+# Cost while open: frame statistics and per-section costs with the wheel closed, then with it open for 6 s.
 select 7
 wait 1500
-label wheel_open_cost
+label wheel_closed
+framestats
+costs
+wait 5000
+framestats
 costs
 wheel open
+wait 1500
+label wheel_open
+framestats
+costs
 wait 6000
+framestats
 costs
 perf
 wheel close
