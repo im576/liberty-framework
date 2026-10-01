@@ -26,7 +26,7 @@ close the game before anything that installs or rolls back.
 
 ## Local verification on the PC
 
-`verify-local.ps1 [-Smoke] [-GameDirectory <GTAIV>]` runs every check in `tests/local/checks.json` (builds, verifier, probes, package and install with backup, autopilot scenarios, manual checks) and pushes results to the `verification-results` branch. Settings: git-ignored `verify-local.settings.json`; results: `results-local/`. Code in `local/VerifyLocal.psm1`; `checks/checks.py` validates the queue and regenerates [LOCAL_VERIFICATION_PLAN.md](../docs/testing/LOCAL_VERIFICATION_PLAN.md).
+`verify-local.ps1 [-Smoke] [-GameDirectory <GTAIV>]` runs every check in `tests/local/checks.json` (builds, verifier, probes, package and install with backup, autopilot scenarios, manual checks) and pushes results to the `verification-results` branch. Settings: git-ignored `verify-local.settings.json`; results: `results-local/`. Code in `local/VerifyLocal.psm1`. **One game:** `verify-local.ps1`, `install-phase2.ps1`, `rollback-phase2.ps1`, `autopilot/Run-Scenario.ps1` and `autopilot/Run-Suite.ps1` all hold the machine-wide game lock (`local/GameLock.psm1`; child processes inherit it), so parallel sessions wait their turn. The installer records the installed worktree and commit in `<game>\scripts\LibertyFramework\installed-build.json`; `Run-Scenario.ps1` refuses a build from another worktree (`-AllowOtherBuild` overrides) and logs it as the first step of its report. `checks/checks.py` validates the queue and regenerates [LOCAL_VERIFICATION_PLAN.md](../docs/testing/LOCAL_VERIFICATION_PLAN.md).
 
 ## Content, models, Blender
 

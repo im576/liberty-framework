@@ -20,10 +20,11 @@ Updated 2026-09-30 when the first orchestrator thread handed off (to avoid conte
   Stage 1 Lane A/B/C/D", "... Lane 0".
 - Repo-side progress: `git fetch`; `git log origin/main`; per worktree `git -C <wt> log origin/main..HEAD`, status, and the
   newest `results-local\<run>\summary.md` (verify-local results; scenario `report.md`, `run.log`, screenshots).
-- The game is shared: `tools/verify-local.ps1` holds a machine-wide lock; packaging uses `-Fast`. **`tools/autopilot/Run-Scenario.ps1`
-  takes no lock**: lane "quick"/ad-hoc runs through it collide. On 2026-10-01 00:09-00:30Z, Lane B (wheel) and Lane C
-  (gore) ran in the same game at once, each on the other's installed build, so those results are void. Lanes must run the
-  game only through verify-local (`-Only <ids>`) or hold its lock. GTA IV needs an audio
+- The game is shared. Since 2026-10-01, verify-local, install/rollback, Run-Scenario and Run-Suite all hold one machine-wide
+  lock (`tools/local/GameLock.psm1`), and Run-Scenario refuses a build installed from another worktree
+  (`installed-build.json`). Before that, Run-Scenario had no lock, and on 2026-10-01 00:09-00:30Z Lanes B and C drove the
+  same game at once, each on the other's build (those results are void). **A worktree only gets the lock once it has merged
+  `main`**: check that every running lane has. Packaging uses `-Fast`. GTA IV needs an audio
   output device to start (lanes were blocked once with none connected). Rockstar's MTLX.DLL startup crash forces relaunches.
 - Art: `python tools/art/artq.py list|check|approve|reject|prep`; the image app follows `docs/art/GENERATOR.md` (it must
   register imperfect candidates; Claude reviews). ART-001..012 approved, eight prepped. Owner confirmed generated images
@@ -60,7 +61,8 @@ repeatable surfaces procedural or CC0"; gore very harsh but grounded, bodies 3-5
 5. T-049: if the in-game probe finds no hideable component for the radar's health/armour arcs, either show Liberty's
    top-right bars as well as the vanilla arcs (`drawWithoutHidingVanilla: true`), or keep the vanilla arcs until the
    radar redraw (T-054). Recommended: wait for the probe result.
-6. Lane D needs a local thread to run its checks (the cloud thread cannot run the game).
+6. Lane D: owner approved a local thread to run its in-game checks (2026-10-01); prompt given in the second orchestrator
+   thread (worktree `GTAIV-Reborn-lane-d`, branch `stage1/T-049` from `origin/claude/ecstatic-keller-qu3sto` rebased on main).
 
 ## Owner context
 

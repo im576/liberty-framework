@@ -11,7 +11,10 @@ param(
     [string] $AutopilotModule = (Join-Path $PSScriptRoot 'Autopilot.psm1'),
     # Folder with this run's probe reports (<check id>.json), for {probe:<id>:<field>} values (verify-local passes its
     # results folder).
-    [string] $ProbeDirectory = ''
+    [string] $ProbeDirectory = '',
+    # Run even when the installed build comes from another worktree (installed-build.json). Only for deliberate checks of
+    # someone else's build; a lane testing its own work installs it first.
+    [switch] $AllowOtherBuild
 )
 
 # Runs one scenario and writes <OutputDirectory>\<scenario>-<time>\report.md with every step, its reply, the
@@ -50,7 +53,26 @@ $gameAlive = $false
 
 function Add-Failure([string] $text) { $script:failedSteps.Add($text); $script:steps.Add("FAILED: $text") }
 
+# One game: hold the machine-wide game lock for the whole scenario (tools/local/GameLock.psm1), so a scenario from another
+# session never drives the same game at the same time. Inherited when verify-local or Run-Suite already holds it.
+$repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+Import-Module (Join-Path $repoRoot 'tools\local\GameLock.psm1') -Force
+$gameLock = $null
+# The simulated game (-AutopilotModule stub in the offline tests) needs neither the lock nor an installed build.
+$realGame = [IO.Path]::GetFullPath($AutopilotModule) -ieq [IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'Autopilot.psm1'))
+
 try {
+    if ($realGame) { $gameLock = Enter-GameLock "Run-Scenario $name ($repoRoot)" }
+    # The installed build must be this worktree's, or the run tests someone else's code.
+    $build = if ($realGame) { Read-InstalledBuild $GameDirectory } else { $null }
+    if (-not $build) { if ($realGame) { $steps.Add('build: unknown (no installed-build.json; installed before the game lock recorded builds)') } }
+    else {
+        $steps.Add("build: $($build.repo) $($build.branch) $($build.commit)$(if ($build.dirty) { ' +uncommitted' }) $($build.note)")
+        $ours = $build.repo -and ([IO.Path]::GetFullPath($build.repo).TrimEnd('\', '/') -ieq [IO.Path]::GetFullPath($repoRoot).TrimEnd('\', '/'))
+        if (-not $ours -and -not $AllowOtherBuild) {
+            throw "the installed build is not from this worktree ($repoRoot) but from '$($build.repo)' $($build.note); install yours first (tools/verify-local.ps1 -Only LOOP-package-install,<checks>)"
+        }
+    }
     Import-Module $AutopilotModule -Force 3>$null
     Set-AutopilotGame $GameDirectory
     $lines = @(Get-Content -LiteralPath $Scenario)
@@ -182,5 +204,6 @@ if ($measurements.Count -gt 0) {
 $resultPath = Join-Path $report 'result.json'
 [IO.File]::WriteAllText($resultPath, ($result | ConvertTo-Json -Depth 4), (New-Object Text.UTF8Encoding($false)))
 if ($StopGameAfter) { try { Stop-Game } catch { Write-Host "Stop-Game failed: $($_.Exception.Message)" } }
+Exit-GameLock $gameLock
 Write-Host "scenario ${name}: $summary; report $report"
 Write-Output "AUTOPILOT_RESULT $resultPath"
