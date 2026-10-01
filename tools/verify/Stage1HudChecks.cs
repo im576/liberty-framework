@@ -26,6 +26,7 @@ namespace LibertyFramework.Verify
             InputDevice(check);
             PromptCache(check);
             AcceptanceBudgets(repoRoot, check);
+            AmmoSampling(check);
             TableResolver(check);
         }
 
@@ -198,6 +199,25 @@ namespace LibertyFramework.Verify
             check.True("one visually unverified component prevents the entire replacement", partial.Mode == HudElementMode.VanillaKept && partial.ToHide.Count == 0, partial.Reason);
             HudDecision diagnostic = HudPlan.Decide(true, "components", weapon, true, all, none);
             check.True("explicit diagnostic override draws without writing unverified globals", diagnostic.Mode == HudElementMode.Liberty && diagnostic.ToHide.Count == 0, diagnostic.Reason);
+        }
+
+        private static void AmmoSampling(Checker check)
+        {
+            HudAmmoSample sample = new HudAmmoSample();
+            check.True("first ammo observation requires a sample", sample.NeedsRefresh(7, 17, 0, 100), "");
+            sample.Capture(7, 17, 17, 150, 0);
+            check.True("unchanged clip respects the configured poll interval", !sample.NeedsRefresh(7, 17, 99, 100) && sample.NeedsRefresh(7, 17, 100, 100), "");
+            check.True("shot invalidates cached total immediately", sample.NeedsRefresh(7, 16, 20, 100), "");
+            check.True("a fresh observed clip cannot mutate the stored display pair", HudText.FormatAmmo(sample.Clip, sample.Total, true) == "17 / 133", "");
+            sample.Capture(7, 16, 16, 149, 20);
+            check.True("shot sample preserves reserve rather than inventing one round", HudText.FormatAmmo(sample.Clip, sample.Total, true) == "16 / 133", "");
+            sample.Capture(7, 0, 0, 133, 40);
+            check.True("reload clip change invalidates the pair before the next timer poll", sample.NeedsRefresh(7, 17, 50, 100), "");
+            sample.Capture(7, 17, 17, 133, 50);
+            check.True("reload transfers reserve to clip in one display sample", HudText.FormatAmmo(sample.Clip, sample.Total, true) == "17 / 116", "");
+            check.True("weapon switch refreshes even when its clip count is identical", sample.NeedsRefresh(10, 17, 51, 100), "");
+            sample.Reset();
+            check.True("reset discards old weapon clip and total", sample.Weapon == -1 && HudText.FormatAmmo(sample.Clip, sample.Total, true) == "" && sample.NeedsRefresh(7, 17, 52, 100), "");
         }
 
         private static void Text(string repoRoot, Checker check)

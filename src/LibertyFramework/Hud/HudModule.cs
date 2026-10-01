@@ -63,6 +63,7 @@ namespace LibertyFramework.Hud
         private readonly HudPresence wantedPresence = new HudPresence();
         private readonly HudPresence promptPresence = new HudPresence();
         private readonly HudPromptText promptExpansion = new HudPromptText();
+        private readonly HudAmmoSample ammoSample = new HudAmmoSample();
         private readonly HashSet<string> probeHidden = new HashSet<string>();
         private readonly HashSet<string> planHidden = new HashSet<string>();
         private readonly Dictionary<string, string> forced = new Dictionary<string, string>();
@@ -84,10 +85,10 @@ namespace LibertyFramework.Hud
         private int lastWeapon = -1;
         private int lastHealth = -1, lastArmour = -1;
         private int clipMaximumSeen;
-        private int totalAmmo = -1, wantedLevel;
+        private int wantedLevel;
         // "Not read yet": far enough in the past that the first poll is due, small enough that the subtraction cannot overflow.
         private const long Never = -1000000;
-        private long lastAmmoPollMilliseconds = Never, lastWantedPollMilliseconds = Never, lastDevicePollMilliseconds = Never;
+        private long lastWantedPollMilliseconds = Never, lastDevicePollMilliseconds = Never;
         private bool lastReloading, lastHealthLow;
         // The ammo line is rebuilt only when its numbers change.
         private int ammoShownClip = int.MinValue, ammoShownTotal = int.MinValue;
@@ -384,8 +385,7 @@ namespace LibertyFramework.Hud
                 if (lastWeapon != -1) { TriggerWeapon("change", config.Weapon.ShowOnChange); }
                 lastWeapon = player.Weapon;
                 clipMaximumSeen = 0;
-                totalAmmo = -1;
-                lastAmmoPollMilliseconds = Never;
+                ammoSample.Reset();
             }
             if (player.AmmoInClip > clipMaximumSeen) { clipMaximumSeen = player.AmmoInClip; }
             if (player.IsReloading != lastReloading)
@@ -393,10 +393,12 @@ namespace LibertyFramework.Hud
                 lastReloading = player.IsReloading;
                 RuntimeLog.Info("hud_reload reloading=" + (lastReloading ? 1 : 0) + " weapon=" + player.Weapon + " clip=" + player.AmmoInClip);
             }
-            if (armed && nowMs - lastAmmoPollMilliseconds >= config.Sampling.AmmoPollMilliseconds)
+            if (armed && ammoSample.NeedsRefresh(player.Weapon, player.AmmoInClip, nowMs, config.Sampling.AmmoPollMilliseconds))
             {
-                lastAmmoPollMilliseconds = nowMs;
-                totalAmmo = Liberty.Weapons.GetAmmo(player.Ped, player.Weapon);
+                // Existing SDK reads, together on the tick thread. Render/log only this pair, never a fresh snapshot clip plus cached total.
+                int total = Liberty.Weapons.GetAmmo(player.Ped, player.Weapon);
+                int clip = Liberty.Weapons.GetAmmoInClip(player.Ped, player.Weapon);
+                ammoSample.Capture(player.Weapon, player.AmmoInClip, clip, total, nowMs);
             }
             if (nowMs - lastWantedPollMilliseconds >= config.Sampling.WantedPollMilliseconds)
             {
@@ -457,15 +459,15 @@ namespace LibertyFramework.Hud
             if (next.DrawWeapon)
             {
                 next.Icon = Engine.Ui.WeaponIcon(player.Weapon);
-                if (player.AmmoInClip != ammoShownClip || totalAmmo != ammoShownTotal || ammoShownIncludesClip != config.Weapon.TotalIncludesClip)
+                if (ammoSample.Clip != ammoShownClip || ammoSample.Total != ammoShownTotal || ammoShownIncludesClip != config.Weapon.TotalIncludesClip)
                 {
-                    ammoShownClip = player.AmmoInClip;
-                    ammoShownTotal = totalAmmo;
+                    ammoShownClip = ammoSample.Clip;
+                    ammoShownTotal = ammoSample.Total;
                     ammoShownIncludesClip = config.Weapon.TotalIncludesClip;
                     ammoShownText = HudText.FormatAmmo(ammoShownClip, ammoShownTotal, ammoShownIncludesClip);
                 }
                 next.Ammo = ammoShownText;
-                next.ClipLow = HudText.IsClipLow(player.AmmoInClip, clipMaximumSeen, config.Weapon.LowClipFraction);
+                next.ClipLow = HudText.IsClipLow(ammoSample.Clip, clipMaximumSeen, config.Weapon.LowClipFraction);
             }
             next.HealthAlpha = healthPresence.Alpha;
             next.HealthFill = healthFill;
@@ -489,7 +491,7 @@ namespace LibertyFramework.Hud
         // built only on a change, so a steady frame allocates nothing here.
         private void LogTransitions(Frame next)
         {
-            if (Changed("weapon", next.DrawWeapon)) { Logged("weapon", next.DrawWeapon, "clip/total=" + Liberty.World.Player.AmmoInClip + "/" + totalAmmo + " ammo=\"" + next.Ammo + "\""); }
+            if (Changed("weapon", next.DrawWeapon)) { Logged("weapon", next.DrawWeapon, "clip/total=" + ammoSample.Clip + "/" + ammoSample.Total + " ammo=\"" + next.Ammo + "\""); }
             if (Changed("health", next.DrawHealth)) { Logged("health", next.DrawHealth, "fill=" + next.HealthFill.ToString("0.00", CultureInfo.InvariantCulture) + " low=" + next.HealthLow); }
             if (Changed("armour", next.DrawArmour)) { Logged("armour", next.DrawArmour, "fill=" + next.ArmourFill.ToString("0.00", CultureInfo.InvariantCulture)); }
             if (Changed("wanted", next.DrawWanted)) { Logged("wanted", next.DrawWanted, "stars=" + next.Stars); }
@@ -715,8 +717,10 @@ namespace LibertyFramework.Hud
         {
             if (!Liberty.World.HasPlayer) { return "error: no player"; }
             PlayerState player = Liberty.World.Player;
-            string line = "hud_ammo weapon=" + player.Weapon + " clip=" + player.AmmoInClip + " total=" + totalAmmo + " includes_clip=" + config.Weapon.TotalIncludesClip +
-                " shown=\"" + HudText.FormatAmmo(player.AmmoInClip, totalAmmo, config.Weapon.TotalIncludesClip) + "\"";
+            int clip = ammoSample.Weapon == player.Weapon ? ammoSample.Clip : -1;
+            int total = ammoSample.Weapon == player.Weapon ? ammoSample.Total : -1;
+            string line = "hud_ammo weapon=" + player.Weapon + " clip=" + clip + " total=" + total + " includes_clip=" + config.Weapon.TotalIncludesClip +
+                " shown=\"" + HudText.FormatAmmo(clip, total, config.Weapon.TotalIncludesClip) + "\"";
             RuntimeLog.Info(line);
             return line;
         }
