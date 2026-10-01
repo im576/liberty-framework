@@ -72,15 +72,25 @@ namespace LibertyFramework.Verify
                 x(100, 300, 120, Liberty.Sdk.TextAlign.Left) == 100 && x(100, 300, 120, Liberty.Sdk.TextAlign.Center) == 190 && x(100, 300, 120, Liberty.Sdk.TextAlign.Right) == 280, "");
             check.True("sprite text: text as wide as its rectangle starts at the rectangle's edge", x(100, 300, 300, Liberty.Sdk.TextAlign.Center) == 100 && x(100, 300, 410, Liberty.Sdk.TextAlign.Right) == 100, "");
             string a = LibertyFramework.Engine.Ui.Logic.UiTextLogic.CacheKey(1, 16f, 300f, false, "Glock 17");
-            check.True("sprite text cache key: equal requests share it, style, size, width bucket and text separate it",
+            check.True("sprite text cache key: equal requests share it, style, size, width and text separate it",
                 a == LibertyFramework.Engine.Ui.Logic.UiTextLogic.CacheKey(1, 16f, 300f, false, "Glock 17") &&
                 a != LibertyFramework.Engine.Ui.Logic.UiTextLogic.CacheKey(2, 16f, 300f, false, "Glock 17") &&
                 a != LibertyFramework.Engine.Ui.Logic.UiTextLogic.CacheKey(1, 24f, 300f, false, "Glock 17") &&
                 a != LibertyFramework.Engine.Ui.Logic.UiTextLogic.CacheKey(1, 16f, 600f, false, "Glock 17") &&
                 a != LibertyFramework.Engine.Ui.Logic.UiTextLogic.CacheKey(1, 16f, 300f, false, "Glock 18"), "");
-            check.True("sprite text: ellipsis keeps at least one character and never grows the text",
-                LibertyFramework.Engine.Ui.Logic.UiTextLogic.FittingCharacters(40, 10f, 200f) == 19 && LibertyFramework.Engine.Ui.Logic.UiTextLogic.FittingCharacters(5, 10f, 200f) == 5 &&
-                LibertyFramework.Engine.Ui.Logic.UiTextLogic.FittingCharacters(40, 10f, 5f) == 1, "");
+            check.True("sprite text cache: nearby widths, subpixel font sizes and case retain distinct content",
+                a != LibertyFramework.Engine.Ui.Logic.UiTextLogic.CacheKey(1, 16f, 301f, false, "Glock 17") &&
+                a != LibertyFramework.Engine.Ui.Logic.UiTextLogic.CacheKey(1, 16.01f, 300f, false, "Glock 17") &&
+                a != LibertyFramework.Engine.Ui.Logic.UiTextLogic.CacheKey(1, 16f, 300f, false, "GLOCK 17"), "");
+            Func<string, float> measure = value => { float width = 0; foreach (char c in value) { width += c == 'W' ? 12 : c == '.' ? 2 : 4; } return width; };
+            string fitted = LibertyFramework.Engine.Ui.Logic.UiTextLogic.FitText("WWWWiiii", 31, measure);
+            check.True("sprite text: proportional label plus ellipsis fits the actual rectangle", fitted == "WW..." && measure(fitted) <= 31, fitted);
+            check.True("sprite text: a rectangle narrower than the ellipsis draws no overflowing text",
+                LibertyFramework.Engine.Ui.Logic.UiTextLogic.FitText("WW", 5, measure) == "", "");
+            check.True("sprite text: fitting content is retained without ellipsis",
+                LibertyFramework.Engine.Ui.Logic.UiTextLogic.FitText("iiii", 16, measure) == "iiii", "");
+            string combined = LibertyFramework.Engine.Ui.Logic.UiTextLogic.FitText("e\u0301WWW", 15, measure);
+            check.True("sprite text: truncation keeps a combining accent with its letter", combined == "e\u0301...", combined);
         }
 
         private static void Rejected(Checker check, string repoRoot, string name, Action<ArsenalConfig> mutate)

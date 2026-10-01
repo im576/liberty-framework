@@ -16,18 +16,32 @@ namespace LibertyFramework.Engine.Ui.Logic
             return rectX;
         }
 
-        // One texture per style, pixel size, width bucket and string: the rectangle width only matters when the text would not fit.
+        // Match the raster's actual pixel width; two rectangles in one eight-pixel bucket can truncate differently.
         internal static string CacheKey(int style, float pixelSize, float rectWidth, bool bold, string text)
         {
-            return style + "|" + (int)(pixelSize * 10f) + "|" + (int)System.Math.Ceiling(rectWidth / 8f) + "|" + (bold ? "b" : "r") + "|" + text;
+            return style + "|" + pixelSize.ToString("R", System.Globalization.CultureInfo.InvariantCulture) + "|" +
+                (int)System.Math.Max(0, System.Math.Floor(rectWidth)) + "|" + (bold ? "b" : "r") + "|" + text;
         }
 
-        // How many characters of `text` fit when each is `averageCharacterWidth` wide, keeping room for the ellipsis (never < 1).
-        internal static int FittingCharacters(int length, float averageCharacterWidth, float rectWidth)
+        // Measure the candidate including its ellipsis. Average character widths cannot bound proportional text.
+        // Text-element boundaries preserve surrogate pairs and combining accents when a label is shortened.
+        internal static string FitText(string text, float width, System.Func<string, float> measure)
         {
-            if (length <= 0 || averageCharacterWidth <= 0) { return length; }
-            int fit = (int)(rectWidth / averageCharacterWidth);
-            return fit >= length ? length : System.Math.Max(1, fit - 1);
+            if (string.IsNullOrEmpty(text) || width <= 0) { return ""; }
+            if (measure(text) <= width) { return text; }
+            const string ellipsis = "...";
+            if (measure(ellipsis) > width) { return ""; }
+            int[] starts = System.Globalization.StringInfo.ParseCombiningCharacters(text);
+            int low = 0, high = starts.Length - 1;
+            string result = ellipsis;
+            while (low <= high)
+            {
+                int count = low + (high - low) / 2;
+                string candidate = text.Substring(0, starts[count]) + ellipsis;
+                if (measure(candidate) <= width) { result = candidate; low = count + 1; }
+                else { high = count - 1; }
+            }
+            return result;
         }
     }
 }

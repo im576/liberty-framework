@@ -21,19 +21,21 @@ namespace LibertyFramework.Engine.Ui
 
         private readonly object gate = new object();
         private readonly Dictionary<int, Entry> entries = new Dictionary<int, Entry>();
-        private readonly Dictionary<string, int> byKey = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        // Generated content (especially text) is case-sensitive. Only Windows file paths are normalised.
+        private readonly Dictionary<string, int> byKey = new Dictionary<string, int>(StringComparer.Ordinal);
         private int nextHandle = 1;
 
         internal TextureRef Load(string path)
         {
             string full = Path.IsPathRooted(path) ? path : Path.Combine(LibertyPaths.Root, path);
+            string key = "file:" + Path.GetFullPath(full).ToUpperInvariant();
             lock (gate)
             {
                 int known;
-                if (byKey.TryGetValue(full, out known)) { return new TextureRef(known); }
+                if (byKey.TryGetValue(key, out known)) { return new TextureRef(known); }
             }
             if (!File.Exists(full)) { RuntimeLog.Error("ui_texture_missing path=" + full); return TextureRef.None; }
-            return Add(File.ReadAllBytes(full), full);
+            return Add(File.ReadAllBytes(full), key);
         }
 
         internal TextureRef Add(byte[] png, string key)

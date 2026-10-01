@@ -176,13 +176,10 @@ namespace LibertyFramework.Engine.Ui
                     using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(probe))
                     {
                         g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+                        text = Logic.UiTextLogic.FitText(text, (float)Math.Floor(rectWidth) - 3f,
+                            candidate => g.MeasureString(candidate, font, 4096, format).Width);
+                        if (text.Length == 0) { sprite.Texture = TextureRef.None; return sprite; }
                         size = g.MeasureString(text, font, 4096, format);
-                        if (size.Width + 2f > rectWidth && text.Length > 1)
-                        {
-                            int fit = Logic.UiTextLogic.FittingCharacters(text.Length, size.Width / text.Length, rectWidth - 2f);
-                            text = text.Substring(0, Math.Max(1, fit)) + "...";
-                            size = g.MeasureString(text, font, 4096, format);
-                        }
                     }
                     int w = (int)Math.Ceiling(size.Width) + 3, h = (int)Math.Ceiling(size.Height) + 3;
                     using (Bitmap bitmap = new Bitmap(w, h, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
