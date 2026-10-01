@@ -29,7 +29,7 @@ wait 1500
 at-trunk 3.0
 wait 2000
 ui-budget begin
-wait 5000
+wait {quick:5000|10000}
 ui-budget baseline
 key E 1200
 wait 4000
@@ -42,7 +42,7 @@ shot trunk_ui_open
 # Frame time with the trunk interface open (its radial does not lock the player's control itself).
 label trunk_ui_cost
 ui-budget begin
-wait 6000
+wait {quick:6000|10000}
 ui-budget check trunk 0.5 1.10 1.15 30
 expect "ui_budget label=trunk pass=True" 10
 # Move the highlight to the second long gun (the AK) and store it with Space.

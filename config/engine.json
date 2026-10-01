@@ -17,6 +17,8 @@
   "watchdogStallMilliseconds": 5000,
   "teleportBlockingWindowMilliseconds": 60000,
   "uiTextRenderer": "sprite",
+  "uiTextCacheEntries": 600,
+  "uiTextNewSpritesPerFrame": 8,
   "adaptiveDensityFloor": 0,
   "hotReload": false,
   "hotReloadPollMs": 1000,

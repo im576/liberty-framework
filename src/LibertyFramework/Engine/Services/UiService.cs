@@ -169,6 +169,7 @@ namespace LibertyFramework.Engine.Services
             if (!canvas.Begin(args.Graphics, ScreenInfo.Size)) { return; }
             drawModules(canvas);
             canvas.Opacity = 1f;
+            canvas.DrawProbe();
             foreach (IMenu menu in drawMenus)
             {
                 ListMenuView list = menu as ListMenuView;

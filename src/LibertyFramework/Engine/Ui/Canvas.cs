@@ -34,6 +34,7 @@ namespace LibertyFramework.Engine.Ui
             if (screen.Height <= 0 || screen.Width <= 0) { return false; }
             graphics = target;
             shdnTextCalls = 0;
+            createdThisFrame = 0;
             graphics.Scaling = FontScaling.Pixel;
             scale = screen.Height / 720f;
             Width = screen.Width / scale;
@@ -60,10 +61,22 @@ namespace LibertyFramework.Engine.Ui
         // Diagnostic: with "shdn", only this many strings are drawn per frame.
         internal int ShdnTextLimit = int.MaxValue;
         private int shdnTextCalls;
-        private const int TextSpriteCap = 600;
-        private sealed class TextSprite { internal TextureRef Texture; internal string Key; internal float Width, Height; }
+        // Text sprite cache: least recently used first out, bounded in entries (engine.json uiTextCacheEntries) and in new
+        // textures per frame (uiTextNewSpritesPerFrame): a frame that needs more than that draws the rest on the next frames
+        // instead of hitching on one frame (each new string is a GDI+ render, a PNG encode and a texture).
+        internal int TextSpriteCap = 600;
+        internal int NewSpritesPerFrame = 8;
+        private int createdThisFrame;
+        private long createdTotal, evictedTotal, deferredTotal, spriteBytes;
+        private sealed class TextSprite { internal TextureRef Texture; internal string Key; internal float Width, Height; internal LinkedListNode<string> Node; }
         private readonly Dictionary<string, TextSprite> textSprites = new Dictionary<string, TextSprite>();
-        private readonly Queue<string> textSpriteOrder = new Queue<string>();
+        private readonly LinkedList<string> textSpriteUse = new LinkedList<string>();
+
+        internal string TextStats()
+        {
+            return "ui_text_sprites renderer=" + TextRenderer + " count=" + textSprites.Count + "/" + TextSpriteCap + " estimated_bytes=" + spriteBytes +
+                " created=" + createdTotal + " evicted=" + evictedTotal + " deferred_frames=" + deferredTotal + " new_per_frame=" + NewSpritesPerFrame;
+        }
 
         private void SpriteText(string text, float x, float y, float width, TextStyle style, TextAlign align, Rgba colour)
         {
@@ -71,17 +84,34 @@ namespace LibertyFramework.Engine.Ui
             float pixelSize = StyleSizes[index] * scale, rectWidth = width * scale;
             string key = Logic.UiTextLogic.CacheKey(index, pixelSize, rectWidth, StyleBold[index], text);
             TextSprite sprite;
-            if (!textSprites.TryGetValue(key, out sprite))
+            if (textSprites.TryGetValue(key, out sprite))
             {
+                textSpriteUse.Remove(sprite.Node);
+                textSpriteUse.AddFirst(sprite.Node);
+            }
+            else
+            {
+                if (createdThisFrame >= NewSpritesPerFrame) { deferredTotal++; return; }
+                createdThisFrame++;
                 sprite = RenderText(text, pixelSize, rectWidth, StyleBold[index], key);
+                sprite.Node = textSpriteUse.AddFirst(key);
                 textSprites[key] = sprite;
-                textSpriteOrder.Enqueue(key);
+                createdTotal++;
+                spriteBytes += (long)(sprite.Width * sprite.Height * 4f);
                 while (textSprites.Count > TextSpriteCap)
                 {
-                    string oldest = textSpriteOrder.Dequeue();
+                    LinkedListNode<string> oldest = textSpriteUse.Last;
+                    textSpriteUse.RemoveLast();
                     TextSprite gone;
-                    if (textSprites.TryGetValue(oldest, out gone)) { textSprites.Remove(oldest); textures.Release(gone.Texture, gone.Key); }
+                    if (textSprites.TryGetValue(oldest.Value, out gone))
+                    {
+                        textSprites.Remove(oldest.Value);
+                        textures.Release(gone.Texture, gone.Key);
+                        spriteBytes -= (long)(gone.Width * gone.Height * 4f);
+                        evictedTotal++;
+                    }
                 }
+                if (createdTotal % 200 == 0) { LibertyFramework.Core.Logging.RuntimeLog.Info(TextStats()); }
             }
             if (sprite.Texture.IsNone) { return; }
             GTA.Texture t = textures.Get(sprite.Texture);
@@ -90,6 +120,28 @@ namespace LibertyFramework.Engine.Ui
             graphics.DrawSprite(t, new RectangleF(left, y * scale, sprite.Width, sprite.Height), C(colour));
         }
 
+        // Diagnostic (T-045 root cause): draws `ProbeCount` strings per frame through ScriptHookDotNet's DrawText in one of four
+        // arrangements. same = one string, one font, N times; different = N strings, one font; sizes = one string, the five
+        // canvas fonts; noeffect = one string, a font with Effect set to none. `none` turns it off.
+        internal string ProbeMode = "none";
+        internal int ProbeCount = 8;
+        private GTA.Font probeFont;
+
+        internal void DrawProbe()
+        {
+            if (ProbeMode == "none" || graphics == null) { return; }
+            if (ProbeMode == "noeffect" && probeFont == null)
+            {
+                probeFont = new GTA.Font(StyleSizes[1] * scale, FontScaling.Pixel, false, false);
+                probeFont.Effect = FontEffect.None;
+            }
+            for (int i = 0; i < ProbeCount; i++)
+            {
+                string text = ProbeMode == "different" ? "PROBE " + i + " STRING " + (i * 7919 % 1000) : "PROBE 0123456789";
+                GTA.Font font = ProbeMode == "sizes" ? Font((TextStyle)(i % StyleSizes.Length)) : ProbeMode == "noeffect" ? probeFont : Font(TextStyle.Body);
+                graphics.DrawText(text, R(900, 40 + i * 24, 360, 22), TextAlignment.Left, Color.White, font);
+            }
+        }
         // White text with a one-pixel dark shadow, tight to its extent; the draw call tints it. Ellipsised to the rectangle.
         private TextSprite RenderText(string text, float pixelSize, float rectWidth, bool bold, string key)
         {

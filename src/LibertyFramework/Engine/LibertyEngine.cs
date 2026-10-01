@@ -171,6 +171,8 @@ namespace LibertyFramework.Engine
             engine.LoadConfig();
             engine.hotReloadActive = engine.Config.HotReload;
             engine.Ui.Canvas.TextRenderer = engine.Config.UiTextRenderer;
+            engine.Ui.Canvas.TextSpriteCap = engine.Config.UiTextCacheEntries;
+            engine.Ui.Canvas.NewSpritesPerFrame = engine.Config.UiTextNewSpritesPerFrame;
             // Crash capture is installed first, before anything else touches the game.
             engine.core.Load();
             engine.Governor = new Governor(engine.Config);
@@ -351,6 +353,15 @@ namespace LibertyFramework.Engine
                 Ui.Canvas.TextRenderer = args[0];
                 Ui.Canvas.ShdnTextLimit = args.Length > 1 ? int.Parse(args[1]) : int.MaxValue;
                 return "ui_text_renderer mode=" + args[0] + " limit=" + (args.Length > 1 ? args[1] : "none");
+            });
+            Commands.RegisterEngine("ui-text-stats", "sprite text cache: entries, estimated texture bytes, textures created and evicted, frames that deferred new text", args => Ui.Canvas.TextStats());
+            Commands.RegisterEngine("ui-text-probe", "ui-text-probe none|same|different|sizes|noeffect [count] - draw N strings per frame through SHDN DrawText (root-cause diagnostic)", args =>
+            {
+                string mode = args.Length > 0 ? args[0] : "none";
+                if (mode != "none" && mode != "same" && mode != "different" && mode != "sizes" && mode != "noeffect") { throw new ArgumentException("choose none, same, different, sizes or noeffect"); }
+                Ui.Canvas.ProbeMode = mode;
+                Ui.Canvas.ProbeCount = args.Length > 1 ? Math.Max(1, Math.Min(24, int.Parse(args[1]))) : 8;
+                return "ui_text_probe mode=" + mode + " count=" + Ui.Canvas.ProbeCount;
             });
             Commands.RegisterEngine("pools","game pool occupancy (peds, vehicles, objects)", args => PoolsReport());
             Commands.RegisterEngine("natives", "raw native calls made through the SDK, per module", args => Natives.Report());

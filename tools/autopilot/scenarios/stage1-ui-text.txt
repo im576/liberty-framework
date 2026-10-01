@@ -73,3 +73,44 @@ key F10 600
 wait 1500
 ui-text-renderer sprite
 clear
+# Root cause probes (no menu open): the same SHDN DrawText call drawn in different arrangements.
+ui-text-probe same 1
+wait 2000
+label probe_same_1
+framestats
+wait 4000
+framestats
+costs
+ui-text-probe same 8
+wait 2000
+label probe_same_8
+framestats
+wait 4000
+framestats
+costs
+ui-text-probe different 8
+wait 2000
+label probe_different_8
+framestats
+wait 4000
+framestats
+costs
+ui-text-probe sizes 8
+wait 2000
+label probe_sizes_8
+framestats
+wait 4000
+framestats
+costs
+ui-text-probe noeffect 8
+wait 2000
+label probe_noeffect_8
+framestats
+wait 4000
+framestats
+costs
+ui-text-probe none
+wait 1000
+ui-text-stats
+expect "ui_text_sprites renderer=sprite count=\d+/600" 10
+clear
