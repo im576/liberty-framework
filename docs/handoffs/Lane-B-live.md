@@ -7,6 +7,17 @@ Update this file after every game run and meaningful commit. Rules for a success
 
 This section supersedes the historical next-step instructions below. No game slot has been assigned.
 
+### Resumed first exclusive build/game slot (2026-10-01)
+
+Owner revoked the hold and assigned one full batch. Clean lane merged docs-only main `c01f0da` as `1383b5b`, without
+conflicts; feature testing precedes remaster deployment/polish. Required production build PASS (zero errors;
+framework SHA256 `3C04DC932C0983E609708567A847E767361F700B447C5872B29462563BE0F547`),
+`tools/verify.ps1 -NoGame` **441/0/5 not-run**, `tools/tests/Run-Tests.ps1` **236/0**.
+Logs: `results-local/offline/lane-b-resumed/{build.log,verify.log,tool-tests.log}`.
+Next: one committed full `LOOP-package-install,T045-ui-text,T045-weapon-wheel,T046-trunk-ui` batch with
+`-AnyBranch -NoPush -Restore -NoManual -MaxGameMinutes 30`, original budgets, then captures/restoration review.
+No fresh runtime result yet. The ordinary scenarios do not establish watcher invalid-config recovery or stop/restart.
+
 - Entry was clean at `1744416`; no non-output files had changed in the preceding five minutes. Process inspection
   found no game/verifier/compiler. Fetched origin and fast-forwarded to current main `7058612`, preserving all history.
   Read main's continuation, rules, B prompt and integration review; reviewed the isolated six-file `1f6f501` diff.
