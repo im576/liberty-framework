@@ -55,3 +55,40 @@ Old `stage1-trunk-ui-20260930-174525`: 125 steps, one close failure; second clos
 were inspected: expected contents/capacity (0/8, 1/8, 4/4) and swap update are visible. Scene/vehicles obscure Niko and slings;
 swap centre text clips, and the full-refused shot lacks the claimed transient refusal message. They do not establish prop,
 close or new layout acceptance. There are no new screenshots after fixes; shared UI stalls remain open under T-045.
+
+## Claude continuation: root cause evidence and fix, acceptance (2026-10-01)
+
+Reviewed all Codex work (hold timing, equip-after-release readback, binding-collision rejection, lid-close safeguard, layout,
+`UiBudgetLogic`) and merged `origin/main` (testing speed-up tools); no defect found in them.
+
+**Shared UI stall, measured (one scene, frame time per window, `T045-ui-text`, run `20261001-000645`):**
+
+| Window | Avg frame ms |
+|---|---:|
+| closed | 23 |
+| list menu, sprite text (new default) | 25.5 |
+| radial menu, sprite text | 26 |
+| list menu, SHDN `DrawText` limited to 1 / 4 / all 8 strings | 96 / 310 / 393 |
+| probe, one string drawn once / 8 times / 8 different strings / 5 font sizes | 98 / 609 / 616 / 702 |
+| probe, font with `Effect` none, 8 strings | 147 |
+| probe, DevTools-style font (2-argument constructor, 4-argument overload), 8 strings | 145 |
+| probe, DevTools-style bold font (4-argument constructor), 8 strings | 142 |
+| probe, canvas font through the 4-argument overload, 8 strings | 608 |
+
+Conclusion (evidence only): ScriptHookDotNet `Graphics.DrawText` costs about 15 ms per string per frame at its cheapest and
+75-90 ms with the canvas fonts' default effect (the effect multiplies the `DrawString` passes); the overload, the colour
+argument, bold, string content and font count are not what costs. Rectangles and sprites cost nothing. The cause inside
+DrawText (D3DX font rendering under the game's renderer) is not established, and a draw setup that is cheap enough was not found
+(the cheapest, 145 ms for 8 strings, is 6x the sprite renderer), so the shared canvas draws text as cached GDI+ sprites
+(`engine.json` `uiTextRenderer`, `ui-text-renderer shdn` switches back). The DevTools menu window in that scenario is not
+a reliable reading (its open state was not confirmed). The cache is least-recently-used (600 entries), creates at most 8 new
+textures per frame, and `ui-text-stats` reports count and estimated bytes (about 40 KB per string at 1080p; 437 entries = 19 MB).
+Text textures belong to the engine's canvas, not to a module: they are released when the engine unloads, not on module stop or
+hot reload. Lane D's HUD text uses the same canvas (changing numbers each create a texture; per-character sprites for digits
+would avoid that and are a recommendation for D, not done here).
+
+**Acceptance (full run `20261001-001218-7d63be6`, no -Quick, budgets unchanged):**
+- `T045-weapon-wheel`: passed (NEEDS-REVIEW for the screenshots). 12 of 12 selections with next-frame readback, first draw within 0-1 frames, hold and tap keyboard flows, `ui-budget` wheel window avg 28.8 ms against 31.1 ms closed, p95 50.2 / 54.2, p99 67.9 / 78.0, draw.ui under 0.5 ms.
+- `T046-trunk-ui`: passed (NEEDS-REVIEW for the screenshots). Store, take, swap with ammo and ownership read back, capacity refusal, two persisted-state round trips, control released after both closes, `ui-budget` trunk window avg 30.3 ms against 28.7 ms closed, p95 47.6 / 44.3 (+7.4%), p99 85.5 / 76.6 (+11.6%).
+- An earlier full run (`ec5e244`) had one game crash and one p95 gate miss by 0.5 ms; both runs shared the machine with other lanes' builds (a 11-14 s stall in the holsters and wheel config-file polling preceded the crash, consistent with disk contention; not proven). The budget windows were then lengthened to 10 s (thresholds unchanged).
+- Still NOT VERIFIED: physical controller (Back, stick, A/B), a real game save and load, the safehouse stash and gunsmith through this interface, Lane D HUD coexistence, owner judgement of the screenshots.
