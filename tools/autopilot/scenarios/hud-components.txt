@@ -16,7 +16,9 @@ hudctl force all off
 hudctl probe-mode on
 hudctl table
 expect "hud_table components=\d+" 10
+select 0
 catalog give service-pistol 150 clear
+select 7
 wait 1500
 wanted 3
 wait 1500

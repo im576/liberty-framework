@@ -1,6 +1,6 @@
 # T-049 — Basic Liberty HUD
 
-Status: **NEEDS-PLAYTEST** · Lane D · Depends on: T-040 · Design: STAGE1 section 7 Slice A "Basic Liberty HUD", 10 Pillar 1;
+Status: **BLOCKED** · Lane D · Depends on: T-040 · Design: STAGE1 section 7 Slice A "Basic Liberty HUD", 10 Pillar 1;
 radar stays vanilla until T-054 (R5); final styling in Slice C
 
 ## Goal
@@ -34,6 +34,8 @@ Vanilla+ language, shown when relevant instead of permanently covering the scree
   **bottom left**, and the weapon wheel/trunk panel does not cover either group. No lower-corner HUD relocation.
 
 ## Progress (2026-10-01, Claude, lane D, cloud session)
+
+The following is the inherited offline implementation history. The latest local findings below supersede its hiding claims and unrun status.
 
 Built and verified offline in a cloud session (no Windows, no game): **nothing below has run in the game.** The in-game checks are queued
 (`T049-hud-components`, `T049-stage1-hud`, `T049-hud-look`); until `verify-local.ps1` has run them this card stays NEEDS-PLAYTEST with
@@ -91,25 +93,42 @@ T-044 pistol cap (150 total: expected `17 / 133`) rather than requesting 400 rou
 Final offline `-NoGame`: `passed=469 failed=0 notrun=7`; tooling tests: `passed=212 failed=0`; content selftest 364/364, fixtures 5/5; art lifecycle 18/18 and 12 requests valid.
 The Windows build succeeds with zero errors (SDK, 210 engine sources, both mods); native fault-containment and ray-walk tests pass. The package-flags model tool compiles with warnings as errors.
 The second verifier `20260930-195611-c07dbb5` also stopped before installation after the owner prohibited in-game testing. Both summaries remain incomplete and are not gameplay evidence.
-`LOOP-package-install`, `T049-hud-components` and `T049-stage1-hud` are **NOT RUN**. There is no Lane D installed build, measured gameplay/UI acceptance or new HUD screenshot.
+Those two interrupted batches produced no D install or gameplay evidence. The later owner-authorized batch below did install and run both scenarios.
 The pre-restriction file-only executable scan resolved 31 components and 23 unparsed registrations (see HudComponents); its full verifier had 2 failures and 1 NOT-RUN and was not accepted.
 Prompt text is now cached until text/device/glyph-table changes, preventing per-frame expansion and repeated unknown-token logs. Mouse buttons now select keyboard/mouse glyphs.
 Offline tests cover device/config changes, fade text retention and reopening, unknown-token log suppression, and rejection of missing/over-budget/multi-ms draw samples.
 Health/armour remain vanilla by default; layout-test is diagnostic only. Owner recommendation: keep the vanilla arcs until future evidence supports clean replacement, rather than approving duplicates implicitly.
 Matching Claude Sonnet must review **all** Codex changes (including any uncommitted files) before continuing. Handoff: [Codex-Lane-D-2026-09-30](../handoffs/Codex-Lane-D-2026-09-30.md).
 
-**Current owner restriction: no in-game testing. The steps below are future instructions, not authorization to run them.**
+## Blocked — visible hiding (local run September 30, 2026)
+
+The owner lifted the testing restriction; D ran `verify-local.ps1 -AnyBranch -Only T049-hud-components,T049-stage1-hud -ScenarioTimeoutMinutes 6 -NoPush -Restore -NoManual`.
+Batch `20260930-205120-4ac4fcc`: install PASS; component script NEEDS-REVIEW; HUD scenario FAIL (one wanted transition expectation, 110 steps, no log errors, game alive).
+Normal verifier restoration completed at 8:57 p.m. Pacific. See [local evidence report](../reports/2026-09-30-lane-d-hud-local.md) and the [handoff](../handoffs/Codex-Lane-D-2026-09-30.md).
+
+The screenshots show vanilla wanted stars and radar still visible while the hider reports ownership. Normal HUD captures show duplicate weapon/ammo and wanted displays.
+Resolved globals and `HudReticle.IsHidden` are not proof of rendered hiding. A source guard now requires separate visible-hiding evidence; none of D's components has it.
+Shipped weapon/ammo/health/armour/wanted therefore stay vanilla with zero planned hides. Prompts continue; `layout-test` or explicit `drawWithoutHidingVanilla` permits diagnostic duplicates.
+Final guard has offline verification only; it was not installed. Health/armour arcs and radar are preserved. Deeper memory/hook research remains deferred.
+
+Useful partial evidence: weapon change/shot/reload, health/armour conditions, both forced prompt devices, real config-off/restoration and sampled draw gates passed.
+The final measured diagnostic sample was `draw.hud=0.306 ms`, `draw.ui=0.310 ms`; this excludes B's newer wheel/trunk integration and does not certify the task.
+Vanilla ammo `133 17` matches the initial Liberty `17 / 133` for total 150; firing/reload comparison supports total-includes-clip for this pistol only.
+The first-shot log briefly combined fresh clip with the previous total; sample consistency remains a follow-up.
+The wanted screenshot correctly shows three Liberty stars but the transition-only log assertion failed because wanted was already visible; the next scenario checks sampled wanted state instead.
+
+Required unblock: evidence-backed isolated hiding (including restoration), then a fresh committed-build run reviewing every screenshot, combined B/D captures and real-device/owner sign-off.
+No guessed addresses, broad HUD suppression or unapproved duplicate bars added. Sonnet must review ALL Codex source and documentation, including any uncommitted edits, before continuing.
 
 ## Human test steps
 
-1. Install the build from this run (`tools/verify-local.ps1`, or `tools/install-phase2.ps1`), load a free-roam save and go to the test range (DevTools > TELEPORT).
+1. After the required Sonnet review and session-appropriate authorization, install a fresh committed build through `tools/verify-local.ps1` with restoration; load a free-roam save and go to the test range (DevTools > TELEPORT).
 2. Unarmed and idle: the top-right corner shows nothing of Liberty's HUD. The radar is at the bottom left.
-3. Give yourself a Glock 17 with 150 total rounds (`lf catalog give service-pistol 150 clear`). Its silhouette and the expected `17 / 133` (clip / reserve) appear at the top right, stay about four seconds and fade. The vanilla weapon icon and ammo
-   must be gone (if they are still there, the log says `hud_element_plan element=weapon mode=vanilla_kept` and why). Aim (LT / right mouse), shoot, reload: the group returns each time; with the clip at 4 or fewer the
-   clip number turns orange.
-4. Let a pedestrian hit you or drop from a low height: a thin green health bar appears under the ammo line and fades. This needs the radar-arc question (open question 1) to be answered in `config/hud.json`;
-   until then the vanilla arcs around the radar are what you see. To see the Liberty bars anyway: console `lf hudctl layout-test on` (then `off`).
-5. Get a wanted level: six stars (filled for the level) appear at the top right and fade a second after it ends; the vanilla stars are gone.
+3. Give yourself a Glock 17 with 150 total rounds (`lf catalog give service-pistol 150 clear`). Shipped mode must retain vanilla weapon/ammo/wanted and draw no duplicate group (`hudctl check`: all four plans vanilla_kept, hidden=0).
+   For authorized layout inspection, `lf hudctl layout-test on`: Liberty silhouette and `17 / 133` appear top right, hold about four seconds and fade. Aim (LT / right mouse), shoot, reload: the group returns; a low clip turns orange.
+   Vanilla duplicates in this diagnostic are expected and cannot satisfy clean replacement acceptance. `lf hudctl layout-test off` returns to vanilla.
+4. Under shipped policy, health/armour remain in the vanilla radar arcs. During authorized layout-test, take damage and set low health/armour: the top-right diagnostic bars show, fade or pulse as appropriate. Turn layout-test off.
+5. During authorized layout-test, get a wanted level: Liberty's six slots fill for the level and fade after it ends. Shipped policy keeps only vanilla stars. Diagnostic duplicate stars cannot pass replacement acceptance.
 6. Walk behind a parked car: the help box (top left) says `Press X to use the trunk.` on a controller and `Press E ...` on keyboard/mouse, following whichever you touched last.
 7. Open the weapon wheel and the trunk: nothing may cover the top-right group.
 8. Set `"enabled": false` in `scripts\LibertyFramework\config\hud.json`: within a second the complete vanilla HUD is back and nothing of Liberty's is drawn. Set it back to `true`.

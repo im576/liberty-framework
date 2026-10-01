@@ -249,7 +249,7 @@ installer merges new top-level sections into an existing file and keeps the owne
 |---|---|---|
 | `schemaVersion` | 1 | must be 1 |
 | `enabled` | true | **false restores the complete vanilla HUD** (every hidden component put back, nothing drawn, the help box drawn by the engine again) |
-| `hideVanilla` | `components` | `components`: hide the vanilla elements Liberty replaces (hud.dat globals, see [HudComponents.md](../research/HudComponents.md)); `none`: leave the vanilla HUD alone and draw nothing that would duplicate it |
+| `hideVanilla` | `components` | `components`: replace only components whose resolution AND visible hiding are verified (see [HudComponents.md](../research/HudComponents.md)); none currently qualify for T-049. `none`: leave vanilla alone |
 | `layout.marginRight` / `marginTop` | 28 / 24 | the top-right group's distance from the screen edges |
 | `layout.iconWidth` / `iconHeight` | 96 / 48 | weapon silhouette (the 2:1 icons of `ui\icons`) |
 | `layout.ammoHeight` | 22 | height of the clip / reserve line, at least 14 |
@@ -263,12 +263,12 @@ installer merges new top-level sections into an existing file and keeps the owne
 | `weapon.showOnChange` / `showOnShot` / `showWhileReloading` / `showWhileAiming` | all true | what brings it up; `showWhileAiming` follows the left trigger above `aimTriggerLevel` or the right mouse button |
 | `weapon.alwaysWhenArmed` | false | keep it up whenever a weapon is held |
 | `weapon.lowClipFraction` | 0.25 | the clip count turns `lowClip` at or below this fraction of the largest clip seen for the weapon (empty always) |
-| `weapon.totalIncludesClip` | true | Assumed pending gameplay evidence: reserve = total - clip. The scenario `stage1-hud` expects `hud_ammo ... shown="17 / 133"` for 150 rounds (T-044 pistol cap); the run must establish actual total semantics before accepting this setting |
+| `weapon.totalIncludesClip` | true | reserve = total - clip. September 30 pistol snapshot 150 total / 17 clip matches vanilla reserve 133; firing/reload supports this pistol only. Other weapons and consistent sample timing remain unverified |
 | `weapon.aimTriggerLevel` | 0.3 | left-trigger level (0-1) that counts as aiming |
-| `weapon.vanillaComponents` | `HUD_WEAPON_ICON`, `HUD_AMMO` | hud.dat components hidden while Liberty draws this element |
+| `weapon.vanillaComponents` | `HUD_WEAPON_ICON`, `HUD_AMMO` | required counterparts for replacement; listing them is insufficient without verified visible hiding. Currently kept vanilla |
 | `weapon.drawWithoutHidingVanilla` | false | draw even when a listed component cannot be hidden (a duplicate of the vanilla one) |
 | `health.*`, `armour.*` | see file | `enabled`, fades, `holdSeconds` (after a change or damage), `showOnChange`, `combatHoldSeconds` (after a shot fired or damage taken; 0 = off), `lowFraction` (health stays up at or below it; 0 = never), `pulsePerSecond` / `pulseDepth` (brightness pulse while low), `maximum` (the value that fills the bar; health is on the gameplay scale, the game's raw value minus 100), `hideWhenZero` (armour only: not drawn at zero), `vanillaComponents`, `drawWithoutHidingVanilla`. Armour defaults: `lowFraction` 0, `pulseDepth` 0, `hideWhenZero` true |
-| `health.vanillaComponents`, `armour.vanillaComponents` | empty | the vanilla health and armour arcs belong to the radar and no separable component is known, so **the bars are not drawn until a component is listed** (or `drawWithoutHidingVanilla` accepts a duplicate) |
+| `health.vanillaComponents`, `armour.vanillaComponents` | empty | arcs belong to the radar; no separable component is known. Bars stay off until isolated hiding is verified (or explicit `drawWithoutHidingVanilla` accepts a duplicate) |
 | `wanted.*` | see file | stars while wanted: fades (0.2 / 0.8), `holdSeconds` after the level drops to zero (1), `maximumStars` (6), `vanillaComponents` (`HUD_WANTED_BACK`, `HUD_WANTED_FRONT`), `drawWithoutHidingVanilla` |
 | `prompt.enabled` | true | the help box is drawn by the HUD (restyled, faded) with button names |
 | `prompt.fadeInSeconds` / `fadeOutSeconds` | 0.12 / 0.25 | |

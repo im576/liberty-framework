@@ -22,11 +22,11 @@ namespace LibertyFramework.Hud.Logic
 
     // T-049: may Liberty draw an element, and which vanilla components must go for it. The rule is the card's: hide only what Liberty
     // replaces; if the vanilla element cannot be hidden on its own, keep it and draw no duplicate. "Can be hidden" means every listed
-    // component is in the resolved hud.dat table with the layout the hider relies on.
+    // component is resolved AND its visible disappearance was verified. A successful globals write alone is not that proof.
     internal static class HudPlan
     {
         internal static HudDecision Decide(bool enabled, string hideVanilla, IList<string> vanillaComponents, bool drawWithoutHidingVanilla,
-            Func<string, bool> canHide)
+            Func<string, bool> isResolved, Func<string, bool> isHidingVerified)
         {
             HudDecision decision = new HudDecision();
             if (!enabled) { decision.Mode = HudElementMode.Off; decision.Reason = "disabled in config"; return decision; }
@@ -45,10 +45,10 @@ namespace LibertyFramework.Hud.Logic
             List<string> missing = new List<string>();
             foreach (string name in vanillaComponents)
             {
-                if (canHide(name)) { decision.ToHide.Add(name); } else { missing.Add(name); }
+                if (isResolved(name) && isHidingVerified(name)) { decision.ToHide.Add(name); } else { missing.Add(name); }
             }
             if (missing.Count == 0) { decision.Mode = HudElementMode.Liberty; decision.Reason = "vanilla hidden: " + string.Join(",", decision.ToHide.ToArray()); return decision; }
-            decision.Reason = "cannot hide " + string.Join(",", missing.ToArray());
+            decision.Reason = "visible hiding unavailable or unverified: " + string.Join(",", missing.ToArray());
             if (drawWithoutHidingVanilla) { decision.Mode = HudElementMode.Liberty; return decision; }
             decision.ToHide.Clear();
             decision.Mode = HudElementMode.VanillaKept;

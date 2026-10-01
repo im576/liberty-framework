@@ -18,9 +18,9 @@ namespace LibertyFramework.Hud
     // out when not. The weapon, ammo, health and armour form one compact group at the TOP RIGHT; the vanilla radar stays
     // bottom left; the prompt is the IV-style help box (top left) with the button names of the device in use.
     //
-    // The vanilla elements Liberty replaces are hidden through their hud.dat globals (the mechanism proven for the reticle). An
-    // element whose vanilla counterpart cannot be hidden alone stays vanilla and Liberty draws no duplicate (HudPlan): which
-    // components exist and which can be hidden is read from the game at runtime (`hudctl table`), not assumed. Turning the
+    // hud.dat globals resolve these elements, but the September 30 live captures show they do not hide weapon/ammo/wanted.
+    // HudPlan therefore retains vanilla until visible hiding is verified; table membership and saved-value ownership are not proof.
+    // Diagnostic layout-test and an explicit drawWithoutHidingVanilla override still allow layout inspection. Turning the
     // module off or `"enabled": false` restores every hidden component.
     //
     // Threading: the engine tick gathers state and builds an immutable Frame; OnDraw only draws that Frame (no game calls, no
@@ -202,12 +202,14 @@ namespace LibertyFramework.Hud
         // Which elements Liberty draws, given the config and what the table can hide. Runs at start and on every config change.
         private void ApplyPlan()
         {
-            Func<string, bool> canHide = name => hider != null && hider.Knows(name) && !IsReticleComponent(name);
+            Func<string, bool> isResolved = name => hider != null && hider.Knows(name) && !IsReticleComponent(name);
+            // No T-049 replacement component has verified visible hiding. Keep probes available, without promoting their ledger to capability.
+            Func<string, bool> isHidingVerified = name => false;
             string hiding = probeMode ? HudConfig.HideNone : config.HideVanilla;
-            weaponPlan = HudPlan.Decide(config.Weapon.Enabled, hiding, config.Weapon.VanillaComponents, !probeMode && (config.Weapon.DrawWithoutHidingVanilla || layoutTest), canHide);
-            healthPlan = HudPlan.Decide(config.Health.Enabled, hiding, config.Health.VanillaComponents, !probeMode && (config.Health.DrawWithoutHidingVanilla || layoutTest), canHide);
-            armourPlan = HudPlan.Decide(config.Armour.Enabled, hiding, config.Armour.VanillaComponents, !probeMode && (config.Armour.DrawWithoutHidingVanilla || layoutTest), canHide);
-            wantedPlan = HudPlan.Decide(config.Wanted.Enabled, hiding, config.Wanted.VanillaComponents, !probeMode && (config.Wanted.DrawWithoutHidingVanilla || layoutTest), canHide);
+            weaponPlan = HudPlan.Decide(config.Weapon.Enabled, hiding, config.Weapon.VanillaComponents, !probeMode && (config.Weapon.DrawWithoutHidingVanilla || layoutTest), isResolved, isHidingVerified);
+            healthPlan = HudPlan.Decide(config.Health.Enabled, hiding, config.Health.VanillaComponents, !probeMode && (config.Health.DrawWithoutHidingVanilla || layoutTest), isResolved, isHidingVerified);
+            armourPlan = HudPlan.Decide(config.Armour.Enabled, hiding, config.Armour.VanillaComponents, !probeMode && (config.Armour.DrawWithoutHidingVanilla || layoutTest), isResolved, isHidingVerified);
+            wantedPlan = HudPlan.Decide(config.Wanted.Enabled, hiding, config.Wanted.VanillaComponents, !probeMode && (config.Wanted.DrawWithoutHidingVanilla || layoutTest), isResolved, isHidingVerified);
             planVerified = false;
             LogPlan("weapon", weaponPlan);
             LogPlan("health", healthPlan);
@@ -730,6 +732,7 @@ namespace LibertyFramework.Hud
                 text.Append(" armour=").Append(ModeText(armourPlan.Mode)).Append(" wanted=").Append(ModeText(wantedPlan.Mode));
             }
             text.Append(" device=").Append(device.Current.ToString().ToLowerInvariant()).Append(" layout_test=").Append(layoutTest).Append(" probe_mode=").Append(probeMode);
+            text.Append(" wanted_stars=").Append(wantedLevel);
             text.Append(" hidden=").Append(planHidden.Count + probeHidden.Count).Append(" help_by_hud=").Append(Engine.Ui.HelpDrawnByHud);
             Frame now = frame;
             text.Append(" drawn=");
@@ -799,8 +802,7 @@ namespace LibertyFramework.Hud
             return "restored " + names.Count;
         }
 
-        // Sanity check for the scenario: a planned element that is Liberty-drawn has every component it hides really hidden, and the
-        // layout keeps the group at the top right. Replies "error: ..." for anything else.
+        // Check saved-value ownership and layout. IsHidden is a restoration ledger, not proof of visible disappearance.
         private string Check()
         {
             if (config == null || weaponPlan == null) { return "error: hud not started"; }

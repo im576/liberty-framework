@@ -176,22 +176,28 @@ namespace LibertyFramework.Verify
         {
             Func<string, bool> all = name => true, none = name => false, onlyAmmo = name => name == "HUD_AMMO";
             List<string> weapon = new List<string> { "HUD_WEAPON_ICON", "HUD_AMMO" };
-            HudDecision a = HudPlan.Decide(true, "components", weapon, false, all);
-            check.True("every component known: Liberty draws and hides both", a.Mode == HudElementMode.Liberty && a.ToHide.Count == 2, a.Reason);
-            HudDecision b = HudPlan.Decide(true, "components", weapon, false, onlyAmmo);
+            HudDecision a = HudPlan.Decide(true, "components", weapon, false, all, all);
+            check.True("every component resolved and visibly verified: Liberty draws and hides both", a.Mode == HudElementMode.Liberty && a.ToHide.Count == 2, a.Reason);
+            HudDecision b = HudPlan.Decide(true, "components", weapon, false, onlyAmmo, all);
             check.True("one component missing: the vanilla element stays and nothing is hidden", b.Mode == HudElementMode.VanillaKept && b.ToHide.Count == 0 && b.Reason.Contains("HUD_WEAPON_ICON"), b.Reason);
-            HudDecision c = HudPlan.Decide(true, "components", weapon, true, onlyAmmo);
+            HudDecision c = HudPlan.Decide(true, "components", weapon, true, onlyAmmo, all);
             check.True("drawWithoutHidingVanilla draws anyway and hides only what it can", c.Mode == HudElementMode.Liberty && c.ToHide.Count == 1 && c.ToHide[0] == "HUD_AMMO", "");
-            HudDecision d = HudPlan.Decide(true, "components", new List<string>(), false, all);
+            HudDecision d = HudPlan.Decide(true, "components", new List<string>(), false, all, all);
             check.True("no configured vanilla component (the health ring): kept vanilla, no duplicate", d.Mode == HudElementMode.VanillaKept && d.ToHide.Count == 0, d.Reason);
-            HudDecision e = HudPlan.Decide(true, "none", weapon, false, all);
+            HudDecision e = HudPlan.Decide(true, "none", weapon, false, all, all);
             check.True("hideVanilla none leaves the vanilla HUD alone", e.Mode == HudElementMode.VanillaKept && e.ToHide.Count == 0, "");
-            HudDecision f = HudPlan.Decide(false, "components", weapon, false, all);
+            HudDecision f = HudPlan.Decide(false, "components", weapon, false, all, all);
             check.True("a disabled element does not touch the vanilla HUD", f.Mode == HudElementMode.Off && f.ToHide.Count == 0, "");
-            HudDecision g = HudPlan.Decide(true, "components", null, false, all);
+            HudDecision g = HudPlan.Decide(true, "components", null, false, all, all);
             check.True("a null component list is handled", g.Mode == HudElementMode.VanillaKept, "");
-            HudDecision h = HudPlan.Decide(true, "components", weapon, false, none);
+            HudDecision h = HudPlan.Decide(true, "components", weapon, false, none, all);
             check.True("an empty table keeps everything vanilla", h.Mode == HudElementMode.VanillaKept && h.ToHide.Count == 0, "");
+            HudDecision unverified = HudPlan.Decide(true, "components", weapon, false, all, none);
+            check.True("resolved globals alone never permit replacement", unverified.Mode == HudElementMode.VanillaKept && unverified.ToHide.Count == 0, unverified.Reason);
+            HudDecision partial = HudPlan.Decide(true, "components", weapon, false, all, onlyAmmo);
+            check.True("one visually unverified component prevents the entire replacement", partial.Mode == HudElementMode.VanillaKept && partial.ToHide.Count == 0, partial.Reason);
+            HudDecision diagnostic = HudPlan.Decide(true, "components", weapon, true, all, none);
+            check.True("explicit diagnostic override draws without writing unverified globals", diagnostic.Mode == HudElementMode.Liberty && diagnostic.ToHide.Count == 0, diagnostic.Reason);
         }
 
         private static void Text(string repoRoot, Checker check)

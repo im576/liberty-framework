@@ -21,10 +21,10 @@ expect "hud_status enabled=True disabled=False" 10
 hudctl table
 expect "hud_table components=\d+" 10
 
-# --- Phase A: the plan under the shipped config. The weapon and the wanted stars have separable vanilla components; the health and armour
-# rings belong to the radar and stay vanilla (no duplicate drawn). `hudctl check` fails when a planned component is not really hidden.
+# --- Phase A: all replacement elements stay vanilla until visible hiding is proven. Table membership alone is insufficient.
+# `hudctl check` checks ownership and layout, not the rendered disappearance; screenshots must establish that separately.
 hudctl check
-expect "hud_check ok weapon=liberty health=vanilla_kept armour=vanilla_kept wanted=liberty" 10
+expect "hud_check ok weapon=vanilla_kept health=vanilla_kept armour=vanilla_kept wanted=vanilla_kept hidden=0" 10
 wait 5000
 shot hud_rest
 
@@ -81,8 +81,9 @@ expect "hud_element armour hidden" 10
 
 # Wanted: stars while wanted, a fade after.
 wanted 3
-expect "hud_element wanted shown reason=condition stars=3" 10
 wait 900
+hudctl status
+expect "hud_status .*wanted_stars=3" 10
 shot hud_wanted
 wanted 0
 expect "hud_element wanted hidden" 15
@@ -118,7 +119,7 @@ wanted 0
 hudctl layout-test off
 expect "hud_element_plan element=health mode=vanilla_kept" 10
 hudctl check
-expect "hud_check ok weapon=liberty health=vanilla_kept armour=vanilla_kept wanted=liberty" 10
+expect "hud_check ok weapon=vanilla_kept health=vanilla_kept armour=vanilla_kept wanted=vanilla_kept hidden=0" 10
 
 # Config-off is a real file edit, read by the normal poll. The hook restores exact original bytes.
 hudctl config-test off
@@ -134,6 +135,6 @@ hudctl config-test restore
 expect "hud_config_loaded enabled=True" 10
 wait 1200
 hudctl check
-expect "hud_check ok weapon=liberty health=vanilla_kept armour=vanilla_kept wanted=liberty" 10
+expect "hud_check ok weapon=vanilla_kept health=vanilla_kept armour=vanilla_kept wanted=vanilla_kept hidden=0" 10
 shot hud_config_restored
 wanted 0
