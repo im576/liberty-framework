@@ -4,6 +4,17 @@ Status: **IMPLEMENTATION / INTEGRATION; approved direction (owner, 2026-09-30), 
 This document is the build plan for the first mod on the Liberty Engine. Engine facts it relies on are in
 [PROJECT_STATE.md](../PROJECT_STATE.md) and the [regression report](../reports/2026-09-30-regression.md).
 
+**Owner priority update (2026-10-01): gameplay features first, remaster later.** The immediate deliverable is an
+integrated feature test build: weapons/gunplay/reticles, physical loadout, wheel, trunk/storage, gore/combat effects,
+functional HUD/menus and their supporting systems. Review existing and in-progress feature modules, fix them and
+validate compatibility, performance and restoration before the owner's playtest. Functional UI work stays in this
+priority even where its later visual styling is listed under Slice C.
+Environment remaster, texture/art deployment and lighting/weather/atmosphere polish follow that feature milestone;
+their acceptance does not block the feature test build. Art direction may continue independently through reference
+boards, palette/type/icon/HUD concepts and Hove Beach mood decisions. The longer-term Stage 1 design below is retained.
+The owner's temporary build hold is revoked by "fix that and then resume"; builds/tests resume through the orchestrator's
+shared schedule. Existing gameplay requirements, budgets, density OFF and the preserved baseline remain unchanged.
+
 ## 1. Goal
 
 > What would GTA IV feel like if Rockstar remastered and expanded it today, without changing what GTA IV is?

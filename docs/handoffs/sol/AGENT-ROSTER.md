@@ -25,3 +25,14 @@ placeholder; it must not merge the entire orchestrator branch or claim new runti
 
 Each worker returns a bounded lane commit, changed paths, updated live handoff, focused test evidence and proposed game
 check IDs. Only the owner marks DONE. Completion of an initial milestone does not finish the lane or the full mod.
+
+## Resume after owner's feature-first decision
+
+The owner deferred the remaster, retained art direction in parallel and then said "fix that and then resume". The
+temporary build/edit hold is revoked. Reuse these same GPT-6.1 Sol workers/settings and preserved lane state:
+B abe600c (clean); C 64a191f with four cleanup fixture/test edits; D f6dff18 with four HUD diagnostic edits; R 7058612
+with three material probe/generator edits. Review/finish those edits without discarding them. No new agents are needed.
+
+Next scheduled slot: B gets the first heavy build and verifier batch for the reviewed watcher follow-up; C/D/R finish
+their bounded patches and focused lightweight checks offline. Their game/heavy-build slots follow explicitly.
+No remaster implementation is assigned. Functional menus/HUD/storage and supporting gameplay features remain priority.

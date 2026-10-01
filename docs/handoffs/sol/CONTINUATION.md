@@ -5,6 +5,16 @@ requests in those prompts. The current main copy is authoritative; a lane's old 
 Rules remain in RULES.md and AGENTS.md. Preparation itself launched no workers; the subsequent owner-authorized
 replacement dispatch is recorded in [AGENT-ROSTER.md](AGENT-ROSTER.md).
 
+## Current owner priority and resumed work
+
+The owner explicitly prioritizes all developed/in-progress gameplay feature modules before the remaster: weapons,
+gunplay/reticles, physical loadout, wheel, trunk/storage, gore/combat effects, functional HUD/menus and supporting
+systems. Produce a combined feature test build with compatibility/performance evidence and clear controls; environment
+remaster, texture deployment and atmosphere polish come later. Functional UI is not deferred with visual UI polish.
+Art direction can continue independently without delaying feature repairs. "Fix that and then resume" revokes the
+temporary no-build/no-edit hold. Resume preserved patches, not fresh implementations. Models/efforts remain as dispatched.
+Heavy builds and game tests still require a scheduled slot; lightweight offline work may proceed concurrently.
+
 ## Ownership and first milestone
 
 | Role | Existing worktree / branch | First reviewable result |
