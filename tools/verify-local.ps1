@@ -27,6 +27,14 @@ param(
     [string] $Resume,
     # Minutes before a hung scenario is killed.
     [int] $ScenarioTimeoutMinutes = 15,
+    # Development iteration (never acceptance evidence): scenarios run their short variants (@quick lines, {quick:A|B}) and the
+    # run is recorded as mode quick.
+    [switch] $Quick,
+    # Development iteration: each scenario ends at its first failed step.
+    [switch] $StopOnFailure,
+    # Fairness: once this run has held the game this long, its remaining game checks are NOT-RUN and the game goes to the
+    # next session in line (run the rest in a new batch). 0 = no cap.
+    [double] $MaxGameMinutes = 30,
     # Cloud testing only: run the whole orchestration against a simulated game and simulated tools
     # (tools/tests/VerifyLocal.Tests.ps1). Never touches a game, never pushes to GitHub.
     [switch] $Simulate,
@@ -58,6 +66,7 @@ if ($Simulate) {
         ScenarioTimeout = [int]$(if ($sim.PSObject.Properties['scenarioTimeoutSeconds']) { $sim.scenarioTimeoutSeconds } else { 120 })
         Only = $Only; Kinds = $Kind; Smoke = [bool]$Smoke; IncludePassedManual = [bool]$IncludePassedManual
         KeepInstall = [bool]$KeepInstall; Restore = [bool]$Restore; Resume = $Resume
+        Quick = [bool]$Quick; StopOnFailure = [bool]$StopOnFailure; MaxGameMinutes = $MaxGameMinutes
         ResultsRoot = $(if ($ResultsDirectory) { $ResultsDirectory } else { Join-Path $simRoot 'results' })
         NoPush = [bool]$NoPush; Remote = [string]$sim.remote
         GameInfo = [ordered]@{ version = 'simulated'; exeSha256 = 'simulated' }
@@ -130,6 +139,7 @@ $options = @{
     ScenarioTimeout = $ScenarioTimeoutMinutes * 60
     Only = $Only; Kinds = $Kind; Smoke = [bool]$Smoke; IncludePassedManual = [bool]$IncludePassedManual
     KeepInstall = [bool]$KeepInstall; Restore = [bool]$Restore; Resume = $Resume
+    Quick = [bool]$Quick; StopOnFailure = [bool]$StopOnFailure; MaxGameMinutes = $MaxGameMinutes
     ResultsRoot = $(if ($ResultsDirectory) { $ResultsDirectory } else { Join-Path $repo 'results-local' })
     NoPush = [bool]$NoPush; Remote = 'origin'; GameInfo = $gameInfo; Replacements = $replacements
 }

@@ -30,6 +30,40 @@ Updated 2026-09-30 when the first orchestrator thread handed off (to avoid conte
   register imperfect candidates; Claude reviews). ART-001..012 approved, eight prepped. Owner confirmed generated images
   may be used.
 
+## Codex takeover and return (2026-09-30 evening, Pacific)
+
+Codex ran lanes B, C and D from about 19:40 to 21:30 while Claude usage refilled. Its reports are in
+`C:\Users\IM576\OneDrive\Documents\ChatGPT\GTA4-Reborn\research\` (takeover review, Sonnet handoff setup), and each lane has
+`docs/handoffs/Codex-Lane-<X>-2026-09-30.md` in its worktree. At 21:32: Codex was idle, no verifier was running, the lock was
+free, and the game was restored (`installed-build.json`: restored from `phase2-20260930-212221`).
+- **B**: lane-b2 `codex/lane-b-validation` (= lane-b `codex/lane-b-wheel-trunk`) at `0f5825f`, with the original T-045/T-046
+  tips kept. T045-ui-path PASS shows the text-drawing path causes ticks of 1 s or more (primitives and control capture don't);
+  T045-weapon-wheel FAIL (4 steps). Sonnet Lane B was told to review all Codex work, then fix the text stall, then run
+  wheel/trunk acceptance.
+- **C**: lane-c-t048 `stage1/T-048` at `dec20b9`. Trauma 21/22 (needs review); persist and cleanup FAIL (mission-owned
+  fixtures are rejected by the ownership rule); effects ERROR (killed after 600 s); dismember 8/20 floating limbs from the
+  earlier run. Sonnet Lane C was told to review, then continue.
+- **D**: lane-d `codex/T-049-hud-continuation` at `b1dc3d7`, plus uncommitted Codex edits (HudModule, Stage1HudChecks, new
+  HudAmmoSample.cs), kept as they are. BLOCKED on visible hiding: wanted and radar stayed visible, and weapon/ammo got
+  duplicated, so the guard keeps the vanilla HUD. Its original cloud session can't be reached from here; the review bundle
+  (git bundle, patches, uncommitted diff) is in `research\lane-d-review-bundle-2026-09-30`. Owner to choose: link the cloud
+  session, or start a local Sonnet Lane D thread.
+
+## Cleanup and review (2026-09-30 ~21:45 Pacific)
+
+- Worktrees retired (all merged and clean; their branches stay): lane-0, lane-a, lane-a2, lane-a3, art-generator. Their
+  test evidence was moved to `D:\GTAIV-Reborn-Tools\archive\results\<lane>`. Active worktrees now: main, lane-b2 (B), lane-b
+  (B, diagnostic; retire after B merges), lane-c-t048 (C), lane-c (older T-047, contained in T-048; retire after C merges),
+  lane-d (D), research.
+- Bloat moved, not deleted, to `D:\GTAIV-Reborn-Tools\_to-delete` (8.6 GB; the owner deletes it): the extracted mod archives
+  from the other-mods research (7.6 GB; the findings are in `research/OtherModsDeepDive.md`), installer zips that were already
+  extracted, 72 old game install backups (kept: the oldest phase2, everything from 2026-09-30, the single dxvk/phase1/weapon
+  backups, and the oldest and newest violent backup), and stale temp test folders. `C:\Users\IM576\GTAIV-Reborn-pr7-macfix` is
+  an orphan non-git folder with one locked file; delete it after a reboot.
+- The research worktree's 8 uncommitted notes were committed on `research/stage1` (`67414a6`, local only, not merged).
+- Main bug found by Codex: `config/atmosphere.json` on main still has `density.enabled: true`, against the owner's
+  "density governor off". Lanes B, C and D each switch it off; take it once when integrating.
+
 ## Status (reviewed 2026-10-01 ~00:35Z by the second orchestrator thread)
 
 | Lane | Tasks | State |
@@ -56,7 +90,7 @@ repeatable surfaces procedural or CC0"; gore very harsh but grounded, bodies 3-5
    answer yet.
 2. VRAM ceiling: the GPU is an RX 570 **4 GB** (driver and registry), not 8 GB as STAGE1 says. Proposed: hard ceiling
    +300 MB. Not answered; STAGE1 still says 8 GB / +350 MB.
-3. Monitor refresh rate (for a frame cap: 40 fps needs 120 Hz, else 30). Found 2026-10-01: Windows lists an ASUS VG279QM
+3. RESOLVED 2026-09-30: the main monitor runs above 240 Hz (ASUS VG279QM, 280 Hz), so a steady 40 fps frame cap is possible (T-056). Found 2026-10-01: Windows lists an ASUS VG279QM
    and a VG248 (both 144 Hz or faster), so the 40 fps cap is possible; the owner still has to confirm which one is the main screen.
    Testing speed (45561b4, 2026-10-01): package 411 s cold / 4 s cached, build outside the lock, fail-fast on frozen or
    unstartable games. Lanes must merge main to get it; tell lanes to batch checks in one verify-local run and not poll.
@@ -64,7 +98,7 @@ repeatable surfaces procedural or CC0"; gore very harsh but grounded, bodies 3-5
 5. T-049: if the in-game probe finds no hideable component for the radar's health/armour arcs, either show Liberty's
    top-right bars as well as the vanilla arcs (`drawWithoutHidingVanilla: true`), or keep the vanilla arcs until the
    radar redraw (T-054). Recommended: wait for the probe result.
-6. Lane D: owner approved a local thread to run its in-game checks (2026-10-01); prompt given in the second orchestrator
+6. Lane D is cloud session https://claude.ai/code/session_01VkfXFwcWXicsfUSssWNvfn (ListAgents "Liberty Vanilla+ Stage 1 Lane D"); it can't message back or run the game. It works on origin/codex/T-049-hud-continuation (Codex WIP committed as 168812a) and asks for game runs in docs/handoffs/Lane-D-next-run.md; the orchestrator runs them locally and pushes the evidence. Earlier: owner approved a local thread to run its in-game checks (2026-10-01); prompt given in the second orchestrator
    thread (worktree `GTAIV-Reborn-lane-d`, branch `stage1/T-049` from `origin/claude/ecstatic-keller-qu3sto` rebased on main).
 
 ## Owner context

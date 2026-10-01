@@ -82,6 +82,23 @@ $elapsed = ((Get-Date) - $started).TotalSeconds
 Test-That 'sim: a frozen game ends the scenario at the first wait instead of waiting out every expect' (
     $r.Status -eq 'ERROR' -and $r.Json.runnerError -like 'GAME-FROZEN*' -and $r.Json.steps -eq 2 -and $elapsed -lt 30) "$($r.Status) $([int]$elapsed)s $($r.Output)"
 
+Test-That 'mode line: {quick:A|B} picks A in quick, B in full' ((ConvertTo-ModeLine 'cycle-deaths {quick:5|25}' $true) -eq 'cycle-deaths 5' -and (ConvertTo-ModeLine 'cycle-deaths {quick:5|25}' $false) -eq 'cycle-deaths 25')
+Test-That 'mode line: @full lines are skipped in quick runs, @quick lines in full runs' ($null -eq (ConvertTo-ModeLine '@full wait 1000' $true) -and $null -eq (ConvertTo-ModeLine '@quick god on' $false) -and (ConvertTo-ModeLine '@full wait 1000' $false) -eq 'wait 1000')
+Initialize-SimulatedGame (Join-Path $simRoot 'state-quick') $world @()
+$quickFile = Join-Path $scenarios 'quickmode.txt'
+[IO.File]::WriteAllLines($quickFile, @('@full expect "never_logged" 1', '@quick god on', 'spawn {quick:1|9} 5 0', 'expect "autopilot_spawned count=1" 2'))
+$output = & $runScenario -GameDirectory $simRoot -Scenario $quickFile -OutputDirectory $runs -AutopilotModule $simModule -Quick 6>&1 | Out-String
+$read = Read-ScenarioResult $output; $json = Get-Content -LiteralPath $read.Path -Raw | ConvertFrom-Json
+Test-That 'quick run: short variants run, full-only lines skipped, result marked quick' ($read.Status -eq 'PASS' -and $json.mode -eq 'quick' -and $json.steps -eq 3) $output
+$r = Invoke-SimScenario 'stopfirst' @('god on', 'expect "never_logged" 1', 'god on', 'god on') $world
+Test-That 'without -StopOnFailure every step still runs' ($r.Json.steps -eq 4) $r.Output
+Initialize-SimulatedGame (Join-Path $simRoot 'state-stop') $world @()
+$stopFile = Join-Path $scenarios 'stopfirst2.txt'
+[IO.File]::WriteAllLines($stopFile, @('god on', 'expect "never_logged" 1', 'god on', 'god on'))
+$output = & $runScenario -GameDirectory $simRoot -Scenario $stopFile -OutputDirectory $runs -AutopilotModule $simModule -StopOnFailure 6>&1 | Out-String
+$read = Read-ScenarioResult $output; $json = Get-Content -LiteralPath $read.Path -Raw | ConvertFrom-Json
+Test-That '-StopOnFailure ends the scenario at its first failed step' ($read.Status -eq 'FAIL' -and $json.steps -eq 2) $output
+
 $r = Invoke-SimScenario 'badexpect' @('god on', 'expect "(unclosed" 1') $world
 Test-That 'sim: an unparseable expect fails' ($r.Status -eq 'FAIL') $r.Output
 
