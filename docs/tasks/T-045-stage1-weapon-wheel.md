@@ -51,5 +51,4 @@ combined `draw.ui` submission cost. Negative offline cases prove excessive draw/
 
 **Acceptance incomplete:** old list windows average 383–397 ms even with gameplay modules stopped; radial/wheel windows
 average 825/840 ms. The old keyboard-highlight screenshot contains no wheel, so fails visual acceptance. Sidearm/empty-slot
-captures render content with the old white highlight. Shared-path cause is unknown. The new diagnostic run produced no usable
-measurements and was cleaned up/restored after the owner prohibited further game testing. No new fixes have game evidence.
+captures render content with the old white highlight. Shared-path cause is unknown. The first diagnostic was interrupted without measurements and restored. The reauthorized `9f11a42` diagnostic completed 60 steps and restored: primitives average 23.96 ms, but text-only/full/unlocked-full windows each contain five >=1 s stalls and no sub-second samples. This implicates shared text drawing without establishing an internal cause or gameplay acceptance. No new wheel acceptance result is claimed.

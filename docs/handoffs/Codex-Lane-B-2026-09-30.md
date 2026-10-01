@@ -177,8 +177,27 @@ Both B worktrees inspected clean at `5e2ca95`; game closed, no active verifier, 
 
 ### First resumed attempt: busy lock, no game evidence
 
-Run `lane-b/results-local/20260930-205201-908e3b7` built the package in 39 seconds, then waited for Lane D's machine-wide lock (PID 12496, held since 03:51:24 UTC). At 8:54 p.m. Pacific, Codex checked that Lane D still held it and stopped only Lane B's waiting verifier PID 24752. Lane B never acquired the lock, installed, launched, or ran a scenario; there is no summary or measured window. `results-local/resumed-ui-path-verifier.log` and that run's `LOOP-package-install.log` are retained. Lane D's installation and processes were untouched. A fresh short diagnostic will be attempted only through the normal verifier before the hard stop.
+Run `lane-b/results-local/20260930-205201-908e3b7` built the package in 39 seconds, then waited for Lane D's machine-wide lock (PID 12496, held since 03:51:24 UTC). Around 8:55 p.m. Pacific, Codex checked that Lane D still held it and stopped only Lane B's waiting verifier PID 24752. Lane B never acquired the lock, installed, launched, or ran a scenario; there is no summary or measured window. `results-local/resumed-ui-path-verifier.log` and that run's `LOOP-package-install.log` are retained. Lane D's installation and processes were untouched. A fresh short diagnostic will be attempted only through the normal verifier before the hard stop.
 
 ### Screenshot-check correction during lock wait (9:05 p.m. Pacific)
 
 Reviewed the current runner and scenario while the primary worktree's diagnostic waited. In the idle implementation worktree, added `trunk_ui_swap_preview` before Enter so the prospective swap is captured separately from its outcome. The full-trunk refusal now uses real Space input through the menu callback (which displays the message) and captures immediately after the refusal log, before subsequent commands or a 1.5-second delay can consume the 2.6-second message. Review descriptions now match these captures and the relocated wheel footer. No runtime behavior or budget was changed. Queue and generated plan are validated; these prepared screenshots still require an actual run and visual review.
+
+### Completed resumed diagnostic (9:08–9:12 p.m. Pacific)
+
+`lane-b/results-local/20260930-205617-9f11a42`: package build 8 seconds; acquired the normal game lock at 04:08:21 UTC; installed source `9f11a42`. `T045-ui-path` **PASS, 60 steps, 0 failed, 0 log errors**, engine booted on attempt 1. Prior install restored by the verifier from exact backup `phase2-20260930-210825`; `restore.log` confirms completion. Lock released normally; another lane subsequently acquired it. No push. Report: `_runs/stage1-ui-path-20260930-210827/report.md`; extracted measured windows: `results-local/ui-path-windows.json`.
+
+Use the second report under each label, after the 4-second wait (first report resets the previous interval):
+
+| Window | Count of ticks <1 s | Average ms | p95 / p99 ms | >=1 s stalls | draw.ui average ms |
+|---|---:|---:|---|---:|---:|
+| Closed | 80 | 65.37 | 250.1 / 250.1 | 0 | 0.011 |
+| Locked, no drawing | 185 | 26.04 | 34.2 / 48.0 | 0 | 0.004 |
+| Locked, primitives | 191 | 23.96 | 29.5 / 42.4 | 0 | 0.044 |
+| Locked, text | 0 | unavailable | unavailable | 5 | 0.273 |
+| Locked, full drawing | 0 | unavailable | unavailable | 5 | 0.271 |
+| Unlocked, full drawing | 0 | unavailable | unavailable | 5 | 0.279 |
+
+This implicates the text-drawing path in this experiment; primitives and control capture alone do not reproduce the stall. It does **not** identify the internal cause or solve it. Text/full tick intervals are all >=1 second and intentionally excluded from average/percentile reporting; do not read `frames=0` or cheap submission as fast rendering. Histogram tails above 250 ms saturate at 250.1 ms. Closed sample itself is unstable. Diagnostic mode returned to `all` before cleanup. Gameplay modules/population were not stopped; the canvas filter affects all shared-canvas text, so a future focused test must distinguish menu text from other module text. This diagnostic has no screenshots and is not wheel/trunk acceptance.
+
+Both B source trees were then fast-forwarded to the screenshot-check commit `bd6fa18`. A five-minute wheel acceptance attempt is next, subject to the normal lock and remaining restoration margin. Sonnet must review this commit plus both reauthorization/docs commits and all earlier Codex work.
