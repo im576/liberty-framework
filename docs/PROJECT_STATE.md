@@ -11,6 +11,12 @@ disable/recover and game boot verified. Full heartbeat smoke PASS in `20261001-1
 
 ## Current phase
 
+**Owner's current priority (2026-10-01): gameplay feature build and playtest first; visual remaster later.** Finish and
+combine weapons/gunplay/loadout, wheel/trunk/storage, gore/effects, functional HUD/menus and supporting feature modules.
+Keep gameplay compatibility/performance acceptance; defer environment/art deployment and atmosphere polish from this
+milestone. Art direction can proceed independently. The build hold is revoked; B/C/D/R resume on the shared schedule.
+Current dispatch: [agent roster](handoffs/sol/AGENT-ROSTER.md). Feature test plan: [FEATURE_PLAYTEST.md](testing/FEATURE_PLAYTEST.md).
+
 - **Phase 1 = Liberty Engine: complete (2026-09-30), except the items under "Known limits".** Native core, SDK, content
   pipeline and hot reload are verified in game. The full regression pass ran on 2026-09-30 and passes ([report](reports/2026-09-30-regression.md)).
 - **Next: the first complex mod**, Liberty Vanilla+ Stage 1 ([design](design/STAGE1.md)), built on the engine. Task cards T-040 to T-055 (lanes in [tasks/README.md](tasks/README.md)); art requests ART-001 to ART-012 in the [art queue](art/README.md) (uses the SDK and content compiler, gameplay code stays in `mods/`).

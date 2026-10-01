@@ -9,6 +9,11 @@ Statuses: `READY` = agent can start; `NEEDS-PLAYTEST` = agent implementation awa
 Design and acceptance criteria: [STAGE1.md](../design/STAGE1.md). Slice A (P0) plus the parallel research track. Slices
 B and C get their cards after Slice A's audit (T-040) and the relevant spikes.
 
+Owner priority update 2026-10-01: all existing/in-progress gameplay and functional UI modules come first, followed by
+an integrated feature test build and owner playtest. The environment remaster and atmosphere/art polish are later;
+art direction may continue in parallel. Slice C's functional HUD/menu work is not deferred with its final styling.
+Builds/tests are resumed, centrally scheduled; see [feature playtest plan](../testing/FEATURE_PLAYTEST.md).
+
 **Lanes.** Tasks in one lane touch the same files, so a lane runs in order in one session or worktree at a time.
 Different lanes can run in parallel sessions; the game is shared, and `tools/verify-local.ps1` makes parallel runs
 wait their turn. **Dependency rule for Stage 1:** a dependency is satisfied when it is `NEEDS-PLAYTEST` with its own

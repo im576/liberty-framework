@@ -5,6 +5,13 @@ files task cards and art requests, and keeps docs and decisions current. It does
 Current review: 2026-10-01. The merge queue below overrides the historical snapshots further down.
 Evidence and limits: [integration review](../reports/2026-10-01-orchestrator-integration.md).
 
+**Current owner direction: gameplay features first; remaster later.** Finish all developed/in-progress feature modules,
+including functional HUD/menus/storage and supporting systems, then provide an integrated feature test build with
+controls and feedback steps. Art direction may continue independently. Environment remaster and atmosphere/visual
+polish are not prerequisites for that build. The owner revoked the build hold with "fix that and then resume".
+Preserve gameplay budgets, mission/save-load/config-off compatibility, density OFF and the original baseline.
+See [feature playtest plan](../testing/FEATURE_PLAYTEST.md) and the resumed [agent roster](../handoffs/sol/AGENT-ROSTER.md).
+
 ## Read first
 
 `AGENTS.md`, `docs/PROJECT_STATE.md`, `docs/design/STAGE1.md` (design, decisions in section 12, budgets in section 10),
@@ -20,11 +27,16 @@ Use `-Lane Orchestrator` for this role; use `-NoClipboard` for a read-only print
 run and lock state; it does not dispatch or stop a lane. Do not take over a lane while its worker is still active.
 For the next Codex workers, use [the current continuation brief](../handoffs/sol/CONTINUATION.md), included by the
 generator. Initial milestones are C's crash/cleanup review, D's clean hiding experiment and R's SDK 1.2 validation.
-No replacement worker has launched yet. Coding may run in parallel; heavy builds and game tests are scheduled centrally.
+Replacement B/C/D/R workers are now dispatched on GPT-6.1 Sol (C High, others Medium):
+[agent roster and initial milestones](../handoffs/sol/AGENT-ROSTER.md). Coding may run in parallel; heavy builds and
+game tests are scheduled centrally. Initial assignments are offline; game slots are assigned explicitly.
 Preparation: all five generated briefings validated; tooling tests 236/0. Full startup smoke
 `20261001-114509-15cd2d9` PASS (fresh heartbeat, zero log errors); restored from `phase2-20261001-115146`.
 C's latest `c3e2b16`/`d96aaf2` work needs review: 110420 launch unavailable, and effects cleanup assertions were relaxed.
 Keep the original requirements and repair the fixture. R starts in the SDK 1.2 t050 worktree; SDK 1.3 stays separate.
+The immediate milestone is the combined gameplay feature build. The long-term remaster/visual styling is deferred;
+functional UI remains in scope. Historical full-mod gap analysis is retained with this priority correction:
+[completion gaps](../reports/2026-10-01-stage1-completion-gaps.md).
 
 ## How the work runs
 
