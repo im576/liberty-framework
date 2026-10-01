@@ -84,3 +84,11 @@ Open: native pair's actual disappearance/radar/arcs behavior; all four real text
 unload/failure restoration; ammo semantics across weapons and first-shot/reload native timing; combined menu/HUD
 performance and owner controls/feel. Missing baselines, expired leases or absent native text remain INCONCLUSIVE /
 NOT-RUN, never accepted. No default hiding policy adoption and no task DONE claim.
+
+### Committed receipt
+
+Diagnostic patch **046801f** (14 paths including this handoff); doc-only owner-priority integration **5c97d46**
+contains main **c01f0da** with no conflicts. All four held diagnostic files were resumed, reviewed and committed.
+The additional UiService hunk is only the task-specific owner query. Required production/full checks and all native
+text/unload/game evidence remain NOT RUN. No D game/install/restoration was performed. This receipt commit only
+updates documentation; the runtime source/check queue remains the tested offline 046801f tree.
