@@ -67,6 +67,15 @@ function Get-ReviewStatus([string] $Status, [int] $LogErrors) {
 # by that field of <ProbeDirectory>\<check id>.json (the first element when the field is a list). The check then declares
 # "needs": ["<check id>"] so the probe runs first. Missing report, field or value throws: the step fails with the reason,
 # and the scenario never runs with a guessed value.
+# Quick mode (development iterations, never acceptance evidence): a scenario line that starts with "@full " runs only in
+# full runs, "@quick " only in quick runs, and "{quick:A|B}" anywhere in a line becomes A in a quick run and B in a full one
+# (e.g. "cycle-deaths {quick:5|25}"). Returns the line to run, or $null to skip it.
+function ConvertTo-ModeLine([string] $Line, [bool] $Quick) {
+    if ($Line -match '^@full\s+(.*)$') { if ($Quick) { return $null }; $Line = $Matches[1] }
+    elseif ($Line -match '^@quick\s+(.*)$') { if (-not $Quick) { return $null }; $Line = $Matches[1] }
+    $evaluator = [System.Text.RegularExpressions.MatchEvaluator] { param($m) if ($Quick) { $m.Groups[1].Value } else { $m.Groups[2].Value } }
+    return [regex]::Replace($Line, '\{quick:([^|}]*)\|([^}]*)\}', $evaluator)
+}
 function Resolve-ScenarioLine([string] $Line, [string] $ProbeDirectory) {
     $pattern = '\{probe:(?<id>[A-Za-z0-9-]+):(?<field>[A-Za-z0-9_]+)\}'
     $match = [regex]::Match($Line, $pattern)
@@ -208,4 +217,4 @@ function Select-GpuProcessMemory([object[]] $Rows, [int] $ProcessId) {
     return @{ Found = $found; DedicatedBytes = $dedicated; SharedBytes = $shared }
 }
 
-Export-ModuleMember -Function Select-GpuProcessMemory, ConvertFrom-ExpectLine, Find-ExpectedLine, Test-CommandFailed, Get-ScenarioStatus, Get-ReviewStatus, Read-ScenarioResult, Resolve-ScenarioLine, Update-SessionLogCache, Get-SteamScreenshotFolders
+Export-ModuleMember -Function ConvertTo-ModeLine, Select-GpuProcessMemory, ConvertFrom-ExpectLine, Find-ExpectedLine, Test-CommandFailed, Get-ScenarioStatus, Get-ReviewStatus, Read-ScenarioResult, Resolve-ScenarioLine, Update-SessionLogCache, Get-SteamScreenshotFolders

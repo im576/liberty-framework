@@ -201,4 +201,19 @@ $byId = Invoke-SimRun @{ running = $false; noAudio = $true } @('T-scenario-good'
 Test-That 'no audio device: installed, but every scenario NOT-RUN without a launch attempt' (
     $byId['LOOP-package-install'].status -eq 'PASS' -and $byId['T-scenario-good'].status -eq 'NOT-RUN' -and $byId['T-scenario-after-crash'].status -eq 'NOT-RUN' -and
     $byId['T-scenario-good'].detail -like '*audio*') ($byId.Values | ConvertTo-Json -Compress)
+
+# ---- Development speed: quick mode passes through and is labelled; the game time cap hands the game on
+function Invoke-SimRunArgs([hashtable] $World, [string[]] $Only, [hashtable] $Extra) {
+    Import-Module (Join-Path $script:TestRoot 'SimulatedGame.psm1') -Force -Global
+    Initialize-SimulatedGame (Join-Path $root 'game') $World @()
+    Start-Sleep -Seconds 1
+    & $verifyLocal -Simulate -SimulationFile $simFile -QueuePath $queuePath -Only $Only -NoPush @Extra 6>&1 | Out-Null
+    $folder = Get-ChildItem -LiteralPath (Join-Path $root 'results') -Directory | Sort-Object Name | Select-Object -Last 1
+    return Get-Content -LiteralPath (Join-Path $folder.FullName 'summary.json') -Raw | ConvertFrom-Json
+}
+$s = Invoke-SimRunArgs @{ knownCommands = @('god'); commands = @{ 'selftest' = @{ reply = 'started'; log = @('selftest_done passed=3 failed=0') } } } @('T-scenario-good') @{ Quick = $true }
+Test-That 'quick run: the summary says quick (never confused with acceptance)' ([string]$s.run.mode -like '*quick*') ([string]$s.run.mode)
+$s = Invoke-SimRunArgs @{ knownCommands = @('god') } @('T-scenario-good', 'T-scenario-after-crash') @{ MaxGameMinutes = 0.0001 }
+$capped = @($s.checks | Where-Object { $_.kind -eq 'scenario' -and $_.status -eq 'NOT-RUN' -and $_.detail -like '*time cap*' })
+Test-That 'game time cap: scenarios past the cap are NOT-RUN with the reason' ($capped.Count -eq 2) ($s.checks | ConvertTo-Json -Compress)
 $env:LIBERTY_SIM_STATE = $null
