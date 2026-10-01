@@ -52,6 +52,7 @@ function Get-WorktreeState([string] $Name, [string] $Path, [string] $Live) {
     if ($Live) {
         $livePath = Join-Path $Path "docs\handoffs\$Live"
         $out.Add("live handoff: $(if (Test-Path -LiteralPath $livePath) { "docs/handoffs/$Live, updated $((Get-Item -LiteralPath $livePath).LastWriteTime.ToString('yyyy-MM-dd HH:mm'))" } else { 'none yet (write it first)' })")
+        if (Test-Path -LiteralPath $livePath) { Select-String -LiteralPath $livePath -CaseSensitive -Pattern 'READY FOR MERGE|WAITING FOR|BLOCKED' | Select-Object -Last 3 | ForEach-Object { $out.Add('  signal: ' + $_.Line.Trim()) } }
     }
     return $out
 }
@@ -66,6 +67,9 @@ $installed = Get-Content -LiteralPath 'C:\Games\Grand Theft Auto IV\GTAIV\script
 if ($installed) { $build = $installed | ConvertFrom-Json; $state.Add("installed build: repo=$($build.repo) commit=$($build.commit) $($build.note)") }
 $state.Add('')
 if ($Lane -eq 'Orchestrator') {
+    $queue = Get-Content -LiteralPath (Join-Path $repo 'docs\workflow\ORCHESTRATOR.md') -ErrorAction SilentlyContinue | Select-String -Pattern '^\| \d|^\| then' | ForEach-Object { $_.Line }
+    if ($queue) { $state.Add('merge queue (docs/workflow/ORCHESTRATOR.md):'); $queue | ForEach-Object { $state.Add('  ' + $_) }; $state.Add('') }
+    (Get-WorktreeState 'T-050 (research/t050-material)' 'C:\Users\IM576\GTAIV-Reborn-research-t050' '') | ForEach-Object { $state.Add($_) }; $state.Add('')
     foreach ($key in 'B', 'C', 'D', 'R') { (Get-WorktreeState "Lane $key" $lanes[$key].Path $lanes[$key].Live) | ForEach-Object { $state.Add($_) }; $state.Add('') }
     (Get-WorktreeState 'main' $repo '') | ForEach-Object { $state.Add($_) }
 }

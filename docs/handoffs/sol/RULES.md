@@ -23,6 +23,18 @@ acting. When unsure, choose the more conservative option and write the question 
    `git diff` of every changed file, untracked files, the latest `results-local\<run>\summary.md`, each scenario's
    `report.md`/`run.log`, and look at every screenshot yourself. Handoff notes are an index, not proof.
 3. Write down in `docs/handoffs/Lane-<X>-live.md` what you found: what passes, what fails, what is unproven.
+4. Recover from wherever the previous agent was cut off (the LIVE STATE block shows which case applies):
+   - **A run of your worktree is in progress** (lock holder names your worktree, or a `verify-local` process of it is
+     running): wait for it to finish and read its summary. Never kill it.
+   - **A run was interrupted** (newest `results-local\<run>` has no `finishedUtc`, no process running) and
+     `installed-build.json` names your worktree: take the lock by running
+     `tools/rollback-phase2.ps1 -GameDirectory 'C:\Games\Grand Theft Auto IV\GTAIV' -BackupDirectory <that run's backup>`
+     (the backup path is in the run's `summary.json` `run.installBackup` or `LOOP-package-install` detail). Treat the
+     interrupted run as no evidence; rerun its checks.
+   - **Uncommitted changes** in your worktree: they are the previous agent's unfinished work. Review them; build and run
+     the offline checks; commit them if they pass (`T-0xx: WIP from previous agent, reviewed`), otherwise fix or record why.
+   - **A merge or rebase in progress** (`git status` says so): finish it carefully keeping both sides, or abort it with
+     `git merge --abort` / `git rebase --abort` if you cannot tell what was intended. Never `reset --hard`.
 
 ## 3. Game access (one game, shared by all lanes)
 

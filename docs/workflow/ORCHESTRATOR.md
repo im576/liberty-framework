@@ -49,6 +49,18 @@ free, and the game was restored (`installed-build.json`: restored from `phase2-2
   (git bundle, patches, uncommitted diff) is in `research\lane-d-review-bundle-2026-09-30`. Owner to choose: link the cloud
   session, or start a local Sonnet Lane D thread.
 
+## Merge queue (keep current; a Sol orchestrator takes over from here)
+
+| Order | Item | Branch / worktree | State |
+|---|---|---|---|
+| 1 | Engine stall fix (log writer, config watcher) | main `868368b` | merged; in-game check SDK-selftest/engine-events/hot-reload still to run (first try had no audio) |
+| 2 | T-050 hit material (SDK 1.2) | `research/t050-material` 6a4ed3e, worktree `GTAIV-Reborn-research-t050` | reviewed, offline 962/0; merge after its wood/glass/water/prop batch and the in-game SDK self-test |
+| 3 | T-045/T-046 wheel, trunk | `codex/lane-b-validation`, `GTAIV-Reborn-lane-b2` | full acceptance run pending (Lane B running) |
+| 4 | T-047/T-048 gore, effects | `stage1/T-048`, `GTAIV-Reborn-lane-c-t048` | full batches pending (Lane C running); owner decision on the 4 ms peak |
+| 5 | T-049 HUD | `codex/T-049-hud-continuation`, `GTAIV-Reborn-lane-d` | needs a local lane (cloud thread can't run the game); DISPLAY_HUD experiment unrun |
+| 6 | Research rest (T-052/T-054 probes, notes) | `research/stage1` | READY FOR MERGE per Lane R; merge after T-050 (SDK 1.3 builds on 1.2) |
+| then | T-056 performance pass, owner playtest | main | after 1-6 |
+
 ## Review of the Sol/Claude work (2026-10-01 06:40 Pacific)
 
 - main `b74ddc4` (Sol coordinator corrections + Sol kit) checked: tool tests 224/0, offline verifier 389/0/5, pushed.

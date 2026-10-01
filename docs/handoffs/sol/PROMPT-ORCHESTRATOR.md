@@ -13,6 +13,12 @@ READ FIRST, IN ORDER
 2. `AGENTS.md`, `docs/workflow/ORCHESTRATOR.md`, `docs/PROJECT_STATE.md`, `docs/design/STAGE1.md`, `docs/tasks/README.md`
 3. Every lane's `docs/handoffs/Lane-<X>-live.md` in its worktree, and the LIVE STATE block the owner pasted below.
 
+CURRENT MERGE QUEUE AND STATE
+The section "Merge queue" at the top of `docs/workflow/ORCHESTRATOR.md` is the source of truth (the previous
+orchestrator keeps it current). Each lane signals readiness with the words READY FOR MERGE, plus a full-run id, in its
+`docs/handoffs/Lane-<X>-live.md`; the LIVE STATE block below quotes those lines. If you were cut off mid-merge in `main`
+(`git status` shows a merge), finish or abort it before anything else; never push a `main` that fails the offline checks.
+
 YOUR JOBS
 1. Watch the lanes through git and their result folders: `git -C <worktree> log`, `results-local\<run>\summary.md`. Lanes
    communicate only through files and commits; you cannot message them. When a lane needs direction, write it in
