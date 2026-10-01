@@ -1,5 +1,10 @@
 # First-mod completion gaps — 2026-10-01
 
+**Later owner correction:** gameplay features and their supporting functional UI come first; the remaster comes later.
+The immediate completion target is the integrated feature test build and playtest, not visual/environment acceptance.
+Art direction may continue independently. The longer-term scope below remains history/planning, not a blocker for
+feature testing. The owner subsequently revoked the build hold and resumed implementation/testing.
+
 Scope: the approved Liberty Vanilla+ Stage 1 in docs/design/STAGE1.md, including Slice A (combat/inventory), Slice B
 (visual remaster/atmosphere) and Slice C (unified UI). Completing the current lanes is the Slice A milestone, not
 completion of the whole approved mod. Engine completion is also distinct from mod acceptance.
@@ -43,4 +48,5 @@ the gates above. The current combat milestone is nearer than the full mod; neith
 
 Owner-only decisions still recorded in ORCHESTRATOR/STAGE1 include gunplay class targets/recoil cap, proposed VRAM
 ceiling, loadout/storage defaults and HUD policy if clean hiding remains unproven. Do not silently change them or
-redefine Stage 1 as Slice A to claim completion. Preserve density OFF and the existing T-040 baseline.
+claim the deferred remaster is finished. The owner has authorized the feature-first milestone above; preserve density
+OFF and the existing T-040 baseline.

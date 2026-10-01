@@ -5,6 +5,13 @@ files task cards and art requests, and keeps docs and decisions current. It does
 Current review: 2026-10-01. The merge queue below overrides the historical snapshots further down.
 Evidence and limits: [integration review](../reports/2026-10-01-orchestrator-integration.md).
 
+**Current owner direction: gameplay features first; remaster later.** Finish all developed/in-progress feature modules,
+including functional HUD/menus/storage and supporting systems, then provide an integrated feature test build with
+controls and feedback steps. Art direction may continue independently. Environment remaster and atmosphere/visual
+polish are not prerequisites for that build. The owner revoked the build hold with "fix that and then resume".
+Preserve gameplay budgets, mission/save-load/config-off compatibility, density OFF and the original baseline.
+See [feature playtest plan](../testing/FEATURE_PLAYTEST.md) and the resumed [agent roster](../handoffs/sol/AGENT-ROSTER.md).
+
 ## Read first
 
 `AGENTS.md`, `docs/PROJECT_STATE.md`, `docs/design/STAGE1.md` (design, decisions in section 12, budgets in section 10),
@@ -27,8 +34,9 @@ Preparation: all five generated briefings validated; tooling tests 236/0. Full s
 `20261001-114509-15cd2d9` PASS (fresh heartbeat, zero log errors); restored from `phase2-20261001-115146`.
 C's latest `c3e2b16`/`d96aaf2` work needs review: 110420 launch unavailable, and effects cleanup assertions were relaxed.
 Keep the original requirements and repair the fixture. R starts in the SDK 1.2 t050 worktree; SDK 1.3 stays separate.
-The current lanes finish the combat/inventory milestone. The full first mod also includes the approved visual remaster/
-atmosphere and unified UI slices: [completion gaps](../reports/2026-10-01-stage1-completion-gaps.md).
+The immediate milestone is the combined gameplay feature build. The long-term remaster/visual styling is deferred;
+functional UI remains in scope. Historical full-mod gap analysis is retained with this priority correction:
+[completion gaps](../reports/2026-10-01-stage1-completion-gaps.md).
 
 ## How the work runs
 
