@@ -861,7 +861,7 @@ namespace LibertyFramework.Arsenal
                 StorageBin bin = core.activeStorage;
                 if (bin == null) { return "Storage closed"; }
                 string result = core.RunAction(() => core.Take(record, bin));
-                if (result.StartsWith("Taken", StringComparison.Ordinal)) { core.trunkAnimation.Handle(); }
+                if (result.StartsWith("Taken", StringComparison.Ordinal) || result.StartsWith("Swapped", StringComparison.Ordinal)) { core.trunkAnimation.Handle(); }
                 return result;
             }
 

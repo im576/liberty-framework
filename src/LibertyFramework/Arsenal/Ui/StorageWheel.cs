@@ -198,9 +198,15 @@ namespace LibertyFramework.Arsenal.Ui
             string takeLine = "Nothing stored", swapLine = null;
             if (stored != null)
             {
-                WeaponRecord displaced = host.DisplacedBy(stored);
-                takeLine = "A  " + (displaced != null ? "Swap in " : "Take ") + host.Name(stored.WeaponId);
-                if (displaced != null) { swapLine = "out: " + host.Name(displaced.WeaponId); }
+                bool alreadyCarried = false;
+                foreach (WeaponRecord record in host.Carried) { if (record.WeaponId == stored.WeaponId) { alreadyCarried = true; break; } }
+                if (alreadyCarried) { takeLine = "Already carried: store first"; }
+                else
+                {
+                    WeaponRecord displaced = host.DisplacedBy(stored);
+                    takeLine = "A  " + (displaced != null ? "Swap in " : "Take ") + host.Name(stored.WeaponId);
+                    if (displaced != null) { swapLine = "out: " + host.Name(displaced.WeaponId); }
+                }
             }
             string hints = (carried != null ? "X Store   " : "") + "LB / RB List   " + (host.GunsmithAvailable ? "Y Gunsmith   " : "") + "B Close";
             BuildPanel(stored);
