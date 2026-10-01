@@ -30,6 +30,25 @@ Updated 2026-09-30 when the first orchestrator thread handed off (to avoid conte
   register imperfect candidates; Claude reviews). ART-001..012 approved, eight prepped. Owner confirmed generated images
   may be used.
 
+## Codex takeover and return (2026-09-30 evening, Pacific)
+
+Codex ran lanes B, C and D from about 19:40 to 21:30 while Claude usage refilled. Its reports are in
+`C:\Users\IM576\OneDrive\Documents\ChatGPT\GTA4-Reborn\research\` (takeover review, Sonnet handoff setup), and each lane has
+`docs/handoffs/Codex-Lane-<X>-2026-09-30.md` in its worktree. At 21:32: Codex was idle, no verifier was running, the lock was
+free, and the game was restored (`installed-build.json`: restored from `phase2-20260930-212221`).
+- **B**: lane-b2 `codex/lane-b-validation` (= lane-b `codex/lane-b-wheel-trunk`) at `0f5825f`, with the original T-045/T-046
+  tips kept. T045-ui-path PASS shows the text-drawing path causes ticks of 1 s or more (primitives and control capture don't);
+  T045-weapon-wheel FAIL (4 steps). Sonnet Lane B was told to review all Codex work, then fix the text stall, then run
+  wheel/trunk acceptance.
+- **C**: lane-c-t048 `stage1/T-048` at `dec20b9`. Trauma 21/22 (needs review); persist and cleanup FAIL (mission-owned
+  fixtures are rejected by the ownership rule); effects ERROR (killed after 600 s); dismember 8/20 floating limbs from the
+  earlier run. Sonnet Lane C was told to review, then continue.
+- **D**: lane-d `codex/T-049-hud-continuation` at `b1dc3d7`, plus uncommitted Codex edits (HudModule, Stage1HudChecks, new
+  HudAmmoSample.cs), kept as they are. BLOCKED on visible hiding: wanted and radar stayed visible, and weapon/ammo got
+  duplicated, so the guard keeps the vanilla HUD. Its original cloud session can't be reached from here; the review bundle
+  (git bundle, patches, uncommitted diff) is in `research\lane-d-review-bundle-2026-09-30`. Owner to choose: link the cloud
+  session, or start a local Sonnet Lane D thread.
+
 ## Status (reviewed 2026-10-01 ~00:35Z by the second orchestrator thread)
 
 | Lane | Tasks | State |
