@@ -989,6 +989,7 @@ namespace LibertyFramework.Engine
             try { Ledger.ReleaseKind("patch"); } catch (Exception error) { RuntimeLog.Error("engine_patch_restore_failed error=" + error.Message); }
             Entities.SaveJournal();
             Watchdog.Stop();
+            try { ModuleConfig.Stop(); } catch (Exception error) { RuntimeLog.Error("engine_config_watch_stop_failed error=" + error.Message); }
             core.Shutdown();
             RuntimeLog.Info("engine_unloaded frame=" + Frame);
             LibertyHost.Current = null;
