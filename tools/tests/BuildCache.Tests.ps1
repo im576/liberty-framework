@@ -77,12 +77,19 @@ Test-That 'fingerprint: an install (own archives, backups) does not change it' (
 Test-That 'fingerprint: a changed game archive changes it' ($fp -ne (Get-GameFingerprint $game))
 $env:LIBERTY_BUILD_CACHE = $null
 
-# ---- Game lock (a test mutex name, so a real run on this machine is never touched)
+# ---- Game lock (isolate both the mutex and holder note from real runs)
 $lockModule = Import-Module (Join-Path $script:RepoRoot (Join-Path 'tools' (Join-Path 'local' 'GameLock.psm1'))) -Force -PassThru
-& $lockModule { $script:LockName = 'LibertyGameLockSelfTest' + [Guid]::NewGuid().ToString('N').Substring(0, 6) }
+$testLockNote = Join-Path $script:Scratch 'game-lock-note.txt'
+& $lockModule {
+    param($notePath)
+    $script:LockName = 'LibertyGameLockSelfTest' + [Guid]::NewGuid().ToString('N').Substring(0, 6)
+    $script:SelfTestLockNote = $notePath
+    function script:Get-GameLockInfoPath { return $script:SelfTestLockNote }
+} $testLockNote
 $savedHolder = $env:LIBERTY_GAME_LOCK_HOLDER
 $env:LIBERTY_GAME_LOCK_HOLDER = $null
 $outer = Enter-GameLock 'test outer'
+Test-That 'lock: self-test holder note stays in its isolated scratch directory' ((& $lockModule { Get-GameLockInfoPath }) -eq $testLockNote -and (Test-Path -LiteralPath $testLockNote))
 Test-That 'lock: taken and passed on to child processes' ($outer.Mutex -and $env:LIBERTY_GAME_LOCK_HOLDER -eq "$PID")
 $inner = Enter-GameLock 'test nested'
 Test-That 'lock: a nested call in the same process re-enters and leaves the holder to the outer call' ($inner.Mutex -and -not $inner.SetHolder)
