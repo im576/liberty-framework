@@ -158,7 +158,11 @@ namespace LibertyFramework.Engine.Ui
                 for (int i = 0; i < s.Centre.Length; i++)
                 {
                     TextStyle style = i == 1 ? TextStyle.Emphasis : i == s.Centre.Length - 1 ? TextStyle.Small : TextStyle.Body;
-                    canvas.Text(s.Centre[i], cx - boxWidth / 2, y, boxWidth, 22, style, TextAlign.Center, i == s.Centre.Length - 1 ? Rgba.Muted : Rgba.White);
+                    // Navigation hints must not be squeezed into the centre disc (they were visibly truncated).
+                    bool hint = i == s.Centre.Length - 1;
+                    float lineWidth = hint ? diameter + 140f : boxWidth;
+                    float lineY = hint ? top + diameter + 16f : y;
+                    canvas.Text(s.Centre[i], cx - lineWidth / 2, lineY, lineWidth, 22, style, TextAlign.Center, hint ? Rgba.Muted : Rgba.White);
                     y += i == s.Centre.Length - 2 ? 30 : 24;
                 }
             }

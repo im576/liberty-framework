@@ -150,7 +150,8 @@ namespace LibertyFramework.Arsenal.Ui
         {
             PanelSnapshot p = panel;
             if (p == null) { return; }
-            float x = canvas.Width / 2f + 360f, y = 130f, width = 330f;
+            // Keep the top-right HUD band clear; the list ends above the radar/navigation footer band.
+            float x = canvas.Width / 2f + 360f, y = 220f, width = 330f;
             if (x + width > canvas.Width - 16f) { x = canvas.Width - 16f - width; }
             Rgba amber = new Rgba(226, 150, 40, 255);
             canvas.Rect(x, y, width, 52 + VisibleRows * 34 + 40, new Rgba(12, 12, 12, 205));

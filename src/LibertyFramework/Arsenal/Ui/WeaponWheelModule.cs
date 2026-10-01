@@ -26,7 +26,7 @@ namespace LibertyFramework.Arsenal.Ui
         private IMenu menu;
         private bool sticky;
         private bool wasDown;
-        private int openedAtTicks, openedAtFrame, lastUpdateTicks, heldEffectiveMs;
+        private int openedAtTicks, openedAtFrame, lastUpdateTicks;
         private bool firstDrawLogged;
         // Per-slot snapshot, refreshed at most once per frame (labels, icons and badges are asked for every frame).
         private readonly int[] ids = new int[WeaponWheelLogic.SegmentCount];
@@ -53,13 +53,12 @@ namespace LibertyFramework.Arsenal.Ui
             LoadConfig();
             if (!config.Enabled) { CloseMenu("disabled"); wasDown = false; return; }
             bool down = Engine.Input.Down(config.Pad) || Engine.Input.KeyDown(config.Key);
-            // Press length in frames' worth of time: a stalled frame (streaming, a window focus change) counts as at most 100 ms, so a
-            // quick tap is still a tap when the game hitches while the wheel opens.
+            // Measure the observed press in monotonic wall time. Capping elapsed frames incorrectly turns a real hold
+            // into a tap under load. Short presses wholly inside an unsampled stall remain unobservable.
             int now = Environment.TickCount;
             int gap = lastUpdateTicks == 0 ? 0 : unchecked(now - lastUpdateTicks);
             lastUpdateTicks = now;
             if (menu != null && gap > 200) { RuntimeLog.Info("weapon_wheel_hitch gap_ms=" + gap); }
-            if (menu != null && wasDown) { heldEffectiveMs += Math.Min(gap, 100); }
             if (menu != null && !menu.IsOpen) { menu = null; sticky = false; }
             if (menu == null)
             {
@@ -75,8 +74,8 @@ namespace LibertyFramework.Arsenal.Ui
                     else if (!down && wasDown && !sticky)
                     {
                         int heldMs = unchecked(Environment.TickCount - openedAtTicks), heldFrames = Engine.Frame - openedAtFrame;
-                        WeaponWheelLogic.Release decision = WeaponWheelLogic.OnRelease(heldEffectiveMs, config.TapMilliseconds);
-                        RuntimeLog.Info("weapon_wheel_release held_ms=" + heldMs + " effective_ms=" + heldEffectiveMs + " held_frames=" + heldFrames + " tap_ms=" + config.TapMilliseconds + " decision=" + decision);
+                        WeaponWheelLogic.Release decision = WeaponWheelLogic.OnRelease(heldMs, config.TapMilliseconds);
+                        RuntimeLog.Info("weapon_wheel_release held_ms=" + heldMs + " held_frames=" + heldFrames + " tap_ms=" + config.TapMilliseconds + " decision=" + decision);
                         if (decision == WeaponWheelLogic.Release.StayOpen) { sticky = true; }
                         else { ConfirmAndClose(); }
                     }
@@ -143,7 +142,6 @@ namespace LibertyFramework.Arsenal.Ui
             firstDrawLogged = false;
             openedAtTicks = Environment.TickCount;
             openedAtFrame = Engine.Frame;
-            heldEffectiveMs = 0;
             RuntimeLog.Info("weapon_wheel_open frame=" + openedAtFrame + " held=" + held + " slots=" + string.Join(",", Array.ConvertAll(ids, id => id.ToString())));
         }
 
