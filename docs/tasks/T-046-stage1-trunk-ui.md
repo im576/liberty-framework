@@ -41,7 +41,7 @@ Owner reauthorized bounded game verification at 8:51 p.m. Pacific on September 3
 ## Codex continuation — September 30, 2026
 
 The trunk continuation includes the later wheel fixes and current main lock/cache tooling on `codex/lane-b-validation`.
-See [Codex handoff](../handoffs/Codex-Lane-B-2026-09-30.md). Gameplay validation remains incomplete and prohibited by the owner.
+See [Codex handoff](../handoffs/Codex-Lane-B-2026-09-30.md). Gameplay validation remains incomplete. The owner reauthorized bounded checks through 9:30 p.m. Pacific; any later session must follow its current instructions.
 
 Storage uses the engine's owned player-control lock, releasing only Arsenal's claim on close. Completion explicitly shuts
 the lid even if a missing animation skipped its timed close. Storage list starts below the top-right HUD band. Transfer logs

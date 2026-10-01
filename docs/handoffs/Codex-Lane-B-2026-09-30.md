@@ -46,7 +46,7 @@ No new natives, addresses, patterns, hooks, ADR or copied third-party implementa
 
 The 100 ms/frame press cap turned real holds into taps under load. It now uses monotonic observed elapsed time; input
 wholly inside an unsampled stall still cannot be observed. Confirm closes our menu/control claim before equip and logs the
-actual weapon next frame. Keyboard/pad share this handler, but physical pad testing is not possible under the current ban.
+actual weapon next frame. Keyboard/pad share this handler, but physical pad acceptance still requires an owner playtest; no pad result is claimed.
 Bindings that overlap navigation/trunk actions are rejected. Storage uses the existing engine ownership/ledger for control;
 closing no longer blindly sets native control true over another SDK menu's claim. Completion shuts the lid even if its
 animation could not perform the timed action. Swap replies now trigger reach-in just like plain takes.
@@ -115,13 +115,13 @@ Do not accept prior overlapped B/C runs or old scripted PASS windows without enf
    merges against both original B tips, especially the recovered wheel/trunk dependency and shared docs/queue.
 2. Continue in `C:/Users/IM576/GTAIV-Reborn-lane-b2` on `codex/lane-b-validation`; preserve original branches and other lanes.
    Before edits, check active processes/current verifier use. `git diff --check f5679a5` and queue plan/validation are safe.
-3. Offline only: `./tools/build.ps1 -ScriptHookDotNetReference 'C:/Games/Grand Theft Auto IV/GTAIV/ScriptHookDotNet.asi'`,
+3. Useful offline checks: `./tools/build.ps1 -ScriptHookDotNetReference 'C:/Games/Grand Theft Auto IV/GTAIV/ScriptHookDotNet.asi'`,
    `./tools/verify.ps1 -NoGame`, `./tools/tests/Run-Tests.ps1`. Use bundled Python at
    `C:/Users/IM576/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe` for checks.py.
 4. Shared UI cause/performance fix, physical controller, missed short taps under stalls, actual trunk close/repeated visits,
    store/take/swap physical props, true game save/load, safehouse/gunsmith and D HUD coexistence are NOT VERIFIED.
-   Investigate source without inventing engine behavior; retain the prepared bounded experiment for later authorization.
-5. ONLY after explicit owner permission for game testing: inspect current main and active verifier/build metadata, update
+   Investigate source without inventing engine behavior; retain the prepared bounded experiment and record only completed measurements.
+5. Gameplay was reauthorized at 8:51 p.m. for this bounded session. Before any later continuation, inspect current instructions, main and active verifier/build metadata; update
    without resetting any lane, then run through verify-local under its shared lock using task IDs `T045-ui-path`,
    `T045-weapon-wheel`, `T046-trunk-ui`, always `-NoPush -Restore -NoManual` and no installed-build override. Restore
    diagnostic canvas mode to `all`. Avoid concurrent compilation during measured windows. Preserve T-040 baseline/density.
@@ -174,3 +174,7 @@ retained. Verify with `git status --short` in both worktrees. The final response
 ## Reauthorized bounded continuation (8:51 p.m. Pacific)
 
 Both B worktrees inspected clean at `5e2ca95`; game closed, no active verifier, installed metadata records restoration from `phase2-20260930-195909`. Starting only T045-ui-path with a five-minute scenario limit and normal verifier restoration. Results will be recorded below before the 9:30 p.m. hard stop.
+
+### First resumed attempt: busy lock, no game evidence
+
+Run `lane-b/results-local/20260930-205201-908e3b7` built the package in 39 seconds, then waited for Lane D's machine-wide lock (PID 12496, held since 03:51:24 UTC). At 8:54 p.m. Pacific, Codex checked that Lane D still held it and stopped only Lane B's waiting verifier PID 24752. Lane B never acquired the lock, installed, launched, or ran a scenario; there is no summary or measured window. `results-local/resumed-ui-path-verifier.log` and that run's `LOOP-package-install.log` are retained. Lane D's installation and processes were untouched. A fresh short diagnostic will be attempted only through the normal verifier before the hard stop.
