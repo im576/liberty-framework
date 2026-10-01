@@ -70,6 +70,38 @@ namespace LibertyFramework.Verify
                 service.Stop();
                 Directory.Delete(directory, true);
             }
+            CheckPathCasing(check);
+        }
+
+        private static void CheckPathCasing(Checker check)
+        {
+            string directory = Path.Combine(Path.GetTempPath(), "liberty-config-watch-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(directory);
+            string path = Path.Combine(directory, "shared.json");
+            ConfigService service = new ConfigService();
+            TestModule first = new TestModule { Running = true };
+            TestModule second = new TestModule { Running = true };
+            int firstReads = 0, secondReads = 0;
+            try
+            {
+                DateTime stamp = DateTime.UtcNow;
+                File.WriteAllText(path, "original");
+                File.SetLastWriteTimeUtc(path, stamp);
+                service.WatchFile(first, path, () => firstReads++);
+                DisableAutomaticChecks(service);
+                // ConfigService deliberately treats paths case-insensitively, including on offline test hosts.
+                service.WatchFile(second, path.ToUpperInvariant(), () => secondReads++);
+                File.WriteAllText(path, "changed");
+                File.SetLastWriteTimeUtc(path, stamp.AddSeconds(10));
+                CheckStamps(service);
+                service.Poll((owner, action) => { action(); return true; });
+                check.True("shared path casing does not lose an owner's reload", firstReads == 1 && secondReads == 1, "");
+            }
+            finally
+            {
+                service.Stop();
+                Directory.Delete(directory, true);
+            }
         }
 
         private static void CheckStamps(ConfigService service)

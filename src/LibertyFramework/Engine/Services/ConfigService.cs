@@ -140,17 +140,17 @@ namespace LibertyFramework.Engine.Services
         // removes its watches, so the loop walks a copy of the list.
         internal void Poll(Func<LibertyModule, Action, bool> runAs)
         {
-            string[] paths;
+            HashSet<string> paths;
             lock (gate)
             {
                 if (changed.Count == 0) { return; }
-                paths = new string[changed.Count];
-                changed.CopyTo(paths);
+                // Match the stamp dictionary's path identity so every owner of a shared file receives the change.
+                paths = new HashSet<string>(changed, StringComparer.OrdinalIgnoreCase);
                 changed.Clear();
             }
             foreach (Watcher watch in watches.ToArray())
             {
-                if (!watch.Owner.Running || Array.IndexOf(paths, watch.Path) < 0) { continue; }
+                if (!watch.Owner.Running || !paths.Contains(watch.Path)) { continue; }
                 DateTime stamp;
                 lock (gate) { stamp = stamps[watch.Path]; }
                 if (stamp == watch.Stamp) { continue; }
