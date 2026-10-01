@@ -36,6 +36,12 @@ hud off
 storage status
 expect "storage_status open=True selected=0 container=TRUNK stored=0 capacity=8 carried=7,10,14,0,0 list=none" 10
 shot trunk_ui_open
+# Frame time with the trunk interface open (its radial does not lock the player's control itself).
+label trunk_ui_cost
+framestats
+wait 4000
+framestats
+costs
 # Move the highlight to the second long gun (the AK) and store it with Space.
 storage select 2
 wait 800
