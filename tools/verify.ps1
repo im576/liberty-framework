@@ -27,13 +27,6 @@ New-Item -ItemType Directory -Force -Path $binDirectory | Out-Null
 $sdkRoot = Join-Path $repoRoot 'sdk\Liberty.Sdk'
 $sdkDll = Join-Path $binDirectory 'Liberty.Sdk.dll'
 $sdkSources = @(Get-ChildItem -LiteralPath $sdkRoot -Recurse -Filter '*.cs' | Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } | Sort-Object FullName | ForEach-Object { $_.FullName })
-Invoke-LibertyManaged $compiler /nologo /target:library /platform:anycpu /langversion:7.3 /warn:4 /warnaserror+ /nowarn:1591 "/out:$sdkDll" /reference:System.Core.dll $sdkSources
-if ($LASTEXITCODE -ne 0) { throw "Liberty.Sdk (verifier copy) failed to compile (exit $LASTEXITCODE)" }
-# The SDK examples the docs show (docs/sdk/examples) must compile against the current SDK, warnings as errors.
-$examples = @(Get-ChildItem -LiteralPath (Join-Path $repoRoot 'docs\sdk\examples') -Filter '*.cs' | Sort-Object Name | ForEach-Object { $_.FullName })
-Invoke-LibertyManaged $compiler /nologo /target:library /platform:anycpu /langversion:7.3 /warn:4 /warnaserror+ "/out:$(Join-Path $binDirectory 'SdkExamples.dll')" "/reference:$sdkDll" /reference:System.Core.dll $examples
-if ($LASTEXITCODE -ne 0) { throw "SDK examples (docs/sdk/examples) failed to compile against the current SDK (exit $LASTEXITCODE)" }
-
 # Only sources without ScriptHookDotNet dependencies may be listed here.
 $sources = @(
     (Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tools\verify') -Filter '*.cs').FullName
@@ -72,7 +65,24 @@ $sources = @(
     # SDK mods' Logic folders too (T-033: mods/Liberty.World/Logic); they reference only Liberty.Sdk.
     (Get-ChildItem -LiteralPath (Join-Path $repoRoot 'mods') -Recurse -Directory -Filter 'Logic' | ForEach-Object { (Get-ChildItem -LiteralPath $_.FullName -Filter '*.cs').FullName })
 )
-Invoke-LibertyManaged $compiler /nologo /target:exe /platform:x86 /unsafe /langversion:7.3 /warn:4 "/out:$output" "/reference:$sdkDll" /reference:System.Runtime.Serialization.dll /reference:System.Xml.dll /reference:System.Drawing.dll /reference:System.Core.dll $sources
-if ($LASTEXITCODE -ne 0) { throw "Verifier build failed with exit code $LASTEXITCODE" }
+# Cache compilation only: the verifier itself still executes on every invocation against current config/game files.
+Import-Module (Join-Path $PSScriptRoot 'BuildCache.psm1') -Force
+$stamp = Join-Path $binDirectory '.verify-build-inputs'
+$key = Get-InputKey $repoRoot (@($sdkSources) + @($sources) + @($PSCommandPath, (Join-Path $PSScriptRoot 'toolchains.ps1')) +
+    @(Get-ChildItem -LiteralPath (Join-Path $repoRoot 'docs/sdk/examples') -Filter '*.cs' | ForEach-Object { $_.FullName })) @("csc|$(Get-FileIdentity $compiler)")
+$outputs = @($sdkDll, $output, (Join-Path $binDirectory 'SdkExamples.dll'))
+if (-not (Test-BuildStamp $stamp $key $outputs)) {
+    Clear-BuildStamp $stamp
+    Invoke-LibertyManaged $compiler /nologo /target:library /platform:anycpu /langversion:7.3 /warn:4 /warnaserror+ /nowarn:1591 "/out:$sdkDll" /reference:System.Core.dll $sdkSources
+    if ($LASTEXITCODE -ne 0) { throw "Liberty.Sdk (verifier copy) failed to compile (exit $LASTEXITCODE)" }
+    # The SDK examples the docs show (docs/sdk/examples) must compile against the current SDK, warnings as errors.
+    $examples = @(Get-ChildItem -LiteralPath (Join-Path $repoRoot 'docs\sdk\examples') -Filter '*.cs' | Sort-Object Name | ForEach-Object { $_.FullName })
+    Invoke-LibertyManaged $compiler /nologo /target:library /platform:anycpu /langversion:7.3 /warn:4 /warnaserror+ "/out:$(Join-Path $binDirectory 'SdkExamples.dll')" "/reference:$sdkDll" /reference:System.Core.dll $examples
+    if ($LASTEXITCODE -ne 0) { throw "SDK examples (docs/sdk/examples) failed to compile against the current SDK (exit $LASTEXITCODE)" }
+
+    Invoke-LibertyManaged $compiler /nologo /target:exe /platform:x86 /unsafe /langversion:7.3 /warn:4 "/out:$output" "/reference:$sdkDll" /reference:System.Runtime.Serialization.dll /reference:System.Xml.dll /reference:System.Drawing.dll /reference:System.Core.dll $sources
+    if ($LASTEXITCODE -ne 0) { throw "Verifier build failed with exit code $LASTEXITCODE" }
+    Set-BuildStamp $stamp $key
+} else { Write-Host 'Offline verifier compiler outputs up to date; executing current checks.' }
 Invoke-LibertyManaged $output $exe $repoRoot
 if ($LASTEXITCODE -ne 0) { throw "Offline verification failed (exit $LASTEXITCODE)" }

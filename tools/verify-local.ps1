@@ -30,10 +30,10 @@ param(
     # Development iteration (never acceptance evidence): scenarios run their short variants (@quick lines, {quick:A|B}) and the
     # run is recorded as mode quick.
     [switch] $Quick,
-    # Development iteration: each scenario ends at its first failed step.
+    # Development iteration: each scenario ends at its first failed step; a failed check skips the rest of the batch.
     [switch] $StopOnFailure,
-    # Fairness: once this run has held the game this long, its remaining game checks are NOT-RUN and the game goes to the
-    # next session in line (run the rest in a new batch). 0 = no cap.
+    # Fairness: counts from game-lock acquisition, never queue waiting. Limits each scenario to the remaining allowance,
+    # then stops/restores the owned game; remaining scenarios are NOT-RUN. Cleanup can exceed the allowance. 0 = no cap.
     [double] $MaxGameMinutes = 30,
     # Cloud testing only: run the whole orchestration against a simulated game and simulated tools
     # (tools/tests/VerifyLocal.Tests.ps1). Never touches a game, never pushes to GitHub.
