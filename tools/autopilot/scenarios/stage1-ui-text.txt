@@ -109,6 +109,27 @@ framestats
 wait 4000
 framestats
 costs
+ui-text-probe devfont 8
+wait 2000
+label probe_devfont_8
+framestats
+wait 4000
+framestats
+costs
+ui-text-probe devfontbold 8
+wait 2000
+label probe_devfontbold_8
+framestats
+wait 4000
+framestats
+costs
+ui-text-probe canvasfont4 8
+wait 2000
+label probe_canvasfont4_8
+framestats
+wait 4000
+framestats
+costs
 ui-text-probe none
 wait 1000
 ui-text-stats

@@ -126,14 +126,32 @@ namespace LibertyFramework.Engine.Ui
         internal string ProbeMode = "none";
         internal int ProbeCount = 8;
         private GTA.Font probeFont;
+        private string probeFontMode;
 
         internal void DrawProbe()
         {
             if (ProbeMode == "none" || graphics == null) { return; }
+            if (probeFont != null && probeFontMode != null && probeFontMode != ProbeMode && ProbeMode != "noeffect") { probeFont = null; probeFontMode = null; }
             if (ProbeMode == "noeffect" && probeFont == null)
             {
                 probeFont = new GTA.Font(StyleSizes[1] * scale, FontScaling.Pixel, false, false);
                 probeFont.Effect = FontEffect.None;
+            }
+            // The calls the DevTools menu makes (its text is not slow): a font from the 2-argument constructor, the 4-argument DrawText
+            // (the font's own colour), unscaled 17 px; and the same with the bold 4-argument constructor; and the canvas font through the
+            // 4-argument DrawText. They separate the constructor, the overload and the colour argument from the effect.
+            if (ProbeMode == "devfont" || ProbeMode == "devfontbold" || ProbeMode == "canvasfont4")
+            {
+                if (probeFont == null)
+                {
+                    probeFont = ProbeMode == "devfontbold" ? new GTA.Font(17.0F, FontScaling.Pixel, true, false) : new GTA.Font(17.0F, FontScaling.Pixel);
+                    probeFontMode = ProbeMode;
+                }
+                for (int i = 0; i < ProbeCount; i++)
+                {
+                    graphics.DrawText("PROBE 0123456789", R(900, 40 + i * 24, 360, 22), TextAlignment.Left, ProbeMode == "canvasfont4" ? Font(TextStyle.Body) : probeFont);
+                }
+                return;
             }
             for (int i = 0; i < ProbeCount; i++)
             {

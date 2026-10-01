@@ -358,7 +358,7 @@ namespace LibertyFramework.Engine
             Commands.RegisterEngine("ui-text-probe", "ui-text-probe none|same|different|sizes|noeffect [count] - draw N strings per frame through SHDN DrawText (root-cause diagnostic)", args =>
             {
                 string mode = args.Length > 0 ? args[0] : "none";
-                if (mode != "none" && mode != "same" && mode != "different" && mode != "sizes" && mode != "noeffect") { throw new ArgumentException("choose none, same, different, sizes or noeffect"); }
+                if (mode != "none" && mode != "same" && mode != "different" && mode != "sizes" && mode != "noeffect" && mode != "devfont" && mode != "devfontbold" && mode != "canvasfont4") { throw new ArgumentException("choose none, same, different, sizes, noeffect, devfont, devfontbold or canvasfont4"); }
                 Ui.Canvas.ProbeMode = mode;
                 Ui.Canvas.ProbeCount = args.Length > 1 ? Math.Max(1, Math.Min(24, int.Parse(args[1]))) : 8;
                 return "ui_text_probe mode=" + mode + " count=" + Ui.Canvas.ProbeCount;
