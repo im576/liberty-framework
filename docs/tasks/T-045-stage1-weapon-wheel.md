@@ -122,3 +122,24 @@ The original seven real watcher checks passed; a new casing regression failed be
 after validation, retaining previous config on rejection. Runtime reject/correct and module restart remain unproven.
 Full production build, repository verifier/tool suite and full wheel runtime are deferred to assigned slots.
 See [live handoff](../handoffs/Lane-B-live.md) for logs, changed paths and proposed checks. NEEDS-PLAYTEST remains.
+
+### Full watcher-follow-up build reviewed — 20261001-122159-4330603
+
+Clean build `4330603` includes main `c01f0da`, isolated watcher patch and casing fix. Production build PASS;
+offline verifier **441/0/5 not-run**, PowerShell suite **236/0**. Full, no Quick, 30-minute cap: package PASS,
+wheel **92/0** (12/12 scripted equips and keyboard hold/tap/readbacks), trunk **133/0**, ui-text **133/0**;
+all scenario logErrors=0. Restored from `phase2-20261001-122209` (summary, rollback log and installed receipt agree).
+Reviewed all six wheel and six trunk stored JPG captures individually: readable centre names/ammo, amber selection,
+empty slot, trunk swap/full/refusal feedback; no observed clipping. Raw Melee_Knife remains cosmetic. Summary's
+wheel/trunk NEEDS-REVIEW labels are retained; capture review is recorded separately. Physical pad/owner resolution remain.
+
+Unchanged wheel gate passes: open avg 34.97 vs closed 36.95 ms, p95 59.5/68.9, p99 130.1/132.7,
+draw.ui avg/max 0.256/1.9 ms, measured max frame 663.8 ms, zero measured >=1 s stalls.
+**Acceptance gap:** run.log 19:26:50.751Z records first draw **2 frames / 359 ms**, exceeding the written <=1-frame
+target. Another opening records 1 frame / 344 ms. Only the initial opening is asserted by the scenario; functional
+PASS does not prove every opening's timing. Cause remains unknown; no threshold/implementation was changed here.
+Watcher invalid-config rejection/recovery and stop/restart are also not tested by the ordinary scenario.
+Ready for orchestrator source integration review with these explicit gaps, not unconditional full T045 acceptance.
+Next scoped fixture work proposes unregistered `T045-config-watch-reload,T045-config-watch-restart`; existing
+`LOOP-package-install,T045-weapon-wheel` cover the affected wheel after any scoped timing fix and a new slot.
+Do not rerun the finished batch. NEEDS-PLAYTEST and owner-only controller/save-load/HUD coexistence checks remain.

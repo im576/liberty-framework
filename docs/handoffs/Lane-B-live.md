@@ -3,9 +3,89 @@
 Worktree `C:\Users\IM576\GTAIV-Reborn-lane-b2`, branch `codex/lane-b-validation`. Not merged, not pushed (orchestrator integrates).
 Update this file after every game run and meaningful commit. Rules for a successor: `C:\Users\IM576\GTAIV-Reborn\docs\handoffs\sol\RULES.md`.
 
-## Current milestone — Sol replacement, offline only (2026-10-01)
+## Current milestone — full run reviewed, no new slot (2026-10-01)
 
-This section supersedes the historical next-step instructions below. No game slot has been assigned.
+This section supersedes the historical next-step instructions below. The finished B slot is released; do not rerun it.
+
+### Completed full receipt and merge review
+
+Tested clean build `4330603` includes main `c01f0da` (merge `1383b5b`), isolated watcher cherry-pick `192bd50` and
+case-insensitive callback delivery fix `9dc7948`. No code changed after the tested build. On resumption the lane was
+clean; no game/verifier/build process was found. This milestone changes documentation only, without starting tests.
+
+Full `20261001-122159-4330603`, 19:21:59.713Z–19:34:00.547Z, command:
+`./tools/verify-local.ps1 -GameDirectory 'C:\Games\Grand Theft Auto IV\GTAIV' -Branch codex/lane-b-validation
+-AnyBranch -NoPush -Restore -NoManual -MaxGameMinutes 30
+-Only LOOP-package-install,T045-ui-text,T045-weapon-wheel,T046-trunk-ui`.
+Queue order was package/wheel/trunk/text. No Quick. Lock wait 0.015 s; completed inside the cap.
+
+| Check | Exact result |
+|---|---|
+| LOOP-package-install | PASS; package preparation 4 s, install 5 s |
+| T045-weapon-wheel | Scenario PASS, 92 steps/0 failed, 12/12 scripted equips, keyboard hold/tap/readback; 0 log errors |
+| T046-trunk-ui | Scenario PASS, 133 steps/0 failed, store/take/swap/capacity, 2 identical state-file round trips, controls released; 0 log errors |
+| T045-ui-text | PASS, 133 steps/0 failed, 0 log errors |
+| Stored summary | PASS=2, NEEDS-REVIEW=2, FAIL=0, CRASH=0, ERROR=0, NOT-RUN=0; wheel/trunk retain their original screenshot-review status |
+
+Wheel launched on attempt 2; this does not resolve intermittent startup failures. Original failed/crashed integration
+runs remain failures. The successful full run proves ordinary functional scenarios on this build, not every criterion.
+
+Budget gates unchanged: draw.ui average <=0.5 ms, paired frame avg/p95 <=+10%, p99 <=+15%, >=30 samples, no >=1 s
+stall in the measured windows. Values are open versus closed:
+
+| Window | Frames | Average ms | p95 ms | p99 ms | Max ms | draw.ui avg/max ms |
+|---|---:|---|---|---|---:|---|
+| Wheel | 304 (closed 289) | 34.97 / 36.95 (-5.36%) | 59.5 / 68.9 (-13.64%) | 130.1 / 132.7 (-1.96%) | 663.8 | 0.256 / 1.9 |
+| Trunk | 397 (closed 416) | 25.82 / 24.72 (+4.45%) | 35.5 / 41.9 (-15.27%) | 56.9 / 73.4 (-22.48%) | 123.0 | 0.301 / 2.1 |
+
+Both `ui_budget ... pass=True`; no engine_stall or ERROR in the wheel/trunk run logs. Absolute wheel pacing is variable.
+**Separate acceptance gap:** first-draw log includes `frames=2 ms=359` at 19:26:50.751Z after wheel_open frame=3334
+at 19:26:50.380Z; adjacent wheel_hitch gap_ms=328. The written <=1-frame target is not fully met. Another opening
+records frames=1/ms=344. The scenario only asserts frames=[01] for its initial opening, so its PASS does not cover
+all later openings. This is an observed timing gap, not an established cause or an animation-duration measurement.
+No threshold was weakened and no UI/engine implementation was changed in this review.
+
+All 12 stored JPGs individually viewed at their available 960x540 resolution:
+- Wheel: wheel_open_sidearm, wheel_long_gun_1, wheel_long_gun_2, wheel_melee, wheel_empty_slot,
+  wheel_keyboard_highlight. Glock/Street Sweeper/AK, empty thrown slot and amber selected sectors match; centre
+  names/ammo/finish and footer visible without clipping. Raw Melee_Knife remains cosmetic. Small footer text is
+  legible in these downscaled files; they do not establish exact source pixel size or owner-resolution readability.
+- Trunk: trunk_ui_open, trunk_ui_after_store, trunk_ui_swap_preview, trunk_ui_after_swap, trunk_ui_full,
+  trunk_ui_full_refused. Empty 0/8, stored AK 1/8, swap-in AK/out Street Sweeper, post-swap Street Sweeper list,
+  full 4/4 and Trunk full (4) refusal are visible. Labels/list/footer have no observed clipping. These are screenshot
+  observations, not controller/real-save-load/combined-D acceptance.
+
+ASI inventory recorded under lock in `summary.json` (full SHA256 and byte sizes retained): aCompleteEditionHook.asi
+(20480), ScriptHookDotNet.asi (647168), plugins/000_LVSCE_Dashboard_Bridge.asi (47616),
+plugins/GTAIV.EFLC.FusionFix.asi (16022048), plugins/ViolentLiberty.asi (2630656). FusionFix 5.0.1; GTA IV 1.2.0.59,
+exe SHA256 `08759A5516F9837920EA504436236BBAB89D0826A8E4D04FF106345177B5345D`. No ColAccel inventory entry.
+No plugin/OS/driver changes. Density config remains OFF; T040 and original budgets preserved.
+
+Restoration: summary and `restore.log` confirm rollback complete from `phase2-20261001-122209`;
+installed-build.json independently records that backup at 19:34:00.304Z with blank source identity and dirty=false.
+No fresh install was left behind. Slot released by the orchestrator; no new game slot is held or requested by this run.
+
+Evidence: `results-local/20261001-122159-4330603/{summary.md,summary.json,restore.log}` plus each scenario's
+`report.md,result.json,run.log` and wheel/trunk JPGs. Required pre-run offline evidence remains
+`results-local/offline/lane-b-resumed/{build.log,verify.log,tool-tests.log}`: production build PASS, verifier
+**441/0/5 not-run**, PowerShell **236/0**. Focused watcher service tests **8/0** (including reproduced casing failure).
+The five NoGame omissions are engine address resolution, native names used by the DLL, core native table,
+vehicle body parts (T023), and dismemberment plans/particles (T022); all require game-file inputs and are not passes.
+
+**Merge disposition:** source patch is ready for independent orchestrator integration review with ordinary functional
+and budget passes, but not unconditional T045 acceptance. Preserve the first-draw timing gap and remaining lifecycle
+gaps. Invalid-config rejection/last-valid retention/recovery and module stop/restart have source/offline evidence only;
+the ordinary wheel run does not perturb config or restart the module. Whole sprite-cache unload disposal remains unproven.
+Owner-only controller, real game save/load, safehouse/gunsmith, B/D coexistence and resolution judgment remain.
+Cards stay NEEDS-PLAYTEST, not DONE. No main merge/push or further subdelegation.
+
+**Next authorized work:** prepare focused config reject/correct + stop/restart fixtures and strengthen first-draw
+coverage without weakening the <=1-frame criterion. No existing registered ID directly proves watcher lifecycle.
+Proposed new IDs `T045-config-watch-reload` and `T045-config-watch-restart` are NOT registered/executed yet.
+After a scoped fix/fixture and explicit slot, affected existing IDs are `LOOP-package-install,T045-weapon-wheel`;
+`T045-ui-path` is available if a shared UI timing diagnostic is assigned. Do not repeat unchanged text/trunk probes.
+
+### Prior offline milestone and slot preparation (preserved history)
 
 ### Resumed first exclusive build/game slot (2026-10-01)
 
@@ -53,7 +133,7 @@ Changed paths relative to main:
 7. `docs/PROJECT_STATE.md`
 8. `docs/handoffs/Lane-B-live.md`
 
-### Scheduled validation proposal and remaining questions
+### Initial validation proposal (superseded by the completed receipt above)
 
 Heavy/full checks were reported before execution and remain deferred for a staggered slot:
 `./tools/build.ps1 -ScriptHookDotNetReference 'C:\Games\Grand Theft Auto IV\GTAIV\ScriptHookDotNet.asi'`,
