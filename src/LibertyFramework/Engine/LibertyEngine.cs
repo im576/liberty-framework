@@ -486,7 +486,7 @@ namespace LibertyFramework.Engine
             RayHit hit = Query.Raycast(from, to, mask, PlayerIgnore());
             string line = "ray dir=" + direction + " mask=" + mask.ToString().Replace(", ", "|") + " status=" + hit.Status + " kind=" + hit.Kind +
                 " handle=" + hit.EntityHandle + " distance=" + F(hit.Distance) + " pos=" + Describe(hit.Position) + " normal=" + Describe(hit.Normal) +
-                " tests=" + hit.Tests + " passed=" + hit.PassedThrough + " from=" + Describe(from) + " to=" + Describe(to);
+                " tests=" + hit.Tests + " passed=" + hit.PassedThrough + " material_id=" + (hit.HasSurfaceMaterial ? hit.SurfaceMaterialId.ToString() : "UNKNOWN") + " from=" + Describe(from) + " to=" + Describe(to);
             RuntimeLog.Info(line);
             return line;
         }
@@ -505,7 +505,7 @@ namespace LibertyFramework.Engine
             for (int i = 0; i < LcRayHit.RawWords; i++) { words[i] = raw.Raw[i].ToString("X8"); }
             RuntimeLog.Info("raydebug dir=" + direction + " flags=0x" + flags.ToString("X") + " mode=" + mode + " status=" + hit.Status +
                 " start=" + Describe(from) + " pos=" + Describe(hit.Position) + " normal=" + Describe(hit.Normal) + " distance=" + F(hit.Distance) +
-                " kind=" + hit.Kind + " handle=" + hit.EntityHandle + " link=" + raw.Link + " raw=" + string.Join(" ", words));
+                " kind=" + hit.Kind + " handle=" + hit.EntityHandle + " link=" + raw.Link + " material_id=" + (hit.HasSurfaceMaterial ? hit.SurfaceMaterialId.ToString() : "UNKNOWN") + " raw=" + string.Join(" ", words));
             return "status=" + hit.Status + " kind=" + hit.Kind + " handle=" + hit.EntityHandle + " link=" + raw.Link + " distance=" + F(hit.Distance);
         }
 
@@ -989,7 +989,6 @@ namespace LibertyFramework.Engine
             try { Ledger.ReleaseKind("patch"); } catch (Exception error) { RuntimeLog.Error("engine_patch_restore_failed error=" + error.Message); }
             Entities.SaveJournal();
             Watchdog.Stop();
-            try { ModuleConfig.Stop(); } catch (Exception error) { RuntimeLog.Error("engine_config_watch_stop_failed error=" + error.Message); }
             core.Shutdown();
             RuntimeLog.Info("engine_unloaded frame=" + Frame);
             LibertyHost.Current = null;

@@ -230,6 +230,13 @@ namespace LibertyFramework.Engine.Services
             result.Distance = raw.Distance;
             result.Kind = raw.EntityKind >= LcRay.EntityPed && raw.EntityKind <= LcRay.EntityObject ? (RayEntityKind)raw.EntityKind : RayEntityKind.World;
             result.EntityHandle = result.Kind == RayEntityKind.World ? 0 : raw.EntityHandle;
+            // ADR-0008's existing pattern-resolved line test already returns the complete 0x60-byte result.
+            // T-050 independently traced result+0x48 into the material manager's low-byte lookup (HitMaterial.md).
+            if (result.Status == RayStatus.Hit && raw.Raw[0] != 0)
+            {
+                result.SurfaceMaterialId = (int)(raw.Raw[18] & 0xFF);
+                result.HasSurfaceMaterial = true;
+            }
             return result;
         }
     }

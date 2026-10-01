@@ -3,12 +3,13 @@ namespace Liberty.Sdk
     // Liberty SDK version. Mods declare the SDK version they were built for (ModuleAttribute.SdkVersion); the engine
     // loads a mod when the major versions match and the mod's minor version is not newer than the engine's.
     // 1.1: IWorldQuery raycast and line of sight (RayMask, RayHit, RayIgnore, RayStatus, RayEntityKind).
+    // 1.2: numeric ray-hit surface material (RayHit.HasSurfaceMaterial, SurfaceMaterialId; T-050).
     public static class SdkVersion
     {
         public const int Major = 1;
-        public const int Minor = 1;
+        public const int Minor = 2;
         public const int Patch = 0;
-        public const string Text = "1.1.0";
+        public const string Text = "1.2.0";
 
         public static bool IsCompatible(string required)
         {

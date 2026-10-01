@@ -16,6 +16,10 @@ namespace Liberty.Sdk
         // Line tests the query ran and hits outside the mask (or ignored) that it passed through.
         public int Tests;
         public int PassedThrough;
+        // T-050: low byte of the physics result's packed material field. Only meaningful when HasSurfaceMaterial is true.
+        // Names/FX groups depend on the effective materials.dat; entity kind is never used to guess a material.
+        public int SurfaceMaterialId;
+        public bool HasSurfaceMaterial;
 
         public bool IsHit { get { return Status == RayStatus.Hit; } }
         public PedRef Ped { get { return Kind == RayEntityKind.Ped ? new PedRef(EntityHandle) : PedRef.None; } }
