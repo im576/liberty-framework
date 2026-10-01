@@ -86,3 +86,9 @@ that drifts). "Fail-safe" says what happens if the claim is wrong.
 | Physics instance → entity | `[instance+0x0C]` | | hit entity, mapped to a handle through the pools (verified for peds 2026-09-26) |
 
 Research and open questions: [Raycast.md](../research/Raycast.md).
+
+## T-050 surface material field (2026-09-29)
+
+**VERIFIED OFFLINE:** the existing ADR-0008 line-test resolver and unchanged ABI 5 `lc_ray_hit.raw[24]` already carry the full physics result. `result+0x48` (`raw[18]`) is consumed by the game's material manager; its lookup extracts the low byte. Independent byte audit and stack accounting: [HitMaterial.md](../research/HitMaterial.md), `tools/research/material-probe.py audit`. No new pointer, resolver, hook, absolute runtime address or ABI field is introduced.
+
+**VERIFIED OFFLINE:** `RayHit.HasSurfaceMaterial` is set only for a Hit with a nonzero hit-instance word, and `SurfaceMaterialId = raw[18] & 0xFF`. Misses, unavailable and inconclusive results have no material. This reports a numeric index, not a guessed material name or anatomical bone. Runtime correspondence awaits `T050-material-probe`; mapping to names requires the effective materials.dat identity, and proxy geometry reports its own material.

@@ -226,3 +226,7 @@ Keep in mind:
   types need a restart too.
 - **Versioning:** SDK 1.x keeps binary compatibility for mods built against 1.0. The freeze criteria are in `docs/sdk/ROADMAP.md`.
 - **SDK 1.1** (2026-09-26) added the raycast API to `IWorldQuery` and its types (`RayMask`, `RayHit`, `RayIgnore`, `RayStatus`, `RayEntityKind`). A mod built against 1.1 needs a 1.1 engine; 1.0 mods load unchanged.
+
+## SDK 1.2: ray-hit surface material (T-050)
+
+`RayHit.HasSurfaceMaterial` / `SurfaceMaterialId` give the 0-based data row of `materials.dat` that the game's line test hit (only for a Hit with a hit instance; misses and inconclusive results have none). `config/impact-surfaces.json` maps rows to impact classes (`concrete`, `wood`, `metal`, `glass`, `default`). The native core ABI stays at 5; 1.0/1.1 modules load unchanged. Evidence and limits: [HitMaterial.md](../research/HitMaterial.md).

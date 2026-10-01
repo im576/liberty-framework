@@ -1,6 +1,6 @@
-# T-050 — R2 — Hit surface material
+# T-050 â€” R2 â€” Hit surface material
 
-Status: **READY** · Research lane (parallel) · Design: STAGE1 section 8
+Status: **NEEDS-PLAYTEST** Â· Research lane (parallel) Â· Design: STAGE1 section 8
 
 ## Question
 
@@ -21,3 +21,13 @@ A research note in `docs/research/` with evidence labels (VERIFIED IN GAME / VER
 ## Human test steps
 
 Fill in only if the owner must look at something.
+
+## Research progress (2026-09-29)
+
+**VERIFIED OFFLINE:** The result+0x48 packed field and low-byte material lookup were traced in the CE executable; [HitMaterial.md](../research/HitMaterial.md) and `material-probe.py audit` record the byte evidence. The existing ray ABI now exposes numeric `RayHit.SurfaceMaterialId` only when `HasSurfaceMaterial` is true. The scenario `research-material` and check `T050-material-probe` collect raw dumps, a miss control and four visible subjects; **VERIFIED IN GAME (2026-09-30, run 20260930-225503-991cd66):** `material_id` = 0-based row of `materials.dat`; 7 of 7 hits agree with their screenshots (BRICK_COBBLE, TARMAC, CONCRETE, SAND, PAVING_SLABS, CAR_METAL, PED). Answer: **works**. Limits (prop material not observed, player-origin ray) are in HitMaterial.md. The 2026-09-29 run's ped and prop rays had cleared; the scenario now uses typed `ray` queries and four extra world points. No material-name mapping is promoted from entity kind.
+
+## Human test steps
+
+1. Run the committed research branch through `tools/verify-local.ps1 -GameDirectory "C:\Games\Grand Theft Auto IV\GTAIV" -Branch research/stage1 -AnyBranch -NoPush -Restore -NoManual -Only LOOP-package-install,T050-material-probe` in PowerShell.
+2. Open the four material screenshots in the resulting scenario folder; confirm the ray subjects and hit positions in the log.
+3. Read the decoded report in HitMaterial.md; report any collision surface that disagrees with the visible target. No owner action is needed to execute the automated run.

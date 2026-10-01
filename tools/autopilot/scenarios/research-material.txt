@@ -1,0 +1,61 @@
+# T-050: raw result evidence only, no guessed material IDs. Visual subjects documented alongside dump.
+# Rerun 2026-09-30: the ped and prop rays use the typed `ray` command (mask peds/objects) because the first run's raw
+# forward rays cleared before the ped and prop; the downward ray no longer starts inside the player. Extra points give more ground types.
+events off
+god on
+wanted 0
+goto east_park
+expect "teleport_done id=east_park" 90
+wait 5000
+time 13 0
+weather 1
+clear
+shot material_ground
+ray down 10
+ray down 10
+raydebug up 60
+spawncar admiral 6
+expect "autopilot_spawncar handle=" 20
+wait 2000
+shot material_vehicle
+raydebug forward 12 FFFFFFFF 1 -0.3
+ray forward 12 -0.3 vehicles
+clear
+spawn 1 4 0
+expect "autopilot_spawned count=1" 20
+wait 2000
+shot material_ped
+ray forward 8 0 peds
+ray forward 8 0 all
+clear
+spawnprop corpbarrier1 4 0 on
+expect "autopilot_prop handle=" 20
+wait 2000
+shot material_prop
+rayto prop objects
+ray forward 8 0 objects
+raystats
+expect "raycast available=True .*faults=0" 5
+clear
+# More world surfaces: ray down at points with different ground.
+goto s1_hove_beach_a
+expect "teleport_done id=s1_hove_beach_a" 90
+wait 4000
+shot material_world_hove
+ray down 10
+goto s1_dukes_meadow_hills
+expect "teleport_done id=s1_dukes_meadow_hills" 90
+wait 4000
+shot material_world_dukes
+ray down 10
+goto s1_firefly_island
+expect "teleport_done id=s1_firefly_island" 90
+wait 4000
+shot material_world_firefly
+ray down 10
+goto gun_test_range
+expect "teleport_done id=gun_test_range" 90
+wait 4000
+shot material_world_range
+ray down 10
+alive

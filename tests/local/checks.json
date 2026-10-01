@@ -1690,6 +1690,55 @@
       "reference": "docs/tasks/T-045-stage1-weapon-wheel.md",
       "status": "QUEUED",
       "addedIn": "stage1/T-045"
+    },
+    {
+      "id": "T050-material-probe",
+      "task": "T-050",
+      "title": "Raw physics hit evidence against visible ground, ped, vehicle and solid prop",
+      "kind": "scenario",
+      "run": {
+        "scenario": "research-material"
+      },
+      "proves": "Raw results and stable resolver operation only; not material index semantics",
+      "status": "QUEUED",
+      "addedIn": "research/stage1",
+      "reference": "docs/tasks/T-050-r2-hit-material.md",
+      "review": {
+        "screenshots": {
+          "material_ground": "Visible ground context for the downward ray",
+          "material_vehicle": "Admiral present for door-height ray",
+          "material_ped": "Spawned ped present ahead",
+          "material_prop": "Solid corpbarrier1 prop present",
+          "material_world_hove": "Hove street: tarmac expected",
+          "material_world_dukes": "Dukes road",
+          "material_world_firefly": "Firefly Island: sand expected",
+          "material_world_range": "Gun range floor"
+        }
+      },
+      "pass": "Raw 24-word results and screenshots; no surface name asserted until decoded"
+    },
+    {
+      "id": "T050-material-coverage",
+      "task": "T-050",
+      "title": "Material ids for car glass, wood crate and planks, a low prop hit and water",
+      "kind": "scenario",
+      "run": {
+        "scenario": "research-material-coverage"
+      },
+      "proves": "The ray-hit material id on side glass, wood props and water bodies, read against config/impact-surfaces.json; only what the log shows, no surface name is asserted from the model name",
+      "status": "QUEUED",
+      "addedIn": "research/stage1",
+      "reference": "docs/tasks/T-050-r2-hit-material.md",
+      "review": {
+        "screenshots": {
+          "material_car_side": "Admiral broadside: side glass at the ray heights",
+          "material_crate": "cj_crate_1 wooden crate present ahead",
+          "material_planks": "planksboardup2 present ahead",
+          "material_water_pond": "Over the Algonquin pond (water.dat quad at z 9)",
+          "material_water_pool": "Over the small water body at z 14"
+        }
+      },
+      "pass": "autopilot PASS; every ray line has a material_id or UNKNOWN; the table in HitMaterial.md is filled from it"
     }
   ]
 }
