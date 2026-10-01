@@ -302,11 +302,23 @@ function Invoke-ScenarioCheck($Context, $Check) {
     New-Item -ItemType Directory -Force -Path $runs | Out-Null
     $log = Join-Path $Context.Results ($Check.id + '.log')
     $arguments = (Get-ScriptArguments (Join-Parts $Context.Repo 'tools' 'autopilot' 'Run-Scenario.ps1')) +
-        @('-GameDirectory', $Context.Game, '-Scenario', $scenario, '-OutputDirectory', $runs, '-AutopilotModule', $Context.GameModule, '-ProbeDirectory', $Context.Results)
-    $run = Invoke-ChildProcess (Get-PowerShellPath) $arguments $Context.ScenarioTimeout $log $Context.Repo
+        @('-GameDirectory', $Context.Game, '-Scenario', $scenario, '-OutputDirectory', $runs, '-AutopilotModule', $Context.GameModule, '-ProbeDirectory', $Context.Results) +
+        @($(if ($Context.Quick) { '-Quick' }), $(if ($Context.StopOnFailure) { '-StopOnFailure' }) | Where-Object { $_ })
+    # A scenario cannot spend a whole ScenarioTimeout after this batch's remaining game allowance is gone.
+    # The parent still stops its owned game and restores the installation after a timeout.
+    $timeout = $Context.ScenarioTimeout
+    $limitedByGameCap = $false
+    if ($Context.MaxGameMinutes -gt 0 -and $Context.GameSince) {
+        $remaining = [Math]::Max(1, [Math]::Ceiling($Context.MaxGameMinutes * 60 - ((Get-Date) - $Context.GameSince).TotalSeconds))
+        if ($remaining -lt $timeout) { $timeout = [int]$remaining; $limitedByGameCap = $true }
+    }
+    $run = Invoke-ChildProcess (Get-PowerShellPath) $arguments $timeout $log $Context.Repo
     Import-Module (Join-Parts $Context.Repo 'tools' 'autopilot' 'AutopilotLogic.psm1') -Force 3>$null
     $read = Read-ScenarioResult $run.Output
-    if ($run.TimedOut) { $read = @{ Status = 'ERROR'; Detail = "scenario killed after $($Context.ScenarioTimeout) s"; Path = $read.Path } }
+    if ($run.TimedOut) {
+        $reason = if ($limitedByGameCap) { ' (remaining game time cap)' } else { '' }
+        $read = @{ Status = 'ERROR'; Detail = "scenario killed after $timeout s$reason"; Path = $read.Path }
+    }
     $evidence = @((Split-Path -Leaf $log))
     if ($read.Path -and (Test-Path -LiteralPath $read.Path)) {
         $target = Join-Path $Context.Results $Check.id
@@ -338,14 +350,19 @@ function Invoke-ScenarioCheck($Context, $Check) {
 # install and scenarios are NOT-RUN then); without an audio output device the scenarios are NOT-RUN at once.
 function Enter-GamePhase($Context, $Checks) {
     $Context.GamePhase = $true
+    $waitingSince = Get-Date
     if (-not $Context.Simulate) {
         try { $Context.Lock = Enter-GameLock "verify-local $($Context.Repo)" }
         catch { $Context.LockFailed = "the game was not free in time ($($_.Exception.Message))"; return }
+        $Context.GameSince = Get-Date
+        $Context.Run.gameLockWaitSeconds = [Math]::Round(($Context.GameSince - $waitingSince).TotalSeconds, 3)
+        $Context.Run.asiModules = @(Get-GamePluginInventory $Context.Game)
         if (Get-Process GTAIV -ErrorAction SilentlyContinue) {
             if (Test-AutopilotGameRunning $Context.Game) { Write-Host '[verify-local] stopping the game an earlier test left running'; Stop-TestGame $Context }
             else { $Context.GameBlocked = 'GTA IV is running and was not started by the autopilot (the owner may be playing); close it and run again' }
         }
     }
+    else { $Context.GameSince = Get-Date; $Context.Run.gameLockWaitSeconds = 0 }
     if (@($Checks | Where-Object { $_.kind -eq 'scenario' }).Count -gt 0) {
         try {
             Import-Module $Context.GameModule -Force 3>$null
@@ -395,13 +412,17 @@ function Invoke-ManualCheck($Context, $Check) {
 function Invoke-Check($Context, $Check) {
     $started = Get-Date
     try {
-        if ($Context.LockFailed -and (Test-CheckNeedsGame $Check)) { $result = New-Result 'NOT-RUN' $Context.LockFailed @() }
+        if ($Context.StopReason) { $result = New-Result 'NOT-RUN' $Context.StopReason @() }
+        elseif ($Context.LockFailed -and (Test-CheckNeedsGame $Check)) { $result = New-Result 'NOT-RUN' $Context.LockFailed @() }
         elseif ($Check.kind -eq 'manual' -and $Context.SkipManual) { $result = New-Result 'NOT-RUN' 'skipped by the owner' @() }
         elseif ($Context.GameBlocked -and ($Check.kind -eq 'scenario' -or $Check.run.tool -eq 'package-install')) {
             $result = New-Result 'NOT-RUN' $Context.GameBlocked @()
         }
         elseif (($Check.kind -eq 'scenario' -or $Check.run.tool -eq 'content-report') -and -not $Context.Installed) {
             $result = New-Result 'NOT-RUN' 'LOOP-package-install did not pass in this run' @()
+        }
+        elseif ($Check.kind -eq 'scenario' -and $Context.MaxGameMinutes -gt 0 -and $Context.GameSince -and ((Get-Date) - $Context.GameSince).TotalMinutes -ge $Context.MaxGameMinutes) {
+            $result = New-Result 'NOT-RUN' "game time cap reached ($($Context.MaxGameMinutes) min, -MaxGameMinutes): the game goes to the next session in line; run this check in a new batch" @()
         }
         elseif ($Check.kind -eq 'scenario' -and $Context.LaunchBlocked) {
             $result = New-Result 'NOT-RUN' "the game could not start earlier in this run: $($Context.LaunchBlocked)" @()
@@ -578,6 +599,7 @@ function Invoke-VerifyLocal([hashtable] $Options) {
         Results = $results; Simulate = [bool]$Options.Simulate; Sim = $Options.Sim; SimRoot = $Options.SimRoot
         Interactive = [bool]$Options.Interactive; GameModule = $Options.GameModule; ScenarioDirectory = $Options.ScenarioDirectory
         ScenarioTimeout = [int]$Options.ScenarioTimeout; Installed = $false; Backup = ''; SkipManual = [bool]$Options.NoManual
+        Quick = [bool]$Options.Quick; StopOnFailure = [bool]$Options.StopOnFailure; MaxGameMinutes = [double]$Options.MaxGameMinutes
         Checks = New-Object System.Collections.ArrayList
     }
     $previous = @{}
@@ -590,19 +612,20 @@ function Invoke-VerifyLocal([hashtable] $Options) {
     }
     $context.Run = [ordered]@{
         id = $runId; commit = $commit; branch = $branch
-        mode = $(if ($Options.Simulate) { 'simulate' } elseif ($Options.Smoke) { 'smoke' } else { 'full' })
+        mode = ($(if ($Options.Simulate) { 'simulate' } elseif ($Options.Smoke) { 'smoke' } elseif ($Options.Quick) { 'quick' } else { 'full' }) + $(if ($Options.Quick -and $Options.Simulate) { '+quick' } else { '' }))
         startedUtc = [DateTime]::UtcNow.ToString('o'); finishedUtc = ''
         game = $Options.GameInfo; install = 'not installed'; installBackup = ''
         selected = @($checks | ForEach-Object { $_.id })
     }
 
     $installCheck = $checks | Where-Object { $_.run.tool -eq 'package-install' } | Select-Object -First 1
+    $completedChecks = $false
     try {
         foreach ($check in $checks) {
             if ($previous.ContainsKey([string]$check.id) -and $script:FinalStatuses -contains [string]$previous[[string]$check.id].status) {
                 [void]$context.Checks.Add($previous[[string]$check.id]); continue
             }
-            if (-not $context.GamePhase -and (Test-CheckNeedsGame $check)) {
+            if (-not $context.StopReason -and -not $context.GamePhase -and (Test-CheckNeedsGame $check)) {
                 # Build the package while another session may still be using the game, then take the game.
                 if ($installCheck -and -not ($previous.ContainsKey([string]$installCheck.id) -and $script:FinalStatuses -contains [string]$previous[[string]$installCheck.id].status)) {
                     Invoke-PackageBuild $context $installCheck
@@ -618,11 +641,18 @@ function Invoke-VerifyLocal([hashtable] $Options) {
             Write-Host ("[verify-local] {0,-34} {1}" -f $check.id, $check.title)
             $row = Invoke-Check $context $check
             [void]$context.Checks.Add($row)
+            if ($context.StopOnFailure -and @('FAIL', 'CRASH', 'ERROR') -contains $row.status) {
+                $context.StopReason = "stopped after $($check.id) $($row.status) (-StopOnFailure); run remaining checks in a new batch"
+            }
             Write-Host ("               -> {0}  {1}" -f $row.status, $row.detail)
             $context.Run.install = $(if ($context.Installed) { "installed; backup $($context.Backup)" } else { 'not installed' })
             $context.Run.installBackup = $context.Backup
             Write-Summary $context
         }
+        $completedChecks = $true
+    }
+    finally {
+      try {
         if ($context.Installed -and -not $context.Simulate) { Stop-TestGame $context }
 
         # Keep or restore the tested build.
@@ -641,10 +671,17 @@ function Invoke-VerifyLocal([hashtable] $Options) {
             }
             else { $context.Run.install = "kept the tested build; to undo: tools/rollback-phase2.ps1 -GameDirectory <game> -BackupDirectory $($context.Backup)" }
         }
-    }
-    finally {
+        if (-not $completedChecks) {
+            # Preserve the interrupted run's restoration evidence without replacing its original exception.
+            $context.Run.finishedUtc = [DateTime]::UtcNow.ToString('o')
+            try { Write-Summary $context }
+            catch { Write-Warning "Could not save interrupted-run summary: $($_.Exception.Message)" }
+        }
+      }
+      finally {
         # Compressing, scrubbing and publishing the results need no game: other sessions get it now.
         Exit-GamePhase $context
+      }
     }
     $context.Run.finishedUtc = [DateTime]::UtcNow.ToString('o')
     Write-Summary $context

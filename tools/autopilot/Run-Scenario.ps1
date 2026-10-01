@@ -16,7 +16,12 @@ param(
     # someone else's build; a lane testing its own work installs it first.
     [switch] $AllowOtherBuild,
     # An expect step gives up when the engine has written nothing to its log for this long (it logs every 30 s).
-    [int] $FrozenSeconds = 150
+    [int] $FrozenSeconds = 150,
+    # Development iteration: "@quick"/"@full" lines and {quick:A|B} values pick the short variant (ConvertTo-ModeLine).
+    # A quick result is marked mode=quick and is never acceptance evidence.
+    [switch] $Quick,
+    # Development iteration: end the scenario at its first failed step instead of running the rest.
+    [switch] $StopOnFailure
 )
 
 # Runs one scenario and writes <OutputDirectory>\<scenario>-<time>\report.md with every step, its reply, the
@@ -82,7 +87,8 @@ try {
         $attempts = Start-GameReady -Attempts 6
         $steps.Add("launch: engine booted on attempt $attempts")
         # Let the first frames settle (streaming, the FusionFix dialog the engine acknowledges).
-        Start-Sleep -Seconds 12
+        # Quick probes already await a live player in their scenario; retain the full acceptance warm-up unchanged.
+        Start-Sleep -Seconds $(if ($Quick) { 2 } else { 12 })
     }
     $startUtc = [DateTime]::UtcNow
     # expect only accepts log lines written after the most recent engine command was sent (a line count, not a clock).
@@ -92,6 +98,9 @@ try {
     foreach ($raw in $lines) {
         $line = $raw.Trim()
         if ($line.Length -eq 0 -or $line.StartsWith('#')) { continue }
+        $line = ConvertTo-ModeLine $line ([bool]$Quick)
+        if ($null -eq $line) { continue }
+        if ($StopOnFailure -and $failedSteps.Count -gt 0) { $steps.Add('stopped at the first failure (-StopOnFailure)'); break }
         $executed++
         try {
             $line = Resolve-ScenarioLine $line $ProbeDirectory
@@ -172,6 +181,7 @@ $lines = New-Object System.Collections.Generic.List[string]
 $lines.Add("# Scenario $name")
 $lines.Add('')
 $lines.Add("- Result: $status")
+if ($Quick) { $lines.Add('- Mode: quick (development iteration, not acceptance evidence)') }
 $lines.Add("- Steps: $executed, failed: $($failedSteps.Count)")
 $lines.Add("- Game alive at end: $gameAlive")
 $lines.Add("- Log errors during run: $($errors.Count)")
@@ -193,6 +203,7 @@ foreach ($l in $runLog) { $lines.Add("    $l") }
 
 $result = [ordered]@{
     scenario = $name
+    mode = $(if ($Quick) { 'quick' } else { 'full' })
     status = $status
     summary = $summary
     steps = $executed

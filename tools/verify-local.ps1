@@ -27,6 +27,14 @@ param(
     [string] $Resume,
     # Minutes before a hung scenario is killed.
     [int] $ScenarioTimeoutMinutes = 15,
+    # Development iteration (never acceptance evidence): scenarios run their short variants (@quick lines, {quick:A|B}) and the
+    # run is recorded as mode quick.
+    [switch] $Quick,
+    # Development iteration: each scenario ends at its first failed step; a failed check skips the rest of the batch.
+    [switch] $StopOnFailure,
+    # Fairness: counts from game-lock acquisition, never queue waiting. Limits each scenario to the remaining allowance,
+    # then stops/restores the owned game; remaining scenarios are NOT-RUN. Cleanup can exceed the allowance. 0 = no cap.
+    [double] $MaxGameMinutes = 30,
     # Cloud testing only: run the whole orchestration against a simulated game and simulated tools
     # (tools/tests/VerifyLocal.Tests.ps1). Never touches a game, never pushes to GitHub.
     [switch] $Simulate,
@@ -58,6 +66,7 @@ if ($Simulate) {
         ScenarioTimeout = [int]$(if ($sim.PSObject.Properties['scenarioTimeoutSeconds']) { $sim.scenarioTimeoutSeconds } else { 120 })
         Only = $Only; Kinds = $Kind; Smoke = [bool]$Smoke; IncludePassedManual = [bool]$IncludePassedManual
         KeepInstall = [bool]$KeepInstall; Restore = [bool]$Restore; Resume = $Resume
+        Quick = [bool]$Quick; StopOnFailure = [bool]$StopOnFailure; MaxGameMinutes = $MaxGameMinutes
         ResultsRoot = $(if ($ResultsDirectory) { $ResultsDirectory } else { Join-Path $simRoot 'results' })
         NoPush = [bool]$NoPush; Remote = [string]$sim.remote
         GameInfo = [ordered]@{ version = 'simulated'; exeSha256 = 'simulated' }
@@ -130,6 +139,7 @@ $options = @{
     ScenarioTimeout = $ScenarioTimeoutMinutes * 60
     Only = $Only; Kinds = $Kind; Smoke = [bool]$Smoke; IncludePassedManual = [bool]$IncludePassedManual
     KeepInstall = [bool]$KeepInstall; Restore = [bool]$Restore; Resume = $Resume
+    Quick = [bool]$Quick; StopOnFailure = [bool]$StopOnFailure; MaxGameMinutes = $MaxGameMinutes
     ResultsRoot = $(if ($ResultsDirectory) { $ResultsDirectory } else { Join-Path $repo 'results-local' })
     NoPush = [bool]$NoPush; Remote = 'origin'; GameInfo = $gameInfo; Replacements = $replacements
 }

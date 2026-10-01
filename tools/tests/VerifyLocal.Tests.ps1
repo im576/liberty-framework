@@ -201,4 +201,70 @@ $byId = Invoke-SimRun @{ running = $false; noAudio = $true } @('T-scenario-good'
 Test-That 'no audio device: installed, but every scenario NOT-RUN without a launch attempt' (
     $byId['LOOP-package-install'].status -eq 'PASS' -and $byId['T-scenario-good'].status -eq 'NOT-RUN' -and $byId['T-scenario-after-crash'].status -eq 'NOT-RUN' -and
     $byId['T-scenario-good'].detail -like '*audio*') ($byId.Values | ConvertTo-Json -Compress)
+
+# ---- Development speed: quick mode passes through and is labelled; the game time cap hands the game on
+function Invoke-SimRunArgs([hashtable] $World, [string[]] $Only, [hashtable] $Extra) {
+    Import-Module (Join-Path $script:TestRoot 'SimulatedGame.psm1') -Force -Global
+    Initialize-SimulatedGame (Join-Path $root 'game') $World @()
+    Start-Sleep -Seconds 1
+    & $verifyLocal -Simulate -SimulationFile $simFile -QueuePath $queuePath -Only $Only -NoPush @Extra 6>&1 | Out-Null
+    $folder = Get-ChildItem -LiteralPath (Join-Path $root 'results') -Directory | Sort-Object Name | Select-Object -Last 1
+    return Get-Content -LiteralPath (Join-Path $folder.FullName 'summary.json') -Raw | ConvertFrom-Json
+}
+$s = Invoke-SimRunArgs @{ knownCommands = @('god'); commands = @{ 'selftest' = @{ reply = 'started'; log = @('selftest_done passed=3 failed=0') } } } @('T-scenario-good') @{ Quick = $true }
+Test-That 'quick run: the summary says quick (never confused with acceptance)' ([string]$s.run.mode -like '*quick*') ([string]$s.run.mode)
+$s = Invoke-SimRunArgs @{ knownCommands = @('god') } @('T-scenario-good', 'T-scenario-after-crash') @{ MaxGameMinutes = 0.0001 }
+$capped = @($s.checks | Where-Object { $_.kind -eq 'scenario' -and $_.status -eq 'NOT-RUN' -and $_.detail -like '*time cap*' })
+Test-That 'game time cap: scenarios past the cap are NOT-RUN with the reason' ($capped.Count -eq 2) ($s.checks | ConvertTo-Json -Compress)
+
+# A wait for another lane is not this lane's game allowance. Mock only acquisition/process discovery, never a real game.
+$phase = @{ Repo = 'mock'; Simulate = $false; Run = @{} }
+$enteredAt = Get-Date
+& (Get-Module VerifyLocal) {
+    param($context)
+    function Enter-GameLock { Start-Sleep -Milliseconds 200; return @{ Mock = $true } }
+    function Get-Process { param($Name, $ErrorAction) return $null }
+    Enter-GamePhase $context @()
+} $phase
+Test-That 'game time cap: lock waiting is excluded and recorded separately' (
+    ($phase.GameSince - $enteredAt).TotalMilliseconds -ge 180 -and $phase.Run.gameLockWaitSeconds -ge 0.18)
+
+Import-Module (Join-Path $script:RepoRoot 'tools/local/GameLock.psm1') -Force
+$pluginGame = Join-Path $root 'plugin-inventory'
+New-Item -ItemType Directory -Force (Join-Path $pluginGame 'plugins') | Out-Null
+[IO.File]::WriteAllText((Join-Path $pluginGame 'ScriptHookDotNet.asi'), 'host')
+[IO.File]::WriteAllText((Join-Path $pluginGame 'plugins/ColAccel.asi'), 'experiment')
+$plugins = @(Get-GamePluginInventory $pluginGame)
+Test-That 'game evidence: root and optional plugin ASIs have relative paths and actual hashes' (
+    $plugins.Count -eq 2 -and @($plugins.path) -contains 'plugins/ColAccel.asi' -and
+    @($plugins | Where-Object { $_.path -eq 'plugins/ColAccel.asi' })[0].sha256 -eq (Get-FileHash (Join-Path $pluginGame 'plugins/ColAccel.asi')).Hash)
+
+$s = Invoke-SimRunArgs @{ knownCommands = @('god'); commands = @{ 'boom' = @{ reply = 'ok'; crash = $true } } } @('T-scenario-crash', 'T-scenario-after-crash') @{ StopOnFailure = $true; Restore = $true }
+$first = @($s.checks | Where-Object { $_.id -eq 'T-scenario-crash' })[0]
+$next = @($s.checks | Where-Object { $_.id -eq 'T-scenario-after-crash' })[0]
+Test-That 'stop-on-failure: a crash skips later scenarios and still restores' (
+    $first.status -eq 'CRASH' -and $next.status -eq 'NOT-RUN' -and $next.detail -like '*StopOnFailure*' -and $s.run.install -like 'restored*') ($s | ConvertTo-Json -Depth 8 -Compress)
+
+$s = Invoke-SimRunArgs @{} @('T-verify-fails', 'T-scenario-good') @{ StopOnFailure = $true }
+Test-That 'stop-on-failure: failed offline work does not install or enter the game phase' (
+    @($s.checks | Where-Object { $_.id -eq 'T-verify-fails' })[0].status -eq 'FAIL' -and
+    @($s.checks | Where-Object { $_.id -eq 'LOOP-package-install' })[0].status -eq 'NOT-RUN' -and $s.run.install -eq 'not installed')
+# A disk/summary error after installation must still restore before relinquishing the game.
+Import-Module (Join-Path $script:RepoRoot 'tools/local/VerifyLocal.psm1') -Force
+$faultOptions = @{
+    Repo = $script:RepoRoot; QueuePath = $queuePath; Only = @('T-scenario-good'); Kinds = @()
+    ResultsRoot = (Join-Path $root 'interrupted-results'); Simulate = $true; Sim = $sim; SimRoot = $root
+    Game = (Join-Path $root 'game'); GameModule = (Join-Path $script:TestRoot 'SimulatedGame.psm1')
+    ScenarioDirectory = (Join-Path $root 'scenarios'); ScenarioTimeout = 120
+    Restore = $true; NoPush = $true; NoManual = $true; GameInfo = @{}
+}
+$interrupted = & (Get-Module VerifyLocal) {
+    param($options)
+    function Write-Summary($Context) { $script:FaultContext = $Context; throw 'injected summary write failure' }
+    try { Invoke-VerifyLocal $options | Out-Null }
+    catch { $script:FaultError = $_.Exception.Message }
+    return @{ install = $script:FaultContext.Run.install; error = $script:FaultError }
+} $faultOptions
+Test-That 'unexpected exception: restoration runs and the original error survives' (
+    $interrupted.install -like 'restored*' -and $interrupted.error -eq 'injected summary write failure') ($interrupted | ConvertTo-Json -Compress)
 $env:LIBERTY_SIM_STATE = $null

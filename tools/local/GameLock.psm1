@@ -81,6 +81,20 @@ function Read-InstalledBuild([string] $GameDirectory) {
     return Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
 }
 
+# Installed-build.json identifies our package, not external ASIs. Capture these under the game lock for fair comparisons.
+function Get-GamePluginInventory([string] $GameDirectory) {
+    if ([string]::IsNullOrEmpty($GameDirectory)) { return @() }
+    $rows = @()
+    foreach ($folder in @($GameDirectory, (Join-Path $GameDirectory 'plugins'))) {
+        if (-not (Test-Path -LiteralPath $folder -PathType Container)) { continue }
+        foreach ($file in Get-ChildItem -LiteralPath $folder -Filter '*.asi' -File | Sort-Object Name) {
+            $relative = if ($folder -eq $GameDirectory) { $file.Name } else { 'plugins/' + $file.Name }
+            $rows += [pscustomobject]@{ path = $relative; sha256 = (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash; bytes = $file.Length }
+        }
+    }
+    return $rows
+}
+
 # The autopilot records the game process it launched, so a run that takes the lock can tell a game an earlier test left
 # running (stopped without asking) from the owner's own game (never touched).
 function Get-AutopilotLaunchPath([string] $GameDirectory) { Join-Path $GameDirectory 'scripts\LibertyFramework\autopilot\launched-game.json' }
@@ -109,4 +123,4 @@ function Test-AutopilotGameRunning([string] $GameDirectory) {
     catch { return $false }
 }
 
-Export-ModuleMember -Function Enter-GameLock, Exit-GameLock, Write-InstalledBuild, Read-InstalledBuild, Write-AutopilotLaunch, Test-AutopilotGameRunning
+Export-ModuleMember -Function Enter-GameLock, Exit-GameLock, Write-InstalledBuild, Read-InstalledBuild, Get-GamePluginInventory, Write-AutopilotLaunch, Test-AutopilotGameRunning

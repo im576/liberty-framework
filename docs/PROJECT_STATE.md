@@ -14,6 +14,11 @@ overrides older docs.
 - **Stage 1 lane D (T-049 Basic Liberty HUD), BLOCKED (September 30 local run):** resolved hud.dat writes failed visible hiding; captures show duplicate weapon/ammo/wanted and retained radar. A source guard now requires independently verified disappearance and keeps all shipped replacement elements vanilla; prompts and diagnostic top-right layout remain. Final guard builds, offline verifier 481/0/5, but is not game-tested. The prior tested batch met diagnostic HUD/UI draw gates and config-off steps, then restored normally. [Evidence](reports/2026-09-30-lane-d-hud-local.md), [research](research/HudComponents.md).
 - **Then Phase 3: reverse engineering** toward FiveM-level control (authored collision, structure writing, deeper hooks).
 
+The T-040 density result above describes the historical baseline. The owner's current density policy is **OFF** in every
+active checkout; that recorded baseline is preserved, not rerun. Current lane review and coordinator corrections are in
+[the October 1 handoff](handoffs/sol/Orchestrator-2026-10-01.md). B/C/D/R remain paused until owner dispatch; Stage 1
+integration and acceptance come before any Phase 3 work. Offline passes do not mark a lane DONE.
+
 ## Stage 1 progress
 
 - **T-049 Lane D, BLOCKED (Codex, September 30):** owner reauthorized testing; batch 20260930-205120-4ac4fcc installed, ran both scenarios and restored. Probe NEEDS-REVIEW, HUD FAIL (one wanted transition assertion, zero errors); images reject clean hiding. Final conservative guard and updated assertions are offline-tested only. Diagnostic average draw.hud 0.306 ms / draw.ui 0.310 ms excludes B integration. [Handoff](handoffs/Codex-Lane-D-2026-09-30.md) requires Sonnet review of ALL Codex changes including uncommitted files; deeper research deferred.
