@@ -70,20 +70,23 @@ long gun equipped at a time, the other slung and visible; everything else lives 
 
 ## Evidence (this PC, 2026-09-30; machine shared with other sessions, frame times 30 to 110 ms)
 
-- `stage1-loadout-vehicles`: PASS, 100 cycles: `hidden_failures=0 restored_failures=0 enter_timeouts=0 leave_timeouts=0
-  object_growth=-2` (object pool 331 → 329).
-- `stage1-loadout-weapons`: PASS. A third long gun moved the least recently used one out (`arsenal_overflow id=10`), 300
-  rifle rounds were taken back to 240, 12 weapon switches consistent, latency average 59 ms, worst 78 ms, worst 1 frame.
-- `stage1-loadout-deaths-a` / `-b`: 50 death cycles, `lost_owned=0 failed_cycles=0`, stash growth equal to the owned
-  weapons carried at death (47 and 50), `arsenal_roundtrip identical=True` after each half. (Part a's first run failed
-  only on an over-strict expected count of 50; the scenario now compares growth with what was counted as owned.)
-- `stage1-loadout-review`: PASS, 18 screenshots (3 class pairs × slim/bulky × 3 views).
-- `stage1-loadout-outfits`: drawables 0 to 15 classified as configured and screenshotted (48 images); the run then lost
-  the scripted camera and the game exited. The camera handling was fixed (one camera reused) and the scenario rerun.
-- Offline: `tools/verify.ps1` 861 passed; `Run-Tests.ps1` passes; `checks.py` ok.
-- Budget (idle, full loadout carried, quiet window): arsenal 0.53 ms, holsters 0.08 ms, gunplay 1.27 ms average =
-  1.88 ms against 1.5 ms. Gunplay is lane A's (T-042); arsenal + holsters together are 0.61 ms.
+Official runs with `tools/verify-local.ps1` (results-local `20260930-150531-8c4e409` and `20260930-163234-9647ab4`):
 
+- `T044-loadout-vehicles`: PASS (NEEDS-REVIEW only for one 5 s `engine_stall` in the world-build phase, a streaming stall
+  during the run), 100 cycles: `hidden_failures=0 restored_failures=0 enter_timeouts=0 leave_timeouts=0 object_growth=-3`.
+- `T044-loadout-weapons`: passed. A third long gun moved the least recently used one out (`arsenal_overflow id=10`), 300
+  rifle rounds were taken back to 240, 12 weapon switches consistent, latency 59 to 128 ms average across runs (worst
+  141 ms), always within 1 frame of the engine event (frames were 30 to 115 ms long).
+- `T044-loadout-deaths-a` / `-b`: PASS, 50 death cycles, `lost_owned=0 failed_cycles=0`, stash growth equal to the owned
+  weapons carried at death, `arsenal_roundtrip identical=True` after each half.
+- `T044-loadout-outfits`: passed, all 17 upper-body drawables classified as configured, 51 screenshots (front, side, back).
+- `T044-loadout-review`: passed, 18 screenshots (3 class pairs × slim/bulky × 3 views).
+- Offline: `tools/verify.ps1` 962 passed, `Run-Tests.ps1` 180 passed, content self-test 364 passed, `checks.py` ok,
+  `artq.py validate` ok.
+- Budget (idle, full loadout carried): gunplay 1.27 ms, arsenal 0.53 to 0.82 ms (was 1.31 before the polling change),
+  holsters 0.08 ms. Arsenal + holsters together are at most 0.9 ms; gunplay is lane A's (T-042) and alone uses most of the
+  1.5 ms budget, so the combined budget is not met by T-044's work alone.
+- NEEDS OWNER: the clipping judgement on the screenshots, the feel of draw/holster timing.
 ## Open questions
 
 1. Melee and thrown weapons: keep one melee slot and uncounted thrown weapons (current rule)? Owner to decide; not
