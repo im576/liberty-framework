@@ -7,6 +7,59 @@ Update this file after every game run and meaningful commit. Rules for a success
 
 This section supersedes the historical next-step instructions below. The finished B slot is released; do not rerun it.
 
+### Scoped watcher fixtures and later-opening coverage (offline, current)
+
+Parent accepted the full-run review and authorized fixture work, not a new build/game slot. Lane entry was clean at
+`e7cf0f1`; existing source and all run evidence preserved. No gameplay/UI scheduling implementation was changed.
+Fixture/queue/scenario/test/card patch committed as `bcb89892753b48f37cdd306642a0ef38f72a390a` on
+`codex/lane-b-validation`; this handoff commit records that exact tested source. Script parse checks also PASS.
+
+Registered `T045-config-watch-reload` and `T045-config-watch-restart` as QUEUED scenarios. New host-side
+`wheel-config` actions edit only the flat weaponWheel block of installed arsenal.json using atomic replacement.
+They capture exact original bytes/timestamp and wheel running/config-enabled state before mutation. Runner finally
+restores bytes first, then uses supported `restart weapon-wheel` or `stop weapon-wheel` plus `modules`/`wheel status`
+to restore/verify state and write `wheel-config-restored.txt`. Fail-fast cannot skip cleanup. Game exit or cleanup
+command refusal leaves bytes restored but explicitly fails live-state restoration. Outer verify-local restore is
+still required. No arbitrary shell/script or native command is added.
+
+- Reload: enable/start, write parseable JSON with invalid `keyboardKey=Enter` and candidate enabled=False, require
+  fresh rejection while active enabled=True is retained, then valid disabled/enabled recovery without restart.
+  Final change must produce exactly one accepted callback.
+- Restart: stop, change disabled, require no accepted/rejected wheel callback in a 2.5 s interval, restart reads
+  disabled, restart again, then enable and require exactly one accepted callback. This is bounded evidence, not
+  full unload/soak proof.
+- Intentional invalid binding also rejects the shared Arsenal validator. ERROR lines are not filtered; reload may
+  be NEEDS-REVIEW and requires reviewing deliberate rejection errors against unexpected errors. Both fixtures
+  remain unrun in game.
+
+`wheel-latency` pairs actual INFO opening/first-draw events since mark and fails missing/orphan measurements,
+negative values or frames>1. Added to initial, all cycle, keyboard hold/tap and later budget-window openings.
+The <=1-frame and UI budget thresholds are unchanged. Queue retains every original ID and all other entries;
+only the existing wheel pass description is strengthened. Plan regenerated/valid: 81 active checks
+(13 pc-offline, 4 probe, 44 scenario, 20 manual).
+
+Instrumentation: EngineHost forwards SHDN Tick and PerFrameDrawing separately; RunFrame increments Engine.Frame
+at tick entry. Wheel Open records that counter after publishing the radial; RadialMenuView writes FirstDrawTicks
+then volatile FirstDrawFrame at Draw entry after a non-null snapshot, and the wheel logs their delta next update.
+This measures engine ticks at draw submission, not visible presentation/animation completion. Ui.Update builds
+snapshots before Commands.PumpFileChannel; command-created radials initially have no snapshot. Preserved open
+tick3334 and delta2 are consistent with first draw reading tick3336. Callback/snapshot timing remain hypotheses;
+the adjacent 328 ms hitch establishes no cause. No counter normalization, SDK/canvas change or actual timing fix.
+
+Focused logs in `results-local/offline/lane-b-wheel-fixtures/`: `focused-tests.log` PS7 **17/0**;
+`focused-tests-ps51.log` Windows PS5.1 **17/0**; `runner-regressions.log` existing runner simulations **30/0**.
+Checks exercise byte/state restoration (including originally stopped), command refusal, game exit, actual runner
+fail-fast finally, callback duplicates/rejection, later-two-frame and missing-draw failures. Initial focused testing
+caught PowerShell converting a null File.Replace backup path to empty; explicit NullString fixed that host-call
+defect before these passes. `preserved-run-latency-replay.log` confirms the new checker rejects the old run at
+frames=2/ms=359; log replay is not a new gameplay run/failure. Queue preservation/validation and diff check PASS.
+No full build/suite, game, install, rollback, main push/merge or new slot used in this milestone.
+
+Next exact scheduled IDs: `LOOP-package-install,T045-config-watch-reload,T045-config-watch-restart,T045-weapon-wheel`.
+Expect strengthened wheel coverage to reject a repeated two-frame opening; diagnose recorded tick/draw evidence
+before changing scheduling. No unchanged text/trunk/historical probe rerun proposed. Independent integration review
+remains conditional on unrun fixture/later-opening gates and owner-only checks. No task marked DONE.
+
 ### Completed full receipt and merge review
 
 Tested clean build `4330603` includes main `c01f0da` (merge `1383b5b`), isolated watcher cherry-pick `192bd50` and
