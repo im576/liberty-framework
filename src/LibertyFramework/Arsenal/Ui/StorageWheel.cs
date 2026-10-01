@@ -194,15 +194,16 @@ namespace LibertyFramework.Arsenal.Ui
             if (host == null) { return new string[0]; }
             WeaponRecord carried = Carried(segment);
             WeaponRecord stored = Cursor();
-            string takeLine = "Nothing stored";
+            string takeLine = "Nothing stored", swapLine = null;
             if (stored != null)
             {
                 WeaponRecord displaced = host.DisplacedBy(stored);
-                takeLine = "A  " + (displaced != null ? "Swap " + host.Name(displaced.WeaponId) + " for " : "Take ") + host.Name(stored.WeaponId);
+                takeLine = "A  " + (displaced != null ? "Swap in " : "Take ") + host.Name(stored.WeaponId);
+                if (displaced != null) { swapLine = "out: " + host.Name(displaced.WeaponId); }
             }
             string hints = (carried != null ? "X Store   " : "") + "LB / RB List   " + (host.GunsmithAvailable ? "Y Gunsmith   " : "") + "B Close";
             BuildPanel(stored);
-            return new[]
+            string[] lines =
             {
                 WeaponWheelLogic.SegmentTitles[segment],
                 carried != null ? host.Name(carried.WeaponId) : "Empty",
@@ -210,6 +211,8 @@ namespace LibertyFramework.Arsenal.Ui
                 takeLine,
                 hints
             };
+            if (swapLine == null) { return lines; }
+            return new[] { lines[0], lines[1], lines[2], lines[3], swapLine, lines[4] };
         }
 
         private void BuildPanel(WeaponRecord cursorRecord)
