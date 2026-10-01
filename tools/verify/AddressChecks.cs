@@ -70,6 +70,21 @@ namespace LibertyFramework.Verify
                 check.Equal("dot size global", 0x118EE90u, addresses.ReticleComponents[3].SizeGlobal);
             }
 
+            // T-049: the generic hud.dat table. Only the four reticle names are required (their shape is proven); every other component
+            // and every call of another shape is printed, so the PC run records what the game registers (docs/research/HudComponents.md).
+            check.True("HUD component table resolved", addresses.HudTableResolved && addresses.HudComponents.Count >= 4, "components=" + addresses.HudComponents.Count + " unparsed=" + addresses.HudUnparsed.Count);
+            foreach (string reticleName in new[] { "HUD_WEAPON_CROSSHAIR", "HUD_WEAPON_HEALTH_TARGET", "HUD_WEAPON_ARMOUR_TARGET", "HUD_WEAPON_DOT" })
+            {
+                bool listed = addresses.HudComponents.Exists(c => c.Name == reticleName && c.LayoutConsistent);
+                check.True("HUD table lists " + reticleName + " with the proven layout", listed, "");
+            }
+            foreach (GameAddresses.HudComponentGlobals component in addresses.HudComponents)
+            {
+                Console.WriteLine("    hud component " + component.Name + " pos=0x" + component.PositionGlobal.ToString("X8") + " size=0x" + component.SizeGlobal.ToString("X8") +
+                    " alpha=0x" + component.AlphaGlobal.ToString("X8") + " layout=" + (component.LayoutConsistent ? "ok" : "differs"));
+            }
+            foreach (string line in addresses.HudUnparsed) { Console.WriteLine("    hud unparsed " + line); }
+
             // T-015: aim-camera settings table (independently read from the Capstone disassembly of 0xA26F9D/0xA2774B/0xA25230).
             check.Equal("aim camera settings table", 0x103C118u, addresses.AimCamSettingsTable);
             check.Equal("aim camera settings records", 15, addresses.AimCamSettingsCount);

@@ -75,6 +75,14 @@ namespace LibertyFramework.Core.Memory
         internal bool BulletsResolved { get { return BulletCountGlobal != 0 && BulletArrayGlobal != 0 && BulletStride > 0; } }
         internal bool HudResolved { get { return HudComponentArray != 0 && ReticleComponents.Count == 4; } }
 
+        // T-049: every hud.dat component the game registers, found through the registration function's call sites (the reticle
+        // resolver proves the shape of four of them). HudUnparsed keeps the calls whose arguments differ from that shape, with
+        // the bytes before them, so the next resolver revision can be written from evidence rather than guessed.
+        internal uint HudRegisterFunction;
+        internal readonly List<HudComponentGlobals> HudComponents = new List<HudComponentGlobals>();
+        internal readonly List<string> HudUnparsed = new List<string>();
+        internal bool HudTableResolved { get { return HudRegisterFunction != 0 && HudComponents.Count >= 4; } }
+
         // Aim-camera settings table (T-015): records of AimCamSettingsStride bytes chosen per camera state by
         // CCamAimWeapon's update; the float at AimCamLateralOffset is multiplied by the camera right vector
         // to place the camera beside the shoulder (0.475 m on foot, 0.2 m in cover on 1.2.0.59).
@@ -119,6 +127,9 @@ namespace LibertyFramework.Core.Memory
             internal uint SizeGlobal;
             internal uint AlphaGlobal;
             internal uint ColourGlobal;
+            // size = position + 8 and alpha = size + 8, the layout proven for the reticle components; only such a
+            // component is written to (HudReticle), anything else is listed but left alone.
+            internal bool LayoutConsistent;
         }
 
         internal static GameAddresses Resolve(CodeScanner scanner)
@@ -131,6 +142,7 @@ namespace LibertyFramework.Core.Memory
             result.Run("aim_settle", scanner, result.ResolveAimSettle);
             result.Run("bullets", scanner, result.ResolveBullets);
             result.Run("hud_reticle", scanner, result.ResolveHud);
+            result.Run("hud_components", scanner, result.ResolveHudTable);
             result.Run("aim_camera_settings", scanner, result.ResolveAimCameraSettings);
             result.Run("ped_skeleton", scanner, result.ResolvePedSkeleton);
             result.Run("frame_counter", scanner, result.ResolveFrameCounter);
@@ -586,6 +598,9 @@ namespace LibertyFramework.Core.Memory
                 uint site = sites[0];
                 Require(scanner.ShapeAt(site - 26, "FF 35 ?? ?? ?? ?? FF 35 ?? ?? ?? ?? 6A ?? 68 ?? ?? ?? ?? 68 ?? ?? ?? ?? 6A ??"), name + " registration shape");
                 Require(scanner.ShapeAt(site + 5, "E8"), name + " register call");
+                uint registerFunction = site + 10 + (uint)BitConverter.ToInt32(memory.Read(site + 6, 4), 0);
+                Require(HudRegisterFunction == 0 || HudRegisterFunction == registerFunction, name + " register function mismatch");
+                HudRegisterFunction = registerFunction;
                 HudComponentGlobals component = new HudComponentGlobals();
                 component.Name = name;
                 component.AlphaGlobal = memory.ReadUInt32(site - 24);
@@ -606,11 +621,89 @@ namespace LibertyFramework.Core.Memory
                 Require(HudComponentArray == 0 || HudComponentArray == arrayAddress, name + " array mismatch");
                 Require(component.SizeGlobal == component.PositionGlobal + 8 && component.AlphaGlobal == component.SizeGlobal + 8,
                     name + " globals layout");
+                component.LayoutConsistent = true;
                 HudComponentArray = arrayAddress;
                 ReticleComponents.Add(component);
                 Report.Add("hud ok " + name + " index=0x" + component.IndexGlobal.ToString("X8") + " size=0x" + component.SizeGlobal.ToString("X8") +
                     " alpha=0x" + component.AlphaGlobal.ToString("X8"));
             }
+        }
+
+
+        // Longest component name read from the image (hud.dat names are short identifiers).
+        private const int HudNameLimit = 48;
+        private const string HudRegistrationShape = "FF 35 ?? ?? ?? ?? FF 35 ?? ?? ?? ?? 6A ?? 68 ?? ?? ?? ?? 68 ?? ?? ?? ?? 6A ??";
+
+        // Every call to the hud.dat register function is one component: "push [alpha]; push [colour]; push imm8; push &size;
+        // push &pos; push imm8 type; push name; call register" (the shape ResolveHud proves for the reticle). Calls of another
+        // shape are not guessed at: they are kept in HudUnparsed with the bytes before them.
+        private void ResolveHudTable(CodeScanner scanner)
+        {
+            Require(HudRegisterFunction != 0, "register function unknown (the reticle resolver failed)");
+            List<uint> calls = scanner.FindCallsTo(HudRegisterFunction);
+            Require(calls.Count >= 4, "register call sites=" + calls.Count);
+            IMemory memory = scanner.Memory;
+            foreach (uint call in calls)
+            {
+                uint push = call - 5;
+                HudComponentGlobals component = TryParseHudRegistration(scanner, push);
+                if (component == null)
+                {
+                    HudUnparsed.Add("call=0x" + call.ToString("X8") + " bytes=" + DescribeBytes(memory, call - 40, 45));
+                    continue;
+                }
+                bool duplicate = false;
+                foreach (HudComponentGlobals known in HudComponents) { if (known.Name == component.Name) { duplicate = true; } }
+                if (duplicate) { HudUnparsed.Add("call=0x" + call.ToString("X8") + " duplicate name " + component.Name); continue; }
+                HudComponents.Add(component);
+            }
+            int inconsistent = 0;
+            foreach (HudComponentGlobals known in HudComponents) { if (!known.LayoutConsistent) { inconsistent++; } }
+            Require(HudComponents.Count >= 4, "parsed components=" + HudComponents.Count);
+            Report.Add("hud_components ok count=" + HudComponents.Count + " unparsed=" + HudUnparsed.Count + " layout_differs=" + inconsistent);
+        }
+
+        private static HudComponentGlobals TryParseHudRegistration(CodeScanner scanner, uint push)
+        {
+            IMemory memory = scanner.Memory;
+            if (!scanner.ShapeAt(push, "68 ?? ?? ?? ??") || !scanner.ShapeAt(push - 26, HudRegistrationShape)) { return null; }
+            string name = ReadAsciiName(memory, memory.ReadUInt32(push + 1));
+            if (name == null) { return null; }
+            HudComponentGlobals component = new HudComponentGlobals();
+            component.Name = name;
+            component.AlphaGlobal = memory.ReadUInt32(push - 24);
+            component.ColourGlobal = memory.ReadUInt32(push - 18);
+            component.SizeGlobal = memory.ReadUInt32(push - 11);
+            component.PositionGlobal = memory.ReadUInt32(push - 6);
+            component.LayoutConsistent = component.SizeGlobal == component.PositionGlobal + 8 && component.AlphaGlobal == component.SizeGlobal + 8;
+            byte[] after = memory.IsReadable(push + 10, 24) ? memory.Read(push + 10, 24) : new byte[0];
+            for (int offset = 0; offset + 5 <= after.Length; offset++)
+            {
+                if (after[offset] == 0xA3) { component.IndexGlobal = BitConverter.ToUInt32(after, offset + 1); break; }
+            }
+            return component;
+        }
+
+        // A hud.dat name: upper-case identifier characters ending in a NUL within HudNameLimit bytes, else null.
+        private static string ReadAsciiName(IMemory memory, uint address)
+        {
+            System.Text.StringBuilder text = new System.Text.StringBuilder();
+            for (int index = 0; index < HudNameLimit; index++)
+            {
+                if (!memory.IsReadable(address + (uint)index, 1)) { return null; }
+                byte value = memory.Read(address + (uint)index, 1)[0];
+                if (value == 0) { return text.Length >= 3 ? text.ToString() : null; }
+                bool allowed = (value >= 'A' && value <= 'Z') || (value >= '0' && value <= '9') || value == '_';
+                if (!allowed) { return null; }
+                text.Append((char)value);
+            }
+            return null;
+        }
+
+        private static string DescribeBytes(IMemory memory, uint address, int length)
+        {
+            if (!memory.IsReadable(address, length)) { return "unreadable"; }
+            return ToPattern(memory.Read(address, length));
         }
 
         private static string ToPattern(byte[] bytes)

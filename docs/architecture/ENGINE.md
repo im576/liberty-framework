@@ -9,7 +9,7 @@ LibertyCore.dll (C++20)   native invoker, ped pool walk, world snapshot, change 
       |  C ABI (native/LibertyCore/include/liberty_core.h)
 Engine (C#)               EngineHost (the only ScriptHookDotNet script) -> LibertyEngine
       |                   world snapshot, EventBus, Scheduler, services
-Modules (C#)              [Module("id")] classes: gunplay, combat, arsenal, holsters, atmosphere, devtools, ...
+Modules (C#)              [Module("id")] classes: gunplay, combat, arsenal, holsters, atmosphere, hud, devtools, ...
 Mods (C#, SDK only)       scripts\LibertyFramework\mods\*.dll, e.g. mods/Liberty.Autopilot, mods/Liberty.World (world objects)
 ```
 

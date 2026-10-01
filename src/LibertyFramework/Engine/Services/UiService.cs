@@ -32,6 +32,23 @@ namespace LibertyFramework.Engine.Services
         }
 
         internal Canvas Canvas { get { return canvas; } }
+
+        // T-049: while the Liberty HUD module runs it draws the help box itself (restyled, faded, with the button names of the
+        // device in use); this service then only holds the text. Written on the engine tick, read in the draw pass.
+        private static readonly System.Collections.Generic.IList<LibertyFramework.Hud.Logic.HudGlyph> FallbackGlyphs = new LibertyFramework.Hud.Logic.PromptElementSettings().Glyphs;
+        private volatile bool helpDrawnByHud;
+        internal bool HelpDrawnByHud { get { return helpDrawnByHud; } set { helpDrawnByHud = value; } }
+
+        // The help text currently in force (its owner running and its time not over), or null. Engine tick only.
+        internal string CurrentHelp()
+        {
+            int now = Environment.TickCount;
+            lock (gate)
+            {
+                if (help != null && (help.UntilMs == int.MaxValue || unchecked(now - help.UntilMs) < 0) && (help.Owner == null || help.Owner.Running)) { return help.Text; }
+            }
+            return null;
+        }
         internal TextureStore Textures { get { return textures; } }
 
         public TextureRef LoadTexture(string path) { return textures.Load(path); }
@@ -167,10 +184,10 @@ namespace LibertyFramework.Engine.Services
             int now = Environment.TickCount;
             lock (gate)
             {
-                if (help != null && (help.UntilMs == int.MaxValue || unchecked(now - help.UntilMs) < 0) && (help.Owner == null || help.Owner.Running))
+                if (!helpDrawnByHud && help != null && (help.UntilMs == int.MaxValue || unchecked(now - help.UntilMs) < 0) && (help.Owner == null || help.Owner.Running))
                 {
                     canvas.Rect(34, 30, 360, 44, new Rgba(0, 0, 0, 200));
-                    canvas.Text(help.Text, 46, 40, 336, 30, TextStyle.Body, TextAlign.Left, Rgba.White);
+                    canvas.Text(LibertyFramework.Hud.Logic.HudText.ExpandBoth(help.Text, FallbackGlyphs), 46, 40, 336, 30, TextStyle.Body, TextAlign.Left, Rgba.White);
                 }
                 notices.RemoveAll(n => unchecked(now - n.UntilMs) >= 0);
                 float y = 720 - 220;

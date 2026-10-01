@@ -41,6 +41,11 @@
       "id": "world",
       "title": "World objects",
       "setup": "Free roam; the build from this run installed (the test wall stands at East Park)."
+    },
+    {
+      "id": "hud",
+      "title": "Liberty HUD",
+      "setup": "Free roam on foot with a weapon and some health to lose; the build from this run installed. A controller is optional but needed for the pad half of the prompt check."
     }
   ],
   "checks": [
@@ -1599,6 +1604,91 @@
       "reference": "docs/tasks/T-044-stage1-physical-weapons.md#human-test-steps",
       "status": "QUEUED",
       "addedIn": "stage1/T-044"
+    },
+    {
+      "id": "T049-hud-components",
+      "task": "T-049",
+      "title": "HUD research: the hud.dat component table and which vanilla elements hide on their own",
+      "kind": "scenario",
+      "run": {
+        "scenario": "hud-components"
+      },
+      "proves": "The engine lists every hud.dat component it resolved (hud_component lines with live position/size/alpha, hud_unparsed calls with their bytes), and hiding the weapon icon, ammo, wanted stars, cash, radar, anything named HEALTH or ARMOUR/ARMOR, and finally the whole table, one group at a time, shows in the screenshots what each component is and whether the game honours the hud.dat globals for it. This answers which vanilla elements can be hidden without the radar and records where the player's health and armour arcs live (docs/research/HudComponents.md).",
+      "pass": "autopilot PASS (hud_table reported, every step ran); then a person or the review session reads the hud_component lines and the nine screenshots and writes the answer into docs/research/HudComponents.md and vanillaComponents in config/hud.json. The run proves nothing about the look by itself.",
+      "unproven": "Whether the radar's health and armour arcs are a hud.dat component at all: if no hide-matching screenshot removes them, they stay vanilla and the compact health/armour bars wait for R5 (T-054).",
+      "review": {
+        "screenshots": {
+          "hud_vanilla_baseline": "the unmodified vanilla HUD: radar bottom left with its health/armour arcs, weapon icon and ammo, cash and three wanted stars top right",
+          "hud_hidden_weapon_ammo": "the weapon icon and ammunition are gone and nothing else changed (radar, cash, stars still there); if they are still shown, the globals do not control them",
+          "hud_hidden_wanted": "the wanted stars are gone, the rest still there",
+          "hud_hidden_cash": "the cash counter is gone (or still there if no CASH component exists)",
+          "hud_hidden_radar": "what disappears when every component with RADAR in its name is hidden: the radar disc, and whether the health/armour arcs go with it",
+          "hud_hidden_health": "what disappears for components named HEALTH (the reticle's target health ring is expected to be among them)",
+          "hud_hidden_armour": "what disappears for components named ARMOUR or ARMOR",
+          "hud_hidden_everything_in_table": "everything the table can hide is hidden: note what is left (help text, mission text, street names)",
+          "hud_restored": "the vanilla HUD is back exactly as in the baseline"
+        }
+      },
+      "reference": "docs/research/HudComponents.md",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-049"
+    },
+    {
+      "id": "T049-stage1-hud",
+      "task": "T-049",
+      "needs": [
+        "T049-hud-components"
+      ],
+      "title": "Basic Liberty HUD: contextual weapon, ammo, health, armour, wanted and prompts at the top right",
+      "kind": "scenario",
+      "run": {
+        "scenario": "stage1-hud"
+      },
+      "proves": "Under the shipped config the weapon and wanted elements have their vanilla components hidden and health and armour stay vanilla (no duplicate); with the layout test on, each element appears when its condition holds and fades when it does not: ammunition on weapon change, shot and reload (the clip / reserve line reads 17 / 383 for 400 rounds in a Glock 17, which settles whether the game's total counts the clip), health on damage and while low, armour while present, wanted stars while wanted, the help box with pad and keyboard button names; the HUD's own draw cost stays under 0.35 ms with everything shown; switching the layout test off returns to the shipped plan.",
+      "pass": "autopilot PASS (hud_check ok with the planned components hidden, every hud_element/hud_reload/hud_health_low/hud_prompt line, costs draw.hud under 0.35 ms); the ten screenshots judged against review.screenshots",
+      "unproven": "The health and armour bars under the shipped config: they stay vanilla until the component that draws the radar's arcs is known (T049-hud-components); the scenario draws them with the layout test.",
+      "review": {
+        "screenshots": {
+          "hud_rest": "nothing of the Liberty group on screen while idle and unarmed; the vanilla radar at the bottom left",
+          "hud_weapon_change": "the Glock's silhouette with 17 / 383 right-aligned under it, in the top-right corner, with the vanilla weapon icon and ammo gone",
+          "hud_weapon_firing": "the ammunition line during the burst, top right",
+          "hud_health_hit": "a thin sage-green health bar under the ammo line, shorter than full",
+          "hud_health_low": "a short bar in the low-health red (it pulses, so it may look dimmer)",
+          "hud_armour": "a pale blue-grey armour bar under the health bar",
+          "hud_wanted": "three filled stars and three empty ones in a row at the right, under the bars",
+          "hud_prompt_pad": "a dark help box at the top left reading Press X to open the weapon stash.",
+          "hud_prompt_keyboard": "the same box reading Press E to open the weapon stash, Backspace to leave.",
+          "hud_everything": "weapon, ammo, health, armour and stars all shown as one compact group at the top right, the radar still at the bottom left, nothing in a lower corner, nothing overlapping"
+        }
+      },
+      "reference": "docs/tasks/T-049-stage1-hud.md#human-test-steps",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-049"
+    },
+    {
+      "id": "T049-hud-look",
+      "task": "T-049",
+      "session": "hud",
+      "minutes": 10,
+      "title": "Look, timing and readability of the Liberty HUD (keyboard/mouse and controller)",
+      "kind": "manual",
+      "run": {
+        "steps": [
+          "Load a free-roam save with the build from this run. Walk around unarmed: the top-right corner shows nothing of Liberty's HUD, the radar is at the bottom left.",
+          "Equip a pistol (DevTools > Weapons, Stage 1 entry): its silhouette and a clip / reserve count appear top right, stay a few seconds and fade. Aim (LT / right mouse), shoot, reload: they come back each time.",
+          "Get hurt (let a pedestrian hit you, or fall from a low height): a thin health bar appears under the ammo line and fades; stay under a third of your health: it stays and pulses. Pick up armour: a pale bar appears under it.",
+          "Get a wanted level (hit a cop): stars appear at the top right while it lasts and fade when it ends.",
+          "Walk behind a parked car and look at the help box (top left): it must say Press X (controller) or Press E (keyboard) according to what you last touched.",
+          "Open the weapon wheel / trunk: no panel may cover the top-right group.",
+          "Set \"enabled\": false in scripts/LibertyFramework/config/hud.json: within a second the whole vanilla HUD is back and nothing of Liberty's is drawn. Put it back to true.",
+          "Tell me per element: too big, too small, too faint, too busy, too slow or too fast to fade, or right (hud.json layout, palette and each element's holdSeconds and fade times)."
+        ]
+      },
+      "proves": "Owner sign-off of the HUD's look, readability and timing on both input devices, and of the vanilla HUD coming back when it is switched off.",
+      "pass": "each element reads as right or you name the value to change",
+      "reference": "docs/tasks/T-049-stage1-hud.md#human-test-steps",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-049"
     }
   ]
 }

@@ -27,6 +27,7 @@ When a spike confirms or disproves something, **edit the note** and change the t
 | [WeaponAvailability.md](WeaponAvailability.md) | What a script can control about weapon availability (T-041) |
 | [ControllerAndAimAssist.md](ControllerAndAimAssist.md) | Controller, aim assist, response curves |
 | [HudAndCrosshair.md](HudAndCrosshair.md) | Reticle, health ring, custom crosshair options |
+| [HudComponents.md](HudComponents.md) | Which vanilla HUD elements can be hidden on their own; the hud.dat component table (T-049) |
 | [Mafia3Combat.md](Mafia3Combat.md) | Why Mafia III combat feels good, tools |
 | [OtherReferences.md](OtherReferences.md) | Max Payne 3, GTA V, GDC talks, other CE mods |
 | [Raycast.md](Raycast.md) | The game's physics line test, what is verified, engine raycast design (ADR-0008) |
