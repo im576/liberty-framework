@@ -143,3 +143,24 @@ Ready for orchestrator source integration review with these explicit gaps, not u
 Next scoped fixture work proposes unregistered `T045-config-watch-reload,T045-config-watch-restart`; existing
 `LOOP-package-install,T045-weapon-wheel` cover the affected wheel after any scoped timing fix and a new slot.
 Do not rerun the finished batch. NEEDS-PLAYTEST and owner-only controller/save-load/HUD coexistence checks remain.
+
+### Scoped fixture milestone — offline only
+
+Registered **T045-config-watch-reload** and **T045-config-watch-restart**; both QUEUED/unrun in game. Scoped host
+fixture captures exact arsenal.json bytes/timestamp and wheel running/config-enabled state, modifies only weaponWheel,
+and restores bytes plus original state in runner finally via existing modules/restart/stop/wheel commands. Game exit
+or cleanup command refusal restores bytes but fails live-state restoration explicitly. Reload checks invalid Enter
+binding retains previous enabled state, then disabled/enabled recovery without restart; restart checks a stopped
+owner is quiet and fresh/repeated instances receive one callback after a change. Deliberate rejection ERROR lines
+remain visible and require review rather than filtering logErrors.
+
+`wheel-latency` gates every opening group: initial, all cycles, keyboard hold/tap and later budget opening. Missing,
+unpaired, negative or >1 engine-frame first draws fail. Original frame/budget thresholds unchanged. Replay of preserved
+`4330603` log correctly fails the previously unchecked 2-frame/359 ms opening. Recorded frames are engine tick delta
+at draw entry, not visible presentation. Command polling follows Ui.Update and new radials have no snapshot until
+update; callback/snapshot ordering needs runtime evidence. The hitch does not establish cause. No actual timing
+implementation was changed or claimed fixed.
+Focused fixture checks 17/0 in PS7 and Windows PS5.1; existing runner simulations 30/0; queue/plan preservation and
+diff checks PASS. No heavy build/game slot used. Exact next IDs:
+`LOOP-package-install,T045-config-watch-reload,T045-config-watch-restart,T045-weapon-wheel`.
+Only a new authorized slot may run them. [Live handoff](../handoffs/Lane-B-live.md) records evidence/cleanup limits.

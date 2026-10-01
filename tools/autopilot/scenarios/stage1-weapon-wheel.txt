@@ -32,6 +32,7 @@ mark
 wheel open
 expectmarked "weapon_wheel_open frame=\d+ held=7 slots=7,\d+,\d+,3,0" 10
 expectmarked "weapon_wheel_first_draw frames=[01] ms=\d+" 10
+wheel-latency
 wait 1500
 shot wheel_open_sidearm
 wheel select 1
@@ -53,8 +54,10 @@ wait 1000
 wheel status
 expect "weapon_wheel_status open=False" 10
 hud on
+mark
 cycle-wheel {quick:1|3}
 expect "autopilot_wheel_cycles_done rounds={quick:1|3} selections={quick:4|12} failures=0 open_failures=0" 120
+wheel-latency
 select 7
 wait 1500
 # Real keyboard: hold to open, release equips the highlighted slot (the pistol is in hand, so nothing changes).
@@ -64,6 +67,7 @@ expectmarked "weapon_wheel_open frame=\d+ held=7" 10
 expectmarked "weapon_wheel_equip slot=0 id=7 already_in_hand" 10
 expectmarked "weapon_wheel_equipped requested=7 actual=7 match=True" 10
 expectmarked "weapon_wheel_closed reason=confirmed" 10
+wheel-latency
 wait 1500
 # Real keyboard: tap to keep it open, move the highlight with the arrow keys, Enter equips another slot.
 mark
@@ -75,6 +79,7 @@ wait 500
 key Right 500
 wait 500
 shot wheel_keyboard_highlight
+wheel-latency
 key Enter 500
 expectmarked "weapon_wheel_equip slot=[1-3] id=\d+ from=7" 10
 expectmarked "weapon_wheel_equipped requested=(\d+) actual=\1 match=True" 10
@@ -88,8 +93,10 @@ label wheel_closed
 ui-budget begin
 wait {quick:5000|10000}
 ui-budget baseline
+mark
 wheel open
 wait 1500
+wheel-latency
 label wheel_open
 ui-budget begin
 wait {quick:6000|10000}

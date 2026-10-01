@@ -1623,7 +1623,7 @@
         "scenario": "stage1-weapon-wheel"
       },
       "proves": "The Liberty weapon wheel shows sidearm, two long guns, melee and thrown (empty slots read empty), opens within 1 frame of the request, every filled slot equips the right weapon (12 of 12), hold-to-open with the keyboard equips on release, tap-open with arrow keys and Enter equips, and the UI draw cost while open is logged. Acceptance performance is enforced by ui-budget, rather than inferred from a PASS word or low draw submission cost.",
-      "pass": "autopilot PASS: first draw within one frame; 12 selections with no failures; keyboard hold and tap flows read back the requested equipped weapon; ui-budget check wheel passes (draw.ui <=0.5 ms, average/p95 <=+10%, p99 <=+15% vs paired closed menu, >=30 samples, no >=1 s stall); screenshots reviewed.",
+      "pass": "autopilot PASS: every initial, cycle, keyboard hold/tap and budget-window opening has a paired first draw within one frame (wheel-latency rejects missing, negative and >1 measurements); 12 selections with no failures; keyboard hold and tap flows read back the requested equipped weapon; ui-budget check wheel passes (draw.ui <=0.5 ms, average/p95 <=+10%, p99 <=+15% vs paired closed menu, >=30 samples, no >=1 s stall); screenshots reviewed.",
       "unproven": "Controller (pad) input cannot be injected: pad hold, stick selection and the Back button binding are for the owner to try. Whether the game itself reacts to the Back button or the Tab key on foot is not checked.",
       "review": {
         "screenshots": {
@@ -1663,6 +1663,36 @@
       "reference": "docs/tasks/T-046-stage1-trunk-ui.md#human-test-steps",
       "status": "QUEUED",
       "addedIn": "stage1/T-046"
+    },
+    {
+      "id": "T045-config-watch-reload",
+      "task": "T-045",
+      "title": "Wheel watcher rejects invalid config and recovers to a new valid state",
+      "kind": "scenario",
+      "run": {
+        "scenario": "stage1-config-watch-reload"
+      },
+      "proves": "A known invalid wheel navigation binding is rejected while the previous enabled config remains active; subsequent valid disabled/enabled changes arrive through the watcher. Exact original config bytes and original module running/config-enabled state are restored in the runner's finally.",
+      "pass": "All scenario steps pass; rejection is observed after a fresh mark, enabled state retains True, then changes False/True without module restart, and exactly one callback follows the final change. Review intentional weapon_wheel_config_rejected and shared arsenal rejection ERROR lines separately; no unexpected errors or cleanup failures. wheel-config-restored.txt confirms exact bytes and original running/enabled state.",
+      "unproven": "Not yet run in game. Expected rejection errors remain visible and may yield NEEDS-REVIEW; they are not filtered from logErrors. Physical controller and real save/load remain owner-only.",
+      "reference": "docs/tasks/T-045-stage1-weapon-wheel.md",
+      "status": "QUEUED",
+      "addedIn": "T-045 scoped watcher fixtures"
+    },
+    {
+      "id": "T045-config-watch-restart",
+      "task": "T-045",
+      "title": "Wheel watcher stops with its owner and resumes on fresh module instances",
+      "kind": "scenario",
+      "run": {
+        "scenario": "stage1-config-watch-restart"
+      },
+      "proves": "A stopped wheel gets no config callback, restart reads the config changed while stopped, and repeated restarts do not duplicate live callbacks. Original config bytes and original module running/config-enabled state are restored in finally.",
+      "pass": "autopilot PASS: stopped owner is quiet, fresh/repeated restart reports disabled, subsequent enabled change has exactly one accepted callback, and wheel-config-restored.txt confirms exact bytes and original running/enabled state.",
+      "unproven": "Not yet run in game; a bounded quiet interval is not a whole-engine unload or long soak proof.",
+      "reference": "docs/tasks/T-045-stage1-weapon-wheel.md",
+      "status": "QUEUED",
+      "addedIn": "T-045 scoped watcher fixtures"
     },
     {
       "id": "T045-ui-path",

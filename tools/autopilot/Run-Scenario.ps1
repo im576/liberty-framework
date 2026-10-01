@@ -36,6 +36,9 @@ param(
 #   expect <regex> [seconds]     wait for a log line written after the latest engine command (default 20 s); fails the
 #                                step if absent. The command's own log line only counts when the pattern needs its reply.
 #   mark                         remember the current log position before a sequence of commands
+#   wheel-latency                require every wheel opening since mark to have a first draw in 0-1 engine frames
+#   wheel-config <action>        scoped T-045 fixture: begin, enabled/disabled/invalid, quiet/single callback check;
+#                                finally restores original bytes and module running/config-enabled state
 #   expectmarked <regex> [seconds] wait for a log line written after mark, including between commands in the sequence
 #   key <Keys name> [hold ms]    press a key in the game window (default 80 ms)
 #   gpumem <label>               record the game process's dedicated/shared GPU memory, private bytes and working set into
@@ -45,6 +48,8 @@ param(
 # Any line may contain {probe:<check id>:<field>}: a value a probe found earlier in the same run (Resolve-ScenarioLine).
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'AutopilotLogic.psm1') -Force 3>$null
+Import-Module (Join-Path $PSScriptRoot 'WheelConfigFixture.psm1') -Force
+Import-Module (Join-Path $PSScriptRoot 'WheelLatency.psm1') -Force
 $name = [IO.Path]::GetFileNameWithoutExtension($Scenario)
 $report = Join-Path $OutputDirectory ($name + '-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
 New-Item -ItemType Directory -Force -Path $report | Out-Null
@@ -57,6 +62,8 @@ $runnerError = ''
 $startUtc = [DateTime]::UtcNow
 $runLog = @()
 $gameAlive = $false
+$wheelFixture = $null
+$wheelFixtureMark = -1
 
 function Add-Failure([string] $text) { $script:failedSteps.Add($text); $script:steps.Add("FAILED: $text") }
 
@@ -106,6 +113,29 @@ try {
             $line = Resolve-ScenarioLine $line $ProbeDirectory
             $words = $line -split '\s+'
             switch ($words[0]) {
+                'wheel-config' {
+                    if ($words.Count -ne 2) { throw 'wheel-config begin|enabled|disabled|invalid|quiet|single' }
+                    if ($words[1] -eq 'begin') {
+                        if ($null -ne $wheelFixture) { throw 'wheel fixture already active' }
+                        $wheelFixture = New-WheelConfigFixture $GameDirectory $report { param($command) Invoke-EngineCommand @($command) }
+                        $steps.Add('wheel fixture captured config bytes and module running state')
+                    }
+                    elseif (@('enabled','disabled','invalid') -contains $words[1]) {
+                        if ($null -eq $wheelFixture) { throw 'wheel-config begin required before mutation' }
+                        $wheelFixtureMark = @(Get-SessionLog).Count
+                        Set-WheelConfigFixture $wheelFixture $words[1]
+                        $steps.Add("wheel config fixture wrote $($words[1])")
+                    }
+                    elseif (@('quiet','single') -contains $words[1]) {
+                        if ($wheelFixtureMark -lt 0) { throw 'wheel fixture change required before callback check' }
+                        $steps.Add((Test-WheelFixtureReload @(@(Get-SessionLog) | Select-Object -Skip $wheelFixtureMark) $words[1]))
+                    }
+                    else { throw "unknown wheel fixture action $($words[1])" }
+                }
+                'wheel-latency' {
+                    if ($words.Count -ne 1 -or $sequenceMark -lt 0) { throw 'wheel-latency requires a preceding mark' }
+                    $steps.Add((Test-WheelFirstDraw @(@(Get-SessionLog) | Select-Object -Skip $sequenceMark)))
+                }
                 'wait' { Start-Sleep -Milliseconds ([int]$words[1]); $steps.Add("wait $($words[1]) ms") }
                 'mark' {
                     if ($words.Count -ne 1) { Add-Failure "unparseable mark line: $line"; break }
@@ -165,6 +195,12 @@ try {
     }
 }
 catch { $runnerError = $_.Exception.Message; $steps.Add("RUNNER ERROR: $runnerError") }
+finally {
+    if ($null -ne $wheelFixture) {
+        try { $steps.Add((Restore-WheelConfigFixture $wheelFixture { param($command) Invoke-EngineCommand @($command) } { [bool](Get-GameProcess) })) }
+        catch { Add-Failure "wheel fixture cleanup => $($_.Exception.Message)" }
+    }
+}
 
 try {
     $gameAlive = [bool](Get-GameProcess)
