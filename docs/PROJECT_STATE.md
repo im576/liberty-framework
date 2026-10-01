@@ -32,6 +32,8 @@ before any Phase 3 work. Offline passes do not mark a lane DONE.
   verifier 424/0/7 not-run, tooling tests 230/0. Physical controller, real save/load, safehouse/gunsmith, B/D coexistence
   and owner judgement remain. A further wheel config polling fix is isolated: its last wheel run crashed in scene
   setup before opening; trunk passed 133/133 steps. No new wheel acceptance is claimed.
+  Assigned B follow-up: `192bd50` imports only the isolated watcher patch; `9dc7948` fixes missed shared-path callbacks
+  with differing casing (focused actual-service checks 8/0). Full offline build/suite and full wheel runtime await slots.
 - **T-047/T-048 (lane C):** active, unmerged. Full `20261001-094219-2db0bf5` includes dismember CRASH and
   firefight/effects-night FAIL; latest full `20261001-103314-0b4f558` also restored with the same failed check categories.
   Budgets remain unchanged; lane work continues separately.

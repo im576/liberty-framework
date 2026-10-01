@@ -111,3 +111,14 @@ Only changed files are reloaded on the engine thread; invalid wheel config retai
 engine cleanup removes the wheel's watch on stop. Seven real temporary-file watcher checks passed, including idle
 polling, both owners of a shared file, stopped/removed owners and timer disposal. Verifier 431/0/7 not-run; build PASS.
 Fresh full wheel/trunk and engine checks on this integration are pending; no new runtime acceptance claimed yet.
+
+### Assigned Sol watcher review — offline milestone (2026-10-01)
+
+Lane B fast-forwarded current main `7058612`, then cherry-picked only `1f6f501` as `192bd50`.
+Found a missed callback when shared-file owners use different path casing: the timestamp tracker is case-insensitive
+but Poll matched changed paths case-sensitively. Fix `9dc7948` preserves that path identity throughout delivery.
+The original seven real watcher checks passed; a new casing regression failed before the fix and passed afterward
+(focused total 8/0, freshly compiled actual service/current SDK, no game). Accepted wheel hash still updates only
+after validation, retaining previous config on rejection. Runtime reject/correct and module restart remain unproven.
+Full production build, repository verifier/tool suite and full wheel runtime are deferred to assigned slots.
+See [live handoff](../handoffs/Lane-B-live.md) for logs, changed paths and proposed checks. NEEDS-PLAYTEST remains.

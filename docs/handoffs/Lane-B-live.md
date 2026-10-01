@@ -3,6 +3,59 @@
 Worktree `C:\Users\IM576\GTAIV-Reborn-lane-b2`, branch `codex/lane-b-validation`. Not merged, not pushed (orchestrator integrates).
 Update this file after every game run and meaningful commit. Rules for a successor: `C:\Users\IM576\GTAIV-Reborn\docs\handoffs\sol\RULES.md`.
 
+## Current milestone — Sol replacement, offline only (2026-10-01)
+
+This section supersedes the historical next-step instructions below. No game slot has been assigned.
+
+- Entry was clean at `1744416`; no non-output files had changed in the preceding five minutes. Process inspection
+  found no game/verifier/compiler. Fetched origin and fast-forwarded to current main `7058612`, preserving all history.
+  Read main's continuation, rules, B prompt and integration review; reviewed the isolated six-file `1f6f501` diff.
+- Cherry-picked **only** `1f6f501` as `192bd503a33f4bb12d9d8f0beaf9cf8c05f0cdbb`; no conflicts. The integration
+  branch was not merged. Wheel start loads config and registers an owner-scoped shared-file watch; idle ticks no longer
+  read/hash arsenal.json. The accepted hash is assigned after successful parse/validation, retaining last-valid config.
+- Found and reproduced a shared-path delivery defect: stamps/changed paths use OrdinalIgnoreCase but Poll used
+  case-sensitive Array.IndexOf. An owner using differently cased spelling missed the reload. Fixed path matching and
+  added one regression check in `9dc7948bb74d3e096928cf423ab3ba2717ae2439`. No other lifecycle or last-valid
+  regression was established in source review; runtime rejection/recovery and restart behavior remain unproven here.
+- Fresh focused check: actual ConfigService + the original seven temporary-file checks + the new casing check,
+  compiled with the current SDK sources, C# 7.3/x86. Before fix: **7 PASS / 1 FAIL**; after fix: **8 PASS / 0 FAIL**.
+  Final focused compilation: zero errors/warnings. This is not a full production build or repository verifier run.
+  `git diff --check` PASS. Logs and reproducible harness:
+  `results-local/offline/lane-b-config-watch/{before-fix.log,after-fix.log,Run-Focused.ps1,WatchRunner.cs}`.
+- Historical full `20261001-092349-e470758` summary and wheel/trunk reports rechecked; all 12 captures inspected
+  in `results-local/offline/lane-b-config-watch/historical-b-captures.jpg`. Amber selections, centre labels, swap preview
+  and full-capacity refusal remain visible; raw Melee_Knife label remains cosmetic. This preserves earlier acceptance,
+  not fresh acceptance for this follow-up. Existing failed/crashed integration runs remain failures (see main review).
+- No game/verify-local/install/rollback was run. Shared startup `20261001-114509-15cd2d9` is startup evidence only;
+  no new restoration receipt is needed for this offline milestone. Density OFF, T040 and budgets preserved.
+
+Changed paths relative to main:
+
+1. `src/LibertyFramework/Arsenal/Ui/WeaponWheelModule.cs`
+2. `src/LibertyFramework/Engine/Services/ConfigService.cs`
+3. `tools/verify.ps1`
+4. `tools/verify/ConfigWatchChecks.cs`
+5. `tools/verify/Program.cs`
+6. `docs/tasks/T-045-stage1-weapon-wheel.md`
+7. `docs/PROJECT_STATE.md`
+8. `docs/handoffs/Lane-B-live.md`
+
+### Scheduled validation proposal and remaining questions
+
+Heavy/full checks were reported before execution and remain deferred for a staggered slot:
+`./tools/build.ps1 -ScriptHookDotNetReference 'C:\Games\Grand Theft Auto IV\GTAIV\ScriptHookDotNet.asi'`,
+`./tools/verify.ps1 -NoGame`, `./tools/tests/Run-Tests.ps1`. No full-build pass is claimed on this lane tip.
+
+After explicit game-slot assignment, use committed source and full mode:
+`./tools/verify-local.ps1 -GameDirectory 'C:\Games\Grand Theft Auto IV\GTAIV' -Branch codex/lane-b-validation
+-AnyBranch -NoPush -Restore -NoManual -Only LOOP-package-install,T045-ui-text,T045-ui-path,T045-weapon-wheel,T046-trunk-ui`.
+Split batches if needed for the cap; inspect new captures and restoration. Config reject/correct and module stop/start
+need focused runtime observation as part of that slot. No new full wheel acceptance is claimed.
+
+No owner decision blocks this offline patch. Existing Back/Tab binding, melee/thrown, capacity/ammo questions remain;
+physical controller and real game save/load remain owner-only, alongside safehouse/gunsmith and HUD coexistence review.
+Task stays NEEDS-PLAYTEST. No push or main merge; ready for orchestrator review and scheduled offline/full validation.
+
 ## State (2026-10-01, Claude Sonnet)
 
 - T-044 physical loadout: on main (`1e74338`), NEEDS-PLAYTEST, in-game evidence in its card (100 vehicle cycles, 50 death cycles).
