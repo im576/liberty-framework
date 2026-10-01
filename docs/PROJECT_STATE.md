@@ -4,6 +4,11 @@ Dashboard only. Update the status table when a component changes. The full diary
 open questions) is [archive/PROJECT_STATE_history.md](archive/PROJECT_STATE_history.md). Newest implemented work
 overrides older docs.
 
+**Agent audio startup (T-057, 2026-10-01):** missing playback output is recovered through the already-installed Sonar
+Gaming virtual endpoint before game launches. Healthy physical outputs are preserved. Tool tests 230/0; production x86
+disable/recover and game boot verified. Full heartbeat smoke remains queued while lane C owns the game lock.
+[Task and evidence](tasks/T-057-test-audio-output.md). This is host tooling, not gameplay acceptance.
+
 ## Current phase
 
 - **Phase 1 = Liberty Engine: complete (2026-09-30), except the items under "Known limits".** Native core, SDK, content

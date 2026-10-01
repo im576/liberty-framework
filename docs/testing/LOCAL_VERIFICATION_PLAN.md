@@ -16,7 +16,7 @@
 |---|---|---|
 | pc-offline | 13 | automatically (builds and tests that need Windows or the game's files) |
 | probe | 4 | automatically (read-only questions about the game's files; structure only) |
-| scenario | 36 | automatically (autopilot drives the game; about 2-4 minutes each) |
+| scenario | 37 | automatically (autopilot drives the game; about 2-4 minutes each) |
 | manual | 21 | you play and judge; about 197 minutes in total, grouped below |
 
 Statuses: QUEUED (never run on the current code), PASS, FAIL, ERROR, CRASH, NOT-RUN, NEEDS-REVIEW (a person or the review session must judge screenshots or log errors).
@@ -253,6 +253,7 @@ Free roam on foot with a weapon and some health to lose; the build from this run
 | `PROBE-collision` | RESEARCH | probe | exit code 0 and a JSON report; the review session reads it | QUEUED |
 | `T027-raycast` | T-027 | scenario | autopilot PASS: ground hit, open sky clear, vehicle hit and filtered, ped hit and passed through, rayto matches, line of sight both ways, faults=0; screenshots judged | QUEUED |
 | `T027-raycast-spike` | T-027 | scenario | autopilot PASS (spawns succeed); the review session reads the raydebug/raybits lines for the vehicle | QUEUED |
+| `T057-audio-output-smoke` | T-057 | scenario | autopilot PASS: fresh T-001 heartbeat after startup | QUEUED |
 | `SDK-selftest` | T-027 | scenario | autopilot PASS: 'selftest_done passed=N failed=0' | QUEUED |
 | `T028-native-texture-review` | T-028 | scenario | autopilot PASS and the screenshots judged as described | QUEUED |
 | `T031-multimat-report` | T-031 | pc-offline | report fields match; inspect compiled.geometries and textures for two distinct material groups and readback [] | QUEUED |
@@ -310,6 +311,7 @@ Free roam on foot with a weapon and some health to lose; the build from this run
 - `PROBE-collision`: Which collision-related resources the game ships (by extension and resource type), in which archives, how many, their resource versions and top-level sizes. Input for collision research (Session 5) Also propCandidates: models shipped as a drawable with a same-named bounds resource, which the raycast-objects scenario spawns. **Still unproven:** The bound structures' field meanings; those need their own probes once the inventory is known.
 - `T027-raycast`: SDK 1.1 Query.Raycast / HasLineOfSight against world, a vehicle and a ped through the real game line test; filtering and ignore semantics; no faults. **Still unproven:** Objects (props with collision) are not tested in game yet (RayMask.Objects); research questions R1-R6 in docs/research/Raycast.md.
 - `T027-raycast-spike`: Raw line-test results per include bit for ground, sky, a vehicle and a ped: evidence for Raycast.md open questions. **Still unproven:** Research only; interpretation happens in the review session.
+- `T057-audio-output-smoke`: GTA IV reaches the engine and emits a fresh heartbeat with the audio preflight active. The installed Sonar Gaming endpoint is recovered if no playback output is active. **Still unproven:** Audible output and unrelated gameplay stability. Recovery from a disabled endpoint is recorded separately in T-057's native host evidence.
 - `SDK-selftest`: Every Liberty.Sdk service works in game on the new core ABI 5, including the ten raycast/line-of-sight checks. Since the engine audit also: the snapshot driver read from [vehicle+0xF50] (check vehicle-driver), capability refusal, and commands after the ownership and capability changes.
 - `T028-native-texture-review`: The game loads dictionaries written from scratch and draws DXT1; how gta_default treats DXT5 alpha. **Still unproven:** Alpha behaviour is an observation (translucent, cut-out or ignored); any of the three is a valid answer.
 - `T031-multimat-report`: The packaged authored fixture uses automatic structure writer selection and passes readback. The report names the real template and both material textures. **Still unproven:** In-game material appearance, culling and placement; tested by T031-multimat-review.

@@ -268,6 +268,20 @@
       "addedIn": "claude/friendly-euler-m7hn4e (Session 1 seed)"
     },
     {
+      "id": "T057-audio-output-smoke",
+      "task": "T-057",
+      "title": "Game startup with an unattended playback output",
+      "kind": "scenario",
+      "run": {
+        "scenario": "audio-output-smoke"
+      },
+      "proves": "GTA IV reaches the engine and emits a fresh heartbeat with the audio preflight active. The installed Sonar Gaming endpoint is recovered if no playback output is active.",
+      "pass": "autopilot PASS: fresh T-001 heartbeat after startup",
+      "unproven": "Audible output and unrelated gameplay stability. Recovery from a disabled endpoint is recorded separately in T-057's native host evidence.",
+      "status": "QUEUED",
+      "addedIn": "T-057 local audio recovery"
+    },
+    {
       "id": "SDK-selftest",
       "task": "T-027",
       "title": "SDK self-test in game (all services, raycast checks included)",
