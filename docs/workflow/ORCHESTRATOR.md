@@ -1,13 +1,23 @@
 # Orchestrator handoff (Stage 1)
 
-For the Claude session that coordinates Stage 1 for the owner: it plans, reviews the lane threads, answers the owner,
+For the agent that coordinates Stage 1 for the owner: it plans, reviews the lane threads, answers the owner,
 files task cards and art requests, and keeps docs and decisions current. It does not build lane features itself.
-Updated 2026-09-30 when the first orchestrator thread handed off (to avoid context compaction).
+Current review: 2026-10-01. The merge queue below overrides the historical snapshots further down.
+Evidence and limits: [integration review](../reports/2026-10-01-orchestrator-integration.md).
 
 ## Read first
 
 `AGENTS.md`, `docs/PROJECT_STATE.md`, `docs/design/STAGE1.md` (design, decisions in section 12, budgets in section 10),
 `docs/tasks/README.md` (lanes), the T-040 baseline `docs/reports/2026-09-30-stage1-baseline.md`, and this file.
+
+For a lane takeover, read [the Sol handoff guide](../handoffs/sol/README.md) and its binding rules. The prompt command is:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\handoff\Get-SolPrompt.ps1 -Lane B
+```
+
+Use `-Lane Orchestrator` for this role; use `-NoClipboard` for a read-only printout. The command collects current git,
+run and lock state; it does not dispatch or stop a lane. Do not take over a lane while its worker is still active.
 
 ## How the work runs
 
@@ -53,13 +63,22 @@ free, and the game was restored (`installed-build.json`: restored from `phase2-2
 
 | Order | Item | Branch / worktree | State |
 |---|---|---|---|
-| 1 | Engine stall fix (log writer, config watcher) | main `868368b` | merged; in-game check SDK-selftest/engine-events/hot-reload still to run (first try had no audio) |
-| 2 | T-050 hit material (SDK 1.2) | `research/t050-material` 6a4ed3e, worktree `GTAIV-Reborn-research-t050` | reviewed, offline 962/0; merge after its wood/glass/water/prop batch and the in-game SDK self-test |
-| 3 | T-045/T-046 wheel, trunk | `codex/lane-b-validation`, `GTAIV-Reborn-lane-b2` | full acceptance run pending (Lane B running) |
-| 4 | T-047/T-048 gore, effects | `stage1/T-048`, `GTAIV-Reborn-lane-c-t048` | full batches pending (Lane C running); owner decision on the 4 ms peak |
-| 5 | T-049 HUD | `codex/T-049-hud-continuation`, `GTAIV-Reborn-lane-d` | needs a local lane (cloud thread can't run the game); DISPLAY_HUD experiment unrun |
-| 6 | Research rest (T-052/T-054 probes, notes) | `research/stage1` | READY FOR MERGE per Lane R; merge after T-050 (SDK 1.3 builds on 1.2) |
-| then | T-056 performance pass, owner playtest | main | after 1-6 |
+| 1 | Engine stall fix and audio recovery | main `868368b`, `55e70b8`, `ee71eba` | merged; focused engine/audio full-run integration check queued under the shared lock |
+| 2 | T-045/T-046 wheel, trunk, sprite text | main `f823e45` from Lane B `1744416` | merged; full `20261001-092349-e470758` passed assertions/budgets; orchestrator viewed all 12 captures; NEEDS-PLAYTEST |
+| 3 | Wheel config polling follow-up | `codex/orchestrator-stage1-integration` `1f6f501`, `GTAIV-Reborn-orchestrator` | build PASS, verifier 431/0/7 not-run; full `20261001-100907-1f6f501` waiting/running; merge after review |
+| 4 | T-050 hit material (SDK 1.2) | `research/t050-material` `e538722`, `GTAIV-Reborn-research-t050` | reviewed additive API; fresh wood/glass/water/prop full run and SDK self-test required; research's latest attempt is quick, not acceptance |
+| 5 | T-047/T-048 gore, effects | `stage1/T-048`, `GTAIV-Reborn-lane-c-t048` | active; full `20261001-094219-2db0bf5` has dismember CRASH, firefight/effects-night FAIL; follow-up `dd8d380` running; do not merge yet |
+| 6 | T-049 HUD | `codex/T-049-hud-continuation`, `GTAIV-Reborn-lane-d` | unmerged; full `20260930-205120-4ac4fcc` HUD FAIL; clean DISPLAY_HUD experiment and B/D coexistence unrun |
+| 7 | Research rest (T-052/T-054 probes, notes) | `research/stage1` `b899b71` | review after T-050; SDK 1.3 builds on 1.2; old READY FOR MERGE signal does not establish full acceptance |
+| then | T-056 performance pass, owner playtest | main | after 1-7 |
+
+Active workers and their worktrees are preserved. Do not stop their verifiers or overwrite their source. Integration runs
+use `verify-local -AnyBranch -NoPush -Restore -NoManual`, the same machine-wide lock and a clean committed build.
+B's controller, real save/load, safehouse/gunsmith and HUD coexistence still need checking; only the owner marks DONE.
+Recent C/R crash receipts name `GTAIV.EFLC.FusionFix.asi` at relative offset `0xA24E0`; this identifies the faulting module,
+not the cause. Dumps and hashes are preserved in the coordination workspace's `research/integration-review-2026-10-01`.
+
+## Historical snapshots (preserved; use the current queue above)
 
 ## Review of the Sol/Claude work (2026-10-01 06:40 Pacific)
 
@@ -115,8 +134,8 @@ repeatable surfaces procedural or CC0"; gore very harsh but grounded, bodies 3-5
 1. Lane A (T-042): accept the class targets (first shot ≤ 0.5°, burst recovery 0.8 s / 1.5 s shotgun, AK climb 6-12°,
    Uzi 4-9°)? Keep the recoil cap after 30 rounds (recommended) or let it keep climbing? Explained in plain words; no
    answer yet.
-2. VRAM ceiling: the GPU is an RX 570 **4 GB** (driver and registry), not 8 GB as STAGE1 says. Proposed: hard ceiling
-   +300 MB. Not answered; STAGE1 still says 8 GB / +350 MB.
+2. VRAM ceiling: the GPU is an RX 570 **4 GB** (driver and registry). Proposed: hard ceiling +300 MB. Not answered;
+   STAGE1 retains the original +350 MB criterion, explicitly pending the owner's decision on the lower proposal.
 3. RESOLVED 2026-09-30: the main monitor runs above 240 Hz (ASUS VG279QM, 280 Hz), so a steady 40 fps frame cap is possible (T-056). Found 2026-10-01: Windows lists an ASUS VG279QM
    and a VG248 (both 144 Hz or faster), so the 40 fps cap is possible; the owner still has to confirm which one is the main screen.
    Testing speed (45561b4, 2026-10-01): package 411 s cold / 4 s cached, build outside the lock, fail-fast on frozen or

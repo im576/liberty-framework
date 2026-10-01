@@ -20,12 +20,21 @@ disable/recover and game boot verified. Full heartbeat smoke remains queued whil
 
 The T-040 density result above describes the historical baseline. The owner's current density policy is **OFF** in every
 active checkout; that recorded baseline is preserved, not rerun. Current lane review and coordinator corrections are in
-[the October 1 handoff](handoffs/sol/Orchestrator-2026-10-01.md). B/C/D/R remain paused until owner dispatch; Stage 1
-integration and acceptance come before any Phase 3 work. Offline passes do not mark a lane DONE.
+[the current orchestrator queue](workflow/ORCHESTRATOR.md). The earlier pause is historical: B/C/R resumed, and C/R are
+continuing independent validation. D remains unmerged with runtime HUD issues. Stage 1 integration and acceptance come
+before any Phase 3 work. Offline passes do not mark a lane DONE.
 
 ## Stage 1 progress
 
-- **T-045/T-046 Lane B, NEEDS-PLAYTEST (2026-10-01):** weapon wheel and trunk interface pass their full in-game scenarios (12/12 equips with readback, store/take/swap/capacity/persistence, frame budgets met). The shared UI text stall is fixed by drawing canvas text as cached sprites (SHDN DrawText costs 15-90 ms per string per frame; cause inside it not established); Lane D HUD text uses the same canvas. Pad input, real save/load, safehouse and owner screenshot review remain open. See [T-045](tasks/T-045-stage1-weapon-wheel.md), [T-046](tasks/T-046-stage1-trunk-ui.md).
+- **T-045 wheel / T-046 trunk UI (lane B), merged, NEEDS-PLAYTEST (2026-10-01):** main `f823e45` integrates reviewed
+  Lane B `1744416` and cached sprite text, preserving newer main tooling. Full `20261001-092349-e470758` passed all
+  wheel/trunk/text assertions and budgets; orchestrator reviewed all 12 wheel/trunk captures. Combined build PASS,
+  verifier 424/0/7 not-run, tooling tests 230/0. Physical controller, real save/load, safehouse/gunsmith, B/D coexistence
+  and owner judgement remain. A further wheel config polling fix is isolated pending full runtime validation.
+- **T-047/T-048 (lane C):** active, unmerged. Full `20261001-094219-2db0bf5` includes dismember CRASH and
+  firefight/effects-night FAIL; follow-up on `dd8d380` is running. Budgets remain unchanged.
+- **T-050 and remaining Stage 1 research (lane R):** active, unmerged; full material and SDK acceptance still required.
+- **T-049 HUD (lane D):** unmerged; clean hiding and coexistence require further runtime evidence.
 
 - **T-044 physical loadout (lane B), NEEDS-PLAYTEST (2026-09-30):** 1 sidearm + 2 long guns (SMGs slung), ammo caps, holster props react in the event frame, outfit classes; in game: 100 vehicle enter/exit cycles with 0 orphaned props, 50 death cycles with 0 lost owned weapons (a death with no known safehouse now goes to an unassigned stash), save/load state identical. Card: [T-044](tasks/T-044-stage1-physical-weapons.md).
 
