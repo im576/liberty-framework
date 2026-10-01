@@ -25,6 +25,8 @@ $install = [array]::IndexOf($order, 'LOOP-package-install')
 Test-That 'queue order: package-install after every offline tool and probe' ((& $last { param($c) ($c.kind -eq 'pc-offline' -and $c.run.tool -notin 'package-install', 'content-report') -or $c.kind -eq 'probe' }) -lt $install)
 Test-That 'queue order: scenarios and content reports after package-install' ((& $first { param($c) $c.kind -eq 'scenario' -or $c.run.tool -eq 'content-report' }) -gt $install)
 Test-That 'queue order: manual checks last' ((& $first { param($c) $c.kind -eq 'manual' }) -gt (& $last { param($c) $c.kind -ne 'manual' }))
+Test-That 'queue order: the lock-free builds run before every check that reads the game' (
+    (& $last { param($c) $c.kind -eq 'pc-offline' -and $c.run.tool -in 'build', 'content-selftest' }) -lt (& $first { param($c) -not ($c.kind -eq 'pc-offline' -and $c.run.tool -in 'build', 'content-selftest') }))
 $smoke = @(Select-Checks $queue @() @() $true $false | ForEach-Object { $_.id })
 Test-That 'smoke: build, package-install, SDK self-test' (($smoke -join ',') -eq 'LOOP-build,LOOP-package-install,SDK-selftest') ($smoke -join ',')
 $only = @(Select-Checks $queue @('T027-raycast') @() $false $false | ForEach-Object { $_.id })
@@ -179,4 +181,24 @@ $summary = Get-Content -LiteralPath (Join-Path $second.FullName 'summary.json') 
 $status = @{}; foreach ($c in $summary.checks) { $status[$c.id] = $c.status }
 Test-That 'resume: the finished install result is kept (FAIL)' ($status['LOOP-package-install'] -eq 'FAIL') ($status | Out-String)
 Test-That 'resume: checks that did not run are tried again (still NOT-RUN without an install)' ($status['T-scenario-good'] -eq 'NOT-RUN')
+
+# ---- A game that cannot start: one scenario finds out, the rest are NOT-RUN at once (no retries for minutes each)
+function Invoke-SimRun([hashtable] $World, [string[]] $Only) {
+    # verify-local re-imports the game module inside its own scope, which unloads this session's copy.
+    Import-Module (Join-Path $script:TestRoot 'SimulatedGame.psm1') -Force -Global
+    Initialize-SimulatedGame (Join-Path $root 'game') $World @()
+    Start-Sleep -Seconds 1
+    & $verifyLocal -Simulate -SimulationFile $simFile -QueuePath $queuePath -Only $Only -NoPush 6>&1 | Out-Null
+    $folder = Get-ChildItem -LiteralPath (Join-Path $root 'results') -Directory | Sort-Object Name | Select-Object -Last 1
+    $s = Get-Content -LiteralPath (Join-Path $folder.FullName 'summary.json') -Raw | ConvertFrom-Json
+    $byId = @{}; foreach ($c in $s.checks) { $byId[$c.id] = $c }
+    return $byId
+}
+$byId = Invoke-SimRun @{ running = $false; launchFails = $true } @('T-scenario-good', 'T-scenario-after-crash')
+Test-That 'launch failure: the first scenario is ERROR' ($byId['T-scenario-good'].status -eq 'ERROR') ($byId.Values | ConvertTo-Json -Compress)
+Test-That 'launch failure: the next scenario is NOT-RUN with the reason' ($byId['T-scenario-after-crash'].status -eq 'NOT-RUN' -and $byId['T-scenario-after-crash'].detail -like '*could not start*') ($byId['T-scenario-after-crash'] | ConvertTo-Json -Compress)
+$byId = Invoke-SimRun @{ running = $false; noAudio = $true } @('T-scenario-good', 'T-scenario-after-crash')
+Test-That 'no audio device: installed, but every scenario NOT-RUN without a launch attempt' (
+    $byId['LOOP-package-install'].status -eq 'PASS' -and $byId['T-scenario-good'].status -eq 'NOT-RUN' -and $byId['T-scenario-after-crash'].status -eq 'NOT-RUN' -and
+    $byId['T-scenario-good'].detail -like '*audio*') ($byId.Values | ConvertTo-Json -Compress)
 $env:LIBERTY_SIM_STATE = $null

@@ -14,7 +14,9 @@ param(
     [string] $ProbeDirectory = '',
     # Run even when the installed build comes from another worktree (installed-build.json). Only for deliberate checks of
     # someone else's build; a lane testing its own work installs it first.
-    [switch] $AllowOtherBuild
+    [switch] $AllowOtherBuild,
+    # An expect step gives up when the engine has written nothing to its log for this long (it logs every 30 s).
+    [int] $FrozenSeconds = 150
 )
 
 # Runs one scenario and writes <OutputDirectory>\<scenario>-<time>\report.md with every step, its reply, the
@@ -129,6 +131,9 @@ try {
                         $hit = Find-ExpectedLine @(Get-SessionLog) $from $expect.Pattern
                         if (-not $hit) {
                             if (-not (Get-GameProcess)) { throw 'game exited while waiting' }
+                            # The engine logs engine_status every 30 s; silence for $FrozenSeconds means a frozen game or a
+                            # blocking dialog, and waiting out a long expect (or the run's timeout) cannot help.
+                            if (Test-GameFrozen $FrozenSeconds) { throw "GAME-FROZEN: the engine wrote nothing to its log for $FrozenSeconds s$(if ($d = Get-GameDialog) { " (dialog: $d)" })" }
                             Start-Sleep -Milliseconds 500
                         }
                     }
@@ -145,6 +150,8 @@ try {
         catch {
             Add-Failure "$line => EXCEPTION $($_.Exception.Message)"
             if (-not (Get-GameProcess)) { $steps.Add('game exited; scenario aborted'); break }
+            # A frozen game answers nothing: every further step would only wait out its own timeout.
+            if ($_.Exception.Message -like 'GAME-FROZEN*') { $runnerError = $_.Exception.Message; $steps.Add('game frozen; scenario aborted'); break }
         }
     }
 }

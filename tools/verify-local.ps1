@@ -85,7 +85,9 @@ $problems = @()
 if ($env:OS -ne 'Windows_NT') { $problems += 'this runs on the Windows PC with GTA IV (the cloud uses -Simulate)' }
 $exe = Join-Path $GameDirectory 'GTAIV.exe'
 if (-not (Test-Path -LiteralPath $exe)) { $problems += "GTAIV.exe not found in $GameDirectory" }
-if (Get-Process GTAIV -ErrorAction SilentlyContinue) { $problems += 'GTA IV is running; close it first' }
+# A game an earlier test left running is fine (the run stops it once it holds the game lock); the owner's own game is not.
+Import-Module (Join-Path $PSScriptRoot 'local\GameLock.psm1') -Force
+if ((Get-Process GTAIV -ErrorAction SilentlyContinue) -and -not (Test-AutopilotGameRunning $GameDirectory)) { $problems += 'GTA IV is running (not started by the autopilot); close it first' }
 if (-not $ScriptHookDotNetReference) { $ScriptHookDotNetReference = Join-Path $GameDirectory 'ScriptHookDotNet.asi' }
 if (-not (Test-Path -LiteralPath $ScriptHookDotNetReference)) { $problems += "ScriptHookDotNet reference not found: $ScriptHookDotNetReference" }
 if (-not (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'toolchains.local.json'))) { $problems += 'toolchains missing: run ./tools/get-toolchains.ps1 -Directory <folder outside the repository>' }
@@ -131,12 +133,9 @@ $options = @{
     ResultsRoot = $(if ($ResultsDirectory) { $ResultsDirectory } else { Join-Path $repo 'results-local' })
     NoPush = [bool]$NoPush; Remote = 'origin'; GameInfo = $gameInfo; Replacements = $replacements
 }
-# One game, one install: runs from parallel agent sessions or worktrees wait their turn (tools/local/GameLock.psm1). The
+# One game, one install: the run takes the machine-wide game lock (tools/local/GameLock.psm1) only for its game phase,
+# after the builds and the package build, and releases it before publishing (Invoke-VerifyLocal, Enter-GamePhase). The
 # install and every scenario run as child processes and inherit the lock.
-Import-Module (Join-Path $PSScriptRoot 'local\GameLock.psm1') -Force
-try { $gameLock = Enter-GameLock "verify-local $repo" }
-catch { Write-Host $_.Exception.Message; exit 1 }
-try { $outcome = Invoke-VerifyLocal $options }
-finally { Exit-GameLock $gameLock }
+$outcome = Invoke-VerifyLocal $options
 if (($outcome.Counts['FAIL'] + $outcome.Counts['CRASH'] + $outcome.Counts['ERROR']) -gt 0) { exit 1 }
 exit 0

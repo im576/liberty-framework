@@ -64,7 +64,10 @@ try {
         & (Join-Path $PSScriptRoot 'rollback-phase2.ps1') -GameDirectory $game -BackupDirectory $backupRoot
         throw
     }
-    Write-InstalledBuild -GameDirectory $game -RepoRoot $repoRoot
+    if ($manifest.PSObject.Properties['source'] -and $manifest.source.commit) {
+        Write-InstalledBuild -GameDirectory $game -RepoRoot $repoRoot -Commit ([string]$manifest.source.commit) -Dirty ([bool]$manifest.source.dirty)
+    }
+    else { Write-InstalledBuild -GameDirectory $game -RepoRoot $repoRoot }
     Write-Host "Phase 2 installed and verified. Backup: $backupRoot"
 }
 finally { Exit-GameLock $gameLock }

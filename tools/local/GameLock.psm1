@@ -57,7 +57,8 @@ function Exit-GameLock {
 function Get-InstalledBuildPath([string] $GameDirectory) { Join-Path $GameDirectory 'scripts\LibertyFramework\installed-build.json' }
 
 function Write-InstalledBuild {
-    param([Parameter(Mandatory = $true)][string] $GameDirectory, [string] $RepoRoot = '', [string] $Note = '')
+    # -Commit/-Dirty: what the package was built from (its manifest), when that is known; otherwise the worktree's state now.
+    param([Parameter(Mandatory = $true)][string] $GameDirectory, [string] $RepoRoot = '', [string] $Note = '', [string] $Commit = '', $Dirty = $null)
     $build = [ordered]@{ repo = $RepoRoot; branch = ''; commit = ''; dirty = $false; note = $Note; utc = [DateTime]::UtcNow.ToString('o') }
     if ($RepoRoot) {
         try {
@@ -67,6 +68,8 @@ function Write-InstalledBuild {
         }
         catch { Write-Host "installed-build: could not read git state: $($_.Exception.Message)" }
     }
+    if ($Commit) { $build.commit = $Commit.Substring(0, [Math]::Min(7, $Commit.Length)) }
+    if ($null -ne $Dirty) { $build.dirty = [bool]$Dirty }
     $path = Get-InstalledBuildPath $GameDirectory
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $path) | Out-Null
     [IO.File]::WriteAllText($path, ($build | ConvertTo-Json), (New-Object Text.UTF8Encoding($false)))
@@ -78,4 +81,32 @@ function Read-InstalledBuild([string] $GameDirectory) {
     return Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
 }
 
-Export-ModuleMember -Function Enter-GameLock, Exit-GameLock, Write-InstalledBuild, Read-InstalledBuild
+# The autopilot records the game process it launched, so a run that takes the lock can tell a game an earlier test left
+# running (stopped without asking) from the owner's own game (never touched).
+function Get-AutopilotLaunchPath([string] $GameDirectory) { Join-Path $GameDirectory 'scripts\LibertyFramework\autopilot\launched-game.json' }
+
+function Write-AutopilotLaunch([string] $GameDirectory, $Process) {
+    if (-not $Process) { return }
+    try {
+        $path = Get-AutopilotLaunchPath $GameDirectory
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $path) | Out-Null
+        $record = [ordered]@{ pid = $Process.Id; startTicks = $Process.StartTime.ToUniversalTime().Ticks }
+        [IO.File]::WriteAllText($path, ($record | ConvertTo-Json), (New-Object Text.UTF8Encoding($false)))
+    }
+    catch { Write-Host "autopilot: could not record the launched game ($($_.Exception.Message))" }
+}
+
+# $true when GTA IV is running and is the process the autopilot launched.
+function Test-AutopilotGameRunning([string] $GameDirectory) {
+    $process = Get-Process GTAIV -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $process) { return $false }
+    $path = Get-AutopilotLaunchPath $GameDirectory
+    if (-not (Test-Path -LiteralPath $path)) { return $false }
+    try {
+        $record = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+        return ([int]$record.pid -eq $process.Id) -and ($process.StartTime.ToUniversalTime().Ticks -eq [long]$record.startTicks)
+    }
+    catch { return $false }
+}
+
+Export-ModuleMember -Function Enter-GameLock, Exit-GameLock, Write-InstalledBuild, Read-InstalledBuild, Write-AutopilotLaunch, Test-AutopilotGameRunning

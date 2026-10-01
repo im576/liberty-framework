@@ -6,6 +6,7 @@ $script:Game = $null
 $script:LaunchedUtc = [DateTime]::MinValue
 $script:LogCache = @{}
 Import-Module (Join-Path $PSScriptRoot 'AutopilotLogic.psm1') 3>$null
+Import-Module (Join-Path (Split-Path -Parent $PSScriptRoot) 'local\GameLock.psm1') 3>$null
 
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Windows.Forms
@@ -69,7 +70,7 @@ function Start-Game {
     $deadline = (Get-Date).AddSeconds(120)
     while ((Get-Date) -lt $deadline) {
         $process = Get-GameProcess
-        if ($process) { return $process }
+        if ($process) { Write-AutopilotLaunch $script:Game $process; return $process }
         Start-Sleep -Seconds 2
     }
     throw 'GTA IV did not start within 120 s'
@@ -202,27 +203,58 @@ function Invoke-EngineCommand([string[]] $Lines, [int] $TimeoutSeconds = 20) {
     throw "no reply to $name within $TimeoutSeconds s"
 }
 
+# $true when Windows has an active audio playback device. GTA IV refuses to start without one ("GTA IV requires a sound
+# card"), and nothing the autopilot can do fixes it: the owner has to connect speakers, a headset or the controller.
+# Playback endpoints are the MMDEVAPI devices whose id starts with {0.0.0.00000000} (capture is {0.0.1...}).
+function Test-AudioOutput {
+    try {
+        $endpoints = @(Get-PnpDevice -Class AudioEndpoint -ErrorAction Stop | Where-Object { $_.InstanceId -like 'SWD\MMDEVAPI\{0.0.0.00000000}*' -and $_.Status -eq 'OK' })
+        return $endpoints.Count -gt 0
+    }
+    catch {
+        # No PnP module (or no permission): do not block a launch on a check that cannot run.
+        Write-Host "autopilot: could not list audio devices ($($_.Exception.Message)); launching anyway"
+        return $true
+    }
+}
+
 # Launches until the engine boots, retrying the known early startup crash (MTLX.DLL, before any mod loads).
-# Returns the number of attempts used; throws after $Attempts failures.
-function Start-GameReady([int] $Attempts = 5, [int] $BootTimeoutSeconds = 240) {
+# Returns the number of attempts used; throws after $Attempts failures. Fails at once, without retrying, when a retry
+# cannot help: no audio output device, or the game shows its own "Fatal Error" box.
+function Start-GameReady([int] $Attempts = 5, [int] $BootTimeoutSeconds = 240, [int] $NotSeenSeconds = 90) {
+    if (-not (Test-AudioOutput)) {
+        throw 'GAME-UNAVAILABLE: no audio output device is active; GTA IV refuses to start without one (connect speakers, a headset or the controller)'
+    }
     for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
         Stop-Game
         $script:LaunchedUtc = [DateTime]::UtcNow
         Start-Process 'steam://rungameid/12210'
-        $deadline = (Get-Date).AddSeconds($BootTimeoutSeconds)
+        $started = Get-Date
+        $deadline = $started.AddSeconds($BootTimeoutSeconds)
         $seen = $false
         $lostAt = $null
         while ((Get-Date) -lt $deadline) {
             Start-Sleep -Seconds 3
             if (Get-SessionLog | Where-Object { $_ -match 'engine_booted' } | Select-Object -First 1) { return $attempt }
             $process = Get-GameProcess
-            if ($process) { $seen = $true; $lostAt = $null; continue }
+            if ($process) {
+                if (-not $seen) { Write-AutopilotLaunch $script:Game $process }
+                $seen = $true; $lostAt = $null
+                $dialog = Get-GameDialog
+                if ($dialog -and $dialog -match '(?i)fatal') {
+                    Stop-Game
+                    throw "GAME-UNAVAILABLE: GTA IV showed '$dialog' before the engine started (a sound card error means no audio output device)"
+                }
+                continue
+            }
+            # Steam normally starts GTAIV.exe within seconds; nothing after $NotSeenSeconds means this launch went nowhere.
+            if (-not $seen -and ((Get-Date) - $started).TotalSeconds -gt $NotSeenSeconds) { break }
             # PlayGTAIV/RGL start GTAIV.exe; a GTAIV that was seen and stays gone for 20 s crashed.
             if ($seen) { if (-not $lostAt) { $lostAt = Get-Date } elseif (((Get-Date) - $lostAt).TotalSeconds -gt 20) { break } }
         }
         Write-Host "attempt $attempt failed (seen=$seen); relaunching"
     }
-    throw "GTA IV did not reach the engine after $Attempts attempts"
+    throw "GAME-UNAVAILABLE: GTA IV did not reach the engine after $Attempts attempts"
 }
 
 # Title of the game's top-level window: a modal error box (e.g. FusionFix "Error building shader!") becomes the
@@ -304,4 +336,4 @@ function Get-GameMemory {
 function Send-Click([int] $X, [int] $Y) { [AutopilotNative]::Click($X, $Y) }
 
 Export-ModuleMember -Function Get-GameDialog, Test-Boot, Start-GameReady, Send-Click, Set-AutopilotGame, Get-GameProcess, Get-SessionLog, Start-Game, Stop-Game, Focus-Game, Send-GameKey,
-    Save-Screenshot, Wait-LogLine, Test-GameFrozen, Invoke-EngineCommand, Get-GameMemory
+    Save-Screenshot, Wait-LogLine, Test-GameFrozen, Invoke-EngineCommand, Get-GameMemory, Test-AudioOutput
