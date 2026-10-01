@@ -1,0 +1,56 @@
+using System;
+using System.IO;
+using LibertyFramework.Arsenal.Contracts;
+using LibertyFramework.Arsenal.Logic;
+using LibertyFramework.Core.Config;
+
+namespace LibertyFramework.Verify
+{
+    // Offline tests for the Liberty weapon wheel (T-045): segments, press handling and the bindings in arsenal.json.
+    internal static class WeaponWheelChecks
+    {
+        internal static void Run(string repoRoot, Checker check)
+        {
+            check.True("wheel segments: sidearm, two long guns, melee, thrown",
+                WeaponWheelLogic.SegmentOf(BodySlot.SidearmPrimary, WeaponCategory.Handgun) == WeaponWheelLogic.Sidearm &&
+                WeaponWheelLogic.SegmentOf(BodySlot.LongGun1, WeaponCategory.Rifle) == WeaponWheelLogic.LongGun1 &&
+                WeaponWheelLogic.SegmentOf(BodySlot.LongGun2, WeaponCategory.SMG) == WeaponWheelLogic.LongGun2 &&
+                WeaponWheelLogic.SegmentOf(BodySlot.Melee, WeaponCategory.Melee) == WeaponWheelLogic.Melee &&
+                WeaponWheelLogic.SegmentOf(BodySlot.None, WeaponCategory.Thrown) == WeaponWheelLogic.Thrown, "");
+            check.True("wheel segments: a second sidearm and unknown weapons have no segment",
+                WeaponWheelLogic.SegmentOf(BodySlot.SidearmSecondary, WeaponCategory.SMG) == -1 && WeaponWheelLogic.SegmentOf(BodySlot.None, WeaponCategory.Other) == -1, "");
+            check.True("wheel press: a tap keeps it open, a hold equips on release",
+                WeaponWheelLogic.OnRelease(120, 250) == WeaponWheelLogic.Release.StayOpen && WeaponWheelLogic.OnRelease(250, 250) == WeaponWheelLogic.Release.Equip &&
+                WeaponWheelLogic.OnRelease(900, 250) == WeaponWheelLogic.Release.Equip, "");
+            int[] slots = { 7, 0, 14, 0, 0 };
+            check.True("wheel highlight starts on the weapon in hand, else the first filled slot, else the top",
+                WeaponWheelLogic.StartSegment(slots, 14) == 2 && WeaponWheelLogic.StartSegment(slots, 99) == 0 && WeaponWheelLogic.StartSegment(new int[] { 0, 0, 5, 0, 0 }, 99) == 2 &&
+                WeaponWheelLogic.StartSegment(new int[5], 0) == 0, "");
+
+            ArsenalConfig config = JsonStore.Load<ArsenalConfig>(Path.Combine(repoRoot, "config/arsenal.json"));
+            ArsenalConfigValidator.Validate(config);
+            check.True("wheel config ships enabled with a pad button, a key and a tap time",
+                config.WeaponWheel != null && config.WeaponWheel.Enabled && config.WeaponWheel.TapMilliseconds == 250 && !config.WeaponWheel.AllowInVehicle, "");
+            check.True("wheel bindings avoid the wheel's own navigation and the DevTools chord",
+                config.WeaponWheel.Pad != Liberty.Sdk.PadButton.LeftThumb && config.WeaponWheel.Pad != Liberty.Sdk.PadButton.RightThumb &&
+                config.WeaponWheel.Key != Liberty.Sdk.VirtualKey.F10, "");
+            check.True("a file without the weaponWheel block still loads with defaults", WeaponWheelConfig.Defaults().Enabled, "");
+
+            Rejected(check, repoRoot, "wheel keyboard key Enter is rejected (navigation key)", c => c.WeaponWheel.KeyboardKeyName = "Enter");
+            Rejected(check, repoRoot, "wheel pad button A is rejected (navigation button)", c => c.WeaponWheel.PadButtonName = "A");
+            Rejected(check, repoRoot, "wheel unknown key name is rejected", c => c.WeaponWheel.KeyboardKeyName = "NoSuchKey");
+            Rejected(check, repoRoot, "wheel numeric button name is rejected", c => c.WeaponWheel.PadButtonName = "12345");
+            Rejected(check, repoRoot, "wheel tap time outside 50-1000 ms is rejected", c => c.WeaponWheel.TapMilliseconds = 5000);
+        }
+
+        private static void Rejected(Checker check, string repoRoot, string name, Action<ArsenalConfig> mutate)
+        {
+            ArsenalConfig config = JsonStore.Load<ArsenalConfig>(Path.Combine(repoRoot, "config/arsenal.json"));
+            mutate(config);
+            bool rejected = false;
+            try { ArsenalConfigValidator.Validate(config); }
+            catch (InvalidDataException) { rejected = true; }
+            check.True(name, rejected, "");
+        }
+    }
+}

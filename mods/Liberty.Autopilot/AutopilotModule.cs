@@ -93,6 +93,11 @@ namespace Liberty.Autopilot
                 Liberty.Scheduler.Start(this, "cycle-deaths", DeathCycles(Math.Max(1, Math.Min(100, Args.Int(a, 0, 50)))));
                 return "death cycles started";
             });
+            Register("cycle-wheel", "cycle-wheel <rounds> - open the weapon wheel, select every filled slot and confirm; the weapon in hand must be the slot's each time (T-045)", a =>
+            {
+                Liberty.Scheduler.Start(this, "cycle-wheel", WheelCycles(Math.Max(1, Math.Min(100, Args.Int(a, 0, 3)))));
+                return "wheel cycles started";
+            });
             Register("cycle-weapons","cycle-weapons <count> <weapon id> <weapon id> ... - select the weapons in turn and time how long the holster props take to follow (T-044)", a =>
             {
                 List<int> ids = new List<int>();
@@ -320,6 +325,46 @@ namespace Liberty.Autopilot
             string end = ArsenalStatus();
             Liberty.Log.Info(this, "autopilot_death_cycles_done cycles=" + count + " lost_owned=" + lost + " failed_cycles=" + failures +
                 " timeouts=" + timeouts + " owned_expected=" + expectedTotal + " stored_growth=" + (FieldInt(end, "stored") - storedStart) + " final: " + end);
+        }
+
+        // T-045: the wheel's own selection path end to end: highlight each filled slot, confirm, and check that exactly that weapon
+        // is in Niko's hand afterwards (100% of selections).
+        private IEnumerator WheelCycles(int rounds)
+        {
+            PedRef player = Liberty.Player.Ped;
+            int selections = 0, failures = 0, openFailures = 0;
+            for (int round = 1; round <= rounds; round++)
+            {
+                string status = Liberty.Commands.Execute("wheel status", "autopilot");
+                string[] slots = Field(status, "slots").Split(',');
+                for (int slot = 0; slot < slots.Length; slot++)
+                {
+                    int id;
+                    if (!int.TryParse(slots[slot], out id) || id <= 0) { continue; }
+                    Liberty.Commands.Execute("wheel open", "autopilot");
+                    yield return Wait.FramesCount(3);
+                    if (Field(Liberty.Commands.Execute("wheel status", "autopilot"), "open") != "True")
+                    {
+                        openFailures++;
+                        Liberty.Log.Error(this, "autopilot_wheel_cycle round=" + round + " slot=" + slot + " did_not_open");
+                        yield return Wait.Milliseconds(500);
+                        continue;
+                    }
+                    Liberty.Commands.Execute("wheel select " + slot, "autopilot");
+                    yield return Wait.FramesCount(2);
+                    Liberty.Commands.Execute("wheel confirm", "autopilot");
+                    Wait equipped = Wait.Until(() => Liberty.Weapons.Current(player) == id, 2000);
+                    yield return equipped;
+                    selections++;
+                    if (equipped.HasTimedOut)
+                    {
+                        failures++;
+                        Liberty.Log.Error(this, "autopilot_wheel_cycle round=" + round + " slot=" + slot + " expected=" + id + " held=" + Liberty.Weapons.Current(player));
+                    }
+                    yield return Wait.FramesCount(4);
+                }
+            }
+            Liberty.Log.Info(this, "autopilot_wheel_cycles_done rounds=" + rounds + " selections=" + selections + " failures=" + failures + " open_failures=" + openFailures);
         }
 
         // Selecting each weapon in turn: the prop of the weapon in Niko's hands disappears and the others stay; the latency is

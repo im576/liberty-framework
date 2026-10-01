@@ -1599,6 +1599,31 @@
       "reference": "docs/tasks/T-044-stage1-physical-weapons.md#human-test-steps",
       "status": "QUEUED",
       "addedIn": "stage1/T-044"
+    },
+    {
+      "id": "T045-weapon-wheel",
+      "task": "T-045",
+      "title": "Weapon wheel: opens, shows the physical loadout, equips every slot",
+      "kind": "scenario",
+      "run": {
+        "scenario": "stage1-weapon-wheel"
+      },
+      "proves": "The Liberty weapon wheel shows sidearm, two long guns, melee and thrown (empty slots read empty), opens within 1 frame of the request, every filled slot equips the right weapon (12 of 12), hold-to-open with the keyboard equips on release, tap-open with arrow keys and Enter equips, and the UI draw cost while open is logged.",
+      "pass": "autopilot PASS: weapon_wheel_first_draw frames=0 or 1, autopilot_wheel_cycles_done selections=12 failures=0 open_failures=0, the real-key hold and tap flows equip as expected; screenshots judged; draw.ui average in the final costs reply at most 0.5 ms",
+      "unproven": "Controller (pad) input cannot be injected: pad hold, stick selection and the Back button binding are for the owner to try. Whether the game itself reacts to the Back button or the Tab key on foot is not checked.",
+      "review": {
+        "screenshots": {
+          "wheel_open_sidearm": "The wheel in the middle of the screen, dark translucent ring, five slots (pistol, two long guns, knife, empty thrown); the pistol slot highlighted with an amber accent, centre shows SIDEARM, the pistol name and rounds as magazine / reserve; text readable",
+          "wheel_long_gun_1": "Same wheel with the first long gun highlighted; centre shows its name, rounds and finish",
+          "wheel_long_gun_2": "Second long gun highlighted",
+          "wheel_melee": "Melee slot highlighted (knife), no ammunition line",
+          "wheel_empty_slot": "The thrown slot highlighted and reading Empty",
+          "wheel_keyboard_highlight": "The wheel opened by tapping Tab, highlight moved by the arrow keys, hint line in the centre"
+        }
+      },
+      "reference": "docs/tasks/T-045-stage1-weapon-wheel.md#human-test-steps",
+      "status": "QUEUED",
+      "addedIn": "stage1/T-045"
     }
   ]
 }

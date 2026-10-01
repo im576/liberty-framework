@@ -37,6 +37,7 @@ namespace LibertyFramework.Arsenal.Logic
                     { throw new InvalidDataException("Invalid Arsenal category mapping."); }
                 if (!ValidRule(rule)) { throw new InvalidDataException("Category mapped to wrong Arsenal group or body slot: " + rule.Category); }
             }
+            if (config.WeaponWheel != null) { config.WeaponWheel.Validate(); }
             LoadoutRules loadout = config.Loadout;
             if (loadout != null)
             {

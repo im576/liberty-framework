@@ -38,6 +38,9 @@ namespace LibertyFramework.Engine.Ui
         }
 
         internal LibertyModule Owner { get; private set; }
+        // First draw of this menu (engine frame and tick), set on the draw thread; -1 until then. T-045 reads it to measure open-to-draw.
+        internal volatile int FirstDrawFrame = -1;
+        internal int FirstDrawTicks;
         private bool segmentFailureLogged;
         public bool IsOpen { get; private set; }
         public int Selected { get; set; }
@@ -113,6 +116,7 @@ namespace LibertyFramework.Engine.Ui
         {
             Snapshot s = snapshot;
             if (s == null) { return; }
+            if (FirstDrawFrame < 0) { FirstDrawTicks = Environment.TickCount; FirstDrawFrame = LibertyFramework.Engine.LibertyEngine.Current.Frame; }
             float fade = Math.Min(1f, (Environment.TickCount - s.OpenedAt) / 160f);
             float saved = canvas.Opacity;
             canvas.Opacity = saved * fade;

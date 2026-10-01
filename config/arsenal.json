@@ -50,6 +50,13 @@
       {"category": 7, "maximumRounds": 12}
     ]
   },
+  "weaponWheel": {
+    "enabled": true,
+    "padButton": "Back",
+    "keyboardKey": "Tab",
+    "tapMilliseconds": 250,
+    "allowInVehicle": false
+  },
   "safehouses": [],
   "safehouseBlipSprite": 29,
   "discoveredSafehouseRadiusMeters": 12.0

@@ -148,6 +148,11 @@ namespace LibertyFramework.Arsenal
 
         int ICarriedWeaponsSource.Revision { get { return revision; } }
         IList<CarriedWeapon> ICarriedWeaponsSource.Carried { get { return new List<CarriedWeapon>(presentation); } }
+        string ICarriedWeaponsSource.FinishOf(int weaponId)
+        {
+            WeaponRecord record = Find(carried, weaponId);
+            return record != null && record.Finish != null ? record.Finish : "";
+        }
         double ICarriedWeaponsSource.PerShotBloomMultiplier(int weaponId)
         {
             if (weaponCatalog == null) { return 1.0; }

@@ -16,7 +16,7 @@
 |---|---|---|
 | pc-offline | 13 | automatically (builds and tests that need Windows or the game's files) |
 | probe | 4 | automatically (read-only questions about the game's files; structure only) |
-| scenario | 34 | automatically (autopilot drives the game; about 2-4 minutes each) |
+| scenario | 35 | automatically (autopilot drives the game; about 2-4 minutes each) |
 | manual | 20 | you play and judge; about 187 minutes in total, grouped below |
 
 Statuses: QUEUED (never run on the current code), PASS, FAIL, ERROR, CRASH, NOT-RUN, NEEDS-REVIEW (a person or the review session must judge screenshots or log errors).
@@ -275,6 +275,7 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 | `T044-loadout-deaths-b` | T-044 | scenario | autopilot PASS: "autopilot_death_cycles_done cycles=25 lost_owned=0 failed_cycles=0 timeouts=0" with stored_growth equal to owned_expected (at least 40 of the 50 bought weapons counted as owned), and "arsenal_roundtrip identical=True" found | QUEUED |
 | `T044-loadout-outfits` | T-044 | scenario | autopilot PASS (every outfit set, every status line with the expected class); the screenshots judged by the owner for clipping | QUEUED |
 | `T044-loadout-review` | T-044 | scenario | autopilot PASS; the screenshots judged by the owner for clipping | QUEUED |
+| `T045-weapon-wheel` | T-045 | scenario | autopilot PASS: weapon_wheel_first_draw frames=0 or 1, autopilot_wheel_cycles_done selections=12 failures=0 open_failures=0, the real-key hold and tap flows equip as expected; screenshots judged; draw.ui average in the final costs reply at most 0.5 ms | QUEUED |
 
 ## What each check proves, and what stays unproven
 
@@ -350,3 +351,4 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 - `T044-loadout-deaths-b`: The second 25 wasted cycles (50 in total with part 1): 0 lost owned weapons and an identical state after saving and loading. Runs after `T044-loadout-deaths-a` in the same run.
 - `T044-loadout-outfits`: All 17 upper-body outfits Niko can wear are classified as config/holsters.json says (holster module reports the class), the holster props are re-attached with the class offsets, and front, side and back screenshots exist for each.
 - `T044-loadout-review`: Rifle + shotgun, SMG + rifle and SMG + shotgun are each slung on both body slots without sharing a position, on a slim and on a bulky outfit.
+- `T045-weapon-wheel`: The Liberty weapon wheel shows sidearm, two long guns, melee and thrown (empty slots read empty), opens within 1 frame of the request, every filled slot equips the right weapon (12 of 12), hold-to-open with the keyboard equips on release, tap-open with arrow keys and Enter equips, and the UI draw cost while open is logged. **Still unproven:** Controller (pad) input cannot be injected: pad hold, stick selection and the Back button binding are for the owner to try. Whether the game itself reacts to the Back button or the Tab key on foot is not checked.
