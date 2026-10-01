@@ -15,6 +15,8 @@ overrides older docs.
 
 ## Stage 1 progress
 
+- **T-045/T-046 Lane B, NEEDS-PLAYTEST (2026-09-30):** branches reconciled; hold/equip/control/lid/layout fixes and enforced UI budgets pass offline checks. Shared UI stall and gameplay acceptance remain unresolved; owner currently prohibits game testing. [Codex handoff](handoffs/Codex-Lane-B-2026-09-30.md).
+
 - **T-044 physical loadout (lane B), NEEDS-PLAYTEST (2026-09-30):** 1 sidearm + 2 long guns (SMGs slung), ammo caps, holster props react in the event frame, outfit classes; in game: 100 vehicle enter/exit cycles with 0 orphaned props, 50 death cycles with 0 lost owned weapons (a death with no known safehouse now goes to an unassigned stash), save/load state identical. Card: [T-044](tasks/T-044-stage1-physical-weapons.md).
 
 ## Cleanup and fixes in progress

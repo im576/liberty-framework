@@ -243,8 +243,7 @@
         }
       },
       "reference": "docs/research/Raycast.md",
-      "status": "RETIRED",
-      "retiredReason": "no propCandidates on this install; RayMask.Objects against vanilla props is covered by T032-proxy-probe",
+      "status": "RETIRED", "retiredReason": "no propCandidates on this install; RayMask.Objects against vanilla props is covered by T032-proxy-probe",
       "addedIn": "claude/nice-edison-xyxc6j (Session 2 audit)"
     },
     {
@@ -311,8 +310,7 @@
       "proves": "For every drawable of the game the structure writer can use (layout 0x59 everywhere, own buffers, measurable sphere records): per-geometry patching of several geometries, shaders and LOD models reproduces Rockstar's files; the report says which buffer order (Interleaved or VerticesFirst) and which sphere-record layout the files use.",
       "unproven": "Trimming (dropped geometries, models, LOD slots and shaders) and renamed textures have no counterpart in the game's files; the lod-review scenario tests a trimmed build in game.",
       "reference": "docs/tasks/T-031-structure-writer.md",
-      "status": "RETIRED",
-      "retiredReason": "byte-exact round trip is not a release gate (decision 2026-09-30)",
+      "status": "RETIRED", "retiredReason": "byte-exact round trip is not a release gate (decision 2026-09-30)",
       "addedIn": "claude/confident-hopper-16pan1 (session 4)"
     },
     {
@@ -342,23 +340,13 @@
       "task": "T-031",
       "title": "Structure-writer repro: single geometry spawns; multi-geometry crashes (KNOWN FAIL until Phase 3)",
       "kind": "scenario",
-      "run": {
-        "scenario": "structure-bisect"
-      },
+      "run": { "scenario": "structure-bisect" },
       "pass": "today: CRASH at lf_st_2tex after lf_st_weap and lf_st_map render (known). PASS once multi-geometry drawables are fixed",
       "proves": "Which structure-writer output the game accepts: the log shows the last spawn that survived if the game exits.",
       "unproven": "Multiple LODs and authored collision.",
-      "review": {
-        "screenshots": {
-          "lf_st_weap": "textured crate",
-          "lf_st_map": "textured crate",
-          "lf_st_2tex": "textured crate, both material groups",
-          "lf_fx_multimat": "textured sides and red lid"
-        }
-      },
+      "review": { "screenshots": { "lf_st_weap": "textured crate", "lf_st_map": "textured crate", "lf_st_2tex": "textured crate, both material groups", "lf_fx_multimat": "textured sides and red lid" } },
       "reference": "docs/tasks/T-031-structure-writer.md",
-      "status": "RETIRED",
-      "retiredReason": "known crash repro; run by hand: tools/autopilot/scenarios/structure-bisect.txt",
+      "status": "RETIRED", "retiredReason": "known crash repro; run by hand: tools/autopilot/scenarios/structure-bisect.txt",
       "addedIn": "engine-cleanup"
     },
     {
@@ -366,9 +354,7 @@
       "task": "T-032",
       "title": "Collision proxy candidates: which vanilla props stop the engine's ray",
       "kind": "scenario",
-      "run": {
-        "scenario": "proxy-probe"
-      },
+      "run": { "scenario": "proxy-probe" },
       "pass": "autopilot PASS; the log lists autopilot_rayto lines per candidate (Hit kind=Object match=True marks a solid prop)",
       "proves": "Vanilla props usable as invisible collision proxies for custom objects (the authored-collision fallback).",
       "unproven": "Player and vehicle collision (inferred from the shared physics bounds).",
@@ -394,8 +380,7 @@
         }
       },
       "reference": "docs/tasks/T-031-structure-writer.md",
-      "status": "RETIRED",
-      "retiredReason": "known crash (multi-geometry, T-031); repro kept in T031-structure-bisect scenario file",
+      "status": "RETIRED", "retiredReason": "known crash (multi-geometry, T-031); repro kept in T031-structure-bisect scenario file",
       "addedIn": "codex/pr7-verification-fixes"
     },
     {
@@ -407,8 +392,7 @@
         "tool": "content-report",
         "asset": "lf_lod_post",
         "expect": {
-          "status": "RETIRED",
-          "retiredReason": "multi-LOD drawables dropped: every sampled game drawable uses LOD slot 0",
+          "status": "RETIRED", "retiredReason": "multi-LOD drawables dropped: every sampled game drawable uses LOD slot 0",
           "compiled.drawableWriter": "structure",
           "compiled.lodCount": 4,
           "compiled.textureFormat": "DXT1"
@@ -442,8 +426,7 @@
         }
       },
       "reference": "docs/tasks/T-031-structure-writer.md",
-      "status": "RETIRED",
-      "retiredReason": "multi-LOD drawables dropped by decision (2026-09-30)",
+      "status": "RETIRED", "retiredReason": "multi-LOD drawables dropped by decision (2026-09-30)",
       "addedIn": "claude/confident-hopper-16pan1 (session 4)"
     },
     {
@@ -1057,8 +1040,7 @@
         "tool": "content-report",
         "asset": "lf_col_crate",
         "expect": {
-          "status": "RETIRED",
-          "retiredReason": "no borrow candidate exists on this install; superseded by collision proxies (T032-proxy-probe, T033-world-objects)",
+          "status": "RETIRED", "retiredReason": "no borrow candidate exists on this install; superseded by collision proxies (T032-proxy-probe, T033-world-objects)",
           "compiled.collision.mode": "borrowed",
           "compiled.collision.file": "lf_col_crate.wbn"
         }
@@ -1087,8 +1069,7 @@
         }
       },
       "reference": "docs/tasks/T-032-collision.md",
-      "status": "RETIRED",
-      "retiredReason": "same-name borrowed bounds do not exist on this install; superseded by collision proxies",
+      "status": "RETIRED", "retiredReason": "same-name borrowed bounds do not exist on this install; superseded by collision proxies",
       "addedIn": "claude/confident-hopper-16pan1 (sessions 5-6)"
     },
     {
@@ -1100,8 +1081,7 @@
         "tool": "content-report",
         "asset": "lf_world_wall",
         "expect": {
-          "status": "RETIRED",
-          "retiredReason": "the wall gets collision from proxies, not a borrowed resource",
+          "status": "RETIRED", "retiredReason": "the wall gets collision from proxies, not a borrowed resource",
           "type": "object",
           "compiled.collision.mode": "borrowed"
         }
@@ -1628,8 +1608,8 @@
       "run": {
         "scenario": "stage1-weapon-wheel"
       },
-      "proves": "The Liberty weapon wheel shows sidearm, two long guns, melee and thrown (empty slots read empty), opens within 1 frame of the request, every filled slot equips the right weapon (12 of 12), hold-to-open with the keyboard equips on release, tap-open with arrow keys and Enter equips, and the UI draw cost while open is logged.",
-      "pass": "autopilot PASS: weapon_wheel_first_draw frames=0 or 1, autopilot_wheel_cycles_done selections=12 failures=0 open_failures=0, the real-key hold and tap flows equip as expected; screenshots judged; draw.ui average in the final costs reply at most 0.5 ms",
+      "proves": "The Liberty weapon wheel shows sidearm, two long guns, melee and thrown (empty slots read empty), opens within 1 frame of the request, every filled slot equips the right weapon (12 of 12), hold-to-open with the keyboard equips on release, tap-open with arrow keys and Enter equips, and the UI draw cost while open is logged. Acceptance performance is enforced by ui-budget, rather than inferred from a PASS word or low draw submission cost.",
+      "pass": "autopilot PASS: first draw within one frame; 12 selections with no failures; keyboard hold and tap flows read back the requested equipped weapon; ui-budget check wheel passes (draw.ui <=0.5 ms, average/p95 <=+10%, p99 <=+15% vs paired closed menu, >=30 samples, no >=1 s stall); screenshots reviewed.",
       "unproven": "Controller (pad) input cannot be injected: pad hold, stick selection and the Back button binding are for the owner to try. Whether the game itself reacts to the Back button or the Tab key on foot is not checked.",
       "review": {
         "screenshots": {
@@ -1654,8 +1634,8 @@
         "scenario": "stage1-trunk-ui"
       },
       "proves": "The trunk interface shows the carried loadout (wheel) and the trunk list with used/available capacity; Space stores the highlighted carried weapon, Enter takes the highlighted stored one and swaps out the least recently used long gun when both slots are full; a 4-slot sports-car trunk refuses the fifth weapon; the state saved to disk reads back identical.",
-      "pass": "autopilot PASS: every storage_status line as expected, arsenal_store / arsenal_take swapped= / arsenal_store_refused full lines found, arsenal_roundtrip identical=True twice; screenshots judged",
-      "unproven": "Controller (pad) input and the safehouse stash through this interface are not exercised by the scenario; a game save and load is not automated (the saved state file round trip is).",
+      "pass": "autopilot PASS: store/take/swap preserves logged ammunition and ownership, full trunk refuses store, two persisted state round trips identical; both closes release storage control and finish choreography; ui-budget check trunk passes; screenshots reviewed.",
+      "unproven": "Controller (pad) input and the safehouse stash through this interface are not exercised by the scenario; a game save and load is not automated (the saved state file round trip is). Latest Codex fixes have no in-game evidence; HUD coexistence is only inspected in source geometry.",
       "review": {
         "screenshots": {
           "trunk_ui_open": "Trunk open behind Niko: the radial with pistol, shotgun and AK in their slots at the centre, the TRUNK panel at the right reading 0 / 8 and Empty; text readable",

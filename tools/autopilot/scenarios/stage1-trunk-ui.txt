@@ -133,6 +133,7 @@ arsenal roundtrip
 expect "arsenal_roundtrip identical=True" 15
 key Back 1200
 wait 3500
+expect "choreography_complete trunk" 10
 expect "arsenal_storage_closed" 10
 storage state
 expect "storage_state open=False closing=False animation=False locked=False control=True" 10

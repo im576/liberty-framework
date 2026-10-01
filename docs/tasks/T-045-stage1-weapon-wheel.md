@@ -1,6 +1,6 @@
-# T-045 — Liberty weapon wheel
+# T-045 â€” Liberty weapon wheel
 
-Status: **READY** · Lane B · Depends on: T-044 · Design: STAGE1 section 7 Slice A "Weapon wheel", Slice C
+Status: **NEEDS-PLAYTEST** Â· Lane B Â· Depends on: T-044 Â· Design: STAGE1 section 7 Slice A "Weapon wheel", Slice C
 
 ## Goal
 
@@ -24,11 +24,32 @@ storage wheel (`Arsenal/Ui/StorageWheel.cs`), weapon HUD icons extracted at inst
 
 ## Acceptance (STAGE1 Pillar 1)
 
-- Open to first drawn frame ≤ 1 frame, open animation ≤ 200 ms, UI draw ≤ 0.5 ms.
+- Open to first drawn frame â‰¤ 1 frame, open animation â‰¤ 200 ms, UI draw â‰¤ 0.5 ms.
 - Scenario `stage1-weapon-wheel`: open, select each slot, confirm the equipped weapon each time (100%), close; with
   controller-style and keyboard input; screenshots for review.
-- Smallest text ≥ 14 px at 1280x720 virtual.
+- Smallest text â‰¥ 14 px at 1280x720 virtual.
 
 ## Human test steps
 
-Fill in when done.
+Owner instructions currently prohibit game testing. Do these steps only after the owner explicitly reauthorizes it; source/offline results do not establish gameplay acceptance.
+
+1. In free play on foot, carry pistol, shotgun, AK and knife. Hold **Tab** about one second, press **Right**, release **Tab**: the wheel closes and equips the highlight. Tap **Tab**, release, press **Right**, then **Enter**: the tap keeps it open until confirm.
+2. Repeat with controller **Back/View**, right stick or D-pad left/right, **A** to confirm and **B** to cancel. Check no unwanted vanilla phone/cycling action. Physical controller input remains unverified.
+3. Repeat every filled slot; inspect next-frame `weapon_wheel_equipped ... match=True`. Confirm the empty thrown slot closes without changing weapon. Disable `weaponWheel.enabled` and check vanilla cycling.
+4. Review labels, ammo and footer at 1280x720 and the owner's resolution. Once D is integrated, check top-right HUD and bottom-left radar coexistence. Run the bounded bisect and enforced budgets only after game testing is authorized; do not rerun/change the T-040 baseline.
+
+## Codex continuation — September 30, 2026
+
+Both original B tips are reconciled with main `f5679a5`, including `db08832`/`45561b4`, on `codex/lane-b-validation`.
+See [Codex handoff](../handoffs/Codex-Lane-B-2026-09-30.md) for files, commits and exact restart instructions.
+
+Actual elapsed press time replaces the 100 ms/frame cap. Confirm releases this menu's control lock before equip and reads
+the actual weapon next frame. Bindings colliding with storage/navigation are rejected. Footer/ammo bounds are wider and
+selection is amber. Shared diagnostics separate locked/no-draw, primitives, text and unlocked drawing, with `ui.input` and
+`ui.snapshot` costs. UI gates enforce paired closed/open frame average/p95/p99, >=30 samples, no >=1 s stall and <=0.5 ms
+combined `draw.ui` submission cost. Negative offline cases prove excessive draw/frame cost fail; thresholds remain proposals.
+
+**Acceptance incomplete:** old list windows average 383–397 ms even with gameplay modules stopped; radial/wheel windows
+average 825/840 ms. The old keyboard-highlight screenshot contains no wheel, so fails visual acceptance. Sidearm/empty-slot
+captures render content with the old white highlight. Shared-path cause is unknown. The new diagnostic run produced no usable
+measurements and was cleaned up/restored after the owner prohibited further game testing. No new fixes have game evidence.
