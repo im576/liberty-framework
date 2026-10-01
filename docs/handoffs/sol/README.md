@@ -9,10 +9,15 @@ Use this when a Claude agent runs out of usage. Each lane can be switched on its
 | Lane B (weapon wheel, trunk) | `C:\Users\IM576\GTAIV-Reborn-lane-b2` | `codex/lane-b-validation` | `PROMPT-LANE-B.md` |
 | Lane C (gore, combat effects) | `C:\Users\IM576\GTAIV-Reborn-lane-c-t048` | `stage1/T-048` | `PROMPT-LANE-C.md` |
 | Lane D (HUD) | `C:\Users\IM576\GTAIV-Reborn-lane-d` | `codex/T-049-hud-continuation` | `PROMPT-LANE-D.md` |
-| Lane R (research, Stage 1 only) | `C:\Users\IM576\GTAIV-Reborn-research` | `research/stage1` | `PROMPT-LANE-R.md` |
+| Lane R (initial SDK 1.2/material validation) | `C:\Users\IM576\GTAIV-Reborn-research-t050` | `research/t050-material` | `PROMPT-LANE-R.md` |
 | Orchestrator | `C:\Users\IM576\GTAIV-Reborn` | `main` | `PROMPT-ORCHESTRATOR.md` |
 
 All agents follow `RULES.md` (this folder) and `AGENTS.md`.
+
+For the 2026-10-01 Codex continuation, read main's [current launch brief](CONTINUATION.md) first. It overrides the
+older known-state snapshots, bounds each initial assignment and closes the obsolete ColAccel request. The prompt
+generator includes it automatically. This chat can delegate workers to these existing worktrees; manual new chats
+below are an alternative. Preparing a prompt does not launch a worker.
 
 ## Steps for one lane (about two minutes)
 

@@ -36,12 +36,18 @@ There is no persistent watcher or background helper. If Sonar is later disabled,
   The committed smoke scenario instead requires a fresh engine heartbeat after startup.
 - Another fresh-boot run was deferred because lane C acquired the game lock for its authorized verification run.
   Do not interrupt another lane to run this check. No gameplay acceptance is claimed by this host fix.
+- Full `20261001-100907-1f6f501`: audio-output-smoke PASS, fresh engine heartbeat, no failed steps or log errors.
+  The verifier restored its installation. SDK selftest/events passed in that batch; its later hot-reload driver-fixture
+  failure remains recorded in the integration report and does not invalidate the separate audio assertion.
+- Pre-continuation full `20261001-114509-15cd2d9`: package and audio heartbeat PASS, zero failed steps/log errors,
+  restored from `phase2-20261001-115146`. Active Sonar render endpoint and running audio services were observed before
+  this run. C's earlier six-attempt launch failure has Windows access violations and is not proven to be an audio fault.
 
 ## Human test steps
 
 1. Leave the physical headset/controller disconnected; leave the installed Sonar driver available.
-2. Run the local verifier with `-Only T057-audio-output-smoke` after the game becomes free, or run the scenario directly
-   with `-AllowOtherBuild` when deliberately checking the currently installed build. Do not bypass the game lock.
+2. Run the local verifier with `-AnyBranch -NoPush -Restore -NoManual -Only LOOP-package-install,T057-audio-output-smoke`
+   after the game becomes free. Use its installed build and shared lock.
 3. With no active output, expect the host to log `recovered audio output using installed SteelSeries Sonar - Gaming`.
 4. GTA IV must reach the engine and emit a fresh `T-001 heartbeat`; the smoke report must say PASS.
 5. With a working physical output selected, repeat preflight and confirm the helper leaves that output alone.

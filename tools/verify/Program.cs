@@ -32,6 +32,8 @@ Section(check, "Stage 1 gunplay: class targets against the spread and recoil mod
 Section(check, "Stage 1 reticles: class styles, overrides, migration, truthfulness (T-043)", delegate { Stage1ReticleChecks.Run(repo, check); });
             Section(check, "Physical loadout: 2 long guns + 1 sidearm, ammunition caps, outfits (T-044)", delegate { LoadoutChecks.Run(repo, check); });
 Section(check, "Stage 1 HUD: config, fades, top-right layout, vanilla plan, glyphs, hud.dat table resolver (T-049)", delegate { Stage1HudChecks.Run(repo, check); });
+            Section(check, "Weapon wheel: segments, press handling, bindings (T-045)", delegate { WeaponWheelChecks.Run(repo, check); });
+            Section(check, "Trunk interface: capacity per vehicle class, swap rule (T-046)", delegate { TrunkUiChecks.Run(repo, check); });
             Section(check, "Feel and presentation (T-011, T-013..T-017, T-021)", delegate { FeelChecks.Run(repo, check); });
             Game(check, "Vehicle body parts (T-023)", delegate { VehicleChecks.Run(exe, check); });
             Game(check, "Dismemberment plans and particles (T-022)", delegate { CombatChecks.Run(exe, repo, check); });

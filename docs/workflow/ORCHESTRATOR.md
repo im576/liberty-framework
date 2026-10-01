@@ -1,13 +1,30 @@
 # Orchestrator handoff (Stage 1)
 
-For the Claude session that coordinates Stage 1 for the owner: it plans, reviews the lane threads, answers the owner,
+For the agent that coordinates Stage 1 for the owner: it plans, reviews the lane threads, answers the owner,
 files task cards and art requests, and keeps docs and decisions current. It does not build lane features itself.
-Updated 2026-09-30 when the first orchestrator thread handed off (to avoid context compaction).
+Current review: 2026-10-01. The merge queue below overrides the historical snapshots further down.
+Evidence and limits: [integration review](../reports/2026-10-01-orchestrator-integration.md).
 
 ## Read first
 
 `AGENTS.md`, `docs/PROJECT_STATE.md`, `docs/design/STAGE1.md` (design, decisions in section 12, budgets in section 10),
 `docs/tasks/README.md` (lanes), the T-040 baseline `docs/reports/2026-09-30-stage1-baseline.md`, and this file.
+
+For a lane takeover, read [the Sol handoff guide](../handoffs/sol/README.md) and its binding rules. The prompt command is:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\handoff\Get-SolPrompt.ps1 -Lane B
+```
+
+Use `-Lane Orchestrator` for this role; use `-NoClipboard` for a read-only printout. The command collects current git,
+run and lock state; it does not dispatch or stop a lane. Do not take over a lane while its worker is still active.
+For the next Codex workers, use [the current continuation brief](../handoffs/sol/CONTINUATION.md), included by the
+generator. Initial milestones are C's crash/cleanup review, D's clean hiding experiment and R's SDK 1.2 validation.
+No replacement worker has launched yet. Coding may run in parallel; heavy builds and game tests are scheduled centrally.
+Preparation: all five generated briefings validated; tooling tests 236/0. Full startup smoke
+`20261001-114509-15cd2d9` PASS (fresh heartbeat, zero log errors); restored from `phase2-20261001-115146`.
+C's latest `c3e2b16`/`d96aaf2` work needs review: 110420 launch unavailable, and effects cleanup assertions were relaxed.
+Keep the original requirements and repair the fixture. R starts in the SDK 1.2 t050 worktree; SDK 1.3 stays separate.
 
 ## How the work runs
 
@@ -49,6 +66,45 @@ free, and the game was restored (`installed-build.json`: restored from `phase2-2
   (git bundle, patches, uncommitted diff) is in `research\lane-d-review-bundle-2026-09-30`. Owner to choose: link the cloud
   session, or start a local Sonnet Lane D thread.
 
+## Merge queue (keep current; a Sol orchestrator takes over from here)
+
+| Order | Item | Branch / worktree | State |
+|---|---|---|---|
+| 1 | Engine stall fix and audio recovery | main `868368b`, `55e70b8`, `ee71eba` | merged; full audio/SDK 1.1 selftest/events PASS; hot reload 24/24 PASS on repeat (first driver fixture failed); broader stalls/crashes remain |
+| 2 | T-045/T-046 wheel, trunk, sprite text | main `f823e45` from Lane B `1744416` | merged; full `20261001-092349-e470758` passed assertions/budgets; orchestrator viewed all 12 captures; NEEDS-PLAYTEST |
+| 3 | Wheel config polling follow-up | `codex/orchestrator-stage1-integration` (`1f6f501`, tip `9be5315`), `GTAIV-Reborn-orchestrator` | isolated, NOT merged; build/verifier PASS; last full run wheel CRASH before opening, trunk 133/133 PASS; all runs restored; require fresh wheel acceptance |
+| 4 | T-050 hit material (SDK 1.2) | main `e547d92`, merged by the concurrent Claude coordinator | additive API reviewed; quick coverage confirms wood, not glass/water/object correctness; preserve merge, full SDK 1.2/material acceptance pending |
+| 5 | T-047/T-048 gore, effects | `stage1/T-048`, `GTAIV-Reborn-lane-c-t048` | unmerged; full `20261001-103314-0b4f558` restored with dismember CRASH, firefight/effects-night FAIL; lane continues independently; budgets unchanged |
+| 6 | T-049 HUD | `codex/T-049-hud-continuation`, `GTAIV-Reborn-lane-d` | unmerged; full `20260930-205120-4ac4fcc` HUD FAIL; clean DISPLAY_HUD experiment and B/D coexistence unrun |
+| 7 | Research rest (T-052/T-054 probes, notes) | `research/stage1` | still separate; SDK 1.3 radar ownership/probes need full validation and renderer coexistence review |
+| then | T-056 performance pass, owner playtest | main | after 1-7 |
+
+Active workers and their worktrees are preserved. Do not stop their verifiers or overwrite their source. Integration runs
+use `verify-local -AnyBranch -NoPush -Restore -NoManual`, the same machine-wide lock and a clean committed build.
+B's controller, real save/load, safehouse/gunsmith and HUD coexistence still need checking; only the owner marks DONE.
+Host log-history fixes and isolated lock-test metadata are merged (`1cf9098`, `0bdf1ea`, `632642e`): tooling 236/0.
+Current main (including the peer's SDK 1.2 merge): build PASS, offline verifier 433/0/5 not-run. These are not full-mod
+runtime acceptance. Own verifier runs are finished; the last restored backup was `phase2-20261001-110404`.
+Recent C/R crash receipts name `GTAIV.EFLC.FusionFix.asi` at relative offset `0xA24E0`; this identifies the faulting module,
+not the cause. Dumps and hashes are preserved in the coordination workspace's `research/integration-review-2026-10-01`.
+
+## Historical snapshots (preserved; use the current queue above)
+
+## Review of the Sol/Claude work (2026-10-01 06:40 Pacific)
+
+- main `b74ddc4` (Sol coordinator corrections + Sol kit) checked: tool tests 224/0, offline verifier 389/0/5, pushed.
+  Sol fixed the game cap to count only lock-held time, bounded scenario timeouts by the remaining cap, made restoration
+  run in `finally`, recorded ASI inventories, and set density OFF on main. All lanes merged it; nothing is uncommitted.
+- Evidence caveat: research installed ColAccel 07:11-08:03 UTC while B's and C's full runs ran; their functional results
+  stand, their timing numbers need a clean rerun. ColAccel is removed (only its backup receipt remains).
+- Shared risks for the performance pass (T-056), across lanes:
+  1. `ConfigService.Poll` (and module config polling) stats files on the game thread every second; an 11 s stall there
+     ended B's wheel run with a crash. Move the stamp checks off the game thread.
+  2. Repeated GTAIV.exe crashes at fault offsets 0x7f471a46 / 0x7f4c16ad in B, C and R runs (also before ColAccel).
+     Cause unknown; capture the faulting module (minidump/WER) before guessing.
+- Owner decisions now due: C's 4 ms per-frame peak (a thrown limb needs `CreatePed`, about 21 ms); B's wheel bindings
+  (Back/Tab), trunk sizes and ammo caps (proposals in the B live handoff); D's HUD policy once the DISPLAY_HUD experiment runs.
+
 ## Cleanup and review (2026-09-30 ~21:45 Pacific)
 
 - Worktrees retired (all merged and clean; their branches stay): lane-0, lane-a, lane-a2, lane-a3, art-generator. Their
@@ -88,8 +144,8 @@ repeatable surfaces procedural or CC0"; gore very harsh but grounded, bodies 3-5
 1. Lane A (T-042): accept the class targets (first shot ≤ 0.5°, burst recovery 0.8 s / 1.5 s shotgun, AK climb 6-12°,
    Uzi 4-9°)? Keep the recoil cap after 30 rounds (recommended) or let it keep climbing? Explained in plain words; no
    answer yet.
-2. VRAM ceiling: the GPU is an RX 570 **4 GB** (driver and registry), not 8 GB as STAGE1 says. Proposed: hard ceiling
-   +300 MB. Not answered; STAGE1 still says 8 GB / +350 MB.
+2. VRAM ceiling: the GPU is an RX 570 **4 GB** (driver and registry). Proposed: hard ceiling +300 MB. Not answered;
+   STAGE1 retains the original +350 MB criterion, explicitly pending the owner's decision on the lower proposal.
 3. RESOLVED 2026-09-30: the main monitor runs above 240 Hz (ASUS VG279QM, 280 Hz), so a steady 40 fps frame cap is possible (T-056). Found 2026-10-01: Windows lists an ASUS VG279QM
    and a VG248 (both 144 Hz or faster), so the 40 fps cap is possible; the owner still has to confirm which one is the main screen.
    Testing speed (45561b4, 2026-10-01): package 411 s cold / 4 s cached, build outside the lock, fail-fast on frozen or

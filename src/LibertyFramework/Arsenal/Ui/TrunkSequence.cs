@@ -49,7 +49,12 @@ namespace LibertyFramework.Arsenal.Ui
                 .Do(() => browsing = false)
                 .At(timings.LidCloseAtMilliseconds, () => engine.Vehicles.CloseDoor(trunk, VehicleDoor.Trunk))
                 .Play(ped, CloseBoot, AnimOptions.Default, timings.CloseMinMilliseconds, timings.CloseMaxMilliseconds)
-                .OnComplete(() => engine.Tasks.Clear(ped))
+                .OnComplete(() =>
+                {
+                    // A missing close clip skips its timed action; successful completion must still shut the lid.
+                    if (engine.Vehicles.Exists(trunk)) { engine.Vehicles.CloseDoor(trunk, VehicleDoor.Trunk); }
+                    engine.Tasks.Clear(ped);
+                })
                 .OnCancel(() =>
                 {
                     if (engine.Vehicles.Exists(trunk)) { engine.Vehicles.CloseDoor(trunk, VehicleDoor.Trunk); }

@@ -1,12 +1,15 @@
 # Sol prompt — Lane R (research, Stage 1 only)
 
 ROLE
+Read main's `docs/handoffs/sol/CONTINUATION.md` first; its current milestone/state replaces the historical requests below.
 You are the research engineer for Liberty Vanilla+ Stage 1, continuing work from a Claude Sonnet agent. Scope is Stage 1
 only: no Phase 3 work, no Stage 2 design. You work alone in one git worktree and may run the game only through the
 shared verifier.
 
 WORKTREE
-`C:\Users\IM576\GTAIV-Reborn-research`, branch `research/stage1`.
+For the initial SDK 1.2/material milestone: `C:\Users\IM576\GTAIV-Reborn-research-t050`, branch `research/t050-material`.
+Read `C:\Users\IM576\GTAIV-Reborn-research\docs\handoffs\Lane-R-live.md` and its research history, but leave that
+SDK 1.3 worktree/branch `research/stage1` unchanged until separately assigned. Write the new live handoff in t050.
 
 READ FIRST, IN ORDER
 1. `C:\Users\IM576\GTAIV-Reborn\docs\handoffs\sol\RULES.md` (binding rules)
@@ -18,9 +21,7 @@ READ FIRST, IN ORDER
 OBJECTIVE
 1. Make the existing research usable for Stage 1: honest results for T-050 (hit material), T-051 (blood), T-052 (screen
    effect cost), T-054 (radar tile), with notes that match what actually ran. Phase 3 items get one line each and are dropped.
-2. ColAccel 1.5 experiment for the performance pass: does it shorten the 4-18 s teleport/LOAD_SCENE stalls on CE 1.2.0.59
-   + FusionFix? Licence check first. Install only through the normal backed-up install/restore path, measure before and
-   after with the existing perf tools, and recommend it only if it is clearly better and stable.
+2. ColAccel is closed, not adopted for Stage 1. Preserve its recorded verdict; do not reinstall it or repeat the experiment.
 3. A merge list for the orchestrator: `docs/handoffs/Lane-R-merge.md`, each item with its evidence.
 
 WORKFLOW
@@ -30,11 +31,11 @@ WORKFLOW
    one small batch at a time.
 3. Offline checks before committing: `./tools/build.ps1 -ScriptHookDotNetReference 'C:\Games\Grand Theft Auto IV\GTAIV\ScriptHookDotNet.asi'`,
    `./tools/verify.ps1 -NoGame`, `./tools/tests/Run-Tests.ps1`.
-4. Commit on `research/stage1`; never merge or push main.
+4. Commit on the assigned `research/t050-material` branch; never merge or push main.
 
 DEFINITION OF DONE
-Each Stage 1 research question has a plain answer backed by a run you looked at; ColAccel has a measured verdict (or a
-recorded reason it could not be tested); Lane-R-merge.md lists what to merge and why.
+Each assigned Stage 1 research question has a plain answer backed by a run you looked at; the existing ColAccel verdict
+is preserved; Lane-R-merge.md lists what to merge and why.
 
 REPORT
 Short and plain: what was found, what is usable now, what the owner must decide.

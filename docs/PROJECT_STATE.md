@@ -6,7 +6,7 @@ overrides older docs.
 
 **Agent audio startup (T-057, 2026-10-01):** missing playback output is recovered through the already-installed Sonar
 Gaming virtual endpoint before game launches. Healthy physical outputs are preserved. Tool tests 230/0; production x86
-disable/recover and game boot verified. Full heartbeat smoke remains queued while lane C owns the game lock.
+disable/recover and game boot verified. Full heartbeat smoke PASS in `20261001-100907-1f6f501`; no log errors.
 [Task and evidence](tasks/T-057-test-audio-output.md). This is host tooling, not gameplay acceptance.
 
 ## Current phase
@@ -21,10 +21,29 @@ disable/recover and game boot verified. Full heartbeat smoke remains queued whil
 
 The T-040 density result above describes the historical baseline. The owner's current density policy is **OFF** in every
 active checkout; that recorded baseline is preserved, not rerun. Current lane review and coordinator corrections are in
-[the October 1 handoff](handoffs/sol/Orchestrator-2026-10-01.md). B/C/D/R remain paused until owner dispatch; Stage 1
-integration and acceptance come before any Phase 3 work. Offline passes do not mark a lane DONE.
+[the current orchestrator queue](workflow/ORCHESTRATOR.md). The earlier pause is historical: B/C/R resumed, and C/R are
+continuing independent validation. D remains unmerged with runtime HUD issues. Stage 1 integration and acceptance come
+before any Phase 3 work. Offline passes do not mark a lane DONE.
 
 ## Stage 1 progress
+
+- **T-045 wheel / T-046 trunk UI (lane B), merged, NEEDS-PLAYTEST (2026-10-01):** main `f823e45` integrates reviewed
+  Lane B `1744416` and cached sprite text, preserving newer main tooling. Full `20261001-092349-e470758` passed all
+  wheel/trunk/text assertions and budgets; orchestrator reviewed all 12 wheel/trunk captures. Combined build PASS,
+  verifier 424/0/7 not-run, tooling tests 230/0. Physical controller, real save/load, safehouse/gunsmith, B/D coexistence
+  and owner judgement remain. A further wheel config polling fix is isolated: its last wheel run crashed in scene
+  setup before opening; trunk passed 133/133 steps. No new wheel acceptance is claimed.
+- **T-047/T-048 (lane C):** active, unmerged. Full `20261001-094219-2db0bf5` includes dismember CRASH and
+  firefight/effects-night FAIL; latest full `20261001-103314-0b4f558` also restored with the same failed check categories.
+  Budgets remain unchanged; lane work continues separately.
+- **T-050 (lane R), merged by the parallel Claude coordinator in `e547d92`:** SDK 1.2's additive material API and mapping
+  are on main. Quick coverage confirms wood; direct glass/water rows and object-hit correctness remain unproven.
+  Full SDK 1.2/material acceptance remains pending. SDK 1.3 radar/probes and remaining research are still separate.
+- **T-049 HUD (lane D):** unmerged; clean hiding and coexistence require further runtime evidence.
+
+Latest main build PASS; offline verifier 433/0/5 not-run; tooling tests 236/0. Host log reading now preserves history
+through rotation gaps and empty unread tails, and lock self-tests use isolated holder notes. Details and failed/full
+runtime receipts: [orchestrator integration review](reports/2026-10-01-orchestrator-integration.md).
 
 - **T-049 Lane D, BLOCKED (Codex, September 30):** owner reauthorized testing; batch 20260930-205120-4ac4fcc installed, ran both scenarios and restored. Probe NEEDS-REVIEW, HUD FAIL (one wanted transition assertion, zero errors); images reject clean hiding. Final conservative guard and updated assertions are offline-tested only. Diagnostic average draw.hud 0.306 ms / draw.ui 0.310 ms excludes B integration. [Handoff](handoffs/Codex-Lane-D-2026-09-30.md) requires Sonnet review of ALL Codex changes including uncommitted files; deeper research deferred.
 

@@ -46,3 +46,20 @@ the cross-module pass afterwards.
 ## Human test steps
 
 Fill in when done.
+
+## Orchestrator review findings (2026-10-01; profile before changing persistence)
+
+- Lane B's wheel read/hash of arsenal.json every second is removed in isolated follow-up `1f6f501`; it reuses the
+  engine's background timestamp watcher. Seven real watcher checks pass; fresh full runtime acceptance is pending.
+- `RuntimeLog.WriterLoop` holds the same `Sync` lock used by callers while `Drain` opens/writes/flushes/rotates files.
+  Background writes therefore still allow a slow disk operation to block a logging caller. Static risk confirmed;
+  its contribution to the observed stalls is unmeasured. A future fix must preserve ordering, bounded queues and unload
+  flushing, with a slow-writer concurrency check before adoption.
+- `ArsenalCore.Persist` snapshots and synchronously saves JSON; reconciliation has several save sites. C's latest
+  failed dismember run reports `ar.reconcile` around 8.9 s, but that does not attribute the time to persistence alone.
+  Measure snapshot/save/native/log costs separately; do not make inventory writes asynchronous without preserving
+  crash recovery, ownership and ammo integrity.
+- C/R crash receipts `crash-20261001-100559` / `crash-20261001-095151` resolve the faulting module to
+  `GTAIV.EFLC.FusionFix.asi`, relative offset `0xA24E0`. Dumps, stall dump `stall-20261001-100548` and SHA-256 receipts
+  are preserved under `C:\Users\IM576\OneDrive\Documents\ChatGPT\GTA4-Reborn\research\integration-review-2026-10-01`.
+  The underlying cause is unknown; no installed plugin was changed during this review.

@@ -27,3 +27,16 @@ Current main/shared tools now merged locally, preserving both density-off assert
 Integrated offline verifier: 490 passed/0 failed/5 notrun; queue/plan PASS. Latest ammo source had already built with
 warnings as errors. No new HUD gameplay experiment was run. All lanes/game/verifiers are paused and the pre-resume
 installation is restored. No push or combined B/D/R feature merge. Resume only after owner dispatch.
+
+## Sol offline dispatch review (2026-10-01)
+
+Clean at f99ce54, no recent source writes, verifier or game process. Remote HUD tip is an ancestor of local HEAD;
+no remote-only commits were discarded. Current origin/main 7058612 integrated with additive conflicts reviewed:
+retain HUD and B queue/verifier/schema entries, use current main audio instructions, regenerate the plan.
+Inherited full 20260930-205120-4ac4fcc remains HUD FAIL / components NEEDS-REVIEW, restored normally.
+Reviewed both scenario reports and all 23 inherited captures in a labelled contact sheet; stars/radar survive hides,
+normal HUD has duplicate stars/weapon/ammo, component baseline lacks weapon/ammo/cash. No new visual acceptance.
+Ammo pair refresh already repairs the demonstrated mixed-age clip/total defect; broader native semantics unproven.
+Initial assignment OFFLINE ONLY: no install, rollback, verifier or game launch. Proposed build.ps1 and verify.ps1
+-NoGame await scheduling; queue validation PASS (82 checks). Next: opt-in DISPLAY_HUD(false)/DISPLAY_RADAR(true)
+diagnostic, strict baseline/restoration capture review, separate native story-text review without faking mission text.

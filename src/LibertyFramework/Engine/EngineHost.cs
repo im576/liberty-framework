@@ -56,6 +56,8 @@ namespace LibertyFramework.Engine
         {
             LibertyEngine engine = LibertyEngine.Current;
             if (engine != null) { engine.Unload(); }
+            // The log is written by a background thread; write what is still queued before the domain goes away.
+            RuntimeLog.Flush();
         }
     }
 }

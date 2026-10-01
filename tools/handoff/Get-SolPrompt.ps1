@@ -15,7 +15,7 @@ $lanes = @{
     B = @{ Path = 'C:\Users\IM576\GTAIV-Reborn-lane-b2'; Prompt = 'PROMPT-LANE-B.md'; Live = 'Lane-B-live.md' }
     C = @{ Path = 'C:\Users\IM576\GTAIV-Reborn-lane-c-t048'; Prompt = 'PROMPT-LANE-C.md'; Live = 'Lane-C-live.md' }
     D = @{ Path = 'C:\Users\IM576\GTAIV-Reborn-lane-d'; Prompt = 'PROMPT-LANE-D.md'; Live = 'Lane-D-live.md' }
-    R = @{ Path = 'C:\Users\IM576\GTAIV-Reborn-research'; Prompt = 'PROMPT-LANE-R.md'; Live = 'Lane-R-live.md' }
+    R = @{ Path = 'C:\Users\IM576\GTAIV-Reborn-research-t050'; Prompt = 'PROMPT-LANE-R.md'; Live = 'Lane-R-live.md' }
     Orchestrator = @{ Path = $repo; Prompt = 'PROMPT-ORCHESTRATOR.md'; Live = '' }
 }
 function Invoke-Git { $ErrorActionPreference = 'Continue'; & git @args 2>$null }
@@ -52,6 +52,7 @@ function Get-WorktreeState([string] $Name, [string] $Path, [string] $Live) {
     if ($Live) {
         $livePath = Join-Path $Path "docs\handoffs\$Live"
         $out.Add("live handoff: $(if (Test-Path -LiteralPath $livePath) { "docs/handoffs/$Live, updated $((Get-Item -LiteralPath $livePath).LastWriteTime.ToString('yyyy-MM-dd HH:mm'))" } else { 'none yet (write it first)' })")
+        if (Test-Path -LiteralPath $livePath) { Select-String -LiteralPath $livePath -CaseSensitive -Pattern 'READY FOR MERGE|WAITING FOR|BLOCKED' | Select-Object -Last 3 | ForEach-Object { $out.Add('  handoff mention (may be historical or a future instruction; not readiness evidence): ' + $_.Line.Trim()) } }
     }
     return $out
 }
@@ -59,20 +60,24 @@ function Get-WorktreeState([string] $Name, [string] $Path, [string] $Live) {
 $state = New-Object System.Collections.Generic.List[string]
 $state.Add('## LIVE STATE (captured ' + (Get-Date).ToString('yyyy-MM-dd HH:mm') + ' local time; verify it yourself)')
 $holder = Get-Content -LiteralPath (Join-Path ([IO.Path]::GetTempPath()) 'LibertyGameLock.txt') -Raw -ErrorAction SilentlyContinue
-$state.Add("game lock holder: $(if ($holder) { $holder.Trim() } else { 'none (free)' })")
+$state.Add("game lock holder note (advisory, not a mutex probe): $(if ($holder) { $holder.Trim() } else { 'absent; lock availability is unconfirmed' })")
 $game = Get-Process GTAIV -ErrorAction SilentlyContinue | Select-Object -First 1
 $state.Add("GTA IV running: $(if ($game) { "yes, pid $($game.Id) since $($game.StartTime)" } else { 'no' })")
 $installed = Get-Content -LiteralPath 'C:\Games\Grand Theft Auto IV\GTAIV\scripts\LibertyFramework\installed-build.json' -Raw -ErrorAction SilentlyContinue
 if ($installed) { $build = $installed | ConvertFrom-Json; $state.Add("installed build: repo=$($build.repo) commit=$($build.commit) $($build.note)") }
 $state.Add('')
 if ($Lane -eq 'Orchestrator') {
+    $queue = Get-Content -LiteralPath (Join-Path $repo 'docs\workflow\ORCHESTRATOR.md') -ErrorAction SilentlyContinue | Select-String -Pattern '^\| \d|^\| then' | ForEach-Object { $_.Line }
+    if ($queue) { $state.Add('merge queue (docs/workflow/ORCHESTRATOR.md):'); $queue | ForEach-Object { $state.Add('  ' + $_) }; $state.Add('') }
+    (Get-WorktreeState 'Research rest (SDK 1.3, not assigned yet)' 'C:\Users\IM576\GTAIV-Reborn-research' 'Lane-R-live.md') | ForEach-Object { $state.Add($_) }; $state.Add('')
     foreach ($key in 'B', 'C', 'D', 'R') { (Get-WorktreeState "Lane $key" $lanes[$key].Path $lanes[$key].Live) | ForEach-Object { $state.Add($_) }; $state.Add('') }
     (Get-WorktreeState 'main' $repo '') | ForEach-Object { $state.Add($_) }
 }
 else { (Get-WorktreeState "Lane $Lane" $lanes[$Lane].Path $lanes[$Lane].Live) | ForEach-Object { $state.Add($_) } }
 
 $prompt = [IO.File]::ReadAllText((Join-Path $repo "docs\handoffs\sol\$($lanes[$Lane].Prompt)"))
-$text = $prompt.TrimEnd() + "`r`n`r`n" + ($state -join "`r`n") + "`r`n"
+$continuation = [IO.File]::ReadAllText((Join-Path $repo 'docs\handoffs\sol\CONTINUATION.md'))
+$text = $continuation.TrimEnd() + "`r`n`r`n" + $prompt.TrimEnd() + "`r`n`r`n" + ($state -join "`r`n") + "`r`n"
 $file = Join-Path ([IO.Path]::GetTempPath()) "sol-prompt-$Lane.md"
 [IO.File]::WriteAllText($file, $text, (New-Object Text.UTF8Encoding($false)))
 if (-not $NoClipboard) { Set-Clipboard -Value $text; Write-Host "Copied the Lane $Lane prompt to the clipboard." }

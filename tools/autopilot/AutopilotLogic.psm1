@@ -106,6 +106,7 @@ function Resolve-ScenarioLine([string] $Line, [string] $ProbeDirectory) {
 # added, then the new file from its start, and lines already returned stay (so a scenario's marks keep their meaning and a
 # long measurement run loses nothing). Without such a backup (truncated, or replaced) the cache is reset.
 function Add-LogBytes([hashtable] $Cache, [byte[]] $Bytes, [string] $Since) {
+    if ($null -eq $Bytes -or $Bytes.Length -eq 0) { return }
     # Up to the last newline byte: complete lines (a UTF-8 sequence never contains 0x0A, so none is split).
     $end = [Array]::LastIndexOf($Bytes, [byte]10)
     if ($end -lt 0) { $Cache['Pending'] = $Bytes; return }
@@ -141,18 +142,26 @@ function Join-LogBytes([byte[]] $Pending, [byte[]] $Fresh) {
 }
 
 function Update-SessionLogCache([hashtable] $Cache, [string] $Path, [string] $Since) {
-    if (-not (Test-Path -LiteralPath $Path)) { $Cache.Clear(); return @() }
-    $stream = [IO.File]::Open($Path, 'Open', 'Read', 'ReadWrite')
+    $sameSession = $Cache['Path'] -eq $Path -and $Cache['Since'] -eq $Since
+    try { $stream = [IO.File]::Open($Path, 'Open', 'Read', 'ReadWrite, Delete') }
+    catch [IO.FileNotFoundException], [IO.DirectoryNotFoundException] {
+        # Rotation moves the old file before the writer's next drain opens the replacement. Preserve the cache
+        # and its unread partial line across that gap; clearing it invalidates Run-Scenario's line-count marks.
+        Write-Verbose "session log temporarily absent: $Path"
+        if ($sameSession) { return $Cache['Lines'].ToArray() }
+        $Cache.Clear(); return @()
+    }
     try {
         $length = $stream.Length
-        $sameSession = $Cache['Path'] -eq $Path -and $Cache['Since'] -eq $Since
         if ($sameSession -and $length -lt [long]$Cache['Offset']) {
             # Rotated: take what was not read yet from the backup, keep the lines already returned, restart at the new file.
             $backup = [IO.Path]::ChangeExtension($Path, '.1.log')
             $tail = $null
             if (Test-Path -LiteralPath $backup) {
-                $backupStream = [IO.File]::Open($backup, 'Open', 'Read', 'ReadWrite')
-                try { if ($backupStream.Length -ge [long]$Cache['Offset']) { $tail = Read-LogBytes $backupStream ([long]$Cache['Offset']) } }
+                $backupStream = [IO.File]::Open($backup, 'Open', 'Read', 'ReadWrite, Delete')
+                # Capture even an empty byte array: PowerShell otherwise enumerates it into $null and mistakes
+                # a fully consumed backup for a missing one, discarding the session's existing history.
+                try { if ($backupStream.Length -ge [long]$Cache['Offset']) { $tail = [byte[]]@(Read-LogBytes $backupStream ([long]$Cache['Offset'])) } }
                 finally { $backupStream.Dispose() }
             }
             if ($null -ne $tail) {

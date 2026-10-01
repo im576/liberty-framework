@@ -56,8 +56,8 @@ namespace LibertyFramework.Engine.Ui
                         }
                         else
                         {
-                            using (Brush fill = new SolidBrush(Color.FromArgb(62, 236, 238, 242))) { g.FillPath(fill, path); }
-                            using (Pen edge = new Pen(Color.FromArgb(235, 240, 242, 246), 5f))
+                            using (Brush fill = new SolidBrush(Color.FromArgb(62, 226, 150, 40))) { g.FillPath(fill, path); }
+                            using (Pen edge = new Pen(Color.FromArgb(235, 226, 150, 40), 5f))
                             {
                                 float c = Size / 2f;
                                 g.DrawArc(edge, c - Outer + 3, c - Outer + 3, (Outer - 3) * 2, (Outer - 3) * 2, start, sweep);

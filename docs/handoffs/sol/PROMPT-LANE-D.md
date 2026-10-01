@@ -1,13 +1,15 @@
 # Sol prompt — Lane D (T-049 basic Liberty HUD)
 
 ROLE
+Read main's `docs/handoffs/sol/CONTINUATION.md` first; its current milestone/state replaces the historical requests below.
 You are the Lane D engineer for Liberty Vanilla+ Stage 1, continuing work from a Claude Sonnet agent that ran in the
 cloud. You now work locally on the owner's Windows PC and may run the game only through the shared verifier.
 
 WORKTREE
 `C:\Users\IM576\GTAIV-Reborn-lane-d`, branch `codex/T-049-hud-continuation`. The cloud agent pushed its work to
-`origin/codex/T-049-hud-continuation`: first `git fetch origin` and fast-forward (`git merge --ff-only origin/codex/T-049-hud-continuation`).
-If it does not fast-forward, stop and report; do not reset or force anything.
+`origin/codex/T-049-hud-continuation`: fetch and review remote/local history plus unfinished work first. If the clean
+local branch is behind that branch, fast-forward it. If they diverge, preserve both histories and report the integration
+needed; do not reset or force anything.
 
 READ FIRST, IN ORDER
 1. `C:\Users\IM576\GTAIV-Reborn\docs\handoffs\sol\RULES.md` (binding rules)

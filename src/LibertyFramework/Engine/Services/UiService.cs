@@ -151,7 +151,9 @@ namespace LibertyFramework.Engine.Services
         {
             if (menus.Count == 0) { return; }
             IMenu top = menus[menus.Count - 1];
+            long inputStart = System.Diagnostics.Stopwatch.GetTimestamp();
             MenuInput input = MenuInput.Read(engine.Input);
+            LibertyFramework.Core.Performance.Logic.CostMeter.Add("ui.input", inputStart);
             // Menu input edges are logged (rare, one line each): the autopilot and playtest reports can see what a menu received.
             if (input.Up || input.Down || input.Left || input.Right || input.Accept || input.Back || input.X || input.Y || input.PreviousTab || input.NextTab)
             {
@@ -163,9 +165,19 @@ namespace LibertyFramework.Engine.Services
             // that throws stops the module. Its menus then close through the ledger, so a broken menu can never stay open
             // with the player's controls locked.
             ListMenuView list = top as ListMenuView;
-            if (list != null) { engine.RunAs(list.Owner, () => list.Update(input)); return; }
+            long snapshotStart = System.Diagnostics.Stopwatch.GetTimestamp();
+            if (list != null)
+            {
+                try { engine.RunAs(list.Owner, () => list.Update(input)); }
+                finally { LibertyFramework.Core.Performance.Logic.CostMeter.Add("ui.snapshot", snapshotStart); }
+                return;
+            }
             RadialMenuView radial = top as RadialMenuView;
-            if (radial != null) { engine.RunAs(radial.Owner, () => radial.Update(input)); }
+            if (radial != null)
+            {
+                try { engine.RunAs(radial.Owner, () => radial.Update(input)); }
+                finally { LibertyFramework.Core.Performance.Logic.CostMeter.Add("ui.snapshot", snapshotStart); }
+            }
         }
 
         // Draw pass: modules' canvases first, then menus, help, notifications and subtitles on top.
@@ -174,6 +186,7 @@ namespace LibertyFramework.Engine.Services
             if (!canvas.Begin(args.Graphics, ScreenInfo.Size)) { return; }
             drawModules(canvas);
             canvas.Opacity = 1f;
+            canvas.DrawProbe();
             foreach (IMenu menu in drawMenus)
             {
                 ListMenuView list = menu as ListMenuView;

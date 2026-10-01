@@ -1,0 +1,54 @@
+# T-050 coverage: glass (car side windows), wood (crate, planks), a low prop hit and water. Short on purpose (fewer teleports, less
+# exposure to the intermittent game crash). Models come from the game's own IDE files; water.dat gives the two water bodies.
+events off
+god on
+wanted 0
+goto east_park
+expect "teleport_done id=east_park" 90
+wait 5000
+time 13 0
+weather 1
+# Glass, wood, prop and water coverage (T-050 rerun 2026-10-01). Models come from the game's own IDE files.
+clear
+spawncar admiral 6
+expect "autopilot_spawncar handle=" 20
+wait 2000
+shot material_car_side
+ray forward 12 -0.8 vehicles
+ray forward 12 0 vehicles
+ray forward 12 0.2 vehicles
+ray forward 12 0.4 vehicles
+clear
+spawnprop cj_crate_1 3 0 on
+expect "autopilot_prop handle=" 20
+wait 2000
+shot material_crate
+ray forward 8 -0.5 objects
+ray forward 8 -0.5 all
+clear
+spawnprop planksboardup2 3 0 on
+expect "autopilot_prop handle=" 20
+wait 2000
+shot material_planks
+ray forward 8 -0.5 objects
+ray forward 8 -0.5 all
+clear
+spawnprop corpbarrier1 4 0 on
+expect "autopilot_prop handle=" 20
+wait 2000
+ray forward 8 -0.6 objects
+ray forward 8 -0.6 all
+clear
+# Water: water.dat has a 12 x 8 m body at z 9 near (-124, 472) and a 4 x 8 m one at z 14 near (-70, 160).
+tp -124 472 30
+wait 300
+ray down 40
+ray down 40
+shot material_water_pond
+tp -70 164 30
+wait 300
+ray down 40
+ray down 40
+shot material_water_pool
+alive
+alive

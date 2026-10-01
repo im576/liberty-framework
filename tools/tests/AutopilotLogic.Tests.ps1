@@ -116,12 +116,26 @@ $read = @(Update-SessionLogCache $cache2 $rotating '2026-09-26T10:00:00')
 Test-That 'log rotation: two complete lines read, the third waits' ($read.Count -eq 2)
 [IO.File]::AppendAllText($rotating, "ee`n2026-09-26T10:00:04.000Z [INFO] four`n", $utf8)
 Move-Item -LiteralPath $rotating -Destination $rotated -Force
+# The background writer opens the replacement on its next drain, so a reader can observe this gap.
+$rotationMark = $read.Count
+$rotationOffset = $cache2['Offset']
+$read = @(Update-SessionLogCache $cache2 $rotating '2026-09-26T10:00:00')
+Test-That 'log rotation: the missing-file gap preserves history and assertion positions' ($read.Count -eq 2 -and $cache2['Offset'] -eq $rotationOffset) ($read -join ' | ')
+$otherCache = $cache2.Clone()
+$otherRead = @(Update-SessionLogCache $otherCache (Join-Path $script:Scratch 'other-missing.log') '2026-09-26T10:00:00')
+Test-That 'log rotation: a missing different file cannot return cached evidence' ($otherRead.Count -eq 0)
 [IO.File]::WriteAllText($rotating, "2026-09-26T10:00:05.000Z [INFO] five`n", $utf8)
 $read = @(Update-SessionLogCache $cache2 $rotating '2026-09-26T10:00:00')
 Test-That 'log rotation: nothing lost (the unread end of the old file, then the new file) and nothing repeated' ($read.Count -eq 5 -and $read[2] -like '*three' -and $read[3] -like '*four' -and $read[4] -like '*five') ($read -join ' | ')
+Test-That 'log rotation: an assertion after the old mark finds the new line' ((Find-ExpectedLine $read $rotationMark 'five$') -like '*five')
+Test-That 'log rotation: an assertion after the old mark still rejects stale lines' (-not (Find-ExpectedLine $read $rotationMark 'one$'))
 [IO.File]::AppendAllText($rotating, "2026-09-26T10:00:06.000Z [INFO] six`n", $utf8)
 $read = @(Update-SessionLogCache $cache2 $rotating '2026-09-26T10:00:00')
 Test-That 'log rotation: reading continues in the new file' ($read.Count -eq 6 -and $read[5] -like '*six') ($read -join ' | ')
+Move-Item -LiteralPath $rotating -Destination $rotated -Force
+[IO.File]::WriteAllText($rotating, "2026-09-26T10:00:07.000Z [INFO] seven`n", $utf8)
+$read = @(Update-SessionLogCache $cache2 $rotating '2026-09-26T10:00:00')
+Test-That 'log rotation: a fully consumed backup still preserves prior history' ($read.Count -eq 7 -and $read[0] -like '*one' -and $read[6] -like '*seven') ($read -join ' | ')
 
 # Steam screenshot folders
 $steamA = Join-Path $script:Scratch 'SteamA'; $steamB = Join-Path $script:Scratch 'Steam B'

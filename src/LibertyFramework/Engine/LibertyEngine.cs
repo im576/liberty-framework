@@ -170,6 +170,9 @@ namespace LibertyFramework.Engine
             LibertyHost.Current = engine;
             engine.LoadConfig();
             engine.hotReloadActive = engine.Config.HotReload;
+            engine.Ui.Canvas.TextRenderer = engine.Config.UiTextRenderer;
+            engine.Ui.Canvas.TextSpriteCap = engine.Config.UiTextCacheEntries;
+            engine.Ui.Canvas.NewSpritesPerFrame = engine.Config.UiTextNewSpritesPerFrame;
             // Crash capture is installed first, before anything else touches the game.
             engine.core.Load();
             engine.Governor = new Governor(engine.Config);
@@ -337,6 +340,29 @@ namespace LibertyFramework.Engine
             Commands.RegisterEngine("perf", "frame time, pressure and memory", args => PerfReport());
             Commands.RegisterEngine("costs", "named cost samples since the last call of this command (resets them)", args => CostMeter.ReportAndReset(CostReader.Command));
             Commands.RegisterEngine("framestats", "frame time statistics (avg, p50, p95, p99, max, slow frames, stalls) since the last call (resets them)", args => Perf.FrameStatsReportAndReset());
+            Commands.RegisterEngine("ui-budget", "measure and enforce UI draw and closed/open frame budgets", args => Perf.UiBudgetCommand(args));
+            Commands.RegisterEngine("ui-render-diagnostic", "ui-render-diagnostic all|none|text|primitives - temporary shared canvas bisect", args =>
+            {
+                if (args.Length != 1 || (args[0] != "all" && args[0] != "none" && args[0] != "text" && args[0] != "primitives")) { throw new ArgumentException("choose all, none, text or primitives"); }
+                Ui.Canvas.DiagnosticMode = args[0];
+                return "ui_render_diagnostic mode=" + args[0];
+            });
+            Commands.RegisterEngine("ui-text-renderer", "ui-text-renderer sprite|shdn [limit] - how the shared canvas draws text; the limit caps the strings per frame drawn through shdn (diagnostic)", args =>
+            {
+                if (args.Length < 1 || (args[0] != "sprite" && args[0] != "shdn")) { throw new ArgumentException("choose sprite or shdn"); }
+                Ui.Canvas.TextRenderer = args[0];
+                Ui.Canvas.ShdnTextLimit = args.Length > 1 ? int.Parse(args[1]) : int.MaxValue;
+                return "ui_text_renderer mode=" + args[0] + " limit=" + (args.Length > 1 ? args[1] : "none");
+            });
+            Commands.RegisterEngine("ui-text-stats", "sprite text cache: entries, estimated texture bytes, textures created and evicted, frames that deferred new text", args => Ui.Canvas.TextStats());
+            Commands.RegisterEngine("ui-text-probe", "ui-text-probe none|same|different|sizes|noeffect [count] - draw N strings per frame through SHDN DrawText (root-cause diagnostic)", args =>
+            {
+                string mode = args.Length > 0 ? args[0] : "none";
+                if (mode != "none" && mode != "same" && mode != "different" && mode != "sizes" && mode != "noeffect" && mode != "devfont" && mode != "devfontbold" && mode != "canvasfont4") { throw new ArgumentException("choose none, same, different, sizes, noeffect, devfont, devfontbold or canvasfont4"); }
+                Ui.Canvas.ProbeMode = mode;
+                Ui.Canvas.ProbeCount = args.Length > 1 ? Math.Max(1, Math.Min(24, int.Parse(args[1]))) : 8;
+                return "ui_text_probe mode=" + mode + " count=" + Ui.Canvas.ProbeCount;
+            });
             Commands.RegisterEngine("pools","game pool occupancy (peds, vehicles, objects)", args => PoolsReport());
             Commands.RegisterEngine("natives", "raw native calls made through the SDK, per module", args => Natives.Report());
             Commands.RegisterEngine("hooks", "code hooks the core installed (ADR-0007)", args => core.HooksReport());
@@ -486,7 +512,7 @@ namespace LibertyFramework.Engine
             RayHit hit = Query.Raycast(from, to, mask, PlayerIgnore());
             string line = "ray dir=" + direction + " mask=" + mask.ToString().Replace(", ", "|") + " status=" + hit.Status + " kind=" + hit.Kind +
                 " handle=" + hit.EntityHandle + " distance=" + F(hit.Distance) + " pos=" + Describe(hit.Position) + " normal=" + Describe(hit.Normal) +
-                " tests=" + hit.Tests + " passed=" + hit.PassedThrough + " from=" + Describe(from) + " to=" + Describe(to);
+                " tests=" + hit.Tests + " passed=" + hit.PassedThrough + " material_id=" + (hit.HasSurfaceMaterial ? hit.SurfaceMaterialId.ToString() : "UNKNOWN") + " from=" + Describe(from) + " to=" + Describe(to);
             RuntimeLog.Info(line);
             return line;
         }
@@ -505,7 +531,7 @@ namespace LibertyFramework.Engine
             for (int i = 0; i < LcRayHit.RawWords; i++) { words[i] = raw.Raw[i].ToString("X8"); }
             RuntimeLog.Info("raydebug dir=" + direction + " flags=0x" + flags.ToString("X") + " mode=" + mode + " status=" + hit.Status +
                 " start=" + Describe(from) + " pos=" + Describe(hit.Position) + " normal=" + Describe(hit.Normal) + " distance=" + F(hit.Distance) +
-                " kind=" + hit.Kind + " handle=" + hit.EntityHandle + " link=" + raw.Link + " raw=" + string.Join(" ", words));
+                " kind=" + hit.Kind + " handle=" + hit.EntityHandle + " link=" + raw.Link + " material_id=" + (hit.HasSurfaceMaterial ? hit.SurfaceMaterialId.ToString() : "UNKNOWN") + " raw=" + string.Join(" ", words));
             return "status=" + hit.Status + " kind=" + hit.Kind + " handle=" + hit.EntityHandle + " link=" + raw.Link + " distance=" + F(hit.Distance);
         }
 
@@ -989,6 +1015,7 @@ namespace LibertyFramework.Engine
             try { Ledger.ReleaseKind("patch"); } catch (Exception error) { RuntimeLog.Error("engine_patch_restore_failed error=" + error.Message); }
             Entities.SaveJournal();
             Watchdog.Stop();
+            try { ModuleConfig.Stop(); } catch (Exception error) { RuntimeLog.Error("engine_config_watch_stop_failed error=" + error.Message); }
             core.Shutdown();
             RuntimeLog.Info("engine_unloaded frame=" + Frame);
             LibertyHost.Current = null;
