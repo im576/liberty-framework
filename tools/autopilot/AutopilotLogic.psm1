@@ -106,6 +106,7 @@ function Resolve-ScenarioLine([string] $Line, [string] $ProbeDirectory) {
 # added, then the new file from its start, and lines already returned stay (so a scenario's marks keep their meaning and a
 # long measurement run loses nothing). Without such a backup (truncated, or replaced) the cache is reset.
 function Add-LogBytes([hashtable] $Cache, [byte[]] $Bytes, [string] $Since) {
+    if ($null -eq $Bytes -or $Bytes.Length -eq 0) { return }
     # Up to the last newline byte: complete lines (a UTF-8 sequence never contains 0x0A, so none is split).
     $end = [Array]::LastIndexOf($Bytes, [byte]10)
     if ($end -lt 0) { $Cache['Pending'] = $Bytes; return }
@@ -158,7 +159,9 @@ function Update-SessionLogCache([hashtable] $Cache, [string] $Path, [string] $Si
             $tail = $null
             if (Test-Path -LiteralPath $backup) {
                 $backupStream = [IO.File]::Open($backup, 'Open', 'Read', 'ReadWrite, Delete')
-                try { if ($backupStream.Length -ge [long]$Cache['Offset']) { $tail = Read-LogBytes $backupStream ([long]$Cache['Offset']) } }
+                # Capture even an empty byte array: PowerShell otherwise enumerates it into $null and mistakes
+                # a fully consumed backup for a missing one, discarding the session's existing history.
+                try { if ($backupStream.Length -ge [long]$Cache['Offset']) { $tail = [byte[]]@(Read-LogBytes $backupStream ([long]$Cache['Offset'])) } }
                 finally { $backupStream.Dispose() }
             }
             if ($null -ne $tail) {

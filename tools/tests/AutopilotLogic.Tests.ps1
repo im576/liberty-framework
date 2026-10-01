@@ -132,6 +132,10 @@ Test-That 'log rotation: an assertion after the old mark still rejects stale lin
 [IO.File]::AppendAllText($rotating, "2026-09-26T10:00:06.000Z [INFO] six`n", $utf8)
 $read = @(Update-SessionLogCache $cache2 $rotating '2026-09-26T10:00:00')
 Test-That 'log rotation: reading continues in the new file' ($read.Count -eq 6 -and $read[5] -like '*six') ($read -join ' | ')
+Move-Item -LiteralPath $rotating -Destination $rotated -Force
+[IO.File]::WriteAllText($rotating, "2026-09-26T10:00:07.000Z [INFO] seven`n", $utf8)
+$read = @(Update-SessionLogCache $cache2 $rotating '2026-09-26T10:00:00')
+Test-That 'log rotation: a fully consumed backup still preserves prior history' ($read.Count -eq 7 -and $read[0] -like '*one' -and $read[6] -like '*seven') ($read -join ' | ')
 
 # Steam screenshot folders
 $steamA = Join-Path $script:Scratch 'SteamA'; $steamB = Join-Path $script:Scratch 'Steam B'
