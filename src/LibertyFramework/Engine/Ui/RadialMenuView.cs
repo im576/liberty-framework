@@ -145,7 +145,7 @@ namespace LibertyFramework.Engine.Ui
                 }
                 if (!string.IsNullOrEmpty(s.Badges[i]))
                 {
-                    canvas.Text(s.Badges[i], ix - 30, iy + diameter * 0.055f, 60, 18, TextStyle.Small, TextAlign.Center, Rgba.Muted);
+                    canvas.Text(s.Badges[i], ix - 60, iy + diameter * 0.055f, 120, 22, TextStyle.Small, TextAlign.Center, Rgba.Muted);
                 }
             }
 
@@ -160,7 +160,7 @@ namespace LibertyFramework.Engine.Ui
                     TextStyle style = i == 1 ? TextStyle.Emphasis : i == s.Centre.Length - 1 ? TextStyle.Small : TextStyle.Body;
                     // Navigation hints must not be squeezed into the centre disc (they were visibly truncated).
                     bool hint = i == s.Centre.Length - 1;
-                    float lineWidth = hint ? diameter + 140f : boxWidth;
+                    float lineWidth = hint ? diameter + 140f : i >= 3 ? diameter * 0.75f : boxWidth;
                     float lineY = hint ? top + diameter + 16f : y;
                     canvas.Text(s.Centre[i], cx - lineWidth / 2, lineY, lineWidth, 22, style, TextAlign.Center, hint ? Rgba.Muted : Rgba.White);
                     y += i == s.Centre.Length - 2 ? 30 : 24;

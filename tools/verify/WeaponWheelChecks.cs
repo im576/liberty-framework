@@ -39,6 +39,10 @@ namespace LibertyFramework.Verify
 
             Rejected(check, repoRoot, "wheel keyboard key Enter is rejected (navigation key)", c => c.WeaponWheel.KeyboardKeyName = "Enter");
             Rejected(check, repoRoot, "wheel pad button A is rejected (navigation button)", c => c.WeaponWheel.PadButtonName = "A");
+            Rejected(check, repoRoot, "wheel pad button X is rejected (trunk store)", c => c.WeaponWheel.PadButtonName = "X");
+            Rejected(check, repoRoot, "wheel right shoulder is rejected (storage list navigation)", c => c.WeaponWheel.PadButtonName = "RightShoulder");
+            Rejected(check, repoRoot, "wheel keyboard E is rejected (trunk open)", c => c.WeaponWheel.KeyboardKeyName = "E");
+            Rejected(check, repoRoot, "wheel keyboard Space is rejected (trunk store)", c => c.WeaponWheel.KeyboardKeyName = "Space");
             Rejected(check, repoRoot, "wheel unknown key name is rejected", c => c.WeaponWheel.KeyboardKeyName = "NoSuchKey");
             Rejected(check, repoRoot, "wheel numeric button name is rejected", c => c.WeaponWheel.PadButtonName = "12345");
             Rejected(check, repoRoot, "wheel tap time outside 50-1000 ms is rejected", c => c.WeaponWheel.TapMilliseconds = 5000);

@@ -28,6 +28,7 @@ namespace LibertyFramework.Arsenal.Ui
         private bool wasDown;
         private int openedAtTicks, openedAtFrame, lastUpdateTicks;
         private bool firstDrawLogged;
+        private int pendingEquipId, pendingEquipFrame;
         // Per-slot snapshot, refreshed at most once per frame (labels, icons and badges are asked for every frame).
         private readonly int[] ids = new int[WeaponWheelLogic.SegmentCount];
         private readonly string[] names = new string[WeaponWheelLogic.SegmentCount];
@@ -50,6 +51,12 @@ namespace LibertyFramework.Arsenal.Ui
 
         protected internal override void OnUpdate()
         {
+            if (pendingEquipId > 0 && Engine.Frame > pendingEquipFrame)
+            {
+                int actual = Liberty.Weapons.Current(Liberty.Player.Ped);
+                RuntimeLog.Info("weapon_wheel_equipped requested=" + pendingEquipId + " actual=" + actual + " match=" + (actual == pendingEquipId));
+                pendingEquipId = 0;
+            }
             LoadConfig();
             if (!config.Enabled) { CloseMenu("disabled"); wasDown = false; return; }
             bool down = Engine.Input.Down(config.Pad) || Engine.Input.KeyDown(config.Key);
@@ -159,22 +166,32 @@ namespace LibertyFramework.Arsenal.Ui
         private void ConfirmAndClose()
         {
             int slot = menu != null ? menu.Selected : 0;
-            Equip(slot, false);
-            CloseMenu("confirmed");
+            Equip(slot, true);
         }
 
         private void Equip(int slot, bool closeOnSuccess)
         {
             Refresh(true);
-            if (slot < 0 || slot >= ids.Length || ids[slot] <= 0) { if (menu != null) { menu.Message("Slot empty"); } RuntimeLog.Info("weapon_wheel_equip slot=" + slot + " empty"); return; }
+            if (slot < 0 || slot >= ids.Length || ids[slot] <= 0)
+            {
+                if (menu != null) { menu.Message("Slot empty"); }
+                RuntimeLog.Info("weapon_wheel_equip slot=" + slot + " empty");
+                if (closeOnSuccess) { CloseMenu("confirmed"); }
+                return;
+            }
+            int target = ids[slot];
             int held = Liberty.Weapons.Current(Liberty.Player.Ped);
+            // Release our menu's control lock before asking the game to equip, on both accept and hold-release paths.
+            // Submission is not proof that the weapon in hand changed; read it back next frame.
+            if (closeOnSuccess) { CloseMenu("confirmed"); }
             if (held == ids[slot]) { RuntimeLog.Info("weapon_wheel_equip slot=" + slot + " id=" + ids[slot] + " already_in_hand"); }
             else
             {
-                Liberty.Weapons.Select(Liberty.Player.Ped, ids[slot]);
+                Liberty.Weapons.Select(Liberty.Player.Ped, target);
                 RuntimeLog.Info("weapon_wheel_equip slot=" + slot + " id=" + ids[slot] + " from=" + held);
             }
-            if (closeOnSuccess) { CloseMenu("equipped"); }
+            pendingEquipId = target;
+            pendingEquipFrame = Engine.Frame;
         }
 
         private void CloseMenu(string reason)

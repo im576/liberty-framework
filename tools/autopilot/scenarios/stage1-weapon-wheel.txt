@@ -62,6 +62,7 @@ mark
 key Tab 1200
 expectmarked "weapon_wheel_open frame=\d+ held=7" 10
 expectmarked "weapon_wheel_equip slot=0 id=7 already_in_hand" 10
+expectmarked "weapon_wheel_equipped requested=7 actual=7 match=True" 10
 expectmarked "weapon_wheel_closed reason=confirmed" 10
 wait 1500
 # Real keyboard: tap to keep it open, move the highlight with the arrow keys, Enter equips another slot.
@@ -76,6 +77,7 @@ wait 500
 shot wheel_keyboard_highlight
 key Enter 500
 expectmarked "weapon_wheel_equip slot=[1-3] id=\d+ from=7" 10
+expectmarked "weapon_wheel_equipped requested=(\d+) actual=\1 match=True" 10
 wait 1500
 wheel status
 expect "weapon_wheel_status open=False selected=-1 sticky=False held=(?!7 )\d+" 10
@@ -83,19 +85,16 @@ expect "weapon_wheel_status open=False selected=-1 sticky=False held=(?!7 )\d+" 
 select 7
 wait 1500
 label wheel_closed
-framestats
-costs
+ui-budget begin
 wait 5000
-framestats
-costs
+ui-budget baseline
 wheel open
 wait 1500
 label wheel_open
-framestats
-costs
+ui-budget begin
 wait 6000
-framestats
-costs
+ui-budget check wheel 0.5 1.10 1.15 30
+expect "ui_budget label=wheel pass=True" 10
 perf
 wheel close
 wait 1000

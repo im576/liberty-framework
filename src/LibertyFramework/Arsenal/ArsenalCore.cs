@@ -94,6 +94,11 @@ namespace LibertyFramework.Arsenal
         private string StorageCommand(string[] args)
         {
             string verb = args.Length > 0 ? args[0] : "status";
+            if (verb == "state")
+            {
+                return "storage_state open=" + StorageOpen + " closing=" + storageClosing + " animation=" + trunkAnimation.Active +
+                    " locked=" + storageControlLocked + " control=" + (Player != null && Player.CanControlCharacter);
+            }
             int number;
             if (verb == "select") { return args.Length > 1 && int.TryParse(args[1], out number) ? wheel.SelectSegment(number) : "storage select <slot 0-4>"; }
             if (verb == "store") { return RunAction(() => wheel.StoreHighlighted()); }
@@ -776,7 +781,7 @@ namespace LibertyFramework.Arsenal
                             LibertyFramework.Engine.Handles.V(nearbyTrunk.Position), config.TrunkTimings);
                     }
                     else { wheel.Open(wheelHost); }
-                    Player.CanControlCharacter = false;
+                    Engine.Player.LockControl(this);
                     storageControlLocked = true;
                     RuntimeLog.Info("arsenal_storage_open id=" + activeStorage.Id);
                 }
@@ -899,7 +904,7 @@ namespace LibertyFramework.Arsenal
             try { trunkAnimation.Abort(); CloseTrunk(); }
             finally
             {
-                if (storageControlLocked && Player != null) { Player.CanControlCharacter = true; }
+                if (storageControlLocked) { Engine.Player.ReleaseControl(this); }
                 storageControlLocked = false;
             }
             RuntimeLog.Info("arsenal_storage_closed id=" + id);
@@ -1038,7 +1043,7 @@ namespace LibertyFramework.Arsenal
             weapon.Remove(); bin.Weapons.Add(stored);
             carried.Remove(record); state.OwnedCarried.Remove(record.WeaponId); Persist();
             RefreshPresentation((int)Player.Character.Weapons.CurrentType);
-            RuntimeLog.Info("arsenal_store id=" + record.WeaponId + " to=" + bin.Id);
+            RuntimeLog.Info("arsenal_store id=" + record.WeaponId + " to=" + bin.Id + " instance=" + stored.InstanceId + " ammo=" + stored.Ammo + " owned=" + stored.Owned);
             return "Stored " + WeaponName(record.WeaponId);
         }
 
@@ -1108,7 +1113,7 @@ namespace LibertyFramework.Arsenal
             if (savedDisplaced != null)
             {
                 bin.Weapons.Add(savedDisplaced);
-                RuntimeLog.Info("arsenal_take_displaced id=" + savedDisplaced.WeaponId + " instance=" + savedDisplaced.InstanceId + " to=" + bin.Id);
+                RuntimeLog.Info("arsenal_take_displaced id=" + savedDisplaced.WeaponId + " instance=" + savedDisplaced.InstanceId + " to=" + bin.Id + " ammo=" + savedDisplaced.Ammo + " owned=" + savedDisplaced.Owned);
             }
             if (displaced != null) { carried.Remove(displaced); state.OwnedCarried.Remove(displaced.WeaponId); }
             WeaponRecord restored = record.Clone(); restored.Owned = true;
@@ -1117,7 +1122,7 @@ namespace LibertyFramework.Arsenal
             carried.Add(restored);
             if (!state.OwnedCarried.Contains(record.WeaponId)) { state.OwnedCarried.Add(record.WeaponId); }
             Persist(); RefreshPresentation((int)Player.Character.Weapons.CurrentType);
-            RuntimeLog.Info("arsenal_take id=" + record.WeaponId + " instance=" + record.InstanceId + " from=" + bin.Id + (displaced != null ? " swapped=" + displaced.WeaponId : ""));
+            RuntimeLog.Info("arsenal_take id=" + record.WeaponId + " instance=" + record.InstanceId + " from=" + bin.Id + " ammo=" + restored.Ammo + " owned=" + restored.Owned + (displaced != null ? " swapped=" + displaced.WeaponId : ""));
             return savedDisplaced != null ? "Swapped " + WeaponName(savedDisplaced.WeaponId) + " for " + WeaponName(record.WeaponId) : "Taken " + WeaponName(record.WeaponId);
         }
 
@@ -1179,10 +1184,10 @@ namespace LibertyFramework.Arsenal
         private void OnDomainUnload(object sender, EventArgs args)
         {
             StorageOpen = false;
-            // Restore player control as the DevTools script does on reload; door natives stay on ticks.
-            if (storageControlLocked && Player != null)
+            // Release only Arsenal's owned lock; another open SDK menu may still need player control captured.
+            if (storageControlLocked)
             {
-                try { Player.CanControlCharacter = true; storageControlLocked = false; }
+                try { Engine.Player.ReleaseControl(this); storageControlLocked = false; }
                 catch (Exception error) { RuntimeLog.Error("arsenal_storage_unload_restore_failed error=" + error); }
             }
             if (ArsenalRegistry.CarriedWeapons == this) { ArsenalRegistry.CarriedWeapons = null; }

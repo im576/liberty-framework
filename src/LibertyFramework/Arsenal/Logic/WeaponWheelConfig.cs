@@ -40,9 +40,9 @@ namespace LibertyFramework.Arsenal.Logic
                 !Enum.TryParse(KeyboardKeyName, out key) || !Enum.IsDefined(typeof(VirtualKey), key))
             { throw new InvalidDataException("weaponWheel padButton or keyboardKey is not a known name"); }
             // The wheel's own navigation keys must stay free.
-            if (key == VirtualKey.Enter || key == VirtualKey.Escape || key == VirtualKey.Back || key == VirtualKey.Left || key == VirtualKey.Right || key == VirtualKey.Up || key == VirtualKey.Down)
+            if (key == VirtualKey.Enter || key == VirtualKey.Escape || key == VirtualKey.Back || key == VirtualKey.Left || key == VirtualKey.Right || key == VirtualKey.Up || key == VirtualKey.Down || key == VirtualKey.Space || key == VirtualKey.G || key == VirtualKey.E || (int)key == 0x21 || (int)key == 0x22)
             { throw new InvalidDataException("weaponWheel keyboardKey collides with the wheel's own navigation keys"); }
-            if (pad == PadButton.A || pad == PadButton.B || pad == PadButton.DPadLeft || pad == PadButton.DPadRight || pad == PadButton.DPadUp || pad == PadButton.DPadDown)
+            if (pad == PadButton.A || pad == PadButton.B || pad == PadButton.X || pad == PadButton.Y || pad == PadButton.LeftShoulder || pad == PadButton.RightShoulder || pad == PadButton.DPadLeft || pad == PadButton.DPadRight || pad == PadButton.DPadUp || pad == PadButton.DPadDown)
             { throw new InvalidDataException("weaponWheel padButton collides with the wheel's own navigation buttons"); }
             if (TapMilliseconds < 50 || TapMilliseconds > 1000) { throw new InvalidDataException("weaponWheel tapMilliseconds must be 50-1000"); }
         }
