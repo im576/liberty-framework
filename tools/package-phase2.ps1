@@ -84,6 +84,8 @@ foreach ($name in @('gunplay.json', 'combat_effects.json', 'weapon-catalog.json'
 }
 Stage-File (Join-Path $repoRoot 'config\arsenal.json') 'scripts\LibertyFramework\config\arsenal.json' 'merge-defaults'
 Stage-File (Join-Path $repoRoot 'config\holsters.json') 'scripts\LibertyFramework\config\holsters.json' 'merge-defaults'
+# T-049: the Liberty HUD's layout, palette and timings; the owner's edits stay, new top-level sections are appended.
+Stage-File (Join-Path $repoRoot 'config\hud.json') 'scripts\LibertyFramework\config\hud.json' 'merge-defaults'
 # T-040: teleport locations (DevTools, the autopilot's `goto`): the owner's file stays, missing ids are appended.
 Stage-File (Join-Path $repoRoot 'config\devtools\locations.json') 'scripts\LibertyFramework\config\devtools\locations.json' 'merge-locations'
 # T-041: the Stage 1 arsenal's identity stats (fire rate, damage, clip, ammo) written into the installed WeaponInfo.xml.

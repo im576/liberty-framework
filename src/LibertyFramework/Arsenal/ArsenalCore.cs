@@ -745,7 +745,7 @@ namespace LibertyFramework.Arsenal
         private void UpdatePrompt()
         {
             string prompt = activeStorage != null || DevToolsMenu.IsOpen ? null :
-                nearbyTrunk != null ? "Press X / E to use the trunk." : nearbySafehouse != null ? "Press X / E to open the weapon stash." : null;
+                nearbyTrunk != null ? "Press {interact} to use the trunk." : nearbySafehouse != null ? "Press {interact} to open the weapon stash." : null;
             if (prompt == promptShown) { return; }
             promptShown = prompt;
             if (prompt != null) { Engine.Ui.ShowHelp(this, prompt, 0); } else { Engine.Ui.ClearHelp(this); }

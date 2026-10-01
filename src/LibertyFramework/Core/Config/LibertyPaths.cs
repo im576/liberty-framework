@@ -27,6 +27,8 @@ namespace LibertyFramework.Core.Config
         // Arsenal (T-020): rules config and per-episode storage state (e.g. state/arsenal_IV.json).
         internal static string ArsenalConfig { get { return Path.Combine(ConfigDirectory, "arsenal.json"); } }
         internal static string AtmosphereConfig { get { return Path.Combine(ConfigDirectory, "atmosphere.json"); } }
+        // Liberty HUD (T-049).
+        internal static string HudConfig { get { return Path.Combine(ConfigDirectory, "hud.json"); } }
         internal static string WeaponCatalog { get { return Path.Combine(ConfigDirectory, "weapon-catalog.json"); } }
         internal static string ArsenalState(string episode) { return Path.Combine(StateDirectory, "arsenal_" + episode + ".json"); }
         // Holsters (T-021): per-slot/per-category prop offsets.
