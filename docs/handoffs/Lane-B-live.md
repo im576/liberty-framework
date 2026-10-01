@@ -59,3 +59,13 @@ Update this file after every game run and meaningful commit. Rules for a success
 - Are Back (pad) and Tab (keyboard) acceptable wheel bindings? (config `weaponWheel`)
 - Trunk sizes are proposals (default 8, sports 4, utility 16, stash unlimited) and ammo caps are proposals (handgun 150, shotgun 60, SMG 240, rifle 240, sniper 40, heavy 12).
 - Melee and thrown weapons keep their current rules; confirm.
+
+## Coordinator completion — October 1 (lanes paused)
+
+Shared scheduling/fail-fast/interruption-restoration/ASI evidence/compiler-cache fixes and the Sol kit are merged locally.
+Integrated offline verifier: 433 passed, 0 failed, 5 notrun; queue/plan validation PASS. See
+Codex-Lane-B-Live-2026-10-01.md and sol/Orchestrator-2026-10-01.md for reviewed source and next work.
+The separate Claude resume's 20261001-023630-4ab6fbd batch was interrupted after the owner paused all lanes.
+No new wheel/trunk acceptance result was collected. Coordinator restored exact backup chain to phase2-20261001-023918;
+44 affected files/actions matched saved originals or expected absence. No game/launcher/verifier remains.
+All feature integration, physical controller/save-load/B-D coexistence and owner judgment remain pending. No push.
