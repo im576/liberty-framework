@@ -31,10 +31,10 @@ storage wheel (`Arsenal/Ui/StorageWheel.cs`), weapon HUD icons extracted at inst
 
 ## Human test steps
 
-Owner reauthorized bounded game verification at 8:51 p.m. Pacific on September 30. Source/offline results alone do not establish gameplay acceptance; only checks that actually finish and restore before the 9:30 p.m. hard stop can supply new evidence.
+Automated checks (keyboard input through the autopilot) are in the Claude continuation below. Steps 2 and 4 need the owner: a physical controller, the owner's resolution and Lane D's HUD cannot be exercised by the autopilot.
 
 1. In free play on foot, carry pistol, shotgun, AK and knife. Hold **Tab** about one second, press **Right**, release **Tab**: the wheel closes and equips the highlight. Tap **Tab**, release, press **Right**, then **Enter**: the tap keeps it open until confirm.
-2. Repeat with controller **Back/View**, right stick or D-pad left/right, **A** to confirm and **B** to cancel. Check no unwanted vanilla phone/cycling action. Physical controller input remains unverified.
+2. Controller (owner only), on foot with a pistol, a long gun and the knife: hold **Back/View** for about a second, move the **right stick** (or D-pad left/right) to a slot, release **Back**: the wheel closes and that weapon is in hand. Tap **Back**, release, move the stick, press **A**: equips; press **B** instead: closes and keeps the weapon in hand. While the wheel is open the character must not move, and no phone or vanilla weapon-cycle action may fire when Back is pressed or released. If it does, note which action and change `weaponWheel.padButton` in `config/arsenal.json` (the file is read again when the game starts).
 3. Repeat every filled slot; inspect next-frame `weapon_wheel_equipped ... match=True`. Confirm the empty thrown slot closes without changing weapon. Disable `weaponWheel.enabled` and check vanilla cycling.
 4. Review labels, ammo and footer at 1280x720 and the owner's resolution. Once D is integrated, check top-right HUD and bottom-left radar coexistence. Run the bounded bisect and enforced budgets only after game testing is authorized; do not rerun/change the T-040 baseline.
 
@@ -89,3 +89,8 @@ would avoid that and are a recommendation for D, not done here).
 - `T046-trunk-ui`: passed (NEEDS-REVIEW for the screenshots). Store, take, swap with ammo and ownership read back, capacity refusal, two persisted-state round trips, control released after both closes, `ui-budget` trunk window avg 30.3 ms against 28.7 ms closed, p95 47.6 / 44.3 (+7.4%), p99 85.5 / 76.6 (+11.6%).
 - An earlier full run (`ec5e244`) had one game crash and one p95 gate miss by 0.5 ms; both runs shared the machine with other lanes' builds (a 11-14 s stall in the holsters and wheel config-file polling preceded the crash, consistent with disk contention; not proven). The budget windows were then lengthened to 10 s (thresholds unchanged).
 - Still NOT VERIFIED: physical controller (Back, stick, A/B), a real game save and load, the safehouse stash and gunsmith through this interface, Lane D HUD coexistence, owner judgement of the screenshots.
+
+## Owner questions (defaults stay as shipped until answered)
+
+- Wheel bindings: controller **Back/View** and keyboard **Tab** (`weaponWheel.padButton`, `keyboardKey` in `config/arsenal.json`). Acceptable, or does either collide with something you use on foot?
+- Melee and thrown weapons keep their current rules (no loadout limit); confirm.

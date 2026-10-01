@@ -30,13 +30,15 @@ spawning the car and accepts whichever weapon the wheel starts on).
 
 ## Human test steps
 
-Owner reauthorized bounded game verification at 8:51 p.m. Pacific on September 30. Source/offline results alone do not establish gameplay acceptance; only checks that actually finish and restore before the 9:30 p.m. hard stop can supply new evidence.
+Automated checks (keyboard input, state-file round trip) are in the Claude continuation below. Steps 4 (real save/load part) and 5, and every controller press, need the owner.
 
 1. Behind an Admiral on foot, press **E** (controller **X**); wait for lid animation and carried/trunk groups. Select the AK with arrows/right stick and press **Space** (**X**) to store; sling vanishes, trunk gains it with unchanged ammo, carried slot reads Empty.
 2. Fill both long-gun slots, highlight the stored AK with **Page Up/Down** (**LB/RB**) and press **Enter** (**A**). Preview names the outgoing gun; check ammo/ownership/physical identity and sling changes. Repeat with a non-round ammo count.
 3. Press **Backspace** (**B**), wait for lid close and movement to resume. Reopen/close repeatedly, including immediately after transfers. `storage state` must report open/closing/animation/locked false and control true with no other capturing menu.
 4. Repeat on a Banshee: four stored guns fit; fifth store is refused and remains carried. Take/swap from full storage preserves inventory. Restart/load a save and confirm owned inventory/ammo/instances persist.
-5. Repeat both devices at a previously verified/owner-marked safehouse, including gunsmith open/back. Review HUD/radar coexistence and enforced budgets. Actual game save/load, controller and safehouse gameplay remain open.
+5. Real save/load (owner): carry pistol + AK + shotgun, store the AK in a car trunk (note its ammo), save at a safehouse, quit to the menu, load the save. Expect: the pistol and shotgun are in hand slots, the AK is still in that car's trunk with the same ammo (open the trunk again and check). Then drive away, load the save again and check nothing duplicated or vanished (`arsenal roundtrip` in the DevTools console must say `identical=True`).
+6. Safehouse (owner): at a safehouse wardrobe/stash spot press **E** (controller **X**): the same radial and list open with capacity "unlimited". Store two long guns, close with **Backspace** (**B**), then open the gunsmith and press **Backspace**/**B** to leave it; control must return each time. Check the same store, take and swap flow as at the trunk.
+7. Controller (owner): repeat steps 1-3 with **X** (open, store), **LB/RB** (list), **A** (take) and **B** (close). Check the interface against Lane D's top-right weapon/ammo group and the bottom-left radar once integrated.
 
 ## Codex continuation — September 30, 2026
 
@@ -92,3 +94,9 @@ would avoid that and are a recommendation for D, not done here).
 - `T046-trunk-ui`: passed (NEEDS-REVIEW for the screenshots). Store, take, swap with ammo and ownership read back, capacity refusal, two persisted-state round trips, control released after both closes, `ui-budget` trunk window avg 30.3 ms against 28.7 ms closed, p95 47.6 / 44.3 (+7.4%), p99 85.5 / 76.6 (+11.6%).
 - An earlier full run (`ec5e244`) had one game crash and one p95 gate miss by 0.5 ms; both runs shared the machine with other lanes' builds (a 11-14 s stall in the holsters and wheel config-file polling preceded the crash, consistent with disk contention; not proven). The budget windows were then lengthened to 10 s (thresholds unchanged).
 - Still NOT VERIFIED: physical controller (Back, stick, A/B), a real game save and load, the safehouse stash and gunsmith through this interface, Lane D HUD coexistence, owner judgement of the screenshots.
+
+## Owner questions (defaults stay as shipped until answered)
+
+- Trunk sizes: 8 slots by default, 4 for sports cars, 16 for utility vehicles, unlimited in a safehouse stash (`trunkCapacity` in `config/arsenal.json`). Right numbers, and which models belong in the sports and utility classes?
+- Ammo caps per category when a gun is carried or stored: handgun 150, shotgun 60, SMG 240, rifle 240, sniper 40, heavy 12 (`loadout.ammoCaps`). Confirm or change.
+- Loadout of 2 long guns + 1 sidearm with SMGs counted as long guns (already decided) is unchanged.

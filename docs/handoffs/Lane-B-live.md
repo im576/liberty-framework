@@ -69,3 +69,11 @@ The separate Claude resume's 20261001-023630-4ab6fbd batch was interrupted after
 No new wheel/trunk acceptance result was collected. Coordinator restored exact backup chain to phase2-20261001-023918;
 44 affected files/actions matched saved originals or expected absence. No game/launcher/verifier remains.
 All feature integration, physical controller/save-load/B-D coexistence and owner judgment remain pending. No push.
+
+## Resumed 2026-10-01 (Claude) - WAITING FOR AUDIO, NOT READY FOR MERGE YET
+
+- Merged origin/main (`868368b`, log writes and config timestamp checks off the game thread) into this branch (`e986a88`). Offline on the merged tip: verifier 1012/0, PowerShell tests 224/0, `checks.py plan` ok, `artq.py validate` ok (12 requests, 0 problems).
+- Orchestrator held game runs: Windows has no audio output device, GTA IV cannot start (GAME-UNAVAILABLE). No game run was attempted. When the orchestrator says audio is back, run once, full (no -Quick):
+  `./tools/verify-local.ps1 -GameDirectory "C:\Games\Grand Theft Auto IV\GTAIV" -Branch codex/lane-b-validation -AnyBranch -NoPush -Restore -NoManual -Only LOOP-package-install,T045-ui-text,T045-weapon-wheel,T046-trunk-ui`
+  Look at every screenshot. On a failure fix with `-Quick -StopOnFailure`, then rerun full. Then write "READY FOR MERGE" plus the run id here and commit. Do not merge, do not touch ConfigService polling.
+- Cards T-045/T-046: human test steps rewritten (controller, real save/load, safehouse, owner-only) and an "Owner questions" section added (Back/Tab, trunk sizes 8/4/16/unlimited, ammo caps, melee/thrown). Defaults unchanged.
