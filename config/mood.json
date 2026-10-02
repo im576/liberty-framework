@@ -1,25 +1,192 @@
 {
   "schemaVersion": 1,
-  "description": "Liberty Mood: grey, wet city; very dark, cold nights; readable daytime shadows. Multipliers apply to FusionFix's timecyc.dat rows; adds are absolute.",
+  "description": "Owner-approved citywide colorful/gritty direction, 2026-10-02. Grey and wet daylight; natural color; readable, colorful nights. Generated from pristine FusionFix source, not compounded over installed tuning.",
   "weatherClasses": {
-    "bright": ["EXTRASUNNY", "SUNNY", "SUNNY_WINDY"],
-    "grey": ["CLOUDY", "FOGGY"],
-    "wet": ["RAIN", "DRIZZLE", "LIGHTNING"]
+    "bright": [
+      "EXTRASUNNY",
+      "SUNNY",
+      "SUNNY_WINDY"
+    ],
+    "grey": [
+      "CLOUDY",
+      "FOGGY"
+    ],
+    "wet": [
+      "RAIN",
+      "DRIZZLE",
+      "LIGHTNING"
+    ]
   },
   "timeClasses": {
-    "night": ["Midnight", "5AM", "10PM"],
-    "twilight": ["6AM", "8PM", "9PM"],
-    "day": ["7AM", "9AM", "Midday", "6PM", "7PM"]
+    "night": [
+      "Midnight",
+      "5AM",
+      "10PM"
+    ],
+    "twilight": [
+      "6AM",
+      "7PM",
+      "8PM",
+      "9PM"
+    ],
+    "day": [
+      "7AM",
+      "9AM",
+      "Midday",
+      "6PM"
+    ]
   },
   "rules": [
-    { "weather": "*",      "time": "day",      "ambientScale": 1.12, "desaturationAdd": 0.06, "colourCorrect": [0.97, 0.99, 1.00] },
-    { "weather": "bright", "time": "day",      "sunScale": 0.85, "bloomScale": 0.9 },
-    { "weather": "grey",   "time": "day",      "sunScale": 0.6, "directScale": 0.8, "desaturationAdd": 0.12, "colourCorrect": [0.94, 0.97, 1.02], "fogStartScale": 0.75, "volumetricFogScale": 1.6, "bloomScale": 0.85 },
-    { "weather": "wet",    "time": "day",      "sunScale": 0.45, "directScale": 0.72, "desaturationAdd": 0.16, "colourCorrect": [0.92, 0.96, 1.03], "fogStartScale": 0.7, "volumetricFogScale": 1.8, "bloomScale": 0.8, "contrastAdd": 0.03 },
-    { "weather": "*",      "time": "twilight", "ambientScale": 0.8, "desaturationAdd": 0.12, "colourCorrect": [0.9, 0.95, 1.04], "skyScale": 0.85 },
-    { "weather": "*",      "time": "night",    "ambientScale": 0.55, "skyScale": 0.6, "directScale": 0.8, "desaturationAdd": 0.22, "colourCorrect": [0.82, 0.92, 1.06], "contrastAdd": 0.05, "volumetricFogScale": 1.5 },
-    { "weather": "wet",    "time": "night",    "ambientScale": 0.9, "volumetricFogScale": 1.3 },
-    { "weather": "grey",   "time": "night",    "volumetricFogScale": 1.4 }
+    {
+      "contrastAdd": 0.015,
+      "time": "day",
+      "colourCorrect": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "desaturationAdd": -0.12,
+      "ambientScale": 1.08,
+      "weather": "*"
+    },
+    {
+      "skyTop": [
+        45,
+        66,
+        91
+      ],
+      "bloomScale": 0.88,
+      "directScale": 0.96,
+      "weather": "bright",
+      "skyScale": 0.94,
+      "time": "day",
+      "skyBottom": [
+        142,
+        169,
+        190
+      ],
+      "sunScale": 0.94
+    },
+    {
+      "bottomClouds": [
+        110,
+        117,
+        124
+      ],
+      "time": "day",
+      "directScale": 0.82,
+      "bloomScale": 0.85,
+      "lowClouds": [
+        121,
+        126,
+        132
+      ],
+      "skyTop": [
+        68,
+        76,
+        84
+      ],
+      "skyScale": 0.92,
+      "skyBottom": [
+        154,
+        160,
+        166
+      ],
+      "weather": "grey",
+      "volumetricFogScale": 1.2,
+      "fogStartScale": 0.85,
+      "sunScale": 0.65
+    },
+    {
+      "bottomClouds": [
+        91,
+        104,
+        115
+      ],
+      "fogStartScale": 0.78,
+      "contrastAdd": 0.015,
+      "skyTop": [
+        48,
+        59,
+        70
+      ],
+      "bloomScale": 0.9,
+      "directScale": 0.78,
+      "volumetricFogScale": 1.32,
+      "ambientScale": 1.04,
+      "weather": "wet",
+      "skyScale": 0.9,
+      "time": "day",
+      "skyBottom": [
+        124,
+        137,
+        147
+      ],
+      "sunScale": 0.55,
+      "lowClouds": [
+        102,
+        113,
+        123
+      ]
+    },
+    {
+      "time": "twilight",
+      "bloomScale": 0.93,
+      "contrastAdd": 0.02,
+      "weather": "*",
+      "skyScale": 0.94,
+      "ambientScale": 1.04,
+      "colourCorrect": [
+        1.02,
+        1.0,
+        0.99
+      ],
+      "desaturationAdd": -0.16
+    },
+    {
+      "weather": "grey",
+      "time": "twilight",
+      "fogStartScale": 0.88,
+      "volumetricFogScale": 1.15
+    },
+    {
+      "weather": "wet",
+      "time": "twilight",
+      "fogStartScale": 0.82,
+      "volumetricFogScale": 1.25
+    },
+    {
+      "ambientScale": 1.12,
+      "volumetricFogScale": 1.08,
+      "time": "night",
+      "directScale": 1.0,
+      "bloomScale": 1.04,
+      "skyScale": 0.84,
+      "weather": "*",
+      "desaturationAdd": -0.22,
+      "contrastAdd": 0.02,
+      "colourCorrect": [
+        1.04,
+        1.01,
+        0.98
+      ]
+    },
+    {
+      "weather": "grey",
+      "time": "night",
+      "fogStartScale": 0.9,
+      "volumetricFogScale": 1.12
+    },
+    {
+      "weather": "wet",
+      "time": "night",
+      "fogStartScale": 0.84,
+      "ambientScale": 1.03,
+      "volumetricFogScale": 1.2
+    }
   ],
-  "limits": { "desaturationMax": 0.85, "contrastMax": 1.35 }
+  "limits": {
+    "contrastMax": 1.25,
+    "desaturationMax": 0.85
+  }
 }

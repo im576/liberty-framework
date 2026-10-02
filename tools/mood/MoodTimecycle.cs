@@ -68,8 +68,13 @@ namespace LibertyFramework.Mood
         private static string Apply(string line, List<Rule> rules, Config config)
         {
             List<Token> tokens = Tokenize(line);
+            if (tokens.Count < 62) { throw new InvalidDataException("timecyc row is shorter than the verified FusionFix layout"); }
             foreach (Rule rule in rules)
             {
+                SetColour(tokens, 9, rule.SkyTop);
+                SetColour(tokens, 12, rule.SkyBottom);
+                SetColour(tokens, 25, rule.LowClouds);
+                SetColour(tokens, 28, rule.BottomClouds);
                 Scale(tokens, AmbLightMult0, rule.AmbientScale); Scale(tokens, AmbLightMult1, rule.AmbientScale);
                 Scale(tokens, SkyLightMult, rule.SkyScale);
                 Scale(tokens, DirLightMult, rule.DirectScale);
@@ -86,6 +91,12 @@ namespace LibertyFramework.Mood
                 }
             }
             return Join(line, tokens);
+        }
+
+        private static void SetColour(List<Token> tokens, int index, double[] colour)
+        {
+            if (colour == null) { return; }
+            for (int c = 0; c < 3; c++) { tokens[index + c].Value = colour[c]; tokens[index + c].Changed = true; }
         }
 
         private static string ApplyExt(string line, List<Rule> rules)
@@ -152,6 +163,7 @@ namespace LibertyFramework.Mood
             internal double AmbientScale = 1, SkyScale = 1, DirectScale = 1, SunScale = 1, BloomScale = 1, FogStartScale = 1,
                 VolumetricFogScale = 1, DesaturationAdd, ContrastAdd;
             internal double[] ColourCorrect;
+            internal double[] SkyTop, SkyBottom, LowClouds, BottomClouds;
         }
 
         private sealed class Config
@@ -178,6 +190,10 @@ namespace LibertyFramework.Mood
                     rule.BloomScale = Number(raw, "bloomScale", 1); rule.FogStartScale = Number(raw, "fogStartScale", 1);
                     rule.VolumetricFogScale = Number(raw, "volumetricFogScale", 1);
                     rule.DesaturationAdd = Number(raw, "desaturationAdd", 0); rule.ContrastAdd = Number(raw, "contrastAdd", 0);
+                    rule.SkyTop = Colour(raw, "skyTop", 0, 255);
+                    rule.SkyBottom = Colour(raw, "skyBottom", 0, 255);
+                    rule.LowClouds = Colour(raw, "lowClouds", 0, 255);
+                    rule.BottomClouds = Colour(raw, "bottomClouds", 0, 255);
                     if (raw.ContainsKey("colourCorrect"))
                     {
                         List<double> rgb = new List<double>();
@@ -196,6 +212,21 @@ namespace LibertyFramework.Mood
             private static double Number(Dictionary<string, object> raw, string key, double fallback)
             {
                 return raw.ContainsKey(key) ? Convert.ToDouble(raw[key], CultureInfo.InvariantCulture) : fallback;
+            }
+
+            private static double[] Colour(Dictionary<string, object> raw, string key, double minimum, double maximum)
+            {
+                if (!raw.ContainsKey(key)) { return null; }
+                List<double> values = new List<double>();
+                foreach (object item in (IEnumerable)raw[key])
+                {
+                    double value = Convert.ToDouble(item, CultureInfo.InvariantCulture);
+                    if (double.IsNaN(value) || double.IsInfinity(value) || value < minimum || value > maximum)
+                        throw new InvalidDataException(key + " values must be finite and between " + minimum + " and " + maximum);
+                    values.Add(value);
+                }
+                if (values.Count != 3) { throw new InvalidDataException(key + " needs 3 values"); }
+                return values.ToArray();
             }
 
             internal bool KnownWeather(string name) { return weatherClass.ContainsKey(name); }

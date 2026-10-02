@@ -45,6 +45,21 @@
   ],
   "checks": [
     {
+      "id": "T058-citywide-environment",
+      "task": "T-058",
+      "title": "Citywide approved environment look, four sites and five conditions",
+      "kind": "scenario",
+      "run": {
+        "scenario": "citywide-environment"
+      },
+      "proves": "Candidate boots on the existing preview; matched camera captures at four sites under five weather/time conditions; final camera/owned-prop cleanup.",
+      "pass": "Twenty captures produced without failed steps; screenshots reviewed against approved direction; cleanup succeeds.",
+      "unproven": "Owner acceptance, moving performance, interiors/missions and target material/local-light fidelity.",
+      "reference": "docs/tasks/T-058-citywide-environment-overhaul.md",
+      "status": "QUEUED",
+      "addedIn": "Owner-authorized citywide overhaul 2026-10-02"
+    },
+    {
       "id": "T040-feature-preview-smoke",
       "task": "T-040",
       "title": "Limited gameplay preview functional smoke",

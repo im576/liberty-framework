@@ -54,3 +54,7 @@ finished history, all NEEDS-PLAYTEST or owner-verified: [T-007](T-007-weapon-slo
 [T-022](T-022-combat-effects.md), [T-023](T-023-lvs-body-variants.md), [T-025](T-025-physical-weapons.md).
 
 All other finished cards (T-000..T-003, T-008..T-010) are in [../archive/tasks/](../archive/tasks/).
+
+## Owner-directed citywide visual overhaul
+
+T-058 — [Citywide environment overhaul](T-058-citywide-environment-overhaul.md) — IN-PROGRESS (2026-10-02). One integrated weather/time candidate from the approved art targets; no new lane dispatch. Runtime/visual acceptance pending. This owner-directed work supersedes the earlier remaster hold for this task.
