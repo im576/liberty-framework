@@ -7,12 +7,23 @@ Evidence and limits: [integration review](../reports/2026-10-01-orchestrator-int
 
 ## Current continuation after usage interruption
 
-**Current slot:** D alone owns the full held-weapon baseline batch on reviewed `5c0cb8d`, including build/verifier/
-install and always restore. B full `20261001-202311-2297a17` finished/restored `phase2-20261001-202329`: SDK UI 21/0,
-wheel 99/0, all 16 openings/draws max_frames=0 and wheel UI budget PASS; parent viewed all ten produced captures.
+**Current slot:** D alone is assigned one corrected full held-weapon baseline batch on `e1ede91` after integrating
+main's reviewed host fix `9cdc097`: LOOP-build, LOOP-verify, LOOP-package-install, T049-hud-held-baseline; full,
+fail-fast, 30-minute cap, always restore. No hide comparison or automatic second batch is assigned.
+Previous D full `20261001-203435-5c0cb8d` restored `phase2-20261001-203521`: 26 steps/1 failed/0 log errors,
+actual unarmed clip0 versus fixture's invalid clip17 assumption; both idle/aim captures NOT-RUN.
+The correction preserves positive held/clip readiness, passes 80/0 focused checks and retains the original FAIL.
+Main startup shared-deadline/partial-evidence fix `9cdc097` passes complete offline tooling **256/0**.
+
+B full `20261001-202311-2297a17` finished/restored `phase2-20261001-202329`: SDK UI 21/0, wheel 99/0,
+all 16 openings/draws max_frames=0 and wheel UI budget PASS; parent viewed all ten produced captures.
 Trunk stopped at 41 steps on p95 46.4 ms versus baseline 40.7 ms; later transfers/capacity/cleanup flows NOT-RUN.
-The shared B patch stays unmerged while B diagnoses offline. C prepares an isolated host deadline/telemetry fix;
-R repairs fixture restoration/safety offline after source review. No other heavy/game slot is assigned.
+The shared B patch stays unmerged while B finishes bounded paired-cost/status observations offline.
+C narrows the effects acceptance/experiment map offline. R reviews recorded stalls offline; reviewed parking/safety
+candidate `b264d5d` awaits runtime validation. No other heavy/game slot is assigned.
+
+Owner report and low-confidence feature-first planning allowance:
+[status and estimate](../reports/2026-10-01-feature-status-and-estimate.md).
 
 R full `20261001-200706-7d80c1d` restored `phase2-20261001-200759`; build/file verifier/install and all 53 SDK
 assertions passed, but stall ERRORs and surface correspondence prevent clean acceptance. Parent viewed all 40 captures;

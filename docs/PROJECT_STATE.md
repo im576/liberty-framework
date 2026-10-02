@@ -32,6 +32,12 @@ before any Phase 3 work. Offline passes do not mark a lane DONE.
 
 ## Stage 1 progress
 
+**Latest review (2026-10-01):** B's fresh wheel timing passes (16/16 openings at frame 0), but trunk p95/p99 fail;
+the shared follow-up remains held. C stability/cleanup/performance, D HUD acceptance and R material/stall evidence
+remain open. Main host startup deadline/evidence fix `9cdc097` passes tooling 256/0. D gets one corrected full
+held-baseline batch; other workers continue offline. This update overrides older run/schedule statements below.
+[Feature status and planning estimate](reports/2026-10-01-feature-status-and-estimate.md).
+
 - **T-045 wheel / T-046 trunk UI (lane B), merged, NEEDS-PLAYTEST (2026-10-01):** main `f823e45` integrates reviewed
   Lane B `1744416` and cached sprite text, preserving newer main tooling. Full `20261001-092349-e470758` passed all
   wheel/trunk/text assertions and budgets; orchestrator reviewed all 12 wheel/trunk captures. Combined build PASS,
