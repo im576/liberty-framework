@@ -11,6 +11,16 @@ This section supersedes the historical next-step instructions below. The finishe
 
 ### Paired window observation candidate — offline follow-up, latest
 
+Parent independently reviewed `d9fa8a7` production diff and full actual-source harness/25/0 receipts; accepted as
+bounded offline instrumentation, held unmerged until runtime. Pushed main `aa6d463` safely merged into clean B as
+`77a8fbc` (includes host startup deadline/evidence `9cdc097`, parent tooling receipt256/0; not a fresh B receipt).
+Conflicts resolved keeping both project-status records and both runner initializations: B wheel fixture state plus
+host phase/startup telemetry. Fixture finally restoration remains intact. Merged runner parser PASS and diff whitespace
+PASS; production/observation harness, scenario windows and queue entries unchanged from pre-merge `35e5980`.
+No unchanged focused checks repeated, no heavy build/verifier/package/install/game launched. D retains exclusive
+`20261001-210109-df025f7` slot; B awaits D restoration AND explicit reassignment. Prepared single future full batch:
+LOOP-build, LOOP-verify, LOOP-package-install, T046-trunk-ui only, exact command below. No watcher/wheel/SDK batch.
+
 Owner authorized bounded metrics/state observation after6864e38 diagnosis; resumed preserved WIP without discarding
 files. Separate patch changes only PerfService, ArsenalCore observer registration and TrunkSequence managed state,
 plus focused runner/harness/docs. No speculative trunk repair or original failure removal.
@@ -51,7 +61,7 @@ Proposed ONE future full batch after parent host-startup review and explicit slo
 No Quick/AllowOtherBuild; preserve existing scenario windows and gate. Required scheduled production checks first,
 then committed full run. Estimate8–12min including startup/stage/verifier/restoration, cap30 unchanged; estimate only.
 Inspect exact paired costs/frame stats/state, captures and restoration; stop at failed/unavailable return, no second
-invocation. Passing wheel/SDK not selected; watcher batch not authorized. Parent reviewing isolated host fix; B has
+invocation. Passing wheel/SDK not selected; watcher batch not authorized. Reviewed host fix is integrated; B has
 no heavy/game/install slot. No main push/merge, no other worktree edit or subdelegation.
 
 ### Previous full receipt (preserved)
