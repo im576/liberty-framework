@@ -53,7 +53,9 @@ before any Phase 3 work. Offline passes do not mark a lane DONE.
   Full SDK 1.2/material acceptance remains pending. SDK 1.3 radar/probes and remaining research are still separate.
 - **T-049 HUD (lane D):** unmerged; clean hiding and coexistence require further runtime evidence.
 
-Latest main build PASS; offline verifier 433/0/5 not-run; tooling tests 236/0. Host log reading now preserves history
+Latest main integration `f816a87` build PASS (zero errors); offline verifier 441/0/5 not-run; tooling tests 236/0.
+Receipts: `results-local/offline/orchestrator-b-integration/`. B continues wheel timing/config-lifecycle coverage;
+C/D/R prepared patches remain unmerged pending their scheduled runtime evidence. Host log reading now preserves history
 through rotation gaps and empty unread tails, and lock self-tests use isolated holder notes. Details and failed/full
 runtime receipts: [orchestrator integration review](reports/2026-10-01-orchestrator-integration.md).
 
