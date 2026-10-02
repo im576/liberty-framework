@@ -10,10 +10,10 @@ already accepted. Only the owner marks DONE after playing; failed or unproven be
 |---|---|
 | Weapons, gunplay, shoulder swap, reticles | Integrated lane A; owner feel/class tuning and input checks remain. |
 | Physical 2+1 loadout, holsters/slings | Integrated T-044; real save/load, vehicle/cutscene/mission compatibility and owner clipping review remain. |
-| Wheel, trunk/storage | Integrated B acceptance retained; validate watcher follow-up, real persistence/safehouse/gunsmith flows and HUD coexistence. |
-| Gore and combat effects | C still has crash, peak-budget and cleanup evidence gaps; do not ship its unvalidated patch as stable. |
-| Functional HUD/menus | D's diagnostic is unfinished; retain vanilla guard until hiding/text preservation and restoration pass. |
-| Supporting material/SDK features | R must establish target/handle correctness, glass/water results and full SDK 1.2 acceptance. Radar/SDK 1.3 stays separate pending review. |
+| Wheel, trunk/storage | Integrated B acceptance retained; reviewed initial snapshot repair is in full validation. All-opening one-frame timing and watcher lifecycle still need acceptance, followed by real persistence/safehouse/gunsmith flows and HUD coexistence. |
+| Gore and combat effects | C cleanup repair builds, but active comparison timed out before engine readiness. Crash, peak-budget and runtime cleanup gaps remain; do not ship its unvalidated patch as stable. |
+| Functional HUD/menus | D's held-weapon baseline diagnostic and expiry repair pass focused checks; production/capture evidence remains pending. Retain vanilla guard until hiding/text preservation and restoration pass. |
+| Supporting material/SDK features | R full build/verifier passed and all 53 SDK assertions passed. Stalls and obstructed surface views prevent clean acceptance; glass/water correspondence remains unproven. Radar/SDK 1.3 stays separate pending review. |
 
 Review other existing/in-progress feature modules against their task cards before composing the build; do not silently
 omit gameplay modules because they are outside the original Slice A table. Functional UI is priority; final remaster
