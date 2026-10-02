@@ -7,7 +7,21 @@ Evidence and limits: [integration review](../reports/2026-10-01-orchestrator-int
 
 ## Current continuation after usage interruption
 
-**Current slot:** D alone is assigned one corrected full held-weapon baseline batch on `e1ede91` after integrating
+**Owner priority update — limited preview tonight:** parent alone owns the next build/game/install slot in
+`C:\Users\IM576\GTAIV-Reborn-feature-preview`, branch `codex/feature-preview-2026-10-01`, based on main `aa6d463`.
+Preview candidate `36901ab` retains reviewed integrated weapons/gunplay/loadout/wheel/trunk/DevTools with vanilla HUD;
+preview-only disabled modules are `combat, atmosphere`, density stays OFF. New functional smoke does not replace
+or relax original full task/performance gates. Owner persistent state backed up/hash-verified (six files) before testing.
+One full, fail-fast, restore batch: LOOP-build, LOOP-verify, LOOP-package-install, T040-feature-preview-smoke.
+Only reviewed successful smoke will be installed for the owner; other lanes stay offline while it is installed.
+This priority supersedes the D assignment below. No B/C/D/R follow-up game slot is currently assigned.
+
+D corrected full `20261001-210109-df025f7` finished/restored `phase2-20261001-210132`: build/verifier/install PASS,
+58 steps/0 failed/0 log errors, two captures NEEDS-REVIEW. Lane reports idle native ammo visible but task-aim ammo
+absent; parent independently viewed both captures and confirms this partial evidence. Vanilla guard remains and
+D candidate stays unmerged; no actual HUD hiding or real aiming-input acceptance is established.
+
+**Previous slot (finished):** D alone was assigned one corrected full held-weapon baseline batch on `e1ede91` after integrating
 main's reviewed host fix `9cdc097`: LOOP-build, LOOP-verify, LOOP-package-install, T049-hud-held-baseline; full,
 fail-fast, 30-minute cap, always restore. No hide comparison or automatic second batch is assigned.
 Previous D full `20261001-203435-5c0cb8d` restored `phase2-20261001-203521`: 26 steps/1 failed/0 log errors,

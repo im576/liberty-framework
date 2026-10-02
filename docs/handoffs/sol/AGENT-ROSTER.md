@@ -42,6 +42,12 @@ No remaster implementation is assigned. Functional menus/HUD/storage and support
 
 ## Latest resume and schedule
 
+**Owner preview priority:** the parent alone now prepares/tests a separate limited gameplay preview tonight.
+D's corrected full baseline `20261001-210109-df025f7` has finished/restored; pending HUD captures do not authorize
+hiding adoption. B/C/D/R keep their candidates and may continue offline; no heavy/game/install slot is assigned to them.
+No unattended test may replace the owner preview installation or interrupt the owner's manual session.
+Current schedule: ORCHESTRATOR.md. Preview branch: `codex/feature-preview-2026-10-01`, candidate `36901ab`.
+
 Latest cutoff recovery: preserve all four IDs/settings. Main startup deadline/evidence fix `9cdc097` passes full
 offline tooling 256/0. D alone is assigned one corrected full held-baseline batch on `e1ede91` after integrating it,
 with fail-fast, 30-minute cap and restoration. The previous D full FAIL and unarmed clip0 remain recorded.
