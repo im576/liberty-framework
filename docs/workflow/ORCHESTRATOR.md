@@ -7,7 +7,17 @@ Evidence and limits: [integration review](../reports/2026-10-01-orchestrator-int
 
 ## Current continuation after usage interruption
 
-**Owner priority update — limited preview tonight:** parent alone owns the next build/game/install slot in
+**Owner preview INSTALLED at 10:00 p.m. Pacific:** full functional run `20261001-215249-36901ab` passed
+87 steps/0 failed/0 log errors; parent reviewed all four captures. Build PASS, game-file verifier1020/0.
+Smoke restored `phase2-20261001-215357`; parent then restored all six pre-smoke state files/hash/timestamps and
+archived the smoke-generated props state. Final installation `phase2-20261001-220055` is independently hash-verified
+(44 package files). Installed metadata names preview worktree/branch,36901ab,dirtyFalse.
+**No lane has a game/heavy/install slot.** B/C/D/R may work offline; do not replace the owner preview or interrupt
+manual testing until the owner ends that session or requests another installation. Preview source is separate from main.
+Contents/controls/receipt: `C:\Users\IM576\GTAIV-Reborn-feature-preview\docs\testing\FEATURE_PREVIEW.md` and
+`docs\reports\2026-10-01-feature-preview-ready.md` in that worktree. The preparation paragraph below is historical.
+
+**Owner priority update — limited preview tonight:** parent prepared the build/game/install slot in
 `C:\Users\IM576\GTAIV-Reborn-feature-preview`, branch `codex/feature-preview-2026-10-01`, based on main `aa6d463`.
 Preview candidate `36901ab` retains reviewed integrated weapons/gunplay/loadout/wheel/trunk/DevTools with vanilla HUD;
 preview-only disabled modules are `combat, atmosphere`, density stays OFF. New functional smoke does not replace

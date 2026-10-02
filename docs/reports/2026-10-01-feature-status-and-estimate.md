@@ -1,5 +1,12 @@
 # Gameplay feature status and completion estimate — October 1, 2026
 
+**Later owner priority update:** the limited preview is now installed at 10:00 p.m. Pacific, source36901ab on
+a separate preview branch. Functional smoke87/0/0errors, four captures parent-reviewed, verifier1020/0 and44 final
+installed files hash-verified; pre-smoke state restored. Gore/atmosphere excluded; vanilla HUD retained. The interim
+preview milestone is achieved; full gameplay acceptance gaps and estimate below remain open. Agents work offline
+while the owner tests. Controls/receipt are in `C:\Users\IM576\GTAIV-Reborn-feature-preview\docs\testing\FEATURE_PREVIEW.md`
+and `docs\reports\2026-10-01-feature-preview-ready.md` in that worktree.
+
 The immediate target is the owner's integrated gameplay feature mod: weapons/gunplay/loadout,
 wheel/trunks/storage, gore/combat effects, functional HUD/menus and supporting feature systems.
 Environment remaster and atmosphere deployment come later. Art direction can continue independently.

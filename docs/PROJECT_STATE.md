@@ -32,6 +32,13 @@ before any Phase 3 work. Offline passes do not mark a lane DONE.
 
 ## Stage 1 progress
 
+**Limited owner preview installed (2026-10-01, 10:00 p.m. Pacific):** separate branch
+`codex/feature-preview-2026-10-01` source36901ab, weapons/gunplay/loadout/wheel/existing trunk/DevTools;
+combat/atmosphere excluded, vanilla HUD and density OFF. Full functional smoke87/0/0errors, four captures reviewed;
+file verifier1020/0, final44 package hashes verified, pre-smoke state restored. Other lanes stay offline during
+owner testing. This is a preview, not completion of the original feature/performance gates.
+Controls: `C:\Users\IM576\GTAIV-Reborn-feature-preview\docs\testing\FEATURE_PREVIEW.md`.
+
 **Latest review (2026-10-01):** B's fresh wheel timing passes (16/16 openings at frame 0), but trunk p95/p99 fail;
 the shared follow-up remains held. C stability/cleanup/performance, D HUD acceptance and R material/stall evidence
 remain open. Main host startup deadline/evidence fix `9cdc097` passes tooling 256/0. D gets one corrected full

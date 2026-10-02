@@ -43,6 +43,9 @@ No remaster implementation is assigned. Functional menus/HUD/storage and support
 ## Latest resume and schedule
 
 **Owner preview priority:** the parent alone now prepares/tests a separate limited gameplay preview tonight.
+It is now installed: source36901ab, full87/0/0errors, four captures parent-reviewed, 44 installed files hash-verified.
+Final backup `phase2-20261001-220055`; pre-smoke persistent state restored. All lane game/heavy/install slots held
+until the owner ends the manual session or requests another installation. Work may continue offline only.
 D's corrected full baseline `20261001-210109-df025f7` has finished/restored; pending HUD captures do not authorize
 hiding adoption. B/C/D/R keep their candidates and may continue offline; no heavy/game/install slot is assigned to them.
 No unattended test may replace the owner preview installation or interrupt the owner's manual session.
