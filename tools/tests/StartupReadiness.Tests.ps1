@@ -120,9 +120,9 @@ try {
         $bootEvent = @($nearResult.startup | Where-Object { $_.event -eq 'engine_booted' })[0]
         Test-That "startup actual runner/helper: near-deadline $mode boot keeps full $settleSeconds s settling and serialization reserve" (
             $read.Status -eq 'PASS' -and $nearResult.phase -eq 'scenario' -and $nearResult.mode -eq $mode -and
-            ($nearDeadline.AddSeconds(-($settleSeconds + 5)) - [DateTime]::Parse($bootEvent.utc).ToUniversalTime()).TotalSeconds -eq 2 -and
+            ($nearDeadline.AddSeconds(-($settleSeconds + 5)) - ([DateTime]$bootEvent.utc).ToUniversalTime()).TotalSeconds -eq 2 -and
             @($sleeps | Where-Object { $_.seconds -eq $settleSeconds }).Count -eq 1 -and
-            [DateTime]::Parse($sleeps[-1].utc).ToUniversalTime() -le $nearDeadline.AddSeconds(-5)
+            ([DateTime]$sleeps[-1].utc).ToUniversalTime() -le $nearDeadline.AddSeconds(-5)
         ) $output
     }
 }

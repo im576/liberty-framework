@@ -21,6 +21,11 @@ Copy-Item $a, $b -Destination $copy
 Test-That 'key: the same files in another worktree give the same key' ($key -eq (Get-InputKey $copy @((Join-Path $copy 'a.cs'), (Join-Path $copy 'b.cs')) @('csc|1')))
 Test-That 'key: a renamed file changes the key' ($key -ne $(Rename-Item (Join-Path $copy 'b.cs') 'c.cs'; Get-InputKey $copy @((Join-Path $copy 'a.cs'), (Join-Path $copy 'c.cs')) @('csc|1')))
 
+$identityA = Join-Path $work 'compiler.exe'; $identityB = Join-Path $copy 'compiler.exe'
+[IO.File]::WriteAllText($identityA, 'abc'); [IO.File]::WriteAllText($identityB, 'xyz')
+(Get-Item -LiteralPath $identityB).LastWriteTimeUtc = (Get-Item -LiteralPath $identityA).LastWriteTimeUtc
+Test-That 'identity: different external paths with equal basename/size/time are distinct' ((Get-FileIdentity $identityA) -ne (Get-FileIdentity $identityB))
+
 # ---- Stamps
 $stamp = Join-Path $work 'bin/.build-inputs'
 $output = Join-Path $work 'bin/out.dll'

@@ -2,7 +2,9 @@ param(
     # Which agent to hand over: B, C, D, R (research) or Orchestrator.
     [Parameter(Mandatory = $true)][ValidateSet('B', 'C', 'D', 'R', 'Orchestrator')][string] $Lane,
     # Print only; do not copy to the clipboard.
-    [switch] $NoClipboard
+    [switch] $NoClipboard,
+    # Optional, explicit network refresh once for the shared repository (offline by default).
+    [switch] $RefreshRemote
 )
 
 # Builds the ready-to-paste prompt for a Sol (GPT) agent taking over a lane: the lane's prompt
@@ -11,22 +13,32 @@ param(
 # Guide: docs/handoffs/sol/README.md.
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$commonGit = & git -C $repo rev-parse --git-common-dir
+if ($LASTEXITCODE -ne 0) { throw 'Cannot locate the shared repository' }
+$commonPath = if ([IO.Path]::IsPathRooted($commonGit)) { $commonGit } else { Join-Path $repo $commonGit }
+$primary = Split-Path -Parent ([IO.Path]::GetFullPath($commonPath))
+$repo = $primary
+$workspace = Split-Path -Parent $primary
+$baseName = Split-Path -Leaf $primary
 $lanes = @{
-    B = @{ Path = 'C:\Users\IM576\GTAIV-Reborn-lane-b2'; Prompt = 'PROMPT-LANE-B.md'; Live = 'Lane-B-live.md' }
-    C = @{ Path = 'C:\Users\IM576\GTAIV-Reborn-lane-c-t048'; Prompt = 'PROMPT-LANE-C.md'; Live = 'Lane-C-live.md' }
-    D = @{ Path = 'C:\Users\IM576\GTAIV-Reborn-lane-d'; Prompt = 'PROMPT-LANE-D.md'; Live = 'Lane-D-live.md' }
-    R = @{ Path = 'C:\Users\IM576\GTAIV-Reborn-research-t050'; Prompt = 'PROMPT-LANE-R.md'; Live = 'Lane-R-live.md' }
-    Orchestrator = @{ Path = $repo; Prompt = 'PROMPT-ORCHESTRATOR.md'; Live = '' }
+    B = @{ Path = (Join-Path $workspace "$baseName-lane-b2"); Prompt = 'PROMPT-LANE-B.md'; Live = 'Lane-B-live.md' }
+    C = @{ Path = (Join-Path $workspace "$baseName-lane-c-t048"); Prompt = 'PROMPT-LANE-C.md'; Live = 'Lane-C-live.md' }
+    D = @{ Path = (Join-Path $workspace "$baseName-lane-d"); Prompt = 'PROMPT-LANE-D.md'; Live = 'Lane-D-live.md' }
+    R = @{ Path = (Join-Path $workspace "$baseName-research-t050"); Prompt = 'PROMPT-LANE-R.md'; Live = 'Lane-R-live.md' }
+    Orchestrator = @{ Path = $primary; Prompt = 'PROMPT-ORCHESTRATOR.md'; Live = '' }
 }
 function Invoke-Git { $ErrorActionPreference = 'Continue'; & git @args 2>$null }
+if ($RefreshRemote) {
+    Invoke-Git -C $primary fetch -q origin | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw 'Remote refresh failed; local work is unchanged.' }
+}
 
 function Get-WorktreeState([string] $Name, [string] $Path, [string] $Live) {
     $out = New-Object System.Collections.Generic.List[string]
     $out.Add("### $Name  ($Path)")
     if (-not (Test-Path -LiteralPath $Path)) { $out.Add('worktree missing'); return $out }
-    Invoke-Git -C $Path fetch -q origin | Out-Null
     $out.Add("branch: $(Invoke-Git -C $Path rev-parse --abbrev-ref HEAD)  head: $(Invoke-Git -C $Path log -1 --format='%h %ad %s' --date=format:'%Y-%m-%d %H:%M')")
-    $out.Add("commits ahead of origin/main: $(Invoke-Git -C $Path rev-list --count origin/main..HEAD); behind: $(Invoke-Git -C $Path rev-list --count HEAD..origin/main)")
+    $out.Add("commits ahead of local main: $(Invoke-Git -C $Path rev-list --count main..HEAD); behind: $(Invoke-Git -C $Path rev-list --count HEAD..main)")
     $upstream = Invoke-Git -C $Path rev-parse --abbrev-ref '@{upstream}'
     if ($upstream) { $out.Add("upstream $upstream; local is behind it by $(Invoke-Git -C $Path rev-list --count "HEAD..$upstream") commits") }
     $out.Add('last commits:')
@@ -35,8 +47,10 @@ function Get-WorktreeState([string] $Name, [string] $Path, [string] $Live) {
     $out.Add("uncommitted files: $($dirty.Count)")
     $dirty | Select-Object -First 20 | ForEach-Object { $out.Add("  $_") }
     # A previous agent still at work shows as recent edits.
-    $recent = Get-ChildItem -LiteralPath $Path -Recurse -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.FullName -notmatch '\\(\.git|bin|obj|staging|results-local)\\' } | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    # Ask git for source paths; never descend into gigabytes of ignored results/build output.
+    $recent = Invoke-Git -C $Path -c core.quotepath=false ls-files --cached --others --exclude-standard |
+        ForEach-Object { Get-Item -LiteralPath (Join-Path $Path $_) -ErrorAction SilentlyContinue } |
+        Sort-Object LastWriteTime -Descending | Select-Object -First 1
     if ($recent) { $out.Add("newest source edit: $($recent.LastWriteTime.ToString('yyyy-MM-dd HH:mm')) $($recent.FullName.Substring($Path.Length))") }
     $results = Join-Path $Path 'results-local'
     if (Test-Path -LiteralPath $results) {
@@ -59,17 +73,20 @@ function Get-WorktreeState([string] $Name, [string] $Path, [string] $Live) {
 
 $state = New-Object System.Collections.Generic.List[string]
 $state.Add('## LIVE STATE (captured ' + (Get-Date).ToString('yyyy-MM-dd HH:mm') + ' local time; verify it yourself)')
+$state.Add("Remote refs: $(if ($RefreshRemote) { 'refreshed once' } else { 'cached; use -RefreshRemote if a network update is needed' })")
 $holder = Get-Content -LiteralPath (Join-Path ([IO.Path]::GetTempPath()) 'LibertyGameLock.txt') -Raw -ErrorAction SilentlyContinue
 $state.Add("game lock holder note (advisory, not a mutex probe): $(if ($holder) { $holder.Trim() } else { 'absent; lock availability is unconfirmed' })")
 $game = Get-Process GTAIV -ErrorAction SilentlyContinue | Select-Object -First 1
 $state.Add("GTA IV running: $(if ($game) { "yes, pid $($game.Id) since $($game.StartTime)" } else { 'no' })")
-$installed = Get-Content -LiteralPath 'C:\Games\Grand Theft Auto IV\GTAIV\scripts\LibertyFramework\installed-build.json' -Raw -ErrorAction SilentlyContinue
+$settingsPath = Join-Path $primary 'tools/verify-local.settings.json'
+$gameDirectory = if (Test-Path -LiteralPath $settingsPath) { (Get-Content -LiteralPath $settingsPath -Raw | ConvertFrom-Json).gameDirectory } else { '' }
+$installed = if ($gameDirectory) { Get-Content -LiteralPath (Join-Path $gameDirectory 'scripts/LibertyFramework/installed-build.json') -Raw -ErrorAction SilentlyContinue } else { '' }
 if ($installed) { $build = $installed | ConvertFrom-Json; $state.Add("installed build: repo=$($build.repo) commit=$($build.commit) $($build.note)") }
 $state.Add('')
 if ($Lane -eq 'Orchestrator') {
     $queue = Get-Content -LiteralPath (Join-Path $repo 'docs\workflow\ORCHESTRATOR.md') -ErrorAction SilentlyContinue | Select-String -Pattern '^\| \d|^\| then' | ForEach-Object { $_.Line }
     if ($queue) { $state.Add('merge queue (docs/workflow/ORCHESTRATOR.md):'); $queue | ForEach-Object { $state.Add('  ' + $_) }; $state.Add('') }
-    (Get-WorktreeState 'Research rest (SDK 1.3, not assigned yet)' 'C:\Users\IM576\GTAIV-Reborn-research' 'Lane-R-live.md') | ForEach-Object { $state.Add($_) }; $state.Add('')
+    (Get-WorktreeState 'Research rest (SDK 1.3, not assigned yet)' (Join-Path $workspace "$baseName-research") 'Lane-R-live.md') | ForEach-Object { $state.Add($_) }; $state.Add('')
     foreach ($key in 'B', 'C', 'D', 'R') { (Get-WorktreeState "Lane $key" $lanes[$key].Path $lanes[$key].Live) | ForEach-Object { $state.Add($_) }; $state.Add('') }
     (Get-WorktreeState 'main' $repo '') | ForEach-Object { $state.Add($_) }
 }

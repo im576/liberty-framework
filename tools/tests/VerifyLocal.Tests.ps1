@@ -159,6 +159,16 @@ $worktreesAfter = @(& git -C $script:RepoRoot worktree list --porcelain | Where-
 Test-That 'publish: temporary worktree removed and existing worktrees preserved' (
     ($worktreesBefore -join "`n") -eq ($worktreesAfter -join "`n"))
 
+# Re-publishing finished evidence must not claim it just restored a historical install, discard unselected rows,
+# or reset the original start time. Simulation would visibly rewrite "kept" to "restored" on the old implementation.
+$originalStart = $summary.run.startedUtc
+$originalCount = $summary.checks.Count
+& $verifyLocal -Simulate -SimulationFile $simFile -QueuePath $queuePath -Only @('T-build') -Resume $runFolder.FullName -Restore -NoPush 6>&1 | Out-Null
+$resumed = Get-Content -LiteralPath (Join-Path $runFolder.FullName 'summary.json') -Raw | ConvertFrom-Json
+Test-That 'resume: republishing preserves all evidence and does not restore an old install' (
+    $resumed.run.install -like 'kept the tested build*' -and $resumed.checks.Count -eq $originalCount -and
+    $resumed.run.startedUtc -eq $originalStart -and $resumed.run.resumedUtc)
+
 # ---- Install failure: everything that needs the install is NOT-RUN, not PASS; a second publish appends
 $sim.install = @{ fails = $true }
 [IO.File]::WriteAllText($simFile, ($sim | ConvertTo-Json -Depth 8))

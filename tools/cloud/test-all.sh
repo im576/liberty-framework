@@ -124,6 +124,12 @@ else
 fi
 
 # 7. Local check queue (tests/local/checks.json) is valid and the generated plan is current.
+if command -v python3 >/dev/null; then
+    run "Evidence audit tests" audit-tests.log '^OK|^FAILED|^Ran' python3 -m unittest discover -s tools/review -p 'test_*.py'
+else
+    record "Evidence audit tests" NOT-RUN "python3 missing"
+fi
+
 if [ -f tools/checks/checks.py ]; then
     run "Check queue + plan in sync" checks.log '^checks:' python3 tools/checks/checks.py validate
 else

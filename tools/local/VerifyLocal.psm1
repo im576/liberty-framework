@@ -56,13 +56,18 @@ function Select-Checks($Queue, [string[]] $Only, [string[]] $Kinds, [bool] $Smok
     if ($Kinds -and $Kinds.Count -gt 0) { $all = @($all | Where-Object { $Kinds -contains $_.kind }) }
     if (-not $IncludePassedManual) { $all = @($all | Where-Object { -not ($_.kind -eq 'manual' -and $_.status -eq 'PASS') }) }
     # A check's "needs" (e.g. a scenario that spawns the model a probe found) run in the same run: add them when missing.
-    foreach ($check in @($all)) {
+    # Expand the whole dependency closure, including dependencies of newly added checks.
+    $pending = New-Object System.Collections.Generic.Queue[object]
+    foreach ($check in $all) { $pending.Enqueue($check) }
+    while ($pending.Count -gt 0) {
+        $check = $pending.Dequeue()
         if (-not $check.PSObject.Properties['needs']) { continue }
         foreach ($id in @($check.needs)) {
             if ($all | Where-Object { $_.id -eq $id }) { continue }
             $needed = $Queue.checks | Where-Object { $_.id -eq $id -and $_.status -ne 'RETIRED' } | Select-Object -First 1
             if (-not $needed) { throw "check $($check.id) needs $id, which is not in the queue" }
             $all = @($needed) + $all
+            $pending.Enqueue($needed)
         }
     }
     # Scenario checks and package-reading checks need the install: add package-install when they are selected.
@@ -72,8 +77,19 @@ function Select-Checks($Queue, [string[]] $Only, [string[]] $Kinds, [bool] $Smok
         if ($install) { $all = @($install) + $all }
     }
     $index = 0
-    $ordered = $all | ForEach-Object { [pscustomobject]@{ Check = $_; Stage = (Get-CheckStage $_); Index = $index++ } } | Sort-Object Stage, Index
-    return @($ordered | ForEach-Object { $_.Check })
+    $ordered = @($all | ForEach-Object { [pscustomobject]@{ Check = $_; Stage = (Get-CheckStage $_); Index = $index++ } } | Sort-Object Stage, Index)
+    $ready = New-Object System.Collections.Generic.List[object]
+    $emitted = @{}
+    while ($ordered.Count -gt 0) {
+        $next = $ordered | Where-Object {
+            $waiting = @($_.Check.needs | Where-Object { $_ -and -not $emitted.ContainsKey([string]$_) })
+            $waiting.Count -eq 0
+        } | Select-Object -First 1
+        if (-not $next) { throw 'Cyclic check dependencies; no checks were run.' }
+        $ready.Add($next.Check); $emitted[[string]$next.Check.id] = $true
+        $ordered = @($ordered | Where-Object { $_.Check.id -ne $next.Check.id })
+    }
+    return @($ready.ToArray())
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -278,6 +294,7 @@ function Invoke-PackageBuild($Context, $Check) {
     $started = Get-Date
     $run = Invoke-ChildProcess (Get-PowerShellPath) (Get-PackageArguments $Context 'Build') 2400 $log $Context.Repo 'BelowNormal'
     $seconds = [int]((Get-Date) - $started).TotalSeconds
+    $Context.Run.packageBuildSeconds = $seconds
     $Context.PackageBuild = @{ Ok = (-not $run.TimedOut -and $run.ExitCode -eq 0); Detail = "build exit $($run.ExitCode) in $seconds s"; Log = $log }
     Write-Host "               -> package build $(if ($Context.PackageBuild.Ok) { 'done' } else { 'FAILED' }) ($seconds s)"
 }
@@ -616,12 +633,43 @@ function Invoke-SimulatedPackageInstall($Context, $Check) {
 # ---------------------------------------------------------------------------------------------------------------------
 # The run
 
+# Saved checks are evidence for one source/queue/mode, never a reusable installation receipt.
+function Assert-ResumeIdentity($Old, [string] $Commit, [string] $Mode, [string] $QueueHash, $Checks) {
+    if (-not $Old.run.commit -or -not $Commit.StartsWith([string]$Old.run.commit) -or $Old.run.mode -ne $Mode) {
+        throw 'Cannot resume a different commit or verification mode; start a new run.'
+    }
+    if ($Old.run.queueSha256 -ne $QueueHash) {
+        throw 'Cannot resume a changed or unrecorded check queue; start a new run.'
+    }
+    $finished = @{}; foreach ($row in $Old.checks) {
+        if ($script:FinalStatuses -contains [string]$row.status) { $finished[[string]$row.id] = $row }
+    }
+    $pendingGame = @($Checks | Where-Object { -not $finished.ContainsKey([string]$_.id) -and (Test-CheckNeedsGame $_) })
+    if ($pendingGame.Count -gt 0 -and $finished.ContainsKey('LOOP-package-install') -and $finished['LOOP-package-install'].status -eq 'PASS') {
+        throw 'Cannot reuse a historical install for pending game checks (it may be restored or replaced); start a new run with a fresh install.'
+    }
+}
+
+# Restoration is part of the batch result. A successful scenario with a failed rollback is not a successful run.
+function Set-RestoreResult($Context, $Outcome) {
+    if (-not $Outcome.TimedOut -and $Outcome.ExitCode -eq 0) {
+        $Context.Run.install = "restored from $($Context.Backup)"
+        return
+    }
+    $Context.Run.install = "RESTORE FAILED (exit $($Outcome.ExitCode), timeout=$($Outcome.TimedOut)); run tools/rollback-phase2.ps1 -BackupDirectory $($Context.Backup)"
+    [void]$Context.Checks.Add([ordered]@{
+        id = 'LOOP-restore'; task = 'LOOP'; kind = 'pc-offline'; title = 'Restore the previous installation'
+        status = 'ERROR'; detail = $Context.Run.install; evidence = @('restore.log'); seconds = 0
+    })
+}
+
 function Invoke-VerifyLocal([hashtable] $Options) {
     $repo = $Options.Repo
     $queue = Read-CheckQueue $Options.QueuePath
     $checks = @(Select-Checks $queue $Options.Only $Options.Kinds ([bool]$Options.Smoke) ([bool]$Options.IncludePassedManual))
     if ($checks.Count -eq 0) { throw 'no checks selected' }
 
+    $fullCommit = Invoke-Command { $ErrorActionPreference = 'Continue'; & git -C $repo rev-parse HEAD 2>$null }
     $commit = Invoke-Command { $ErrorActionPreference = 'Continue'; & git -C $repo rev-parse --short HEAD 2>$null }
     $branch = Invoke-Command { $ErrorActionPreference = 'Continue'; & git -C $repo rev-parse --abbrev-ref HEAD 2>$null }
     $runId = (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + $commit
@@ -637,19 +685,29 @@ function Invoke-VerifyLocal([hashtable] $Options) {
         Checks = New-Object System.Collections.ArrayList
     }
     $previous = @{}
+    $mode = ($(if ($Options.Simulate) { 'simulate' } elseif ($Options.Smoke) { 'smoke' } elseif ($Options.Quick) { 'quick' } else { 'full' }) + $(if ($Options.Quick -and $Options.Simulate) { '+quick' } else { '' }))
+    $queueHash = (Get-FileHash -LiteralPath $Options.QueuePath -Algorithm SHA256).Hash
+    $old = $null
+    if ($Options.Resume -and -not (Test-Path -LiteralPath (Join-Path $results 'summary.json'))) { throw 'Cannot resume without summary.json; start a new run.' }
     if ($Options.Resume -and (Test-Path -LiteralPath (Join-Path $results 'summary.json'))) {
         $old = Get-Content -LiteralPath (Join-Path $results 'summary.json') -Raw | ConvertFrom-Json
+        Assert-ResumeIdentity $old $fullCommit $mode $queueHash $checks
         foreach ($check in $old.checks) { $previous[[string]$check.id] = $check }
-        if ($old.run.installBackup) { $context.Backup = [string]$old.run.installBackup }
-        if ($previous.ContainsKey('LOOP-package-install') -and $previous['LOOP-package-install'].status -eq 'PASS') { $context.Installed = $true }
+        # Preserve unselected evidence, and never stop/restore a game just to republish old results.
+        foreach ($check in $old.checks) { if (@($checks.id) -notcontains $check.id) { [void]$context.Checks.Add($check) } }
         $runId = Split-Path -Leaf $results
     }
     $context.Run = [ordered]@{
-        id = $runId; commit = $commit; branch = $branch
-        mode = ($(if ($Options.Simulate) { 'simulate' } elseif ($Options.Smoke) { 'smoke' } elseif ($Options.Quick) { 'quick' } else { 'full' }) + $(if ($Options.Quick -and $Options.Simulate) { '+quick' } else { '' }))
+        id = $runId; commit = $fullCommit; branch = $branch; queueSha256 = $queueHash
+        mode = $mode
         startedUtc = [DateTime]::UtcNow.ToString('o'); finishedUtc = ''
         game = $Options.GameInfo; install = 'not installed'; installBackup = ''
         selected = @($checks | ForEach-Object { $_.id })
+    }
+    if ($old) {
+        foreach ($property in $old.run.PSObject.Properties) { $context.Run[$property.Name] = $property.Value }
+        $context.Run.resumedUtc = [DateTime]::UtcNow.ToString('o')
+        $context.Run.selected = @(@($old.run.selected) + @($checks.id) | Select-Object -Unique)
     }
 
     $installCheck = $checks | Where-Object { $_.run.tool -eq 'package-install' } | Select-Object -First 1
@@ -680,8 +738,10 @@ function Invoke-VerifyLocal([hashtable] $Options) {
                 $context.StopReason = "stopped after $($check.id) $($row.status) (-StopOnFailure); run remaining checks in a new batch"
             }
             Write-Host ("               -> {0}  {1}" -f $row.status, $row.detail)
-            $context.Run.install = $(if ($context.Installed) { "installed; backup $($context.Backup)" } else { 'not installed' })
-            $context.Run.installBackup = $context.Backup
+            if (-not $old -or $context.Installed) {
+                $context.Run.install = $(if ($context.Installed) { "installed; backup $($context.Backup)" } else { 'not installed' })
+                $context.Run.installBackup = $context.Backup
+            }
             Write-Summary $context
         }
         $completedChecks = $true
@@ -701,7 +761,7 @@ function Invoke-VerifyLocal([hashtable] $Options) {
                 else {
                     $log = Join-Path $results 'restore.log'
                     $run = Invoke-ChildProcess (Get-PowerShellPath) ((Get-ScriptArguments (Join-Parts $repo 'tools' 'rollback-phase2.ps1')) + @('-GameDirectory', $context.Game, '-BackupDirectory', $context.Backup)) 900 $log $repo
-                    $context.Run.install = $(if ($run.ExitCode -eq 0) { "restored from $($context.Backup)" } else { "RESTORE FAILED (exit $($run.ExitCode)); run tools/rollback-phase2.ps1 -BackupDirectory $($context.Backup)" })
+                    Set-RestoreResult $context $run
                 }
             }
             else { $context.Run.install = "kept the tested build; to undo: tools/rollback-phase2.ps1 -GameDirectory <game> -BackupDirectory $($context.Backup)" }

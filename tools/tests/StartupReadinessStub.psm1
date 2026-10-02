@@ -3,7 +3,8 @@
 
 function Initialize-StartupStub([hashtable] $Options = @{}) {
     $script:Options = $Options
-    $script:Now = if ($Options.ContainsKey('InitialUtc')) { [DateTime]::Parse($Options.InitialUtc).ToUniversalTime() } else { [DateTime]::UtcNow }
+    # PS 7.5+ may deserialize ISO JSON timestamps as DateTime; stringifying one loses its UTC kind.
+    $script:Now = if ($Options.ContainsKey('InitialUtc')) { ([DateTime]$Options.InitialUtc).ToUniversalTime() } else { [DateTime]::UtcNow }
     $script:Base = $script:Now
     $script:Launches = 0; $script:Stops = 0; $script:LaunchAt = $null
     $script:Owned = @(); $script:Game = 'stub'; $script:LaunchedUtc = [datetime]::MinValue

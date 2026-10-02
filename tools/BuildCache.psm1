@@ -24,7 +24,7 @@ function Get-InputKey {
     $lines = New-Object System.Collections.Generic.List[string]
     foreach ($file in @($Files | Where-Object { $_ } | Sort-Object -Unique)) {
         $full = [IO.Path]::GetFullPath($file)
-        $relative = if ($full.StartsWith($rootFull, [StringComparison]::OrdinalIgnoreCase)) { $full.Substring($rootFull.Length).TrimStart('\', '/') } else { $full }
+        $relative = if ($full.StartsWith($rootFull + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { $full.Substring($rootFull.Length).TrimStart('\', '/') } else { $full }
         $lines.Add('file|' + $relative.Replace('\', '/').ToLowerInvariant() + '|' + (Get-BytesHash ([IO.File]::ReadAllBytes($full))))
     }
     foreach ($value in @($Extra)) { $lines.Add('extra|' + $value) }
@@ -37,7 +37,7 @@ function Get-InputKey {
 function Get-FileIdentity([string] $Path) {
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return "$Path|missing" }
     $item = Get-Item -LiteralPath $Path
-    return "$($item.Name)|$($item.Length)|$($item.LastWriteTimeUtc.Ticks)"
+    return "$($item.FullName)|$($item.Length)|$($item.LastWriteTimeUtc.Ticks)"
 }
 
 # The game files the packaging tools read: GTAIV.exe (the archive key) and every IMG/RPF archive, by size and time.
@@ -48,13 +48,24 @@ function Get-GameFingerprint([string] $Game) {
     $own = @('libertymodels.img', 'libertycontent.img')
     $lines = New-Object System.Collections.Generic.List[string]
     $lines.Add('exe|' + (Get-FileIdentity (Join-Path $gameFull 'GTAIV.exe')))
-    foreach ($file in Get-ChildItem -LiteralPath $gameFull -Recurse -File -ErrorAction SilentlyContinue) {
+    # Prune before descent: backups can contain hundreds of full installs. Filtering a recursive listing afterwards
+    # still pays for every file, and links may lead outside the game tree.
+    $directories = New-Object System.Collections.Generic.Stack[string]
+    $directories.Push($gameFull)
+    while ($directories.Count -gt 0) {
+      foreach ($file in ([IO.DirectoryInfo]$directories.Pop()).GetFileSystemInfos()) {
+        if ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) { continue }
+        if ($file.Attributes -band [IO.FileAttributes]::Directory) {
+            if ($file.Name -ne 'backups') { $directories.Push($file.FullName) }
+            continue
+        }
         $extension = $file.Extension.ToLowerInvariant()
         if ($extension -ne '.img' -and $extension -ne '.rpf') { continue }
         if ($own -contains $file.Name.ToLowerInvariant()) { continue }
         $relative = $file.FullName.Substring($gameFull.Length).TrimStart('\', '/').Replace('\', '/').ToLowerInvariant()
         if ($relative -match '(^|/)backups/') { continue }
         $lines.Add("$relative|$($file.Length)|$($file.LastWriteTimeUtc.Ticks)")
+      }
     }
     $sorted = @($lines | Sort-Object)
     return Get-BytesHash ([Text.Encoding]::UTF8.GetBytes(($sorted -join "`n")))

@@ -8,7 +8,7 @@ param(
     # ScriptHookDotNet compile reference. Default: <game>\ScriptHookDotNet.asi (the installed runtime).
     [string] $ScriptHookDotNetReference,
     # The branch to verify. The run refuses to start on another branch unless -AnyBranch.
-    [string] $Branch = 'develop',
+    [string] $Branch = 'main',
     [switch] $AnyBranch,
     # First run: build, package/install, the SDK self-test scenario, then restore the install. Proves the script works.
     [switch] $Smoke,
