@@ -42,6 +42,13 @@ No remaster implementation is assigned. Functional menus/HUD/storage and support
 
 ## Latest resume and schedule
 
+Latest cutoff recovery: preserve all four IDs/settings. Main `689bac5` host prerequisite fix is pushed and tested
+(focused 2/0, verifier tooling 60/0, full tooling 238/0, NoGame 441/0/5). R alone owns the current full build/game
+slot, run `20261001-200706-7d80c1d`; build/verifier/install have passed, SDK/material and restoration are pending.
+B `2297a17` has safely integrated the fix and waits for slot release. D repairs expiry ownership in its held-baseline
+diagnostic before runtime review. C preserves launch evidence offline; no retry is assigned. Earlier schedules below
+remain receipts, not concurrent slot authorizations.
+
 The owner approved the reviewed plan with "Yes let's do that. Orchestrate efficiently and optimally." The preceding
 build/edit hold is revoked. Reuse all four workers/settings and preserve B/D's dirty prepared patches.
 C's control `20261001-164156-844c6a1` finished/restored: 43 steps/0 failed, one shader dialog ERROR (NEEDS-REVIEW),
