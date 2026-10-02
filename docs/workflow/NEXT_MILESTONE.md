@@ -1,6 +1,8 @@
-# Proposed next milestone and agent plan
+# First mod milestone and research order
 
-2026-10-02. These priorities are recommendations awaiting the owner's answers, not dispatched assignments.
+2026-10-02. Updated from the owner's voice answers. The first mod is the priority. Use research to finish its
+features, then expand the framework as a separate program. Keep one coordinator for now; additional agents are
+an option when a task has clean file ownership and a clear deliverable.
 Current source integration is tracked by [T-060](../tasks/T-060-local-integration.md).
 
 ## Deliver one reliable playable slice
@@ -13,7 +15,8 @@ The lighting candidate is generated/installed separately; merging its source doe
 The first owner playtest should cover walking/driving between two locations, combat with the existing
 weapon catalog, switching the 2+1 loadout, storing/retrieving a weapon, and an actual game save/reload.
 Use one current build/config/plugin receipt and record controller, mission and visual limitations explicitly.
-The owner chooses whether visuals, gore or vehicle ownership takes priority after this baseline.
+After this baseline, complete the first mod as one product: gameplay, body/injury effects, a unified owned-vehicle
+system and the visual pass. Develop and validate these in small steps so a failure has a traceable cause.
 
 ## Sequence
 
@@ -27,42 +30,51 @@ The owner chooses whether visuals, gore or vehicle ownership takes priority afte
 3. **Visual iteration:** use the approved references and matched actual captures. Separate global color/lighting
    from cloud shapes, material textures and local lights. Record one change family per candidate and inspect
    street-level moving scenes, interiors and weather transitions in addition to the existing static views.
+   Overcast must retain natural color; the v3 gloomy captures look too desaturated to the owner. GTA IV's cloud
+   shapes need a substantial overhaul beyond timecycle color values. Target 1080p/60 FPS; measure frame times
+   in motion, not only static screenshot quality. The exact resolution beyond 1080p is undecided.
 4. **First deeper engine experiment:** distinguish the C setup/scene crash from the actual sever operation.
    Complete the matched control/active setup pair before assuming skeleton changes cause a crash that occurred
    before a scripted cut. Then instrument one ped/cut with object generation, skeleton pointers, counts and
    release order. Require cleanup and original performance gates before promoting gore to the combined preview.
-5. **Vehicle ownership:** choose the required features, selectively adapt the licensed LVS behavior, and build
-   durable ownership/purchase transactions with fault tests. A purchase, storage and actual save/load round-trip
-   precedes broader garages, insurance, dealerships or economy work.
+5. **Vehicle ownership:** deliver one coherent design covering persistent personal cars, garages, dealerships,
+   trunks, customization, fuel/repairs, insurance and recovery. Build its data model and transaction rules
+   together; implement and test vertical slices within that design. Selectively adapt licensed LVS behavior.
+   A purchase, storage and actual save/load round-trip precedes broader integration and feel testing.
 6. **HUD/materials/assets:** promote only the specific contracts each next feature needs. Vanilla HUD remains
    until hiding/restoration and native story text are demonstrated. Material names require effective-table and
    visible hit-target evidence. Multi-geometry/collision research becomes priority when required for chosen assets.
+7. **Deeper framework program:** after the first mod's systems work together, audit its remaining engine limits,
+   profile real gameplay, and pursue broader renderer, asset, collision and scripting control with pinned
+   reverse-engineering evidence. Framework work can still happen earlier when a first-mod blocker requires it.
 
-## Small team, one shared game
+## Agent organization
 
-Recommended initial team: one integrator and two workers. No new agents have been created for this proposal.
+Use one coordinating agent initially. No new agents have been created. Revisit parallel work when there are
+separate, bounded assignments, such as visual asset authoring and isolated source research.
 
 | Role | Owns | Deliverable and boundary |
 |---|---|---|
-| Integrator | Main, test host, shared SDK contracts, schedule and owner playtest | Reviews patches/evidence, runs the sole game/install slot, combines accepted changes |
-| Gameplay/engine worker | One chosen blocker, initially setup/gore lifetime or vehicle transactions | One hypothesis or vertical slice, bounded files, focused tests; no speculative unrelated hooks |
-| Visual worker | Mood generator/config, capture fixtures and later selected assets | Matched baseline/candidate evidence against approved targets; coordinates host changes with integrator |
+| Coordinator | Main, test host, shared SDK contracts, schedule and owner playtest | Reviews patches/evidence, runs the sole game/install slot, combines accepted changes |
+| Optional gameplay/engine worker | One chosen blocker, initially setup/gore lifetime or vehicle transactions | One hypothesis or vertical slice, bounded files, focused tests; no speculative unrelated hooks |
+| Optional visual worker | Mood generator/config, capture fixtures and later selected assets | Matched baseline/candidate evidence against approved targets; coordinates host changes with coordinator |
 
-Start each worker from the reviewed integration commit, in a separate worktree. Do not give both ownership of
+If parallel work becomes useful, start each worker from the reviewed integration commit, in a separate worktree. Do not give both ownership of
 shared host/SDK/UI files. Workers request the game slot through the integrator; heavy builds are serialized.
 Every handoff includes source commit, changed behavior, actual check status, first failure and the next experiment.
-Create or resume threads only after the owner chooses the team; do not dispatch from this document automatically.
+Create or resume threads only for actual bounded assignments; do not dispatch from this document automatically.
 
-## Questions for the owner
+## Owner decisions and remaining design detail
 
-- Which next milestone comes first: stable gameplay plus visuals, severe gore, or vehicle ownership?
-- Describe the ideal five minutes of gameplay. Which three new behaviors must be present?
-- How far should gore go: realistic wounds, severed limbs, persistent aftermath, or a specific combination?
-- Which ownership features matter first: persistent personal cars, trunks, garages, dealerships, fuel/repairs,
-  insurance/recovery, customization? Which existing mod behaviors should be retained or changed?
-- Do the approved visual references remain the target, and what resolution/frame-rate goal should guide tradeoffs?
-- Must existing saves and the full story remain compatible, or should early experiments use a separate modded save?
-- Prefer one agent, or the proposed integrator plus two workers? Should research stay tied to the next feature,
-  or receive a larger dedicated effort before more gameplay?
+- Body/injury package: realistic wounds, dismemberment, reactions and persistent blood/bodies belong together.
+  Environmental damage is outside this initial gore package.
+- Vehicle package: all named ownership features belong in one design and eventual first-mod system, with staged
+  implementation and testing.
+- Visual direction: the recent candidate is mostly liked, with more color in gloomy weather and substantially
+  better clouds. Performance goal is 60 FPS at 1080p.
+- Saves: separate experimental saves are acceptable during development. Keep backups and later verify real
+  save/load and story compatibility before calling the mod complete.
+- Agent/research order: keep coordination simple now; research first-mod blockers, then broaden engine research.
+- Still useful to specify: the ideal first five minutes and which gameplay behavior should be refined first.
 
 Detailed experiment/provenance requirements: [research program](../research/RESEARCH_PROGRAM.md).

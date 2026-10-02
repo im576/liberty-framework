@@ -12,11 +12,16 @@ Main and GitHub main were both `65e2726` at the start of this review; newer feat
 on separate local branches. The installed preview is its own worktree, not main.
 
 The owner's October 2 scope includes repository/tooling reliability, deeper engine research,
-gore, vehicle ownership and the citywide visual overhaul. Current work reviews and combines local
-changes into a tested source baseline; the next playable priority is being clarified with the owner.
+gore, vehicle ownership and the citywide visual overhaul. The local source baseline is integrated.
+The owner clarified the order: complete the first mod, research the engine questions that block its features,
+then pursue a broader framework research program. Keep agent coordination simple for now.
 
 The visual candidate v3 has 20 actual captures and a single original/target/actual comparison.
 It remains NEEDS-REVIEW: startup/stall failures and night/local-light/material fidelity are open.
+Owner feedback: gloomy scenes need more natural color and game clouds need a larger overhaul; aim for
+60 FPS at 1080p. Body/injury gore is one system (without environmental damage initially), and vehicle
+ownership should cover personal cars, garages, dealerships, trunks, customization, fuel/repairs and recovery
+as one design. Experimental saves are acceptable during development.
 The prior visual session restored the exact original appearance. See the
 [visual report](reports/2026-10-02-citywide-environment-overhaul.md).
 
@@ -61,7 +66,7 @@ snapshot/diagnostic work with these tools. Offline build PASS; verifier 441/0/5 
 312/0; radial and metrics harnesses each 25/0; all 88 mood rows and isolated installer/rollback checks PASS.
 [Integration report](reports/2026-10-02-local-integration.md) records merge decisions and remaining branch blockers.
 Visual work is now [T-059](tasks/T-059-citywide-environment-overhaul.md), resolving a duplicate T-058 ID.
-[Proposed next milestone and team](workflow/NEXT_MILESTONE.md) awaits owner priorities; no agents dispatched.
+[First-mod milestone and research order](workflow/NEXT_MILESTONE.md) reflects owner priorities; no agents dispatched.
 
 Entry points: [task queue](tasks/README.md), [engine](architecture/ENGINE.md), [SDK](sdk/README.md),
 [tools](../tools/README.md), [design](design/STAGE1.md), [third-party sources](../third_party/README.md).

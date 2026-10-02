@@ -84,5 +84,9 @@ No fresh combined in-game acceptance, screenshot suite, controller/mission/save-
 Passing offline checks reduces integration risk; it cannot promise that the combined gameplay is regression-free.
 Next priority/team recommendations and owner questions: [NEXT_MILESTONE](../workflow/NEXT_MILESTONE.md).
 
+Owner voice clarification later on October 2 is recorded in NEXT_MILESTONE: finish the first mod with targeted
+research, then expand framework research; begin with one coordinator, 1080p/60 FPS, more color in gloomy scenes,
+and a substantial cloud overhaul. The body/injury and owned-vehicle feature groups are defined there.
+
 Local main is advanced by fast-forward only after this integration's checks. Original worktrees and branch tips
 remain available; no remote push, branch deletion, history reset or new agent dispatch is part of this work.

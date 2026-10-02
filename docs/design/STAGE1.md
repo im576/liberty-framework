@@ -4,6 +4,14 @@ Status: **IMPLEMENTATION / INTEGRATION; approved direction (owner, 2026-09-30), 
 This document is the build plan for the first mod on the Liberty Engine. Engine facts it relies on are in
 [PROJECT_STATE.md](../PROJECT_STATE.md) and the [regression report](../reports/2026-09-30-regression.md).
 
+**Owner clarification (2026-10-02):** finish this first mod as the near-term goal, using focused research to
+resolve feature blockers. Broader engine research follows. The visual overhaul is part of the first mod:
+the current grade is mostly liked, but gloomy weather needs natural color and game clouds need major work.
+Target 1080p at 60 FPS. Body/injury gore includes wounds, severing, reactions and persistent aftermath;
+environmental damage is outside that first package. The owned-vehicle system should ultimately cover
+personal cars, garages, dealerships, trunks, customization, fuel/repairs, insurance and recovery.
+Experimental saves are acceptable during development. This clarification supersedes the October 1 ordering below.
+
 **Owner priority update (2026-10-01): gameplay features first, remaster later.** The immediate deliverable is an
 integrated feature test build: weapons/gunplay/reticles, physical loadout, wheel, trunk/storage, gore/combat effects,
 functional HUD/menus and their supporting systems. Review existing and in-progress feature modules, fix them and

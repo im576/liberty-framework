@@ -11,7 +11,7 @@ Reviewed preview/visual and B radial/diagnostic changes are integrated; see the
 [integration report](../reports/2026-10-02-local-integration.md). Offline checks pass; no combined game acceptance.
 The owner preview remains installed, and the original visual baseline hashes still match.
 No new worker or game/install/rollback slot is dispatched. Serialize heavy builds on this host.
-Next priorities and team are proposed in [NEXT_MILESTONE](NEXT_MILESTONE.md), awaiting owner answers.
+Owner priorities and the one-coordinator starting approach are in [NEXT_MILESTONE](NEXT_MILESTONE.md).
 
 Shared tooling repair commit: `6ef0446` plus the current T-060 integration on main. Before a future C/D/R test,
 deliberately integrate/review the current host against that lane's own changes and run its offline checks.
