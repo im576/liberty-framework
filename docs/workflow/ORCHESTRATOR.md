@@ -7,12 +7,16 @@ Evidence and limits: [integration review](../reports/2026-10-01-orchestrator-int
 
 ## Current continuation after usage interruption
 
-**Current slot:** R full `20261001-200706-7d80c1d` finished/restored `phase2-20261001-200759`; parent confirmed idle
-game/compiler state. Build/file verifier/install passed, all 53 SDK assertions passed, but SDK and coverage have
-stall ERRORs and material surface correspondence remains incomplete. Parent viewed all 40 captures; see
-[full material review](../reports/2026-10-01-sol-full-material-review.md). B `2297a17` now alone owns full wheel/trunk/
-radial validation, with no automatic watcher follow-up. D `5c0cb8d` expiry repair is reviewed, focused 67/0, awaiting
-production/baseline evidence. C prepares an isolated host deadline/telemetry repair offline; R repairs fixtures offline.
+**Current slot:** D alone owns the full held-weapon baseline batch on reviewed `5c0cb8d`, including build/verifier/
+install and always restore. B full `20261001-202311-2297a17` finished/restored `phase2-20261001-202329`: SDK UI 21/0,
+wheel 99/0, all 16 openings/draws max_frames=0 and wheel UI budget PASS; parent viewed all ten produced captures.
+Trunk stopped at 41 steps on p95 46.4 ms versus baseline 40.7 ms; later transfers/capacity/cleanup flows NOT-RUN.
+The shared B patch stays unmerged while B diagnoses offline. C prepares an isolated host deadline/telemetry fix;
+R repairs fixture restoration/safety offline after source review. No other heavy/game slot is assigned.
+
+R full `20261001-200706-7d80c1d` restored `phase2-20261001-200759`; build/file verifier/install and all 53 SDK
+assertions passed, but stall ERRORs and surface correspondence prevent clean acceptance. Parent viewed all 40 captures;
+see [full material review](../reports/2026-10-01-sol-full-material-review.md). D focused expiry checks are 67/0.
 
 ### Earlier recovery receipts (historical schedules)
 
