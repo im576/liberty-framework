@@ -68,6 +68,10 @@ Evidence: RAN-PASS: `tools/tests/Run-Tests.ps1` (160), `checks.py validate`, bui
 
 ## Human test steps
 
+**Limited preview (owner request 2026-10-01):** see [FEATURE_PREVIEW.md](../testing/FEATURE_PREVIEW.md).
+One dedicated functional smoke checks the existing integrated features with combat/atmosphere excluded on a separate
+preview branch. This does not rerun/replace the T-040 baseline or relax any existing full task/performance gate.
+
 1. Open `docs/reports/stage1-baseline-2026-09-30/capture-points.jpg`. Each row is one capture point; columns are mod-on day, mod-off day, mod-on night, mod-off night. Say which points are poor representatives of their area (Hove Beach A/B, Firefly Island, Rotterdam Hill, BOABO, East Hook, Meadow Hills, East Island City, Star Junction, Chinatown, Bohan, Alderney). Nothing should be inside a wall or under water.
 2. In game, DevTools > TELEPORT lists the `Stage 1: ...` entries; stand at two or three of them and check the streets are loaded and the view is what you expect.
 3. To rerun the whole baseline (about 45 minutes, leave the PC alone): the "Rerun" commands at the end of `docs/reports/2026-09-30-stage1-baseline.md`. Close the browser and other programs first; the summary flags windows disturbed by outside input.

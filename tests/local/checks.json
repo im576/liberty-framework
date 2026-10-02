@@ -45,6 +45,25 @@
   ],
   "checks": [
     {
+      "id": "T040-feature-preview-smoke",
+      "task": "T-040",
+      "title": "Limited gameplay preview functional smoke",
+      "kind": "scenario",
+      "run": { "scenario": "feature-preview-smoke" },
+      "proves": "Limited preview catalog, wheel selection, shoulder probes and trunk store/take/close together; original task and performance gates unchanged.",
+      "pass": "Full smoke has zero failed steps and log errors; four captures reviewed for readable wheel/storage and closed controls.",
+      "unproven": "Original UI budgets, swap/capacity, controller, real save/load, missions/cutscenes, long stability and feel; experimental gore/HUD excluded.",
+      "reference": "docs/testing/FEATURE_PREVIEW.md",
+      "status": "QUEUED",
+      "addedIn": "owner-requested limited preview 2026-10-01",
+      "review": { "screenshots": {
+        "preview_wheel": "Pistol and two long guns; empty melee/thrown slots.",
+        "preview_trunk_open": "Empty eight-slot trunk and carried loadout.",
+        "preview_trunk_stored": "AK stored with one used slot, absent from carried guns.",
+        "preview_storage_closed": "Trunk closed and normal HUD restored."
+      } }
+    },
+    {
       "id": "LOOP-build",
       "task": "LOOP",
       "title": "Engine, SDK, mods and native core build on Windows",

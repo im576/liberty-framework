@@ -7,7 +7,7 @@
   "exactDamage": true,
   "coreSpotCheckFrames": 300,
   "coreSpotCheckToleranceMeters": 0.05,
-  "disabledModules": [],
+  "disabledModules": ["combat", "atmosphere"],
   "loadModAssemblies": true,
   "governorEnabled": true,
   "moduleBudgetMs": 2.0,
