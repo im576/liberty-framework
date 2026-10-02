@@ -14,7 +14,11 @@ stall ERRORs and material surface correspondence remains incomplete. Parent view
 radial validation, with no automatic watcher follow-up. D `5c0cb8d` expiry repair is reviewed, focused 67/0, awaiting
 production/baseline evidence. C prepares an isolated host deadline/telemetry repair offline; R repairs fixtures offline.
 
-**Live schedule after the latest cutoff:** main `689bac5` is clean and pushed. The generated-input staging fix
+### Earlier recovery receipts (historical schedules)
+
+The following paragraphs preserve prior assignments and observations. Use only the current slot above for dispatch.
+
+**Initial snapshot when recovering the latest cutoff:** main `689bac5` is clean and pushed. The generated-input staging fix
 passed focused checks 2/0, verifier tooling 60/0, full tooling 238/0 and NoGame 441/0/5 not-run. R holds the exclusive
 full build/game slot at `7d80c1d`, run `20261001-200706-7d80c1d`: production build, file verification and package
 installation have passed; SDK/material results and final restoration remain pending. B is ready at `2297a17`
@@ -22,7 +26,7 @@ with the host fix integrated, awaiting that slot's release. D's `9f9d9a3` held-b
 review requires expiry-aware task ownership so delayed cleanup cannot clear a newer player task. C records startup
 evidence offline; no unchanged launch retry is assigned. The earlier schedules below are historical receipts.
 
-**Latest owner-approved schedule:** the update-only hold is revoked. C's tested `844c6a1` production build PASS,
+**Earlier owner-approved schedule:** the update-only hold is revoked. C's tested `844c6a1` production build PASS,
 NoGame verifier 442/0/5 and tooling 285/0; quick control `20261001-164156-844c6a1` restored with 43/0 steps and one
 shader-dialog ERROR, so remains NEEDS-REVIEW. C now runs only the separate bounded quick active comparison, with
 unchanged plugins/config. B/D finish preserved timing/baseline edits offline. R prepares SDK/material full coverage
