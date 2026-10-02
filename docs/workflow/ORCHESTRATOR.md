@@ -7,6 +7,13 @@ Evidence and limits: [integration review](../reports/2026-10-01-orchestrator-int
 
 ## Current continuation after usage interruption
 
+**Current slot:** R full `20261001-200706-7d80c1d` finished/restored `phase2-20261001-200759`; parent confirmed idle
+game/compiler state. Build/file verifier/install passed, all 53 SDK assertions passed, but SDK and coverage have
+stall ERRORs and material surface correspondence remains incomplete. Parent viewed all 40 captures; see
+[full material review](../reports/2026-10-01-sol-full-material-review.md). B `2297a17` now alone owns full wheel/trunk/
+radial validation, with no automatic watcher follow-up. D `5c0cb8d` expiry repair is reviewed, focused 67/0, awaiting
+production/baseline evidence. C prepares an isolated host deadline/telemetry repair offline; R repairs fixtures offline.
+
 **Live schedule after the latest cutoff:** main `689bac5` is clean and pushed. The generated-input staging fix
 passed focused checks 2/0, verifier tooling 60/0, full tooling 238/0 and NoGame 441/0/5 not-run. R holds the exclusive
 full build/game slot at `7d80c1d`, run `20261001-200706-7d80c1d`: production build, file verification and package
