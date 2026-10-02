@@ -32,11 +32,19 @@ before any Phase 3 work. Offline passes do not mark a lane DONE.
 
 ## Stage 1 progress
 
-- **Lane B radial initial snapshot follow-up (offline only):** prepares selected slot/centre before publication without
-  opening input; focused real UI/storage/ledger checks 25/0. Full build/runtime timing and watcher fixtures pending;
-  original <=1-frame gate remains P1. [Current evidence](handoffs/Lane-B-live.md).
+**Latest review (2026-10-01):** B's fresh wheel timing passes (16/16 openings at frame 0), but trunk p95/p99 fail;
+the shared follow-up remains held. C stability/cleanup/performance, D HUD acceptance and R material/stall evidence
+remain open. Main host startup deadline/evidence fix `9cdc097` passes tooling 256/0. D gets one corrected full
+held-baseline batch; other workers continue offline. This update overrides older run/schedule statements below.
+[Feature status and planning estimate](reports/2026-10-01-feature-status-and-estimate.md).
+
+- **Lane B radial initial snapshot follow-up:** prepares selected slot/centre before publication without opening input;
+  focused real UI/storage/ledger checks 25/0. Fresh full timing evidence below covers the original <=1-frame gate;
+  watcher fixtures and owner gates remain pending. [Current evidence](handoffs/Lane-B-live.md).
 - **Fresh B full2297a17:** wheel99/0/0, all16 opens/draws0frames, SDK21/0/0; all10 captures reviewed. Trunk FAIL41/1/0
   relative p95, later flows NOT-RUN. Restored202329; shared candidate held unmerged, watcher/owner gates pending.
+- **B paired trunk observation d9fa8a7:** focused actual-source metrics/logger checks 25/0; runtime unrun, candidate
+  held unmerged. Original thresholds, resets and scenario windows preserved; no cause asserted.
 - **T-045 wheel / T-046 trunk UI (lane B), merged, NEEDS-PLAYTEST (2026-10-01):** main `f823e45` integrates reviewed
   Lane B `1744416` and cached sprite text, preserving newer main tooling. Full `20261001-092349-e470758` passed all
   wheel/trunk/text assertions and budgets; orchestrator reviewed all 12 wheel/trunk captures. Combined build PASS,

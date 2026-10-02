@@ -2,6 +2,10 @@
 
 Status: **NEEDS-PLAYTEST** (the first `verify-local.ps1 -Smoke` run on the owner's PC is the test).
 
+October 1 host follow-up: [isolated startup deadline/telemetry candidate](../handoffs/sol/HOST-STARTUP-DEADLINE.md).
+Focused startup **18/0**, autopilot logic **58/0**; parent integration/full tools and runtime deadline evidence pending.
+The patch preserves timeout caps and full/quick settling, with parent JSONL evidence even after a child hard kill.
+
 ## Why
 
 The owner works remotely without the PC. Engine development continues in Claude Code cloud sessions, which have no

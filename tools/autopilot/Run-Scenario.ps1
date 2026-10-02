@@ -21,7 +21,12 @@ param(
     # A quick result is marked mode=quick and is never acceptance evidence.
     [switch] $Quick,
     # Development iteration: end the scenario at its first failed step instead of running the rest.
-    [switch] $StopOnFailure
+    [switch] $StopOnFailure,
+    # Absolute outer child-process deadline from verify-local, already limited by the remaining game allowance.
+    # Standalone omission keeps the existing startup defaults; this never extends the parent's timeout.
+    [datetime] $ScenarioDeadlineUtc = [datetime]::MaxValue,
+    # Parent results path survives child kill and _runs cleanup. Omission keeps standalone evidence beside result.
+    [string] $StartupTelemetryPath = ''
 )
 
 # Runs one scenario and writes <OutputDirectory>\<scenario>-<time>\report.md with every step, its reply, the
@@ -64,6 +69,9 @@ $runLog = @()
 $gameAlive = $false
 $wheelFixture = $null
 $wheelFixtureMark = -1
+$phase = 'initialization'
+$startupSnapshot = Join-Path $report 'startup-events.jsonl'
+$startupTelemetry = if ($StartupTelemetryPath) { $StartupTelemetryPath } else { $startupSnapshot }
 
 function Add-Failure([string] $text) { $script:failedSteps.Add($text); $script:steps.Add("FAILED: $text") }
 
@@ -91,12 +99,32 @@ try {
     Set-AutopilotGame $GameDirectory
     $lines = @(Get-Content -LiteralPath $Scenario)
     if (-not (Get-GameProcess)) {
-        $attempts = Start-GameReady -Attempts 6
+        $phase = 'startup'
+        $settleSeconds = if ($Quick) { 2 } else { 12 }
+        $startupArguments = @{ Attempts = 6 }
+        # Keep third-party/simulated modules with the old signature compatible. The real helper accepts both.
+        $startupParameters = (Get-Command Start-GameReady).Parameters
+        if ($startupParameters.ContainsKey('TelemetryPath')) {
+            $startupArguments.TelemetryPath = $startupTelemetry
+            Write-Host "STARTUP_EVIDENCE $startupTelemetry"
+        }
+        if ($ScenarioDeadlineUtc -ne [datetime]::MaxValue -and $startupParameters.ContainsKey('DeadlineUtc')) {
+            # Keep the unchanged settling period plus five seconds for serialization INSIDE the allowance.
+            $startupArguments.DeadlineUtc = $ScenarioDeadlineUtc.ToUniversalTime().AddSeconds(-($settleSeconds + 5))
+        }
+        $attempts = Start-GameReady @startupArguments
         $steps.Add("launch: engine booted on attempt $attempts")
+        # A blocking helper call or an older module can return late; never shorten acceptance settling or
+        # begin a sleep that uses the report reserve. The observed boot stays in startup evidence on failure.
+        if ($ScenarioDeadlineUtc -ne [datetime]::MaxValue -and
+            ($ScenarioDeadlineUtc.ToUniversalTime() - (Get-Date).ToUniversalTime()).TotalSeconds -lt ($settleSeconds + 5)) {
+            throw "STARTUP-TIMEOUT: engine readiness observed with insufficient remaining allowance for $settleSeconds s settling and result serialization"
+        }
         # Let the first frames settle (streaming, the FusionFix dialog the engine acknowledges).
         # Quick probes already await a live player in their scenario; retain the full acceptance warm-up unchanged.
-        Start-Sleep -Seconds $(if ($Quick) { 2 } else { 12 })
+        Start-Sleep -Seconds $settleSeconds
     }
+    $phase = 'scenario'
     $startUtc = [DateTime]::UtcNow
     # expect only accepts log lines written after the most recent engine command was sent (a line count, not a clock).
     $mark = @(Get-SessionLog).Count
@@ -209,6 +237,19 @@ try {
 }
 catch { if (-not $runnerError) { $runnerError = "could not read the game state: $($_.Exception.Message)" } }
 $errors = @($runLog | Where-Object { $_ -match '\[ERROR\]' })
+$startupEvents = @()
+if (Test-Path -LiteralPath $startupTelemetry) {
+    try { $startupEvents = @(Get-Content -LiteralPath $startupTelemetry | ForEach-Object { $_ | ConvertFrom-Json }) }
+    catch {
+        $message = "could not read startup telemetry: $($_.Exception.Message)"
+        Write-Host $message
+        if (-not $runnerError) { $runnerError = $message }
+    }
+    if ([IO.Path]::GetFullPath($startupTelemetry) -ne [IO.Path]::GetFullPath($startupSnapshot)) {
+        try { Copy-Item -LiteralPath $startupTelemetry -Destination $startupSnapshot }
+        catch { Write-Host "startup snapshot failed: $($_.Exception.Message)"; if (-not $runnerError) { $runnerError = "startup snapshot failed: $($_.Exception.Message)" } }
+    }
+}
 $status = Get-ScenarioStatus $executed $failedSteps.Count $gameAlive $runnerError
 $status = Get-ReviewStatus $status $errors.Count
 $summary = "$status; steps=$executed failed=$($failedSteps.Count) logErrors=$($errors.Count) gameAlive=$gameAlive"
@@ -221,6 +262,8 @@ if ($Quick) { $lines.Add('- Mode: quick (development iteration, not acceptance e
 $lines.Add("- Steps: $executed, failed: $($failedSteps.Count)")
 $lines.Add("- Game alive at end: $gameAlive")
 $lines.Add("- Log errors during run: $($errors.Count)")
+$lines.Add("- Phase at completion: $phase")
+if ($startupEvents.Count -gt 0) { $lines.Add('- Startup evidence: startup-events.jsonl (persisted during readiness polling)') }
 if ($runnerError) { $lines.Add("- Runner error: $runnerError") }
 $lines.Add('')
 $lines.Add('## Failed steps')
@@ -248,6 +291,9 @@ $result = [ordered]@{
     logErrors = $errors.Count
     gameAlive = $gameAlive
     runnerError = $runnerError
+    phase = $phase
+    startup = @($startupEvents)
+    evidence = @($(if (Test-Path -LiteralPath $startupSnapshot) { 'startup-events.jsonl' }))
     startedUtc = $startUtc.ToString('o')
     finishedUtc = [DateTime]::UtcNow.ToString('o')
 }

@@ -42,6 +42,10 @@ That registry is an index rather than proof of deployment, but there is no basis
 
 ## Estimate limits
 
+**Updated for the current feature-first target:** see the [status and planning estimate](2026-10-01-feature-status-and-estimate.md).
+It provides low-confidence allowances for a limited preview and the complete gameplay candidate; the paragraph
+below is the earlier whole-Stage-1 assessment, including the now-deferred remaster.
+
 No defensible hours/days or percentage-complete estimate yet. The crash cause and C's peak-budget feasibility are
 unresolved, while Slice B/C implementation acceptance is substantial and not yet fully tasked. Report progress against
 the gates above. The current combat milestone is nearer than the full mod; neither is only an owner playtest away.

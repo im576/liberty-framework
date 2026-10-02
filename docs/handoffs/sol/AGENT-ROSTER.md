@@ -42,6 +42,14 @@ No remaster implementation is assigned. Functional menus/HUD/storage and support
 
 ## Latest resume and schedule
 
+Latest cutoff recovery: preserve all four IDs/settings. Main startup deadline/evidence fix `9cdc097` passes full
+offline tooling 256/0. D alone is assigned one corrected full held-baseline batch on `e1ede91` after integrating it,
+with fail-fast, 30-minute cap and restoration. The previous D full FAIL and unarmed clip0 remain recorded.
+B finishes bounded paired trunk observations offline; its fresh wheel timing passes but trunk p95/p99 fail.
+C narrows effects/crash experiments offline. R reviews recorded stalls offline; `b264d5d` parking/safety is held.
+R's full material run and B/D's last batches all finished and restored. No other game/heavy slot is assigned.
+Earlier schedules below remain historical receipts. Current dispatch authority: ORCHESTRATOR.md.
+
 The owner approved the reviewed plan with "Yes let's do that. Orchestrate efficiently and optimally." The preceding
 build/edit hold is revoked. Reuse all four workers/settings and preserve B/D's dirty prepared patches.
 C's control `20261001-164156-844c6a1` finished/restored: 43 steps/0 failed, one shader dialog ERROR (NEEDS-REVIEW),

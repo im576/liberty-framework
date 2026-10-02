@@ -3,6 +3,24 @@
 Reviewed against main `2fac4cd`, with lane commits pinned below. This is source/evidence review, not full-mod
 acceptance. Gameplay features remain first; remaster is deferred. Original budgets and density OFF are preserved.
 
+## Latest full B follow-up
+
+Reviewed source `b3db1bc`, tested full `20261001-202311-2297a17`; production build zero errors, NoGame441/0/5,
+tooling255/0. SDK UI21/0 and wheel99/0 with zero scenario errors. Parent reran the strict real-log latency parser:
+16 openings, 16 draws, max_frames=0, first-draw timings 0..62 ms. Wheel UI budget passed. All three SDK and six wheel
+captures independently viewed: coherent selection/details/empty slot and readable rendering. This closes the observed
+wheel first-draw regression in the candidate; physical controller/owner feel remain unproven.
+
+Trunk41 steps/1 failed/zero log errors: budget p95 rose 40.7 -> 46.4 ms (+14%), above its unchanged gate; p99 rose
+68.0 -> 99.7 ms. Draw average0.345 ms was below0.5; scheduler average0.362 ms and holsters peak19 ms identify measured
+costs, not a demonstrated cause. Only initial trunk capture exists, independently viewed with first carried selection,
+empty right panel and capacity0/8 readable. Fail-fast prevented later transfer/capacity/close flows; do not count them
+as passed from this run or discard the failure because an older run passed.
+
+Finished03:31:10.263Z/restored `phase2-20261001-202329`; installed metadata03:31:10.031Z and parent process check agree.
+Shared UiService/Radial/Storage patch remains unmerged pending scoped diagnosis/regression. No unchanged retry assigned.
+D gets the next bounded held-baseline slot; B/C/R continue offline. R's independent full review is linked in ORCHESTRATOR.
+
 ## Findings requiring follow-up
 
 1. **B: wheel responsiveness still fails a written criterion.** Full `20261001-122159-4330603` records a later opening
