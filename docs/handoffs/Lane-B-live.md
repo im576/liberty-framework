@@ -14,6 +14,7 @@ This section supersedes the historical next-step instructions below. The finishe
 Owner authorized bounded metrics/state observation after6864e38 diagnosis; resumed preserved WIP without discarding
 files. Separate patch changes only PerfService, ArsenalCore observer registration and TrunkSequence managed state,
 plus focused runner/harness/docs. No speculative trunk repair or original failure removal.
+Source/harness/docs candidate committed as `d9fa8a7363e792882a09aa47fbe325b3d76a9eae`; this follow-up records its SHA.
 
 PerfService retains exact CostReader.Command text already returned/reset by `ui-budget baseline`, logging it beside
 the same histogram percentiles. Begin assigns diagnostic ui_window identity, records existing Engine.Frame/ticks and
