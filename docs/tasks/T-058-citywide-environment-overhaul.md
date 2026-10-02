@@ -30,6 +30,8 @@ Owner authorized restart on continuation. Three Steam candidate startup attempts
 
 The direct-local diagnostic's boot.txt contains the earlier baseline boot because its helper had no new session boundary. That receipt is explicitly invalid as candidate readiness evidence; its pending command failed after process exit. Subsequent runtime work must use Start-GameReady's session boundary or filter by the new launch timestamp.
 
+The final two baseline-return launch attempts produced no observed GTAIV process. Baseline files remain restored and no game/test process or lock remains. Stop automatic retry loops. Next external-state check: owner launches GTA IV normally; then continue the candidate's actual runtime/visual review. No full-overhaul completion or candidate screenshot pass is claimed.
+
 ## Human test steps
 
 1. Launch GTA IV with the installed candidate. Walk and drive through Broker and Algonquin in ordinary free roam.
