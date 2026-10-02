@@ -7,6 +7,19 @@ Evidence and limits: [integration review](../reports/2026-10-01-orchestrator-int
 
 ## Current continuation after usage interruption
 
+**Latest owner-approved schedule:** the update-only hold is revoked. C's tested `844c6a1` production build PASS,
+NoGame verifier 442/0/5 and tooling 285/0; quick control `20261001-164156-844c6a1` restored with 43/0 steps and one
+shader-dialog ERROR, so remains NEEDS-REVIEW. C now runs only the separate bounded quick active comparison, with
+unchanged plugins/config. B/D finish preserved timing/baseline edits offline. R prepares SDK/material full coverage
+for the next assigned slot. Parent repairs package-staging prerequisites before the verifier without installing
+an unverified package first. Only one heavy/game slot; all runs restore and all old failures remain recorded.
+
+Usage-cutoff recovery preserves these same workers and all dirty edits. C active `20261001-165752-844c6a1` timed out
+during startup, produced no valid gameplay comparison, and restored `phase2-20261001-165758`. No C retry is assigned;
+it records launch evidence offline. B's snapshot patch is committed at `b3db1bc` (lane tip `b6da19e`), focused checks
+25/0 with a failing pre-fix negative control; full timing acceptance remains pending. D finishes its held baseline
+diagnostic. R is ready at `4ea6879` and gets the next explicit slot after parent verifier-prerequisite checks finish.
+
 Latest independent source/evidence review: [Sol lane review](../reports/2026-10-01-sol-lane-review.md).
 D's bounded diagnostic finished/restored `phase2-20261001-155855`: cash/wanted/radar release paths corroborated,
 weapon/ammo baseline absent and native story text/unload still unproven. C now has the single heavy/game slot for

@@ -42,6 +42,19 @@ them by hand or paste `summary.md` into the cloud session.
 
 ## Known limits
 
+### Generated verifier inputs (2026-10-01)
+
+The full D diagnostic batch exposed a prerequisite-order defect: Package Build invalidated staged phase2, then
+LOOP-verify read WeaponInfo.xml before Package Stage produced it. The original failure is preserved. A batch that
+includes packaging now stages its fresh snapshot under the existing game lock before running the verifier, then
+installs that same snapshot after verification. Stage failure leaves generated-input verification NOT-RUN and the
+package step FAIL; a verifier failure with StopOnFailure still prevents installation. The verifier prefers phase2
+WeaponInfo.xml when present, retaining the phase1/t007 fallback for older fixtures. No missing check becomes PASS.
+
+Focused prerequisite tests 2/0; existing verifier tooling plus the new tests 60/0; NoGame verifier 441/0/5 not-run.
+Receipts: `results-local/offline/orchestrator-verify-inputs/`. Full real-game-file batch validation follows through
+the scheduled R lane; these host-tool checks do not establish gameplay acceptance.
+
 - PowerShell 5.1 compatibility is by construction (no 7-only syntax); only PowerShell 7 ran here.
 - The probes' drawable statistics and the Windows-only paths (install, rollback, Steam launch, JPEG conversion,
   `taskkill`) run for the first time on the PC.
