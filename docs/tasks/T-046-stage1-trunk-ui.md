@@ -140,3 +140,15 @@ Later store/take/swap/capacity/state round-trip/close flows NOT-RUN due fail-fas
 confirmed; no retry. Shared UI candidate held unmerged despite wheel pass; source attribution unproven. Offline
 diagnose paired baseline/choreography/scheduler/hotpaths, thresholds unchanged. D owns next slot; no game/build.
 Historical passes/failures preserved, owner-only checks remain. [Live handoff](../handoffs/Lane-B-live.md) indexes receipt.
+
+### Paired metrics/state observation candidate — offline, runtime unrun
+
+Preserve the already-read exact closed command-cost report alongside frame percentiles, and append linked window
+identities/start/end Engine.Frame/ticks and managed storage/choreography state to existing metric command receipts.
+No new native queries/draw/per-frame logging, counter/threshold/reset/window changes, density/module switches or cause
+claim. Owner ledger cleans observer on stop; unavailable/failed observation never hides metric failure.
+Actual metrics/logger/ledger/trunk-state focused compilation **25/0**, warnings-as-errors; full production/runtime unrun.
+Fresh full202311 p95 FAIL and later action flows NOT-RUN remain; shared candidate heldunmerged.
+Next ONE full assigned batch proposes `LOOP-build,LOOP-verify,LOOP-package-install,T046-trunk-ui`, cap30/Restore/
+StopOnFailure/full, after parent host-startup fix review. Passing wheel/SDK unchanged, not rerun. Exact test receipt,
+source boundaries and observation limits in [live handoff](../handoffs/Lane-B-live.md).

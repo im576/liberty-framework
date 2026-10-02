@@ -20,8 +20,43 @@ namespace LibertyFramework.Engine.Services
         private long lastFrame;
         private float frameMs, p95Ms;
         private string uiBaseline;
+        private int uiWindow, uiBaselineWindow, uiStartFrame, uiStartTicks;
+        private string uiStartState = "unobserved";
+        private LibertyModule uiStateOwner;
+        private Func<string> uiState;
 
         internal PerfService(LibertyEngine engine) { this.engine = engine; }
+
+        // Command-boundary observation only. The owner supplies managed state, never game queries.
+        internal void ObserveUiBudgetState(LibertyModule owner, Func<string> read)
+        {
+            engine.RequireOwner(owner);
+            if (read == null) { throw new ArgumentNullException("read"); }
+            uiStateOwner = owner; uiState = read;
+            engine.Ledger.Add(owner, "ui-budget-state", 0, () =>
+            {
+                if (uiStateOwner == owner && uiState == read) { uiStateOwner = null; uiState = null; }
+            });
+        }
+
+        private string UiState()
+        {
+            if (uiStateOwner == null || !uiStateOwner.Running || uiState == null) { return "unavailable"; }
+            try { return uiState() ?? "unavailable"; }
+            catch (Exception error)
+            {
+                LibertyFramework.Core.Logging.RuntimeLog.Error("ui_budget_state_failed owner=" + uiStateOwner.Id + " error=" + error);
+                return "unavailable";
+            }
+        }
+
+        private string UiWindowReport()
+        {
+            return " ui_window=" + uiWindow + " baseline_window=" + uiBaselineWindow +
+                " start_frame=" + uiStartFrame + " end_frame=" + engine.Frame +
+                " start_ticks=" + uiStartTicks + " end_ticks=" + Environment.TickCount +
+                " state_start=[" + uiStartState + "] state_end=[" + UiState() + "]";
+        }
 
         public long Begin() { return Stopwatch.GetTimestamp(); }
 
@@ -116,12 +151,17 @@ namespace LibertyFramework.Engine.Services
             if (args.Length == 1 && args[0] == "begin")
             {
                 FrameStatsReportAndReset(); CostMeter.ReportAndReset(CostReader.Command);
+                uiWindow++;
+                uiStartFrame = engine.Frame; uiStartTicks = Environment.TickCount; uiStartState = UiState();
+                RuntimeLogBudget("ui_budget_begin ui_window=" + uiWindow + " frame=" + uiStartFrame + " ticks=" + uiStartTicks + " state=[" + uiStartState + "]");
                 return "ui budget window started";
             }
             if (args.Length == 1 && args[0] == "baseline")
             {
-                uiBaseline = FrameStatsReportAndReset(); CostMeter.ReportAndReset(CostReader.Command);
-                RuntimeLogBudget("ui_budget_baseline " + uiBaseline);
+                uiBaseline = FrameStatsReportAndReset();
+                string baselineCosts = CostMeter.ReportAndReset(CostReader.Command);
+                uiBaselineWindow = uiWindow;
+                RuntimeLogBudget("ui_budget_baseline " + uiBaseline + " " + baselineCosts + UiWindowReport());
                 return "ui budget baseline recorded";
             }
             if (args.Length != 6 || args[0] != "check") { throw new ArgumentException("begin | baseline | check <label> <draw ms> <p95 ratio> <p99 ratio> <minimum frames>"); }
@@ -133,6 +173,7 @@ namespace LibertyFramework.Engine.Services
             string framesReport = FrameStatsReportAndReset(), costsReport = CostMeter.ReportAndReset(CostReader.Command);
             string failure = LibertyFramework.Engine.Ui.Logic.UiBudgetLogic.Evaluate(framesReport, costsReport, uiBaseline, draw, p95, p99, minimum);
             string report = "ui_budget label=" + args[1] + " pass=" + (failure == null) + " reason=" + (failure ?? "within_budget") + " " + framesReport + " " + costsReport;
+            report += UiWindowReport();
             RuntimeLogBudget(report);
             return (failure == null ? "" : "error ") + report;
         }

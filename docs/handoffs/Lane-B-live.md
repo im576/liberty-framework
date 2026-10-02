@@ -9,6 +9,52 @@ This section supersedes the historical next-step instructions below. The finishe
 
 ### Full receipt 20261001-202311-2297a17 — latest, candidate HELD unmerged
 
+### Paired window observation candidate — offline follow-up, latest
+
+Owner authorized bounded metrics/state observation after6864e38 diagnosis; resumed preserved WIP without discarding
+files. Separate patch changes only PerfService, ArsenalCore observer registration and TrunkSequence managed state,
+plus focused runner/harness/docs. No speculative trunk repair or original failure removal.
+
+PerfService retains exact CostReader.Command text already returned/reset by `ui-budget baseline`, logging it beside
+the same histogram percentiles. Begin assigns diagnostic ui_window identity, records existing Engine.Frame/ticks and
+managed state, and emits one command-boundary INFO receipt; baseline/check append window/baseline identity and
+start/end state/frame/ticks. Engine.Frame is read only. Original resets/order, histogram/cost collection, thresholds,
+return success/error prefixes, scenario windows/config/density/modules remain unchanged. Logger reader independent.
+Arsenal registers a managed-state delegate with owner ledger cleanup; reads storage open/closing/locked/wheel state
+and trunk Active/Completed/StepIndex/browsing/closeRequested/handleRequested. These do not query player/control/vehicle
+or animations. Callback only runs at metric command boundaries; no draw work/native queries/per-frame file writes.
+Missing/stopped observer returns unavailable; observer exceptions log ERROR and keep metrics/report evaluation.
+This adds one owned diagnostic ledger entry while Arsenal runs, released on stop; not input capture or control lock.
+
+Focused command `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/tests/Run-UiBudgetObservationChecks.ps1`
+completed **25 passed / 0 failed**, zero compiler warnings/errors, C#7.3/x86 warnings-as-errors, existing SDK SHA256
+`5D82021B3A3371A8AD1BF633945318F6777CF9DFF9401E0AD12EECD7194502E4`.
+Actual PerfService/CostMeter/UiBudgetLogic/RuntimeLog/ResourceLedger/TrunkSequence sources compiled, with engine/SHDN
+boundaries and IChoreography state fixture. Checks verify paired baseline/open frames+costs, periodic reader independence,
+unchanged begin/baseline/check resets, invalid-command no-reset behavior, no observation during sample collection,
+managed active/completed/browsing states, owner/replacement cleanup, observer failure logging and original relative p95
+FAIL with compliant mean/draw average. Actual logger writes temporary files; no production logger implementation changed.
+Harness initially needed FileShare.ReadWrite/Delete because real logger holds writer open, and failing return has
+`error ` prefix while existing INFO log does not; both harness expectations corrected before final25/0 receipt.
+
+Receipt `results-local/offline/ui-budget-observation-checks.log`; actual final logger evidence
+`results-local/offline/lane-b-ui-budget-observation/323d36b3c8eb40a8b05bae073d2c6e01/logs/LibertyFramework.log`.
+No unchanged passing checks rerun after usage resume. Diff whitespace check PASS. Full production build/verifier/tool
+suite/runtime unrun for this observation patch; ArsenalCore registration is source-reviewed, not harness-compiled.
+Boundary observation cannot reconstruct transient state changes or correlate individual cost maxima to frame tails.
+No cause asserted, acceptance unchanged: fresh202311 trunk FAIL and later flows NOT-RUN remain; candidate heldunmerged.
+
+Proposed ONE future full batch after parent host-startup review and explicit slot:
+`tools/verify-local.ps1 -GameDirectory 'C:/Games/Grand Theft Auto IV/GTAIV' -AnyBranch -NoPush -Restore -NoManual
+-MaxGameMinutes 30 -StopOnFailure -Only @('LOOP-build','LOOP-verify','LOOP-package-install','T046-trunk-ui')`.
+No Quick/AllowOtherBuild; preserve existing scenario windows and gate. Required scheduled production checks first,
+then committed full run. Estimate8–12min including startup/stage/verifier/restoration, cap30 unchanged; estimate only.
+Inspect exact paired costs/frame stats/state, captures and restoration; stop at failed/unavailable return, no second
+invocation. Passing wheel/SDK not selected; watcher batch not authorized. Parent reviewing isolated host fix; B has
+no heavy/game/install slot. No main push/merge, no other worktree edit or subdelegation.
+
+### Previous full receipt (preserved)
+
 Single authorized full batch tested clean2297a17 (radial b3db1bc, main host689bac5); no Quick/AllowOtherBuild.
 Exact Only IDs: LOOP-build,LOOP-verify,LOOP-package-install,T045-weapon-wheel,T046-trunk-ui,SDK-ui-review;
 AnyBranch/NoPush/Restore/NoManual/MaxGameMinutes30/StopOnFailure. Queue runs SDK before wheel/trunk.
