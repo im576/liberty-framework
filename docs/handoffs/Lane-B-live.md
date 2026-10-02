@@ -7,7 +7,62 @@ Update this file after every game run and meaningful commit. Rules for a success
 
 This section supersedes the historical next-step instructions below. The finished B slot is released; do not rerun it.
 
-### Initial radial snapshot fix — offline source milestone, latest
+### Full receipt 20261001-202311-2297a17 — latest, candidate HELD unmerged
+
+Single authorized full batch tested clean2297a17 (radial b3db1bc, main host689bac5); no Quick/AllowOtherBuild.
+Exact Only IDs: LOOP-build,LOOP-verify,LOOP-package-install,T045-weapon-wheel,T046-trunk-ui,SDK-ui-review;
+AnyBranch/NoPush/Restore/NoManual/MaxGameMinutes30/StopOnFailure. Queue runs SDK before wheel/trunk.
+Production warnings-as-errors build zero warnings/errors, NoGame441/0/5 not-run, full tools255/0.
+LOOP-build cached PASS; full game-file LOOP-verify1020/0 after Stage; package/install PASS. Engine DLL SHA256
+8C52778AF2D8FE20F31E25C823186DEFD3E33505159468824C317B0A3EA0835A. Offline logs:
+results-local/offline/lane-b-production-2297a17/{build,verify-nogame,tool-tests,full-batch-console}.log.
+Run03:23:11.070Z–03:31:10.264Z (<8min). Startup permitted built-in attempt2 booted; attempt1 seen=False preserved.
+No second verifier or failed-check rerun. Summary retains PASS3/NEEDS-REVIEW2/FAIL1, not whole-batch acceptance.
+
+SDK21/0/0 log errors, wheel99/0/0, trunk41 executed/1 failed/0 errors; game alive at each scenario end.
+Wheel12/12 cycle equips plus keyboard hold/tap pass. All opening groups paired with original target<=1 frame:
+
+| Group | Opens/draws | Engine frames | Wall-time ms |
+|---|---:|---|---|
+| Initial | 1/1 | 0 | 15 |
+| Three cycle rounds | 12/12 | all0 | 15,16,15,15,47,15,31,16,31,16,62,16 |
+| Keyboard hold | 1/1 | 0 | 0 |
+| Keyboard tap | 1/1 | 0 | 0 |
+| Later budget opening | 1/1 | 0 | 0 |
+
+All16/16, max0 frames/62ms, no missing/orphan/negative pairs. Fresh full run passes measured timing criterion for
+these groups; not visible presentation/all controller/load acceptance. Old2-frame/359ms failure remains preserved.
+Wheel budget PASS closed/open avg22.49/23.58 (+4.85%), p9539.0/29.3, p9953.9/34.3, max104.7/42.1ms;
+draw.ui avg/max0.227/0.7ms, baseline457/open443 frames, no measured>=1s stalls in either window.
+Trunk FAIL unchanged `ui-budget check trunk 0.5 1.10 1.15 30`, reason frame_p95: closed/open avg26.44/27.92
+(+5.60%), p9540.7/46.4 (+14.00%, limit+10%), p9968.0/99.7 (+46.62%, also beyond+15% though p95 stops first),
+max186.3/141.7ms, baseline394/open379 frames, draw.ui avg/max0.345/5.8ms, no measured>=1s stalls.
+Compliant draw average does not erase frame-gate failure. Later store/take/swap/capacity/state round-trip/close flows
+NOT-RUN due fail-fast; no fresh PASS substituted from historical trunk acceptance. Cause unproven.
+
+All10 stored960x540 JPGs individually viewed (SDK/wheel originals also viewed before compression):
+- SDK: sdk_list_menu.jpg, sdk_list_menu_moved.jpg, sdk_radial_menu.jpg. Readable list, highlight moves to Notify,
+  radial eight slots/icons/initial0/centre visible; long explanatory line ellipsized. Parent independently viewed3.
+- Wheel: wheel_open_sidearm.jpg, wheel_long_gun_1.jpg, wheel_long_gun_2.jpg, wheel_melee.jpg,
+  wheel_empty_slot.jpg, wheel_keyboard_highlight.jpg. Correct amber selection/names/ammo/finish/empty slot/keyboard
+  AK highlight and readable footer; Melee_Knife cosmetic remains. Parent independently viewed6. No observed clipping.
+- Trunk: trunk_ui_open.jpg. Sidearm selected0, Glock17/100 centre, empty TRUNK0/8 right panel/footer readable.
+  Parent independently viewed1; no later captures exist. Summary NEEDS-REVIEW labels retained, review separate.
+
+Installed identity checked during B mutex: lane-b2/codex-lane-b-validation/2297a17/dirty=False; wait0.017s.
+All five ASI paths/SHA256 identical to prior122159 B run; exact inventory/game hashes in summary.json, no ColAccel.
+Density OFF, T040 baseline/budgets unchanged. Restore confirmed summary AND installed metadata
+phase2-20261001-202329 at03:31:10.031Z. Post-run no GTAIV/compiler/verifier, holder note absent, actual named mutex
+WaitOne(0) acquired/released successfully (free). B slot released; D now holds next heavy/game slot.
+
+Parent holds entire candidate unmerged because shared UI also affects storage. Offline bounded trunk diagnosis
+follows receipt; initial snapshot once/open is not assumed cause of continuous p95. No counters/budgets/warmups/module
+switch changes, automatic retry or new run. Watcher rejection/recovery/restart fixtures remain unrun/new-slot only:
+LOOP-package-install,T045-config-watch-reload,T045-config-watch-restart. Future T046-trunk-ui requires evidence-based
+plan and slot; unchanged passing wheel/SDK not automatically rerun. Owner controller/real save-load/safehouse/gunsmith/
+HUD coexistence/feel remain; no task DONE.
+
+### Initial radial snapshot fix — historical offline source milestone
 
 Ready-to-test update: parent independently reviewed `b3db1bc`/`b6da19e`, including the actual-source harness and
 negative control. Clean B then fetched origin and merged pushed main `689bac5` as `85faad7` without conflicts.

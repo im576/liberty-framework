@@ -35,6 +35,8 @@ before any Phase 3 work. Offline passes do not mark a lane DONE.
 - **Lane B radial initial snapshot follow-up (offline only):** prepares selected slot/centre before publication without
   opening input; focused real UI/storage/ledger checks 25/0. Full build/runtime timing and watcher fixtures pending;
   original <=1-frame gate remains P1. [Current evidence](handoffs/Lane-B-live.md).
+- **Fresh B full2297a17:** wheel99/0/0, all16 opens/draws0frames, SDK21/0/0; all10 captures reviewed. Trunk FAIL41/1/0
+  relative p95, later flows NOT-RUN. Restored202329; shared candidate held unmerged, watcher/owner gates pending.
 - **T-045 wheel / T-046 trunk UI (lane B), merged, NEEDS-PLAYTEST (2026-10-01):** main `f823e45` integrates reviewed
   Lane B `1744416` and cached sprite text, preserving newer main tooling. Full `20261001-092349-e470758` passed all
   wheel/trunk/text assertions and budgets; orchestrator reviewed all 12 wheel/trunk captures. Combined build PASS,

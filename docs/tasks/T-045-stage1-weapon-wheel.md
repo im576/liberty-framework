@@ -175,3 +175,14 @@ source **12/13** expected negative control. Engine/SHDN boundaries are spies; fu
 P1 <=1-frame acceptance gap persists until a scheduled full `T045-weapon-wheel` with every-opening pairing passes.
 Separate `T045-config-watch-reload,T045-config-watch-restart` remain unrun. No threshold/budget change; NEEDS-PLAYTEST.
 Exact logs, caller audit, limits and next batches are in the [live handoff](../handoffs/Lane-B-live.md).
+
+### Full2297a17 receipt (20261001-202311), shared candidate held unmerged
+
+Wheel99/0/0 errors; original <=1-frame gates pass all16/16 opens/draws, all0frames, max62ms (initial1/cycles12/
+hold1/tap1/later budget1). Budget PASS closed/open avg22.49/23.58, p9539.0/29.3, p9953.9/34.3,
+draw.ui0.227/0.7 avg/max, no measured>=1s stalls. All6 captures viewed by lane and independently parent; labels/
+highlight/ammo/footer readable, Melee_Knife cosmetic. SDK21/0/0 +3 captures supports other shared caller.
+Production warnings-as-errors build PASS, NoGame441/0/5, full tools255/0, full game-file verifier1020/0.
+Restored phase2-20232903:31:10.031Z; no retry. Trunk FAIL relative p95 (later flows NOT-RUN) holds shared candidate
+unmerged; wheel PASS does not erase it. Watcher runtime/physical controller/owner gates remain; no task DONE.
+Exact opening-group metrics,10-capture list and receipt in [live handoff](../handoffs/Lane-B-live.md).
