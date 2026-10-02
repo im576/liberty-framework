@@ -62,6 +62,16 @@ LOOP-package-install,T045-config-watch-reload,T045-config-watch-restart. Future 
 plan and slot; unchanged passing wheel/SDK not automatically rerun. Owner controller/real save-load/safehouse/gunsmith/
 HUD coexistence/feel remain; no task DONE.
 
+Offline source/log diagnosis completed after receipt, no runtime/source changes:
+[paired trunk diagnosis](../reports/2026-10-01-lane-b-trunk-budget-diagnosis.md). Browsing intentionally keeps choreography
+active throughout open window; wheel-ready status proves opening steps ended, not choreography completion. Historical
+PASS open scheduler0.348/1.7 vs fresh0.362/2.1 (quiet~0.001 not valid paired baseline), snapshot avg identical0.137.
+Initial snapshot occurs before open budget reset, so not directly included as repeated work. Holster19ms peak is
+outside near-zero ho.show; native/call culprit unproven. Exact closed cost baseline is unavailable because existing
+ui-budget baseline discards command costs; periodic logger is a different reader/window. Aggregate maxima lack frame
+alignment, so no proved p95 cause or speculative fix. B remains heldunmerged; D current slot. Proposal for parent:
+bounded observational paired costs/state and, only if assigned, slow frame-correlated owner-tick query scopes.
+
 ### Initial radial snapshot fix — historical offline source milestone
 
 Ready-to-test update: parent independently reviewed `b3db1bc`/`b6da19e`, including the actual-source harness and
