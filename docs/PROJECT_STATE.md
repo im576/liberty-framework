@@ -26,7 +26,7 @@ The prior visual session restored the exact original appearance. See the
 | Area | Current evidence | Open work |
 |---|---|---|
 | Phase 1 engine | Native core, SDK, event/scheduler/resource lifecycle, hot reload, content compiler and autopilot have prior in-game evidence | Full mod integration remains separate from engine completion |
-| Weapons/loadout/wheel/storage | Integrated implementation and earlier scripted passes | Trunk frame budgets, real save/load, physical controller and mission compatibility |
+| Weapons/loadout/wheel/storage | Reviewed radial snapshot fix and bounded trunk metrics integrated; earlier full wheel pass | Trunk frame budgets, real save/load, physical controller and mission compatibility |
 | Gore/effects (lane C) | Exact damage hook and skeleton-collapse capability exist; lane changes remain unmerged | Recurring dismemberment crashes, cleanup and peak-cost failures; authored caps/aftermath |
 | HUD (lane D) | Conservative vanilla guard; partial display/restoration observations | Correct weapon/ammo fixtures, clean hiding, native story text, unload and combined UI |
 | Materials (lane R) | SDK 1.2 material API integrated; partial surface correlations | Effective mapping, direct glass/water/object evidence and stall-free coverage; SDK 1.3 separate |

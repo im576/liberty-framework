@@ -119,3 +119,36 @@ Restored from `phase2-20261001-122209`; slot is released and this run must not b
 Offline build PASS, verifier 441/0/5 not-run, tools 236/0. ASI hashes/inventory and exact evidence in
 [live handoff](../handoffs/Lane-B-live.md). Controller, real game save/load, safehouse/gunsmith and B/D coexistence
 remain owner/combined checks; state-file round trips do not prove real save/load. Status stays NEEDS-PLAYTEST.
+
+### Shared radial initial snapshot follow-up — offline only
+
+StorageWheel now supplies its first carried start slot before opening, allowing the initial Centre/right-panel
+snapshot before publication. Focused checks compile the actual storage/UI/view/ledger sources: initial centre,
+highlight, panel, no opening action/input consumption, external-close semantics, owner-stop and initial callback
+failure cleanup pass within **25/0** checks in PS7/PS5.1. Engine/SHDN boundaries are spies; production build/full
+runtime evidence is pending. Next affected gate `T046-trunk-ui`, plus `SDK-ui-review` for the other shared radial
+callers, with `LOOP-package-install` under a scheduled slot. Prior acceptance stays preserved; this patch claims no
+fresh timing/visual acceptance. [Live handoff](../handoffs/Lane-B-live.md) records exact receipts and pending gates.
+
+### Full2297a17 fresh FAIL — 20261001-202311
+
+41 executed steps/1 failed/0 errors. Initial status/open sidearm0 and empty0/8 panel passed; sole trunk_ui_open.jpg
+viewed by lane and parent, readable centre/panel. Unchanged budget fails frame_p95: closed/open avg26.44/27.92
+(+5.60%), p9540.7/46.4 (+14%, limit+10%), p9968.0/99.7 (+46.62%, limit+15%), max186.3/141.7;
+draw.ui0.345/5.8 avg/max, zero measured>=1s stalls. Draw avg<0.5 does not pass relative frame gates.
+Later store/take/swap/capacity/state round-trip/close flows NOT-RUN due fail-fast. Restore phase2-20232903:31:10.031Z
+confirmed; no retry. Shared UI candidate held unmerged despite wheel pass; source attribution unproven. Offline
+diagnose paired baseline/choreography/scheduler/hotpaths, thresholds unchanged. D owns next slot; no game/build.
+Historical passes/failures preserved, owner-only checks remain. [Live handoff](../handoffs/Lane-B-live.md) indexes receipt.
+
+### Paired metrics/state observation candidate — offline, runtime unrun
+
+Preserve the already-read exact closed command-cost report alongside frame percentiles, and append linked window
+identities/start/end Engine.Frame/ticks and managed storage/choreography state to existing metric command receipts.
+No new native queries/draw/per-frame logging, counter/threshold/reset/window changes, density/module switches or cause
+claim. Owner ledger cleans observer on stop; unavailable/failed observation never hides metric failure.
+Actual metrics/logger/ledger/trunk-state focused compilation **25/0**, warnings-as-errors; full production/runtime unrun.
+Fresh full202311 p95 FAIL and later action flows NOT-RUN remain; shared candidate heldunmerged.
+Next ONE full assigned batch proposes `LOOP-build,LOOP-verify,LOOP-package-install,T046-trunk-ui`, cap30/Restore/
+StopOnFailure/full, after parent host-startup fix review. Passing wheel/SDK unchanged, not rerun. Exact test receipt,
+source boundaries and observation limits in [live handoff](../handoffs/Lane-B-live.md).

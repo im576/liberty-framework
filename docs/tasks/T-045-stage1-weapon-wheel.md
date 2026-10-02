@@ -143,3 +143,46 @@ Ready for orchestrator source integration review with these explicit gaps, not u
 Next scoped fixture work proposes unregistered `T045-config-watch-reload,T045-config-watch-restart`; existing
 `LOOP-package-install,T045-weapon-wheel` cover the affected wheel after any scoped timing fix and a new slot.
 Do not rerun the finished batch. NEEDS-PLAYTEST and owner-only controller/save-load/HUD coexistence checks remain.
+
+### Scoped fixture milestone — offline only
+
+Registered **T045-config-watch-reload** and **T045-config-watch-restart**; both QUEUED/unrun in game. Scoped host
+fixture captures exact arsenal.json bytes/timestamp and wheel running/config-enabled state, modifies only weaponWheel,
+and restores bytes plus original state in runner finally via existing modules/restart/stop/wheel commands. Game exit
+or cleanup command refusal restores bytes but fails live-state restoration explicitly. Reload checks invalid Enter
+binding retains previous enabled state, then disabled/enabled recovery without restart; restart checks a stopped
+owner is quiet and fresh/repeated instances receive one callback after a change. Deliberate rejection ERROR lines
+remain visible and require review rather than filtering logErrors.
+
+`wheel-latency` gates every opening group: initial, all cycles, keyboard hold/tap and later budget opening. Missing,
+unpaired, negative or >1 engine-frame first draws fail. Original frame/budget thresholds unchanged. Replay of preserved
+`4330603` log correctly fails the previously unchecked 2-frame/359 ms opening. Recorded frames are engine tick delta
+at draw entry, not visible presentation. Command polling follows Ui.Update and new radials have no snapshot until
+update; callback/snapshot ordering needs runtime evidence. The hitch does not establish cause. No actual timing
+implementation was changed or claimed fixed.
+Focused fixture checks 17/0 in PS7 and Windows PS5.1; existing runner simulations 30/0; queue/plan preservation and
+diff checks PASS. No heavy build/game slot used. Exact next IDs:
+`LOOP-package-install,T045-config-watch-reload,T045-config-watch-restart,T045-weapon-wheel`.
+Only a new authorized slot may run them. [Live handoff](../handoffs/Lane-B-live.md) records evidence/cleanup limits.
+
+### Initial snapshot source repair — runtime acceptance pending
+
+Prepare the first radial snapshot under owner RunAs before publication, without reading menu input. Start selection
+and sticky hints are set before preparation; original frame/wall-time measurement includes preparation without
+normalizing Engine.Frame. Capture/ledger registration precedes callbacks so initial failure closes owned resources.
+Focused actual UI/view/input/ledger/storage sources: **25/0** PS7 and PS5.1, warnings-as-errors; identical pre-fix
+source **12/13** expected negative control. Engine/SHDN boundaries are spies; full production build/runtime unrun.
+P1 <=1-frame acceptance gap persists until a scheduled full `T045-weapon-wheel` with every-opening pairing passes.
+Separate `T045-config-watch-reload,T045-config-watch-restart` remain unrun. No threshold/budget change; NEEDS-PLAYTEST.
+Exact logs, caller audit, limits and next batches are in the [live handoff](../handoffs/Lane-B-live.md).
+
+### Full2297a17 receipt (20261001-202311), shared candidate held unmerged
+
+Wheel99/0/0 errors; original <=1-frame gates pass all16/16 opens/draws, all0frames, max62ms (initial1/cycles12/
+hold1/tap1/later budget1). Budget PASS closed/open avg22.49/23.58, p9539.0/29.3, p9953.9/34.3,
+draw.ui0.227/0.7 avg/max, no measured>=1s stalls. All6 captures viewed by lane and independently parent; labels/
+highlight/ammo/footer readable, Melee_Knife cosmetic. SDK21/0/0 +3 captures supports other shared caller.
+Production warnings-as-errors build PASS, NoGame441/0/5, full tools255/0, full game-file verifier1020/0.
+Restored phase2-20232903:31:10.031Z; no retry. Trunk FAIL relative p95 (later flows NOT-RUN) holds shared candidate
+unmerged; wheel PASS does not erase it. Watcher runtime/physical controller/owner gates remain; no task DONE.
+Exact opening-group metrics,10-capture list and receipt in [live handoff](../handoffs/Lane-B-live.md).

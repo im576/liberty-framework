@@ -141,12 +141,14 @@ namespace LibertyFramework.Arsenal.Ui
             radial.OnAccept = slot => { Equip(slot, true); return null; };
             radial.OnClosed = () => { menu = null; sticky = false; };
             int held = Liberty.Weapons.Current(Liberty.Player.Ped);
-            menu = Engine.Ui.OpenRadial(this, radial);
-            menu.Selected = WeaponWheelLogic.StartSegment(ids, held);
+            // Centre evaluates during OpenRadial, so tap/command hints must already reflect this opening.
             sticky = alreadySticky;
             firstDrawLogged = false;
+            // Include initial snapshot preparation in the existing tick/wall-time measurement.
             openedAtTicks = Environment.TickCount;
             openedAtFrame = Engine.Frame;
+            menu = Engine.Ui.OpenRadial(this, radial, WeaponWheelLogic.StartSegment(ids, held));
+            if (!menu.IsOpen) { menu = null; return; }
             RuntimeLog.Info("weapon_wheel_open frame=" + openedAtFrame + " held=" + held + " slots=" + string.Join(",", Array.ConvertAll(ids, id => id.ToString())));
         }
 

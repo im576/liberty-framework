@@ -83,6 +83,8 @@ namespace LibertyFramework.Arsenal
         // Engine events that change what the player carries mark the inventory for re-reading on the next tick.
         protected internal override void OnStart()
         {
+            Engine.Perf.ObserveUiBudgetState(this, () => "storage_open=" + StorageOpen + " storage_closing=" + storageClosing +
+                " wheel_open=" + wheel.IsOpen + " storage_locked=" + storageControlLocked + " " + trunkAnimation.Observation());
             Engine.Events.Subscribe<global::Liberty.Sdk.Events.PlayerWeaponChanged>(this, e => inventoryDirty = true);
             Engine.Events.Subscribe<global::Liberty.Sdk.Events.PlayerShot>(this, e => inventoryDirty = true);
             Engine.Events.Subscribe<global::Liberty.Sdk.Events.ReloadFinished>(this, e => inventoryDirty = true);

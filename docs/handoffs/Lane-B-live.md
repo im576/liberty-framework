@@ -7,6 +7,255 @@ Update this file after every game run and meaningful commit. Rules for a success
 
 This section supersedes the historical next-step instructions below. The finished B slot is released; do not rerun it.
 
+### Full receipt 20261001-202311-2297a17 — latest, candidate HELD unmerged
+
+### Paired window observation candidate — offline follow-up, latest
+
+Parent independently reviewed `d9fa8a7` production diff and full actual-source harness/25/0 receipts; accepted as
+bounded offline instrumentation, held unmerged until runtime. Pushed main `aa6d463` safely merged into clean B as
+`77a8fbc` (includes host startup deadline/evidence `9cdc097`, parent tooling receipt256/0; not a fresh B receipt).
+Conflicts resolved keeping both project-status records and both runner initializations: B wheel fixture state plus
+host phase/startup telemetry. Fixture finally restoration remains intact. Merged runner parser PASS and diff whitespace
+PASS; production/observation harness, scenario windows and queue entries unchanged from pre-merge `35e5980`.
+No unchanged focused checks repeated, no heavy build/verifier/package/install/game launched. D retains exclusive
+`20261001-210109-df025f7` slot; B awaits D restoration AND explicit reassignment. Prepared single future full batch:
+LOOP-build, LOOP-verify, LOOP-package-install, T046-trunk-ui only, exact command below. No watcher/wheel/SDK batch.
+
+Owner authorized bounded metrics/state observation after6864e38 diagnosis; resumed preserved WIP without discarding
+files. Separate patch changes only PerfService, ArsenalCore observer registration and TrunkSequence managed state,
+plus focused runner/harness/docs. No speculative trunk repair or original failure removal.
+Source/harness/docs candidate committed as `d9fa8a7363e792882a09aa47fbe325b3d76a9eae`; this follow-up records its SHA.
+
+PerfService retains exact CostReader.Command text already returned/reset by `ui-budget baseline`, logging it beside
+the same histogram percentiles. Begin assigns diagnostic ui_window identity, records existing Engine.Frame/ticks and
+managed state, and emits one command-boundary INFO receipt; baseline/check append window/baseline identity and
+start/end state/frame/ticks. Engine.Frame is read only. Original resets/order, histogram/cost collection, thresholds,
+return success/error prefixes, scenario windows/config/density/modules remain unchanged. Logger reader independent.
+Arsenal registers a managed-state delegate with owner ledger cleanup; reads storage open/closing/locked/wheel state
+and trunk Active/Completed/StepIndex/browsing/closeRequested/handleRequested. These do not query player/control/vehicle
+or animations. Callback only runs at metric command boundaries; no draw work/native queries/per-frame file writes.
+Missing/stopped observer returns unavailable; observer exceptions log ERROR and keep metrics/report evaluation.
+This adds one owned diagnostic ledger entry while Arsenal runs, released on stop; not input capture or control lock.
+
+Focused command `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/tests/Run-UiBudgetObservationChecks.ps1`
+completed **25 passed / 0 failed**, zero compiler warnings/errors, C#7.3/x86 warnings-as-errors, existing SDK SHA256
+`5D82021B3A3371A8AD1BF633945318F6777CF9DFF9401E0AD12EECD7194502E4`.
+Actual PerfService/CostMeter/UiBudgetLogic/RuntimeLog/ResourceLedger/TrunkSequence sources compiled, with engine/SHDN
+boundaries and IChoreography state fixture. Checks verify paired baseline/open frames+costs, periodic reader independence,
+unchanged begin/baseline/check resets, invalid-command no-reset behavior, no observation during sample collection,
+managed active/completed/browsing states, owner/replacement cleanup, observer failure logging and original relative p95
+FAIL with compliant mean/draw average. Actual logger writes temporary files; no production logger implementation changed.
+Harness initially needed FileShare.ReadWrite/Delete because real logger holds writer open, and failing return has
+`error ` prefix while existing INFO log does not; both harness expectations corrected before final25/0 receipt.
+
+Receipt `results-local/offline/ui-budget-observation-checks.log`; actual final logger evidence
+`results-local/offline/lane-b-ui-budget-observation/323d36b3c8eb40a8b05bae073d2c6e01/logs/LibertyFramework.log`.
+No unchanged passing checks rerun after usage resume. Diff whitespace check PASS. Full production build/verifier/tool
+suite/runtime unrun for this observation patch; ArsenalCore registration is source-reviewed, not harness-compiled.
+Boundary observation cannot reconstruct transient state changes or correlate individual cost maxima to frame tails.
+No cause asserted, acceptance unchanged: fresh202311 trunk FAIL and later flows NOT-RUN remain; candidate heldunmerged.
+
+Proposed ONE future full batch after parent host-startup review and explicit slot:
+`tools/verify-local.ps1 -GameDirectory 'C:/Games/Grand Theft Auto IV/GTAIV' -AnyBranch -NoPush -Restore -NoManual
+-MaxGameMinutes 30 -StopOnFailure -Only @('LOOP-build','LOOP-verify','LOOP-package-install','T046-trunk-ui')`.
+No Quick/AllowOtherBuild; preserve existing scenario windows and gate. Required scheduled production checks first,
+then committed full run. Estimate8–12min including startup/stage/verifier/restoration, cap30 unchanged; estimate only.
+Inspect exact paired costs/frame stats/state, captures and restoration; stop at failed/unavailable return, no second
+invocation. Passing wheel/SDK not selected; watcher batch not authorized. Reviewed host fix is integrated; B has
+no heavy/game/install slot. No main push/merge, no other worktree edit or subdelegation.
+
+### Previous full receipt (preserved)
+
+Single authorized full batch tested clean2297a17 (radial b3db1bc, main host689bac5); no Quick/AllowOtherBuild.
+Exact Only IDs: LOOP-build,LOOP-verify,LOOP-package-install,T045-weapon-wheel,T046-trunk-ui,SDK-ui-review;
+AnyBranch/NoPush/Restore/NoManual/MaxGameMinutes30/StopOnFailure. Queue runs SDK before wheel/trunk.
+Production warnings-as-errors build zero warnings/errors, NoGame441/0/5 not-run, full tools255/0.
+LOOP-build cached PASS; full game-file LOOP-verify1020/0 after Stage; package/install PASS. Engine DLL SHA256
+8C52778AF2D8FE20F31E25C823186DEFD3E33505159468824C317B0A3EA0835A. Offline logs:
+results-local/offline/lane-b-production-2297a17/{build,verify-nogame,tool-tests,full-batch-console}.log.
+Run03:23:11.070Z–03:31:10.264Z (<8min). Startup permitted built-in attempt2 booted; attempt1 seen=False preserved.
+No second verifier or failed-check rerun. Summary retains PASS3/NEEDS-REVIEW2/FAIL1, not whole-batch acceptance.
+
+SDK21/0/0 log errors, wheel99/0/0, trunk41 executed/1 failed/0 errors; game alive at each scenario end.
+Wheel12/12 cycle equips plus keyboard hold/tap pass. All opening groups paired with original target<=1 frame:
+
+| Group | Opens/draws | Engine frames | Wall-time ms |
+|---|---:|---|---|
+| Initial | 1/1 | 0 | 15 |
+| Three cycle rounds | 12/12 | all0 | 15,16,15,15,47,15,31,16,31,16,62,16 |
+| Keyboard hold | 1/1 | 0 | 0 |
+| Keyboard tap | 1/1 | 0 | 0 |
+| Later budget opening | 1/1 | 0 | 0 |
+
+All16/16, max0 frames/62ms, no missing/orphan/negative pairs. Fresh full run passes measured timing criterion for
+these groups; not visible presentation/all controller/load acceptance. Old2-frame/359ms failure remains preserved.
+Wheel budget PASS closed/open avg22.49/23.58 (+4.85%), p9539.0/29.3, p9953.9/34.3, max104.7/42.1ms;
+draw.ui avg/max0.227/0.7ms, baseline457/open443 frames, no measured>=1s stalls in either window.
+Trunk FAIL unchanged `ui-budget check trunk 0.5 1.10 1.15 30`, reason frame_p95: closed/open avg26.44/27.92
+(+5.60%), p9540.7/46.4 (+14.00%, limit+10%), p9968.0/99.7 (+46.62%, also beyond+15% though p95 stops first),
+max186.3/141.7ms, baseline394/open379 frames, draw.ui avg/max0.345/5.8ms, no measured>=1s stalls.
+Compliant draw average does not erase frame-gate failure. Later store/take/swap/capacity/state round-trip/close flows
+NOT-RUN due fail-fast; no fresh PASS substituted from historical trunk acceptance. Cause unproven.
+
+All10 stored960x540 JPGs individually viewed (SDK/wheel originals also viewed before compression):
+- SDK: sdk_list_menu.jpg, sdk_list_menu_moved.jpg, sdk_radial_menu.jpg. Readable list, highlight moves to Notify,
+  radial eight slots/icons/initial0/centre visible; long explanatory line ellipsized. Parent independently viewed3.
+- Wheel: wheel_open_sidearm.jpg, wheel_long_gun_1.jpg, wheel_long_gun_2.jpg, wheel_melee.jpg,
+  wheel_empty_slot.jpg, wheel_keyboard_highlight.jpg. Correct amber selection/names/ammo/finish/empty slot/keyboard
+  AK highlight and readable footer; Melee_Knife cosmetic remains. Parent independently viewed6. No observed clipping.
+- Trunk: trunk_ui_open.jpg. Sidearm selected0, Glock17/100 centre, empty TRUNK0/8 right panel/footer readable.
+  Parent independently viewed1; no later captures exist. Summary NEEDS-REVIEW labels retained, review separate.
+
+Installed identity checked during B mutex: lane-b2/codex-lane-b-validation/2297a17/dirty=False; wait0.017s.
+All five ASI paths/SHA256 identical to prior122159 B run; exact inventory/game hashes in summary.json, no ColAccel.
+Density OFF, T040 baseline/budgets unchanged. Restore confirmed summary AND installed metadata
+phase2-20261001-202329 at03:31:10.031Z. Post-run no GTAIV/compiler/verifier, holder note absent, actual named mutex
+WaitOne(0) acquired/released successfully (free). B slot released; D now holds next heavy/game slot.
+
+Parent holds entire candidate unmerged because shared UI also affects storage. Offline bounded trunk diagnosis
+follows receipt; initial snapshot once/open is not assumed cause of continuous p95. No counters/budgets/warmups/module
+switch changes, automatic retry or new run. Watcher rejection/recovery/restart fixtures remain unrun/new-slot only:
+LOOP-package-install,T045-config-watch-reload,T045-config-watch-restart. Future T046-trunk-ui requires evidence-based
+plan and slot; unchanged passing wheel/SDK not automatically rerun. Owner controller/real save-load/safehouse/gunsmith/
+HUD coexistence/feel remain; no task DONE.
+
+Offline source/log diagnosis completed after receipt, no runtime/source changes:
+[paired trunk diagnosis](../reports/2026-10-01-lane-b-trunk-budget-diagnosis.md). Browsing intentionally keeps choreography
+active throughout open window; wheel-ready status proves opening steps ended, not choreography completion. Historical
+PASS open scheduler0.348/1.7 vs fresh0.362/2.1 (quiet~0.001 not valid paired baseline), snapshot avg identical0.137.
+Initial snapshot occurs before open budget reset, so not directly included as repeated work. Holster19ms peak is
+outside near-zero ho.show; native/call culprit unproven. Exact closed cost baseline is unavailable because existing
+ui-budget baseline discards command costs; periodic logger is a different reader/window. Aggregate maxima lack frame
+alignment, so no proved p95 cause or speculative fix. B remains heldunmerged; D current slot. Proposal for parent:
+bounded observational paired costs/state and, only if assigned, slow frame-correlated owner-tick query scopes.
+
+### Initial radial snapshot fix — historical offline source milestone
+
+Ready-to-test update: parent independently reviewed `b3db1bc`/`b6da19e`, including the actual-source harness and
+negative control. Clean B then fetched origin and merged pushed main `689bac5` as `85faad7` without conflicts.
+Both sets of documentation retained. Merge changes only host VerifyLocal staging/reuse, verifier phase2 input lookup,
+host tests and coordinator docs; diff confirms radial production/harness/SDK/config/scenarios/queue unchanged.
+No redundant focused tests, full build, verifier, package/install or game launched. R owns the current slot; B waits.
+
+Proposed slot production checks: `tools/build.ps1 -ScriptHookDotNetReference
+'C:\Games\Grand Theft Auto IV\GTAIV\ScriptHookDotNet.asi'`, `tools/verify.ps1 -NoGame`, and
+`tools/tests/Run-Tests.ps1`. These are PLANNED, not executed/passed for this patch. Full batch A IDs:
+`LOOP-verify,LOOP-package-install,T045-weapon-wheel,T046-trunk-ui,SDK-ui-review`; includes generated-input verification
+under parent's corrected Build -> Stage -> Verify -> Install ordering. Full batch B IDs:
+`LOOP-package-install,T045-config-watch-reload,T045-config-watch-restart`.
+Both use `tools/verify-local.ps1 -GameDirectory 'C:\Games\Grand Theft Auto IV\GTAIV' -AnyBranch -NoPush -Restore
+-NoManual -MaxGameMinutes 30 -Only <IDs>` with real PowerShell comma-separated arguments; no Quick acceptance.
+Do not run either until B is assigned a slot. Recheck shared state before installing; always record restoration.
+
+Estimate A: 12–18 minutes of lock/game allowance including stage/verify/startup/captures; B: 5–8 minutes including
+startup/callback waits/cleanup. These are estimates, not reserved slots or promises. Prior full receipt measured wheel
+300 s and trunk 142 s; SDK UI scripted waits total about 9 s plus launch/capture overhead. Heavy compilation is
+separately scheduled outside these estimates. If generated-input verification consumes the cap, record remaining
+checks NOT-RUN and request a bounded follow-up rather than removing gates. Review every fresh capture and original
+budget/<=1-frame result; repeated identical crash stops retries and preserves logs/dumps. Watcher invalid-config
+rejection errors stay visible, and byte/state finally restoration must be checked separately from outer install restore.
+
+Owner resumed the four preserved dirty source files from `2544b12`; no work was discarded. The scoped fix prepares
+an input-free RadialMenuView snapshot under owner RunAs before publishing the menu. Capture/ledger cleanup is
+registered before callbacks; the new view stays out of the menu list until preparation succeeds, so even callback
+cleanup of another menu cannot publish an unprepared radial. The draw-menu array is volatile. Empty radials close
+and failed initial callbacks use existing owner failure/ledger cleanup; tolerated segment failures still log once.
+No draw-thread callback/native, public API/tuning expansion, counter normalization or threshold change.
+
+Internal selected-slot overload lets WeaponWheelModule choose its held/first-filled slot before snapshot preparation;
+sticky state is also assigned first because Centre builds tap/command hints. Existing timing start now precedes
+OpenRadial, including snapshot preparation and avoiding a first draw earlier than the recorded start. Engine.Frame
+and FirstDrawFrame remain unchanged. StorageWheel computes its first carried slot before opening, and its Centre
+builds the right-hand panel without depending on the menu assignment. Both callers handle a closed return after
+preparation failure. All other callers audited: SDK self-test (six slots) and autopilot radial sample (eight slots)
+use default slot zero, with delegates depending only on owner services/selected argument; public IUi is unchanged.
+Later explicit selection commands keep their existing next-update snapshot behavior.
+
+`tools/tests/Run-RadialSnapshotChecks.ps1` compiles only actual UiService/RadialMenuView/MenuInput/ResourceLedger/
+StorageWheel and contracts/logic against the existing SDK; no full verifier or engine build. **25/0** in PS7 and
+Windows PS5.1, zero compiler warnings/errors (warnings-as-errors). Tests exercise immediate published draw/centre/
+highlight before Update, selected-slot clamp, pending confirm/navigation/X/Y/cancel left untouched at open, owner
+callback context, draw-only snapshot use, unchanged frame recording, close/empty/fault cleanup, other-owner survival,
+once-only segment failure logging, throwing close callback cleanup and actual StorageWheel initial selection/panel/
+external-close/owner-stop/failure behavior. Boundary spies model engine dispatch/input/canvas/SHDN, so real module
+OnStop/native locks/thread scheduling and the complete WeaponWheelModule remain runtime/production-build gaps.
+README documents these limits. The native spy rejects every call and art construction rejects draw context.
+
+Identical final harness against preserved pre-fix `2544b12`: **12 passes / 13 expected regression failures**, including
+no drawable initial snapshot and storage first-selection content. This is a negative control, not a fresh game failure.
+Logs: `results-local/offline/radial-snapshot-current.log`, `radial-snapshot-current-ps51.log`,
+`radial-snapshot-baseline.log`. Existing SDK SHA256:
+`61EBF3AB50132A9D8D4E95C626774F93DA123A4233677547256E67A9BEC08C21`.
+Initial runner path-resolution error was corrected before these receipts; no game or installed config was touched.
+Diff whitespace check PASS. No heavy/full build, package, verifier, install, rollback or game run authorized/performed.
+
+Scoped source/tests/cards/dashboard patch committed as `b3db1bc`; clean lane then integrated pinned main
+`5901230` in merge `7ceb350` without conflicts. Merge changed only five documentation files; production/test sources
+are byte-identical to the focused receipts, so no redundant compile was run. Reviewed the dashboard auto-merge;
+both parent's integration state and this pending radial entry remain. Parent owns the host verifier ordering repair.
+Next exact scheduled full IDs (split to retain <=30 game minutes):
+`LOOP-package-install,T045-weapon-wheel,T046-trunk-ui,SDK-ui-review` for affected shared radial callers;
+`LOOP-package-install,T045-config-watch-reload,T045-config-watch-restart` for the separate watcher lifecycle gates.
+Before those batches, the assigned slot must run the required production build/offline checks with parent's corrected
+ordering. Always `-AnyBranch -NoPush -Restore -NoManual`, no Quick acceptance. Original <=1-frame gate/budgets unchanged.
+**P1 timing acceptance gap remains** until a fresh full run establishes every opening group; hitches still prove no
+root cause. Watcher runtime fixtures remain unrun; deliberate rejection errors require independent review.
+Owner-only controller/real save-load/safehouse/gunsmith and combined HUD coexistence remain. Ready for bounded source
+review, not full T045/T046 acceptance. No main push/merge or other-lane edits. No task marked DONE.
+
+### Scoped watcher fixtures and later-opening coverage (offline, current)
+
+Parent accepted the full-run review and authorized fixture work, not a new build/game slot. Lane entry was clean at
+`e7cf0f1`; existing source and all run evidence preserved. No gameplay/UI scheduling implementation was changed.
+Fixture/queue/scenario/test/card patch committed as `bcb89892753b48f37cdd306642a0ef38f72a390a` on
+`codex/lane-b-validation`; this handoff commit records that exact tested source. Script parse checks also PASS.
+
+Registered `T045-config-watch-reload` and `T045-config-watch-restart` as QUEUED scenarios. New host-side
+`wheel-config` actions edit only the flat weaponWheel block of installed arsenal.json using atomic replacement.
+They capture exact original bytes/timestamp and wheel running/config-enabled state before mutation. Runner finally
+restores bytes first, then uses supported `restart weapon-wheel` or `stop weapon-wheel` plus `modules`/`wheel status`
+to restore/verify state and write `wheel-config-restored.txt`. Fail-fast cannot skip cleanup. Game exit or cleanup
+command refusal leaves bytes restored but explicitly fails live-state restoration. Outer verify-local restore is
+still required. No arbitrary shell/script or native command is added.
+
+- Reload: enable/start, write parseable JSON with invalid `keyboardKey=Enter` and candidate enabled=False, require
+  fresh rejection while active enabled=True is retained, then valid disabled/enabled recovery without restart.
+  Final change must produce exactly one accepted callback.
+- Restart: stop, change disabled, require no accepted/rejected wheel callback in a 2.5 s interval, restart reads
+  disabled, restart again, then enable and require exactly one accepted callback. This is bounded evidence, not
+  full unload/soak proof.
+- Intentional invalid binding also rejects the shared Arsenal validator. ERROR lines are not filtered; reload may
+  be NEEDS-REVIEW and requires reviewing deliberate rejection errors against unexpected errors. Both fixtures
+  remain unrun in game.
+
+`wheel-latency` pairs actual INFO opening/first-draw events since mark and fails missing/orphan measurements,
+negative values or frames>1. Added to initial, all cycle, keyboard hold/tap and later budget-window openings.
+The <=1-frame and UI budget thresholds are unchanged. Queue retains every original ID and all other entries;
+only the existing wheel pass description is strengthened. Plan regenerated/valid: 81 active checks
+(13 pc-offline, 4 probe, 44 scenario, 20 manual).
+
+Instrumentation: EngineHost forwards SHDN Tick and PerFrameDrawing separately; RunFrame increments Engine.Frame
+at tick entry. Wheel Open records that counter after publishing the radial; RadialMenuView writes FirstDrawTicks
+then volatile FirstDrawFrame at Draw entry after a non-null snapshot, and the wheel logs their delta next update.
+This measures engine ticks at draw submission, not visible presentation/animation completion. Ui.Update builds
+snapshots before Commands.PumpFileChannel; command-created radials initially have no snapshot. Preserved open
+tick3334 and delta2 are consistent with first draw reading tick3336. Callback/snapshot timing remain hypotheses;
+the adjacent 328 ms hitch establishes no cause. No counter normalization, SDK/canvas change or actual timing fix.
+
+Focused logs in `results-local/offline/lane-b-wheel-fixtures/`: `focused-tests.log` PS7 **17/0**;
+`focused-tests-ps51.log` Windows PS5.1 **17/0**; `runner-regressions.log` existing runner simulations **30/0**.
+Checks exercise byte/state restoration (including originally stopped), command refusal, game exit, actual runner
+fail-fast finally, callback duplicates/rejection, later-two-frame and missing-draw failures. Initial focused testing
+caught PowerShell converting a null File.Replace backup path to empty; explicit NullString fixed that host-call
+defect before these passes. `preserved-run-latency-replay.log` confirms the new checker rejects the old run at
+frames=2/ms=359; log replay is not a new gameplay run/failure. Queue preservation/validation and diff check PASS.
+No full build/suite, game, install, rollback, main push/merge or new slot used in this milestone.
+
+Next exact scheduled IDs: `LOOP-package-install,T045-config-watch-reload,T045-config-watch-restart,T045-weapon-wheel`.
+Expect strengthened wheel coverage to reject a repeated two-frame opening; diagnose recorded tick/draw evidence
+before changing scheduling. No unchanged text/trunk/historical probe rerun proposed. Independent integration review
+remains conditional on unrun fixture/later-opening gates and owner-only checks. No task marked DONE.
+
 ### Completed full receipt and merge review
 
 Tested clean build `4330603` includes main `c01f0da` (merge `1383b5b`), isolated watcher cherry-pick `192bd50` and
