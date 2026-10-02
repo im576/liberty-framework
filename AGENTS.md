@@ -1,123 +1,79 @@
-# AGENTS.md — Rules for AI agents working in this repo
+# Working on Liberty
 
-You are an AI coding agent. On the owner's PC you run the game yourself through the autopilot and `tools/verify-local.ps1`
-(one run at a time: installs, rollbacks and scenario runs all wait on one machine-wide lock, and a scenario refuses to run
-on a build installed from another worktree); cloud sessions cannot run it. The owner still signs off on feel and visuals.
-Read this whole file before doing anything. It is short on purpose.
+Liberty is the engine and mod project for GTA IV Complete Edition 1.2.0.59: FusionFix,
+ScriptHookDotNet 1.7.1.8, C# 7.3 / .NET Framework 4 x86 and a C++20 x86 native core.
+One SHDN host drives modules, the public SDK, content tools and automated game scenarios.
 
-## 1. Read these first, in this order
+## Start with the current assignment
 
-1. `AGENTS.md` (this file)
-2. `docs/PROJECT_STATE.md` — short dashboard: current phase, engine component status, decisions (history: `docs/archive/`)
-   - In a cloud session (Claude Code on the web): also `docs/workflow/CLOUD_LOCAL_LOOP.md` — how work is built in the
-     cloud, queued for the owner's PC and verified there. `tools/cloud/test-all.sh` runs every offline check.
-   - Asked to "do the next session": `docs/workflow/NEXT_SESSIONS.md`.
-3. The task card you were given, in `docs/tasks/` (e.g. `docs/tasks/T-033-world-objects.md`); finished cards are in `docs/archive/tasks/`
-4. `docs/workflow/CLOUD_LOCAL_LOOP.md` (cloud sessions build and test offline; the owner's PC verifies through `tests/local/checks.json`) and `docs/workflow/NEXT_SESSIONS.md`, if your work queues game checks
-5. For Stage 1 mod work: `docs/design/STAGE1.md` (the design and its acceptance criteria).
-6. Only the docs that task card links to. Do not read the whole repo.
+1. Read the user's request, `docs/PROJECT_STATE.md` and `git status --short`.
+2. Read the relevant task card and only the code/docs it links to. A repository-wide review
+   is an explicit exception: inspect across areas, as requested. Do not choose a different task
+   just because the user did not name a card; create a card for their actual request.
+3. For a game run or lane takeover, read `docs/workflow/ORCHESTRATOR.md` in the primary
+   checkout. It alone records current game ownership. Timestamped reports are historical evidence.
+4. Use `tools/review/audit.py` to find receipts and repeat failures before repeating experiments.
+   Source for the current build may be ahead of GitHub or on another worktree. Inspect it; never
+   reset, replace or merge all lane branches merely to match the remote.
 
-If you were not given a task card: open `docs/tasks/README.md`, pick the first active task whose
-status is `READY` and whose dependencies are all `DONE`. Tell the human which one you picked.
+Task-specific project skills: `.agents/skills/liberty-evidence/SKILL.md` for test/failure review;
+`.agents/skills/liberty-research/SKILL.md` for reverse engineering and mod adaptation. Load only
+what the task needs. Claude uses this file through `CLAUDE.md`; these skills are also linked here
+so either agent can use the same instructions.
 
-## 2. What this project is (one paragraph)
+## Engine invariants
 
-The **Liberty engine** for **GTA IV: The Complete Edition, exe 1.2.0.59**, running on top of **FusionFix** and
-**ScriptHookDotNet** (C#): a native core (`native/LibertyCore`), a public SDK (`sdk/`), a content compiler and Blender
-add-on (`tools/content`, `tools/blender`), hot reload, and an autopilot that launches the game and runs scenarios. The
-Phase 1/2 gameplay work (gold test weapons with free aim, recoil, crosshair, Arsenal, holsters/slings, trunk, gore, the
-"Liberty DevTools" menu) is finished and kept as reference modules. Next: the first complex mod built on the engine;
-then Phase 3, reverse engineering toward FiveM-level control. Current state: `docs/PROJECT_STATE.md`. Original spec
-(historical): `docs/archive/HANDOFF.md`. Architecture: `docs/architecture/OVERVIEW.md`, `docs/architecture/ENGINE.md`.
+- New mechanics use `[Module]` / `LibertyModule`, preferably SDK-only code in `mods/`.
+  Use snapshots and events before adding per-frame native calls. The draw thread must not call natives.
+- Keep gameplay tuning in `config/`, document new fields in `docs/architecture/CONFIG_SCHEMA.md`,
+  and support disable/unload/config-off restoration. Outside the Stage 1 catalog, weapons stay vanilla.
+- Never invent natives, offsets or layouts. Record native CE status in `docs/game-api/NATIVES.md`;
+  memory access uses validated resolution with `docs/game-api/MEMORY.md` and an ADR. A failed
+  resolver disables its capability. Offline decoding is not in-game proof.
+- Resource ownership, exception isolation and hot-reload cleanup are mandatory. Important failures
+  use the project logger. Do not hide errors, swallow exceptions, or weaken acceptance thresholds.
+- Owner decisions: density governor OFF; 2 long guns plus 1 sidearm (SMGs are long guns);
+  grounded severe gore with bounded 3–5 minute body retention; vanilla HUD stays until replacement
+  and restoration are proven. Preserve mission/cutscene/save compatibility and the original baseline.
+- Use source where its recorded license permits adaptation; retain notices and per-file provenance.
+  Consult `third_party/README.md`. The locally inspected LVS source is MIT and a candidate for a
+  selective port. Closed binaries can inform documented research; they do not establish reusable source.
+  Restricted source/assets are research references unless reuse permission has been established.
 
-## 3. Hard rules (never break these)
+## Build, test and evidence
 
-1. **Keep task scope explicit.** Track each change and its test evidence against a task card. The
-   project owner prefers batching compatible offline work so one game launch can verify several
-   checks. Prepare dependent work only when its assumptions are documented, and do not mark any
-   task `DONE` until its own in-game evidence exists.
-2. **Changes are gated and switchable.** Liberty Vanilla+ Stage 1 deliberately changes the whole arsenal and the game's
-   presentation (owner-approved, `docs/design/STAGE1.md`). Every gameplay change is still gated by data (the weapon
-   catalog, per-weapon/per-class config) and each system can be switched off in config, restoring the game's own
-   behaviour and the player's settings. Weapons outside the Stage 1 catalog stay vanilla.
-3. **Tuning values live in `config/`, never in code.** Code defines algorithms. JSON defines numbers.
-   If you type a gameplay number (recoil, spread, speed, FOV, distance) into a `.cs` file, you are
-   doing it wrong — add a config field instead (see `docs/architecture/CONFIG_SCHEMA.md`).
-4. **Do not guess engine behavior.** If you don't know how GTA IV does something, do not invent a
-   native name, memory offset, or struct layout. Check `docs/game-api/NATIVES.md` and
-   `docs/research/`. If it isn't there, write it down as an open question in the task card and
-   stop, or build the smallest possible experiment (a "spike") that the human can test.
-5. **Every native you call must be listed in `docs/game-api/NATIVES.md`** with its CE status.
-   Prefer ScriptHookDotNet wrapper classes (`Player`, `Ped`, `Weapon`, `Camera`) over raw natives.
-6. **No hardcoded memory addresses.** If memory access is ever needed, use a byte pattern scan and
-   document it in `docs/game-api/MEMORY.md`. This requires an ADR (see `docs/architecture/decisions/`).
-7. **Licensing.** Do NOT copy code from Liberty Tweaks (it has no license = all rights reserved).
-   Do NOT copy code from FusionFix or IV-SDK .NET (GPL-3.0) unless an ADR approves it.
-   Do NOT add ripped commercial-game assets. See `third_party/README.md`.
-8. **Log everything important** through the project logger (see `docs/architecture/OVERVIEW.md` §Logging).
-   Every catch block logs. Never swallow exceptions silently.
-9. **Never break the game loop.** A script exception must be caught, logged, and the feature
-   disabled — the game must keep running.
-10. **Don't over-engineer.** Build abstractions only for things the current task needs.
+Commands and prerequisites: `tools/README.md`. Typical offline sequence on the PC:
 
-## 4. Tech stack (verified in T-000/T-001)
+```powershell
+pwsh -NoProfile -File tools/build.ps1 -ScriptHookDotNetReference '<game>/ScriptHookDotNet.asi'
+pwsh -NoProfile -File tools/verify.ps1 -NoGame
+pwsh -NoProfile -File tools/tests/Run-Tests.ps1
+python tools/checks/checks.py validate
+```
 
-| Thing | Value |
-|---|---|
-| Game | GTA IV: The Complete Edition; record the actual exe version in T-000 (1.2.0.59 is the proposed target) |
-| Base mods | FusionFix (includes Ultimate ASI Loader as `dinput8.dll` + FusionOverloader) |
-| Script runtime | Tomasak ScriptHookDotNet 1.7.1.8 + bundled CE hook; T-001 verified in-game load and reload |
-| Language | C# / .NET Framework 4.0 / x86 verified by T-001 |
-| C# version | C# 7.3 via Roslyn 4.11 (`tools/get-toolchains.ps1`), `/unsafe` for the LibertyCore ABI; verified in game 2026-09-25 |
-| Native core | `native/LibertyCore` (C++20, clang/llvm-mingw, 32-bit) loaded by the engine; see ADR-0006 and `docs/architecture/ENGINE.md` |
-| Structure | One SHDN script (`Engine.EngineHost`); every feature is a `[Module]` class. New features must be modules, not `GTA.Script` subclasses |
-| In-game testing | `tools/autopilot` launches the game and runs scenarios; add a scenario for each new mechanic |
-| Output | `LibertyFramework.net.dll` in `<GTA IV>\scripts\`; `LibertyCore.dll` in `scripts\LibertyFramework\bin\`; installed by `tools/install-phase2.ps1` or the local verifier |
-| Config | JSON files in `config/`, deployed to `<GTA IV>\scripts\LibertyFramework\config\` |
-| Logs | `<GTA IV>\scripts\LibertyFramework\logs\LibertyFramework.log` |
+Check each exit code. Run the affected suite while iterating (`-Filter ResumeEvidence`, for example);
+run required integration checks after the final change. Cloud: `tools/cloud/test-all.sh`.
+Do not repeatedly run the whole suite after documentation-only edits or unchanged successful checks.
 
-Build and deploy commands are in `tools/README.md`. The stack above was verified for the minimal T-001 probe; gameplay APIs need their own task-specific tests.
+Use the existing machine-wide game lock through `tools/verify-local.ps1`. Choose affected check IDs,
+use `-AnyBranch -NoPush -Restore -NoManual -StopOnFailure -MaxGameMinutes 30`, and add `-Quick`
+for development probes. Full acceptance keeps original counts, durations and budgets. Inspect the first
+failed assertion, startup journal or crash record before retrying. A retry must test a changed input
+or an explicit environmental hypothesis; repeated identical batches are not progress.
 
-## 5. How to finish a task (Definition of Done)
+A saved install result is not the current installed state. `-Resume` cannot cross source/mode/queue
+changes or reuse an old successful install for pending gameplay. Start a fresh batch when required.
+Do not stop another agent's processes or replace an owner preview based on an old handoff.
 
-A task is done only when ALL of these are true:
+## Finish the assignment
 
-- [ ] Code builds with zero errors (paste the build output summary in your final message).
-- [ ] `tools/cloud/test-all.sh` (cloud) has no FAIL; paste its summary table.
-- [ ] Every behaviour that needs the game or its files has a check in `tests/local/checks.json`, added in the same
-      PR as the code, and the plan is regenerated (`python3 tools/checks/checks.py plan`). See
-      `docs/workflow/CLOUD_LOCAL_LOOP.md`.
-- [ ] New tuning values are in `config/` and documented in `docs/architecture/CONFIG_SCHEMA.md`.
-- [ ] New natives are added to `docs/game-api/NATIVES.md`.
-- [ ] The task card's **"Human test steps"** section is filled in: numbered, exact button presses,
-      and what the tester should see. The human cannot read your mind.
-- [ ] The task card status is set to `NEEDS-PLAYTEST` (not `DONE` — only the human sets `DONE`).
-- [ ] `docs/PROJECT_STATE.md` is updated (one or two lines).
-- [ ] You committed with a clear message: `T-00X: <what changed>`.
+Track changes and exact evidence on its task card. Add game checks to `tests/local/checks.json`
+when runtime behavior changes; regenerate with `python tools/checks/checks.py plan`.
+Separate offline PASS, full gameplay PASS, quick observations, NOT-RUN and owner visual/feel sign-off.
+A screenshot path is not visual review. Only the owner declares gameplay DONE.
+Update the short dashboard only if current state changes; keep long evidence in reports or task cards.
+Commit locally with `T-0xx: <change>` after validation; do not push or message other tasks unless requested.
 
-## 5b. When you need art
-
-Never stop to ask for image prompts. File a request in the art queue (`python tools/art/artq.py new ...`, see
-`docs/art/README.md`), keep working, and review, approve, prep and integrate the result when it arrives in
-`art/generated/`. The repository is the source of truth for every request, prompt and generated file.
-
-## 6. When you are stuck
-
-Write a `## Blocked` section in the task card: what you tried, what failed, the exact error, and
-what information you need. Set status to `BLOCKED`. Stop. Do not keep trying random fixes.
-
-## 7. Playtest reports
-
-The human reports results using `docs/testing/PLAYTEST_REPORT_TEMPLATE.md`. When a report says
-something broke, first read the log file excerpt in the report before changing code.
-
-Results of `tools/verify-local.ps1` arrive on the `verification-results` branch. Process them as
-`docs/workflow/CLOUD_LOCAL_LOOP.md` describes; the same rule applies: read the logs first.
-
-## 8. Style
-
-- One class per file. File name = class name.
-- Namespaces mirror folders: `LibertyFramework.Gunplay.Recoil`, etc.
-- Comment **why** when engine behavior is non-obvious. Don't comment obvious code.
-- Names are descriptive: `verticalKickDegrees`, not `vk`.
-- Units in names or doc comments: degrees, meters, milliseconds, per-second.
+Architecture: `docs/architecture/ENGINE.md`; design/budgets: `docs/design/STAGE1.md`;
+research priorities: `docs/research/RESEARCH_PROGRAM.md`. Historical rules are under
+`docs/archive/review-2026-10-02/` and must not override current user instructions.

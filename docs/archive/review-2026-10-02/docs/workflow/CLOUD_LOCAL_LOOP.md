@@ -1,19 +1,36 @@
-# Cloud and local verification
+> Historical snapshot; current workflow supersedes these instructions.
 
-Updated 2026-10-02. Local agents can build and run authorized game tests on the owner's PC;
-cloud sessions can only perform offline checks. The same source/queue/evidence contracts apply.
-Current game ownership is in [ORCHESTRATOR.md](ORCHESTRATOR.md), not this workflow guide.
+# The cloud / local development loop
 
-`main` is the integration branch. Feature work stays on its assigned branch/worktree until reviewed.
-Do not assume GitHub has the newest local work or automatically promote an entire lane.
-`verification-results` is an optional orphan evidence branch, never merged into source.
-Use `-NoPush` unless publishing results is part of the current user-authorized task.
-Only the owner sets gameplay tasks DONE; offline tools can be reviewed independently of game acceptance.
+How Liberty Engine is developed while the owner works remotely. Every agent reads this after `AGENTS.md`.
 
-Cloud setup: `.claude/hooks/session-start.sh` invokes `tools/cloud/setup.sh` for remote sessions;
-`tools/cloud/test-all.sh` summarizes offline checks. Local build/test commands are in
-[tools/README.md](../../tools/README.md). The [old cloud-only process](../archive/review-2026-10-02/docs/workflow/CLOUD_LOCAL_LOOP.md)
-is preserved as history, not a requirement to create `develop` or replace local agent work.
+## The situation
+
+- **Cloud sessions (Claude Code on the web) do all development.** They have no Windows, no GTA IV and no game files.
+  The SessionStart hook installs the toolchains (`tools/cloud/setup.sh`), so every session can build and run every
+  offline check at once: `tools/cloud/test-all.sh`.
+- **The owner's PC runs one command when it is available:** `tools/verify-local.ps1`. No AI agent runs there. The
+  script builds, tests, installs, drives the game through autopilot, runs research probes against the game files, asks
+  the owner about the few checks only a person can judge, and pushes the results to GitHub.
+- **A results-review session** (cloud) reads those results, fixes what failed, and proposes verified work for `main`.
+
+Nothing that needs the game is ever reported as passing from the cloud. It is queued, and it is proven on the PC.
+
+## Branches
+
+| Branch | Holds | Who writes |
+|---|---|---|
+| `main` | work whose checks passed on the owner's PC, plus tooling and docs that need no game | the owner merges promotion PRs |
+| `develop` | integrated work that builds and passes every offline check, waiting for local verification | cloud sessions, through PRs |
+| `verification-results` | orphan branch: one folder per `verify-local.ps1` run (`results/<run>/`), `LATEST` | `verify-local.ps1` only; never merged |
+| `claude/*` | one session's work | that session; PR into `develop` |
+
+- A cloud session's PR targets `develop`. Tooling that needs no game may target `main` directly when the owner wants
+  it there sooner (the SessionStart hook only runs from the default branch).
+- **Promotion:** when a results run shows every check for a set of work passing, the review session opens
+  `develop -> main` listing the check ids and the result folder as evidence. The owner merges it and sets tasks `DONE`.
+  Agents never merge to `main` and never set `DONE`.
+- `develop` must stay green offline: never merge a PR whose `test-all.sh` has a FAIL.
 
 ## The check queue
 
@@ -79,10 +96,10 @@ unproven behaviour is incomplete. The PR description lists the check ids it adds
 ./tools/verify-local.ps1                                          # everything queued; asks about manual checks
 ./tools/verify-local.ps1 -Only T027-raycast,SDK-selftest          # a subset (package-install is added when needed)
 ./tools/verify-local.ps1 -Kind scenario -NoManual                 # unattended
-./tools/verify-local.ps1 -Resume results-local/<run>              # same-source/mode/queue offline continuation or republish
+./tools/verify-local.ps1 -Resume results-local/<run>              # continue an interrupted run
 ```
 
-Order: preflight (Windows, `GTAIV.exe`, game closed, branch `main`, clean tree, toolchains, disk space) -> offline
+Order: preflight (Windows, `GTAIV.exe`, game closed, branch `develop`, clean tree, toolchains, disk space) -> offline
 tools -> probes -> package and install (backup kept) -> content reports -> scenarios (a crashed or hung game is
 stopped so the next scenario relaunches) -> manual checks -> keep or restore the install -> results scrubbed of the
 user name and machine paths -> pushed to `verification-results` through a temporary worktree. Every step runs as a
@@ -92,29 +109,23 @@ Cloud sessions test the whole script with `-Simulate` (`tools/tests/VerifyLocal.
 simulated game (`tools/tests/SimulatedGame.psm1`) and a local bare remote. Any change to the script needs a simulation
 test for it.
 
-Resume never crosses commit, mode or queue changes. Pending gameplay after a successful historical
-install requires a fresh run/install; do not restore an old backup simply to republish evidence.
-A failed or timed-out rollback now contributes `LOOP-restore: ERROR` to the batch result.
-During iteration use explicit check IDs, `-NoPush -Restore -NoManual -StopOnFailure` and `-Quick`;
-full acceptance retains original counts and budgets. Do not launch the entire queue by default for a small fix.
-
 ## Processing a results run (the review session)
 
 Prompt: *Process the newest verification results.*
 
 1. `git fetch origin verification-results`; read `LATEST`; open `results/<run>/summary.md` and `summary.json`.
-   Confirm the exact run commit and its relationship to the intended local branch (`git branch --contains <commit>`).
+   Confirm the run's commit is on `develop` (`git branch -r --contains <commit>`).
 2. For every check:
    - **PASS**: record it (`status`, `lastRun`, `evidence` in `checks.json`).
    - **NEEDS-REVIEW**: look at every screenshot named in `review.screenshots` (the Read tool shows images) and at the
      log errors; decide PASS or FAIL and write one line why. Probe reports: record the answer in `docs/research/`.
    - **FAIL / CRASH / ERROR**: read the check's log and the scenario's `report.md` and `run.log` before touching code
-     (AGENTS.md). Find the root cause; fix it on the assigned branch with an offline test when possible,
+     (AGENTS.md section 7). Find the root cause; fix it on a branch into `develop` with an offline test when possible,
      and keep the check QUEUED so the next run proves the fix. Never weaken a check to make it pass; if the check itself
      was wrong, say so in the PR and fix the check.
    - **NOT-RUN**: leave QUEUED; if it is NOT-RUN because the PC lacks something (Blender, LVS), say so to the owner.
 3. Regenerate the plan (`python3 tools/checks/checks.py plan`) and run `tools/cloud/test-all.sh`.
-4. When all checks of a piece of work pass, prepare a reviewed feature-branch integration into `main` with the evidence, and propose the
+4. When all checks of a piece of work pass, open the promotion PR `develop -> main` with the evidence, and propose the
    task status change (the owner sets `DONE`).
 5. Update `docs/PROJECT_STATE.md` in one or two lines: which run, what passed, what failed, what is next.
 

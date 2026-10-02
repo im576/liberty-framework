@@ -14,6 +14,19 @@ close the game before anything that installs or rolls back.
 
 - `verify.ps1 -GameDirectory <GTAIV>` (or `-NoGame` in the cloud): offline verifier (resolvers vs disassembly, natives, config and logic tests, SDK examples). Sources in `tools/verify/`.
 - `tools/tests/Run-Tests.ps1`: PowerShell unit tests for the autopilot and the local verifier against a simulated game.
+- `tests/Run-Tests.ps1 -Filter <Suite> -ResultsPath <file.json>`: affected suites and per-suite timings; failed scratch
+  fixtures are retained, and an empty filter match fails. Create the results parent directory first.
+- `python tools/review/audit.py --output results-local/offline/audit.json`: read-only cross-worktree source/receipt
+  inventory, repeated failures, raw failed assertions and slow checks. No fetch, game launch or deletion.
+- `python -m unittest discover -s tools/review -p 'test_*.py'`: evidence reader tests.
+- `python tools/review/inspect_mod.py <archive.zip> --output <inventory.json>`: archive hash, source/binary entries
+  and license notices without extracting or running the mod; flags unsafe archive paths.
+- `handoff/Get-SolPrompt.ps1 -Lane Orchestrator -NoClipboard`: local handoff snapshot. `-RefreshRemote` fetches once
+  for all worktrees if requested; it no longer scans ignored build/results trees.
+
+`verify-local.ps1` defaults to the integration branch `main`. Resume requires the same commit, mode and check-queue
+hash; a historical successful install cannot be reused for pending gameplay. Republish completed results without
+stopping or restoring the current game. New runs record full commit identity and package-build seconds separately.
 
 ## Package, install, rollback
 

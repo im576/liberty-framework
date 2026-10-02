@@ -1,6 +1,9 @@
 # Third-party dependencies and asset policy
 
-Nothing in this repository vendors a mod binary, proprietary game asset, or copied third-party source. Install game dependencies from their official releases and record local versions in playtest reports.
+Tracked source does not vendor downloaded mod binaries or proprietary game assets. Local packages may include the
+MIT-licensed LVS release with its notices, as recorded below. Keep local game dependencies outside Git and record
+their exact versions and hashes in playtest reports. Deeper source/disassembly research is part of the current
+project scope; [the research program](../docs/research/RESEARCH_PROGRAM.md) separates adaptation from binary evidence.
 
 T-057 host audio recovery uses the owner's existing SteelSeries Sonar driver as an unattended playback output.
 No SteelSeries binary or source is bundled. Windows COM interop declarations are written locally from the published

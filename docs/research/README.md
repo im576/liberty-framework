@@ -1,7 +1,8 @@
 # Research notes
 
-Research pass 1 was done on 2026-09-24 (web research only — nothing has been tested in-game yet).
-Start with [SUMMARY.md](SUMMARY.md).
+Current work: [RESEARCH_PROGRAM.md](RESEARCH_PROGRAM.md), updated 2026-10-02. Engine research now includes
+local source, offline binary analysis and runtime evidence; each note's date and confidence matter.
+[SUMMARY.md](SUMMARY.md) is the original September 24 web-research snapshot, not the current capability list.
 
 ## Confidence tags (used in every research note)
 
@@ -30,6 +31,13 @@ When a spike confirms or disproves something, **edit the note** and change the t
 | [Mafia3Combat.md](Mafia3Combat.md) | Why Mafia III combat feels good, tools |
 | [OtherReferences.md](OtherReferences.md) | Max Payne 3, GTA V, GDC talks, other CE mods |
 | [Raycast.md](Raycast.md) | The game's physics line test, what is verified, engine raycast design (ADR-0008) |
+| [RESEARCH_PROGRAM.md](RESEARCH_PROGRAM.md) | Prioritized engine experiments, source adaptation and evidence contract |
+| [HitMaterial.md](HitMaterial.md) | Material consumer, mapping hypotheses and coverage limits |
+| [Dismemberment.md](Dismemberment.md) | Historical collapse/clone approach; current C branch extends it |
+| [Collision.md](Collision.md) | Collision formats and proxy limits |
+| [ModelFormat.md](ModelFormat.md) | Drawable layouts and content writer evidence |
+| [Performance.md](Performance.md) | Recorded costs and stalls; date-bound observations |
+| [ViolentLiberty.md](ViolentLiberty.md) | Local companion inspection and coexistence boundary |
 
 ## Template for a new project entry
 

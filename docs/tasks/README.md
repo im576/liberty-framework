@@ -1,5 +1,8 @@
 # Task queue for agents
 
+Current owner-requested repo/tooling review: [T-058](T-058-repository-review.md). Current scheduling and the installed
+preview are in [ORCHESTRATOR.md](../workflow/ORCHESTRATOR.md); older cloud/lane instructions below are context.
+
 Development runs in cloud sessions; every check that needs the game is queued in `tests/local/checks.json` and run by `tools/verify-local.ps1` when the PC is available ([workflow](../workflow/CLOUD_LOCAL_LOOP.md), [plan](../testing/LOCAL_VERIFICATION_PLAN.md), [next sessions](../workflow/NEXT_SESSIONS.md)). Current state: [PROJECT_STATE.md](../PROJECT_STATE.md).
 
 Statuses: `READY` = agent can start; `NEEDS-PLAYTEST` = agent implementation awaits human test; `BLOCKED` = named dependency missing; `DONE` = human verified. Only the project owner marks a card `DONE`. Track each task's scope and evidence separately; batch compatible offline work into one game session.
