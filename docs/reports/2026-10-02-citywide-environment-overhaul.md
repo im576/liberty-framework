@@ -4,13 +4,41 @@ Owner authorized implementation across the whole city on 2026-10-02, replacing t
 
 ## Implemented
 
-All eight weather types and eleven time samples are generated together from pristine FusionFix tables. The profile preserves more natural color, neutralizes overcast/rain daylight sky colors, retains readable ambient night light, and uses restrained bloom/contrast. Dusk includes 7PM, matching the approved 19:00 reference rather than treating it as ordinary daytime. Existing renderer, gameplay, weather scheduling and density OFF stay intact.
+All eight weather types and eleven time samples are generated together from pristine FusionFix tables. The profile targets natural color, neutral overcast/rain daylight and readable ambient night light, with restrained bloom/contrast. Dusk includes 7PM, matching the approved 19:00 reference rather than treating it as ordinary daytime. Existing renderer, gameplay, weather scheduling and density OFF stay intact. Actual evidence, rather than these intended effects, decides acceptance.
 
-Optional validated sky/cloud RGB fields were added to the existing generator using the installed source header's X360 column layout. No unrelated exposure, reflection, geometry or shader field is changed. This controls color and lighting; it does not create the AI reference's cloud shapes, new materials or local light fixtures.
+Optional validated ambient/directional/color-correction and sky/cloud RGB fields use FusionFix 5.0.1's parser at upstream commit 619f52d. The initial header-based mapping was incorrect and is superseded by the correction below. The corrected generator preserves grain, fog alpha, exposure and reflection controls. This controls color and lighting; it does not create the AI reference's cloud shapes, new materials or local light fixtures.
 
 The installer now holds the shared game lock, refuses a running game, requires explicit pristine source files, stages generated output, records hashes and the exact previous installed files, and supports exact `-Rollback`. Its older `-Restore` explicitly returns to pristine FusionFix rather than the owner's prior tuned state.
 
 ## Evidence
+
+### Final v3 evidence and installed state
+
+`run-20261002-06/citywide-environment-20261002-040338` captured every scene with the exact v3 configuration/file receipts: **171 steps, 0 failed steps, 20 screenshots, game alive, NEEDS-REVIEW**. One ERROR inside the scenario window is `engine_stall_dump written=True` at 11:03:41.683Z. The originating engine.commands stall is at 11:03:33.555Z (5008 ms), during pre-capture state reads; the dump finished after the scenario began. This does not establish its cause or clear performance acceptance. No log error was removed or reclassified to PASS.
+
+V3 visual review: overcast/rain daylight is neutral and much closer to the references; clear/dusk remain distinct. Night sky/cloud detail and unlit roads are more readable than v2, with existing sign colors retained. Remaining target gaps are significant: station night needs more brightness/warm local illumination, Star Junction lacks warm facade depth, sky cloud shapes differ and wet/grimy material detail requires actual asset work. The global grade is not the complete remaster. All twenty frames were inspected together; no alternate AI targets were invented for shops/docks.
+
+The final single page has 50 images and 20 scene rows, original/approved target/actual together (two columns where no approved AI target exists). Desktop and 320/360 px QA: all images load, no overflow, no browser errors; fragment under 1 MB. `review-manifest-v03.json` records config/generator/installed-file/screenshot/comparison hashes. V1/v2 source and comparisons are archived.
+
+Settled cleanup after v3: health 100; position 892.384 -499.885 19.430, within 0.1 m of the recorded original; menus closed/control enabled; no owned test entities; carried weapons and stored count 650 unchanged within the run. Startup increased stored counts across separate sessions (641 → 644 → 647 → 650), not during the photo scenarios; this existing reconciliation behavior is retained as context, not repaired or claimed unchanged across restarts.
+
+`final-ready-v03` then installed v3 for one short readiness check. Its single launch process exited before engine load (GAME-UNAVAILABLE); it rolled back. No further automatic launches were made. Two older candidate receipts were subsequently rolled back to the exact original owner appearance. `final-v03-baseline-restoration.json` verifies both original hashes; game closed, test lock released, no candidate currently installed. Candidate v3 remains prepared and reviewable, with startup/stability and full visual acceptance open.
+
+### Successful capture and renderer correction (latest)
+
+After the owner's manual-launch check, candidate v1 booted at 09:58:53.763Z in `run-20261002-03`: **171 steps passed, 0 failed, 0 log errors, 20 actual screenshots**. Final settled cleanup verifies health 100, the recorded original player position, closed menus and no owned autopilot entities. Carried found weapons were retained; the capture contains no weapon give/strip/storage action. The four state files and manifest were preserved before the batch.
+
+Visual review identified excess grain and cyan/green bias. The initial candidate incorrectly followed the legacy timecyc header for sky RGB at 9–11; the installed FusionFix parser actually uses column 10 for film grain and 11 for fog alpha. Candidate v2 preserves 9–11 and writes normalized sky/horizon/cloud fields at 64–75, 81–83 and 99–101, with validated ambient/directional/color-correction RGB and cloud alpha. Source reference: https://raw.githubusercontent.com/ThirteenAG/GTAIV.EFLC.FusionFix/619f52d/source/timecyc.ixx (saved locally for provenance). This is a meaningful mapping error in v1, not owner acceptance; the corrected candidate requires fresh actual captures. The inherited JSON name sunScale remains compatible but scales directional specular at column 61.
+
+V2 generation passes all 88 rows, unrelated-column and grain/fog-alpha preservation, normalized RGB bounds, deterministic generation and invalid RGB/cloud-alpha rejection. The wrapper now waits for asynchronous teleport cleanup and checks settled position instead of trusting the immediate reply. The v1 board and configuration remain archived; the single comparison page will use v2 evidence when available.
+
+### Earlier offline checks
+
+`run-20261002-04` booted candidate v2 but stopped before any screenshot: the first teleport logged a 16.2 s scene load/stall and the host consumed an empty reply during file publication. Cleanup restored the recorded player position and exact rollback completed. The host reader now waits for all expected, newline-terminated replies, excluding blank/comment commands. A delayed empty/partial/unterminated publication fixture passes (1/0); focused autopilot logic tests pass (58/0). The engine stall is preserved as failed evidence; the host fix does not suppress it or change gameplay/watchdog code.
+
+`run-20261002-05` booted candidate v2 at 10:53:14.843Z and passed **171 steps, 0 failed, 0 log errors, 20 captures**, with settled cleanup and identical carried/stored Arsenal counts within the run. Review found grey/rain daylight much closer, but night sky and unlit areas too dark. Candidate v3 raises night sky/horizon/cloud RGB, ambient RGB and color-correction RGB together. Day/dusk tuning is unchanged. V2 configuration and comparison are archived; v3 requires fresh full-batch evidence.
+
+The single-page review contains 50 images across 20 scene rows: original + approved AI target + actual for station/Star Junction, original + actual for shops/docks where no AI target is approved. V2 page QA passed at desktop and 320/360 px with no missing images, overflow or browser errors. A supported FusionFix graphics-menu reload was considered to avoid another launch, but Windows state capture failed twice (`FrameArrived timed out`, then `window capture timed out`). No blind menu input or live file installation was performed; the authorized restart wrapper remains the verification path.
 
 - Mood generator build: zero errors/warnings with warnings treated as errors.
 - Actual local FusionFix-source checks: 88/88 main weather/time rows covered; unrelated columns retained; extended changes isolated to fog density; deterministic output; out-of-range sky RGB rejected.

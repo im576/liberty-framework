@@ -13,6 +13,8 @@ disable/recover and game boot verified. Full heartbeat smoke PASS in `20261001-1
 
 **Owner update (2026-10-02): begin the citywide environment overhaul, one integrated candidate across all weather/time conditions with one accountable owner and no new lane dispatch.** Approved Star Junction/station concepts define the target. [T-058](tasks/T-058-citywide-environment-overhaul.md) tracks implementation and evidence; this supersedes the prior art-only hold for that work. Gameplay compatibility and density OFF remain required.
 
+**T-058 continuation:** corrected FusionFix 5.0.1 mapping; v3 has 20 actual captures and a single original/target/actual comparison, NEEDS-REVIEW (171 steps, 0 failed, 1 delayed startup stall-dump log). Final one-attempt relaunch failed; original appearance restored by exact hashes. Full overhaul, stable startup, night/local-light/material fidelity and performance remain open; no further automatic retries.
+
 **Owner's current priority (2026-10-01): gameplay feature build and playtest first; visual remaster later.** Finish and
 combine weapons/gunplay/loadout, wheel/trunk/storage, gore/effects, functional HUD/menus and supporting feature modules.
 Keep gameplay compatibility/performance acceptance; defer environment/art deployment and atmosphere polish from this

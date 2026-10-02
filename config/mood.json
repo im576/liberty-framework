@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "description": "Owner-approved citywide colorful/gritty direction, 2026-10-02. Grey and wet daylight; natural color; readable, colorful nights. Generated from pristine FusionFix source, not compounded over installed tuning.",
+  "description": "Owner-approved citywide colorful/gritty direction, 2026-10-02. Grey and wet daylight; natural color; readable colorful nights. Revision 3: correct FusionFix sky mapping; raise night sky, ambient and correction RGB after actual v2 night review. Generated from pristine source; existing light/sign textures retained.",
   "weatherClasses": {
     "bright": [
       "EXTRASUNNY",
@@ -40,14 +40,14 @@
     {
       "contrastAdd": 0.015,
       "time": "day",
-      "colourCorrect": [
-        1.0,
-        1.0,
-        1.0
-      ],
       "desaturationAdd": -0.12,
       "ambientScale": 1.08,
-      "weather": "*"
+      "weather": "*",
+      "colourCorrectRgb": [
+        122,
+        122,
+        122
+      ]
     },
     {
       "skyTop": [
@@ -65,37 +65,63 @@
         169,
         190
       ],
-      "sunScale": 0.94
+      "sunScale": 0.94,
+      "ambient0": [
+        154,
+        172,
+        183
+      ],
+      "ambient1": [
+        229,
+        225,
+        212
+      ]
     },
     {
-      "bottomClouds": [
-        110,
-        117,
-        124
-      ],
       "time": "day",
-      "directScale": 0.82,
       "bloomScale": 0.85,
-      "lowClouds": [
-        121,
-        126,
-        132
-      ],
-      "skyTop": [
-        68,
-        76,
-        84
-      ],
-      "skyScale": 0.92,
-      "skyBottom": [
+      "weather": "grey",
+      "volumetricFogScale": 1.2,
+      "fogStartScale": 0.85,
+      "ambient0": [
         154,
         160,
         166
       ],
-      "weather": "grey",
-      "volumetricFogScale": 1.2,
-      "fogStartScale": 0.85,
-      "sunScale": 0.65
+      "ambient1": [
+        183,
+        187,
+        191
+      ],
+      "directColour": [
+        207,
+        214,
+        224
+      ],
+      "skyTop": [
+        80,
+        86,
+        92
+      ],
+      "skyBottom": [
+        151,
+        156,
+        162
+      ],
+      "lowClouds": [
+        131,
+        135,
+        140
+      ],
+      "bottomClouds": [
+        113,
+        118,
+        125
+      ],
+      "cloudAlpha": 225,
+      "directScale": 0.6,
+      "sunScale": 0.4,
+      "skyScale": 0.85
     },
     {
       "bottomClouds": [
@@ -127,6 +153,27 @@
         102,
         113,
         123
+      ],
+      "ambient0": [
+        164,
+        172,
+        183
+      ],
+      "ambient1": [
+        173,
+        181,
+        192
+      ],
+      "directColour": [
+        201,
+        210,
+        224
+      ],
+      "cloudAlpha": 235,
+      "colourCorrectRgb": [
+        128,
+        128,
+        129
       ]
     },
     {
@@ -136,53 +183,152 @@
       "weather": "*",
       "skyScale": 0.94,
       "ambientScale": 1.04,
-      "colourCorrect": [
-        1.02,
-        1.0,
-        0.99
+      "desaturationAdd": -0.16,
+      "colourCorrectRgb": [
+        125,
+        122,
+        122
       ],
-      "desaturationAdd": -0.16
+      "ambient0": [
+        154,
+        164,
+        180
+      ],
+      "ambient1": [
+        175,
+        163,
+        151
+      ]
     },
     {
       "weather": "grey",
       "time": "twilight",
       "fogStartScale": 0.88,
-      "volumetricFogScale": 1.15
+      "volumetricFogScale": 1.15,
+      "directColour": [
+        160,
+        169,
+        182
+      ],
+      "skyTop": [
+        83,
+        86,
+        90
+      ],
+      "skyBottom": [
+        124,
+        125,
+        129
+      ],
+      "cloudAlpha": 200
     },
     {
       "weather": "wet",
       "time": "twilight",
       "fogStartScale": 0.82,
-      "volumetricFogScale": 1.25
+      "volumetricFogScale": 1.25,
+      "directColour": [
+        160,
+        169,
+        182
+      ],
+      "skyTop": [
+        83,
+        86,
+        90
+      ],
+      "skyBottom": [
+        124,
+        125,
+        129
+      ],
+      "cloudAlpha": 200
     },
     {
-      "ambientScale": 1.12,
       "volumetricFogScale": 1.08,
       "time": "night",
       "directScale": 1.0,
       "bloomScale": 1.04,
-      "skyScale": 0.84,
+      "skyScale": 1.1,
       "weather": "*",
       "desaturationAdd": -0.22,
       "contrastAdd": 0.02,
-      "colourCorrect": [
-        1.04,
-        1.01,
-        0.98
-      ]
+      "ambient0": [
+        160,
+        173,
+        190
+      ],
+      "ambient1": [
+        170,
+        175,
+        187
+      ],
+      "directColour": [
+        187,
+        196,
+        211
+      ],
+      "colourCorrectRgb": [
+        182,
+        185,
+        195
+      ],
+      "ambientScale": 1.25
     },
     {
       "weather": "grey",
       "time": "night",
       "fogStartScale": 0.9,
-      "volumetricFogScale": 1.12
+      "volumetricFogScale": 1.12,
+      "skyTop": [
+        55,
+        68,
+        90
+      ],
+      "skyBottom": [
+        93,
+        107,
+        128
+      ],
+      "lowClouds": [
+        90,
+        101,
+        119
+      ],
+      "bottomClouds": [
+        73,
+        84,
+        105
+      ],
+      "cloudAlpha": 190
     },
     {
       "weather": "wet",
       "time": "night",
       "fogStartScale": 0.84,
       "ambientScale": 1.03,
-      "volumetricFogScale": 1.2
+      "volumetricFogScale": 1.2,
+      "skyTop": [
+        49,
+        62,
+        81
+      ],
+      "skyBottom": [
+        86,
+        100,
+        122
+      ],
+      "lowClouds": [
+        82,
+        95,
+        111
+      ],
+      "bottomClouds": [
+        66,
+        79,
+        97
+      ],
+      "cloudAlpha": 230
     }
   ],
   "limits": {

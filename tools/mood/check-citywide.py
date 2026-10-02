@@ -41,7 +41,7 @@ with tempfile.TemporaryDirectory(prefix='liberty-mood-check-') as folder:
     assert run.returncode == 0, run.stdout + run.stderr
     before, after = rows(sources[0]), rows(outputs[0])
     assert expected <= before.keys() and expected <= after.keys()
-    permitted = set(range(9, 15)) | set(range(25, 31)) | set(range(38, 42)) | {24,45,46,48,49,57,58,59,60,61}
+    permitted = set(range(0, 9)) | set(range(12,15)) | set(range(25,31)) | set(range(38,42)) | set(range(64,76)) | set(range(81,84)) | set(range(99,102)) | {24,45,46,48,49,56,57,58,59,60,61}
     changed = 0
     for key in expected:
         a, b = before[key], after[key]
@@ -50,6 +50,9 @@ with tempfile.TemporaryDirectory(prefix='liberty-mood-check-') as folder:
         assert all(a[i] == b[i] for i in range(len(a)) if i not in permitted), f'unrelated column changed {key}'
         assert 0 <= b[45] <= .85 and 0 <= b[48] <= .85
         assert .5 <= b[46] <= 1.25 and .5 <= b[49] <= 1.25
+        assert all(0 <= b[i] <= 255 for i in list(range(0,9)) + list(range(12,15)) + list(range(25,31)) + list(range(39,42)) + [56])
+        assert a[9:12] == b[9:12], f'legacy unused/grain/fog-alpha fields changed {key}'
+        assert all(0 <= b[i] <= 1 for i in list(range(64,76)) + list(range(81,84)) + list(range(99,102)))
         assert a != b, f'untuned row {key}'
         changed += 1
     before_ext, after_ext = rows(sources[1]), rows(outputs[1])
@@ -67,4 +70,7 @@ with tempfile.TemporaryDirectory(prefix='liberty-mood-check-') as folder:
     bad.write_text(json.dumps(invalid))
     args[1] = str(bad)
     assert subprocess.run(args, capture_output=True).returncode != 0, 'invalid sky RGB accepted'
-    print(f'PASS: {changed}/88 weather-time rows; extended field isolation; deterministic generation; invalid RGB rejected')
+    invalid['rules'] = [dict(mood['rules'][0], cloudAlpha=256)]
+    bad.write_text(json.dumps(invalid))
+    assert subprocess.run(args, capture_output=True).returncode != 0, 'invalid cloud alpha accepted'
+    print(f'PASS: {changed}/88 weather-time rows; grain/fog-alpha and unrelated fields preserved; normalized sky RGB; deterministic generation; invalid RGB/cloud alpha rejected')

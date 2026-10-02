@@ -55,6 +55,20 @@ try {
             $cleanup = @(Invoke-EngineCommand @('cam off','clear','hud on','restart autopilot',"tp $position",'owned autopilot','pos'))
             $cleanup | Set-Content (Join-Path $OutputDirectory 'cleanup.txt')
             if (($cleanup -join ' ') -match '=> (error|unknown command)' -or ($cleanup -join ' ') -notmatch 'autopilot: nothing') { $success = $false; throw 'Capture cleanup failed; see cleanup.txt.' }
+            # Teleport completes asynchronously; the immediate command reply can show the old location.
+            Start-Sleep -Seconds 2
+            $settled = @(Invoke-EngineCommand @('alive','pos','owned autopilot','storage state','wheel status','arsenal status'))
+            $settled | Set-Content (Join-Path $OutputDirectory 'settled-cleanup.txt')
+            $actualPos = @($settled | Where-Object { $_ -match '^pos => ' })[0]
+            $expectedCoordinates = $position -split ' '
+            $actualCoordinates = ($actualPos -replace '^pos => ','') -split ' '
+            if ($actualCoordinates.Count -lt 3) { throw 'Missing settled player position.' }
+            for ($axis = 0; $axis -lt 3; $axis++) {
+                $expectedAxis = [double]::Parse($expectedCoordinates[$axis], [Globalization.CultureInfo]::InvariantCulture)
+                $actualAxis = [double]::Parse($actualCoordinates[$axis], [Globalization.CultureInfo]::InvariantCulture)
+                if ([Math]::Abs($expectedAxis - $actualAxis) -gt 1.0) { throw 'Settled player position differs from the pre-capture location.' }
+            }
+            if (($settled -join ' ') -notmatch 'player alive' -or ($settled -join ' ') -notmatch 'autopilot: nothing' -or ($settled -join ' ') -notmatch 'storage_state open=False' -or ($settled -join ' ') -notmatch 'weapon_wheel_status open=False') { throw 'Unexpected settled gameplay state after capture.' }
         }
     } catch {
         $success = $false

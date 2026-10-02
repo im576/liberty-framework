@@ -223,7 +223,7 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 
 | Id | Task | Kind | What passes | Status |
 |---|---|---|---|---|
-| `T058-citywide-environment` | T-058 | scenario | Twenty captures produced without failed steps; screenshots reviewed against approved direction; cleanup succeeds. | QUEUED |
+| `T058-citywide-environment` | T-058 | scenario | Twenty captures produced without failed steps; screenshots reviewed against approved direction; cleanup succeeds. | NEEDS-REVIEW |
 | `T040-feature-preview-smoke` | T-040 | scenario | Full smoke has zero failed steps and log errors; four captures reviewed for readable wheel/storage and closed controls. | QUEUED |
 | `LOOP-build` | LOOP | pc-offline | exit code 0; build.ps1 and build-core.ps1 report no errors and ray_walk_test passes as a Windows .exe | QUEUED |
 | `LOOP-verify` | LOOP | pc-offline | exit code 0 and 'RESULT passed=N failed=0' with no NOT-RUN | QUEUED |
