@@ -237,39 +237,7 @@ function Assert-AudioOutput {
     }
 }
 
-function Start-GameReady([int] $Attempts = 5, [int] $BootTimeoutSeconds = 240, [int] $NotSeenSeconds = 90) {
-    Assert-AudioOutput
-    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
-        Stop-Game
-        $script:LaunchedUtc = [DateTime]::UtcNow
-        Start-Process 'steam://rungameid/12210'
-        $started = Get-Date
-        $deadline = $started.AddSeconds($BootTimeoutSeconds)
-        $seen = $false
-        $lostAt = $null
-        while ((Get-Date) -lt $deadline) {
-            Start-Sleep -Seconds 3
-            if (Get-SessionLog | Where-Object { $_ -match 'engine_booted' } | Select-Object -First 1) { return $attempt }
-            $process = Get-GameProcess
-            if ($process) {
-                if (-not $seen) { Write-AutopilotLaunch $script:Game $process }
-                $seen = $true; $lostAt = $null
-                $dialog = Get-GameDialog
-                if ($dialog -and $dialog -match '(?i)fatal') {
-                    Stop-Game
-                    throw "GAME-UNAVAILABLE: GTA IV showed '$dialog' before the engine started (a sound card error means no audio output device)"
-                }
-                continue
-            }
-            # Steam normally starts GTAIV.exe within seconds; nothing after $NotSeenSeconds means this launch went nowhere.
-            if (-not $seen -and ((Get-Date) - $started).TotalSeconds -gt $NotSeenSeconds) { break }
-            # PlayGTAIV/RGL start GTAIV.exe; a GTAIV that was seen and stays gone for 20 s crashed.
-            if ($seen) { if (-not $lostAt) { $lostAt = Get-Date } elseif (((Get-Date) - $lostAt).TotalSeconds -gt 20) { break } }
-        }
-        Write-Host "attempt $attempt failed (seen=$seen); relaunching"
-    }
-    throw "GAME-UNAVAILABLE: GTA IV did not reach the engine after $Attempts attempts"
-}
+. (Join-Path $PSScriptRoot 'StartupReadiness.ps1')
 
 # Title of the game's top-level window: a modal error box (e.g. FusionFix "Error building shader!") becomes the
 # main window and pauses the game.

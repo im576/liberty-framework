@@ -326,6 +326,9 @@ function Invoke-ScenarioCheck($Context, $Check) {
     $runs = Join-Path $Context.Results '_runs'
     New-Item -ItemType Directory -Force -Path $runs | Out-Null
     $log = Join-Path $Context.Results ($Check.id + '.log')
+    $startupJournal = Join-Path $Context.Results ($Check.id + '-startup.jsonl')
+    # Preserve any prior interrupted invocation on resume instead of appending incompatible attempt histories.
+    if (Test-Path -LiteralPath $startupJournal) { $startupJournal = Join-Path $Context.Results ($Check.id + '-startup-' + [Guid]::NewGuid().ToString('N') + '.jsonl') }
     $arguments = (Get-ScriptArguments (Join-Parts $Context.Repo 'tools' 'autopilot' 'Run-Scenario.ps1')) +
         @('-GameDirectory', $Context.Game, '-Scenario', $scenario, '-OutputDirectory', $runs, '-AutopilotModule', $Context.GameModule, '-ProbeDirectory', $Context.Results) +
         @($(if ($Context.Quick) { '-Quick' }), $(if ($Context.StopOnFailure) { '-StopOnFailure' }) | Where-Object { $_ })
@@ -337,6 +340,9 @@ function Invoke-ScenarioCheck($Context, $Check) {
         $remaining = [Math]::Max(1, [Math]::Ceiling($Context.MaxGameMinutes * 60 - ((Get-Date) - $Context.GameSince).TotalSeconds))
         if ($remaining -lt $timeout) { $timeout = [int]$remaining; $limitedByGameCap = $true }
     }
+    # Share this invocation's actual clipped allowance with startup; retries do not reset it.
+    $scenarioDeadlineUtc = [DateTime]::UtcNow.AddSeconds($timeout).ToString('o')
+    $arguments += @('-ScenarioDeadlineUtc', $scenarioDeadlineUtc, '-StartupTelemetryPath', $startupJournal)
     $run = Invoke-ChildProcess (Get-PowerShellPath) $arguments $timeout $log $Context.Repo
     Import-Module (Join-Parts $Context.Repo 'tools' 'autopilot' 'AutopilotLogic.psm1') -Force 3>$null
     $read = Read-ScenarioResult $run.Output
@@ -345,6 +351,8 @@ function Invoke-ScenarioCheck($Context, $Check) {
         $read = @{ Status = 'ERROR'; Detail = "scenario killed after $timeout s$reason"; Path = $read.Path }
     }
     $evidence = @((Split-Path -Leaf $log))
+    # Known parent path is independent of stdout markers and child report/finalization on forced termination.
+    if (Test-Path -LiteralPath $startupJournal) { $evidence += (Split-Path -Leaf $startupJournal) }
     if ($read.Path -and (Test-Path -LiteralPath $read.Path)) {
         $target = Join-Path $Context.Results $Check.id
         Copy-Item -LiteralPath (Split-Path -Parent $read.Path) -Destination $target -Recurse -Force
@@ -362,6 +370,7 @@ function Invoke-ScenarioCheck($Context, $Check) {
         try {
             $runnerError = [string](Get-Content -LiteralPath $read.Path -Raw | ConvertFrom-Json).runnerError
             if ($runnerError -like 'GAME-UNAVAILABLE*') { $Context.LaunchBlocked = $runnerError }
+            if ($runnerError -like 'STARTUP-TIMEOUT*') { $Context.LaunchBlocked = $runnerError }
         } catch { Write-Host "[verify-local] could not read $($read.Path): $($_.Exception.Message)" }
     }
     # A crashed, errored or hung game must not poison the next scenario: stop it so the next one relaunches cleanly.
@@ -503,7 +512,7 @@ function Write-Summary($Context) {
 # Removes the owner's user name and machine paths from every text file of the results before they are pushed.
 function Protect-Results([string] $Folder, [hashtable] $Replacements) {
     $pairs = @($Replacements.GetEnumerator() | Where-Object { $_.Key -and $_.Key.Length -ge 3 } | Sort-Object { $_.Key.Length } -Descending)
-    foreach ($file in Get-ChildItem -LiteralPath $Folder -Recurse -File | Where-Object { @('.log', '.md', '.json', '.txt') -contains $_.Extension }) {
+    foreach ($file in Get-ChildItem -LiteralPath $Folder -Recurse -File | Where-Object { @('.log', '.md', '.json', '.jsonl', '.txt') -contains $_.Extension }) {
         $text = [IO.File]::ReadAllText($file.FullName)
         $changed = $text
         foreach ($pair in $pairs) {
