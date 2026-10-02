@@ -80,6 +80,16 @@ namespace LibertyFramework.Engine.Ui
             if (input.Back) { Close(); return; }
             if (!IsOpen) { return; }
 
+            PrepareSnapshot();
+        }
+
+        // Owner engine tick only. Opening must not consume navigation/confirm edges from the current input frame.
+        internal void PrepareSnapshot()
+        {
+            if (!IsOpen) { return; }
+            int count = menu.Segments != null ? menu.Segments.Count : 0;
+            if (count == 0) { Close(); return; }
+            Selected = Math.Max(0, Math.Min(Selected, count - 1));
             Snapshot s = new Snapshot();
             s.Title = menu.Title;
             s.Labels = new string[count];

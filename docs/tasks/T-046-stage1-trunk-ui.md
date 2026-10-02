@@ -119,3 +119,13 @@ Restored from `phase2-20261001-122209`; slot is released and this run must not b
 Offline build PASS, verifier 441/0/5 not-run, tools 236/0. ASI hashes/inventory and exact evidence in
 [live handoff](../handoffs/Lane-B-live.md). Controller, real game save/load, safehouse/gunsmith and B/D coexistence
 remain owner/combined checks; state-file round trips do not prove real save/load. Status stays NEEDS-PLAYTEST.
+
+### Shared radial initial snapshot follow-up — offline only
+
+StorageWheel now supplies its first carried start slot before opening, allowing the initial Centre/right-panel
+snapshot before publication. Focused checks compile the actual storage/UI/view/ledger sources: initial centre,
+highlight, panel, no opening action/input consumption, external-close semantics, owner-stop and initial callback
+failure cleanup pass within **25/0** checks in PS7/PS5.1. Engine/SHDN boundaries are spies; production build/full
+runtime evidence is pending. Next affected gate `T046-trunk-ui`, plus `SDK-ui-review` for the other shared radial
+callers, with `LOOP-package-install` under a scheduled slot. Prior acceptance stays preserved; this patch claims no
+fresh timing/visual acceptance. [Live handoff](../handoffs/Lane-B-live.md) records exact receipts and pending gates.

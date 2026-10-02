@@ -164,3 +164,14 @@ Focused fixture checks 17/0 in PS7 and Windows PS5.1; existing runner simulation
 diff checks PASS. No heavy build/game slot used. Exact next IDs:
 `LOOP-package-install,T045-config-watch-reload,T045-config-watch-restart,T045-weapon-wheel`.
 Only a new authorized slot may run them. [Live handoff](../handoffs/Lane-B-live.md) records evidence/cleanup limits.
+
+### Initial snapshot source repair — runtime acceptance pending
+
+Prepare the first radial snapshot under owner RunAs before publication, without reading menu input. Start selection
+and sticky hints are set before preparation; original frame/wall-time measurement includes preparation without
+normalizing Engine.Frame. Capture/ledger registration precedes callbacks so initial failure closes owned resources.
+Focused actual UI/view/input/ledger/storage sources: **25/0** PS7 and PS5.1, warnings-as-errors; identical pre-fix
+source **12/13** expected negative control. Engine/SHDN boundaries are spies; full production build/runtime unrun.
+P1 <=1-frame acceptance gap persists until a scheduled full `T045-weapon-wheel` with every-opening pairing passes.
+Separate `T045-config-watch-reload,T045-config-watch-restart` remain unrun. No threshold/budget change; NEEDS-PLAYTEST.
+Exact logs, caller audit, limits and next batches are in the [live handoff](../handoffs/Lane-B-live.md).

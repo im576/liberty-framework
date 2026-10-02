@@ -89,12 +89,14 @@ namespace LibertyFramework.Arsenal.Ui
                 CloseGunsmith();
                 if (host != null) { IHost closing = host; host = null; closing.WheelClosed(); }
             };
-            menu = engine.Ui.OpenRadial(owner, radial);
             // Start on the first carried slot that holds a weapon, else the top.
+            int selected = 0;
             for (int i = 0; i < WeaponWheelLogic.SegmentCount; i++)
             {
-                if (Carried(i) != null) { menu.Selected = i; break; }
+                if (Carried(i) != null) { selected = i; break; }
             }
+            menu = engine.Ui.OpenRadial(owner, radial, selected);
+            if (!menu.IsOpen) { menu = null; }
         }
 
         // Closing from outside does not call back WheelClosed.

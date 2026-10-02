@@ -23,7 +23,7 @@ namespace LibertyFramework.Engine.Services
         private readonly object gate = new object();
         private readonly List<TimedText> notices = new List<TimedText>();
         private TimedText help, subtitle;
-        private IMenu[] drawMenus = new IMenu[0];
+        private volatile IMenu[] drawMenus = new IMenu[0];
 
         internal UiService(LibertyEngine engine)
         {
@@ -84,16 +84,26 @@ namespace LibertyFramework.Engine.Services
 
         public IMenu OpenRadial(LibertyModule owner, RadialMenu menu)
         {
-            RadialMenuView view = new RadialMenuView(owner, menu, textures, Closed);
-            return Open(owner, view, menu.LockPlayerControl);
+            return OpenRadial(owner, menu, 0);
         }
 
-        private IMenu Open(LibertyModule owner, IMenu view, bool lockControl)
+        internal IMenu OpenRadial(LibertyModule owner, RadialMenu menu, int selected)
+        {
+            RadialMenuView view = new RadialMenuView(owner, menu, textures, Closed);
+            view.Selected = selected;
+            return Open(owner, view, menu.LockPlayerControl, view.PrepareSnapshot);
+        }
+
+        private IMenu Open(LibertyModule owner, IMenu view, bool lockControl, Action prepare = null)
         {
             engine.RequireOwner(owner);
-            menus.Add(view);
             engine.Input.CaptureForUi(owner, view, lockControl);
             engine.Ledger.Add(owner, "menu", view.GetHashCode(), () => view.Close());
+            // Register cleanup before owner callbacks, but publish only after an input-free initial snapshot.
+            // Commands can open after Ui.Update; waiting for its next tick leaves a published radial undrawable.
+            if (prepare != null && !engine.RunAs(owner, prepare)) { return view; }
+            if (!view.IsOpen) { return view; }
+            menus.Add(view);
             Publish();
             return view;
         }

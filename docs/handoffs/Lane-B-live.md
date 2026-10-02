@@ -7,6 +7,53 @@ Update this file after every game run and meaningful commit. Rules for a success
 
 This section supersedes the historical next-step instructions below. The finished B slot is released; do not rerun it.
 
+### Initial radial snapshot fix — offline source milestone, latest
+
+Owner resumed the four preserved dirty source files from `2544b12`; no work was discarded. The scoped fix prepares
+an input-free RadialMenuView snapshot under owner RunAs before publishing the menu. Capture/ledger cleanup is
+registered before callbacks; the new view stays out of the menu list until preparation succeeds, so even callback
+cleanup of another menu cannot publish an unprepared radial. The draw-menu array is volatile. Empty radials close
+and failed initial callbacks use existing owner failure/ledger cleanup; tolerated segment failures still log once.
+No draw-thread callback/native, public API/tuning expansion, counter normalization or threshold change.
+
+Internal selected-slot overload lets WeaponWheelModule choose its held/first-filled slot before snapshot preparation;
+sticky state is also assigned first because Centre builds tap/command hints. Existing timing start now precedes
+OpenRadial, including snapshot preparation and avoiding a first draw earlier than the recorded start. Engine.Frame
+and FirstDrawFrame remain unchanged. StorageWheel computes its first carried slot before opening, and its Centre
+builds the right-hand panel without depending on the menu assignment. Both callers handle a closed return after
+preparation failure. All other callers audited: SDK self-test (six slots) and autopilot radial sample (eight slots)
+use default slot zero, with delegates depending only on owner services/selected argument; public IUi is unchanged.
+Later explicit selection commands keep their existing next-update snapshot behavior.
+
+`tools/tests/Run-RadialSnapshotChecks.ps1` compiles only actual UiService/RadialMenuView/MenuInput/ResourceLedger/
+StorageWheel and contracts/logic against the existing SDK; no full verifier or engine build. **25/0** in PS7 and
+Windows PS5.1, zero compiler warnings/errors (warnings-as-errors). Tests exercise immediate published draw/centre/
+highlight before Update, selected-slot clamp, pending confirm/navigation/X/Y/cancel left untouched at open, owner
+callback context, draw-only snapshot use, unchanged frame recording, close/empty/fault cleanup, other-owner survival,
+once-only segment failure logging, throwing close callback cleanup and actual StorageWheel initial selection/panel/
+external-close/owner-stop/failure behavior. Boundary spies model engine dispatch/input/canvas/SHDN, so real module
+OnStop/native locks/thread scheduling and the complete WeaponWheelModule remain runtime/production-build gaps.
+README documents these limits. The native spy rejects every call and art construction rejects draw context.
+
+Identical final harness against preserved pre-fix `2544b12`: **12 passes / 13 expected regression failures**, including
+no drawable initial snapshot and storage first-selection content. This is a negative control, not a fresh game failure.
+Logs: `results-local/offline/radial-snapshot-current.log`, `radial-snapshot-current-ps51.log`,
+`radial-snapshot-baseline.log`. Existing SDK SHA256:
+`61EBF3AB50132A9D8D4E95C626774F93DA123A4233677547256E67A9BEC08C21`.
+Initial runner path-resolution error was corrected before these receipts; no game or installed config was touched.
+Diff whitespace check PASS. No heavy/full build, package, verifier, install, rollback or game run authorized/performed.
+
+Commit this scoped patch before safely merging pinned main `5901230`; parent owns the host verifier ordering repair.
+Next exact scheduled full IDs (split to retain <=30 game minutes):
+`LOOP-package-install,T045-weapon-wheel,T046-trunk-ui,SDK-ui-review` for affected shared radial callers;
+`LOOP-package-install,T045-config-watch-reload,T045-config-watch-restart` for the separate watcher lifecycle gates.
+Before those batches, the assigned slot must run the required production build/offline checks with parent's corrected
+ordering. Always `-AnyBranch -NoPush -Restore -NoManual`, no Quick acceptance. Original <=1-frame gate/budgets unchanged.
+**P1 timing acceptance gap remains** until a fresh full run establishes every opening group; hitches still prove no
+root cause. Watcher runtime fixtures remain unrun; deliberate rejection errors require independent review.
+Owner-only controller/real save-load/safehouse/gunsmith and combined HUD coexistence remain. Ready for bounded source
+review, not full T045/T046 acceptance. No main push/merge or other-lane edits. No task marked DONE.
+
 ### Scoped watcher fixtures and later-opening coverage (offline, current)
 
 Parent accepted the full-run review and authorized fixture work, not a new build/game slot. Lane entry was clean at
