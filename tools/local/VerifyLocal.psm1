@@ -215,6 +215,15 @@ function Get-ContentReportFolder($Context, [string] $Asset) {
 # Running checks
 
 function Invoke-ToolCheck($Context, $Check) {
+    # The verifier reads generated WeaponInfo.xml. When this batch includes packaging, build has invalidated the
+    # old stage; prepare the fresh snapshot under the game lock before verifying, without installing it yet.
+    if ($Check.run.tool -eq 'verify' -and $Context.PackageBuild) {
+        $installCheck = $Context.SelectedPackageCheck
+        Invoke-PackageStage $Context $installCheck
+        if (-not $Context.PackageStage.Ok) {
+            return New-Result 'NOT-RUN' 'package staging prerequisite failed; generated inputs were not verified' @((Split-Path -Leaf $Context.PackageStage.Log))
+        }
+    }
     if ($Check.run.tool -eq 'blender-tests' -and -not $Context.Blender) {
         return New-Result 'NOT-RUN' 'Blender is not configured (-Blender <blender.exe> once; it is remembered)' @()
     }
@@ -273,17 +282,33 @@ function Invoke-PackageBuild($Context, $Check) {
     Write-Host "               -> package build $(if ($Context.PackageBuild.Ok) { 'done' } else { 'FAILED' }) ($seconds s)"
 }
 
+function Invoke-PackageStage($Context, $Check) {
+    if ($Context.PackageStage) { return }
+    $stageLog = Join-Path $Context.Results ($Check.id + '-stage.log')
+    if (-not $Context.PackageBuild.Ok) {
+        $Context.PackageStage = @{ Ok = $false; Detail = 'Phase Build failed'; Log = $Context.PackageBuild.Log }
+        return
+    }
+    if ($Context.Simulate) {
+        $failed = Get-SimProperty (Get-SimProperty $Context.Sim 'install' $null) 'stageFails' $false
+        $Context.PackageStage = @{ Ok = (-not $failed); Detail = 'simulated stage'; Log = $stageLog }
+        return
+    }
+    $run = Invoke-ChildProcess (Get-PowerShellPath) (Get-PackageArguments $Context 'Stage') 600 $stageLog $Context.Repo
+    $Context.PackageStage = @{ Ok = (-not $run.TimedOut -and $run.ExitCode -eq 0); Detail = "exit $($run.ExitCode)"; Log = $stageLog }
+}
+
 function Invoke-PackageInstall($Context, $Check) {
+    if (-not $Context.PackageBuild) { Invoke-PackageBuild $Context $Check }
+    if (-not $Context.PackageBuild.Ok) { return New-Result 'FAIL' "package-phase2.ps1 -Phase Build failed ($($Context.PackageBuild.Detail))" @((Split-Path -Leaf $Context.PackageBuild.Log)) }
+    Invoke-PackageStage $Context $Check
+    if (-not $Context.PackageStage.Ok) { return New-Result 'FAIL' "package-phase2.ps1 -Phase Stage failed ($($Context.PackageStage.Detail))" @((Split-Path -Leaf $Context.PackageStage.Log)) }
     if ($Context.Simulate) { return Invoke-SimulatedPackageInstall $Context $Check }
     $ps = Get-PowerShellPath
     $tools = Join-Path $Context.Repo 'tools'
     $log = Join-Path $Context.Results ($Check.id + '.log')
-    if (-not $Context.PackageBuild) { Invoke-PackageBuild $Context $Check }
-    if (-not $Context.PackageBuild.Ok) { return New-Result 'FAIL' "package-phase2.ps1 -Phase Build failed ($($Context.PackageBuild.Detail))" @((Split-Path -Leaf $log)) }
-    # Package step 2, under the game lock: stage the snapshot against the installed files (seconds), then install.
-    $stageLog = Join-Path $Context.Results ($Check.id + '-stage.log')
-    $run = Invoke-ChildProcess $ps (Get-PackageArguments $Context 'Stage') 600 $stageLog $Context.Repo
-    if ($run.TimedOut -or $run.ExitCode -ne 0) { return New-Result 'FAIL' "package-phase2.ps1 -Phase Stage failed (exit $($run.ExitCode))" @((Split-Path -Leaf $log), (Split-Path -Leaf $stageLog)) }
+    # Stage may already have run for the offline verifier. Reuse the exact verified snapshot, then install.
+    $stageLog = $Context.PackageStage.Log
     $installLog = Join-Path $Context.Results ($Check.id + '-install.log')
     $before = Get-Date
     $install = Invoke-ChildProcess $ps ((Get-ScriptArguments (Join-Path $tools 'install-phase2.ps1')) + @('-GameDirectory', $Context.Game)) 900 $installLog $Context.Repo
@@ -619,6 +644,7 @@ function Invoke-VerifyLocal([hashtable] $Options) {
     }
 
     $installCheck = $checks | Where-Object { $_.run.tool -eq 'package-install' } | Select-Object -First 1
+    $context.SelectedPackageCheck = $installCheck
     $completedChecks = $false
     try {
         foreach ($check in $checks) {

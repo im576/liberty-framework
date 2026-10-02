@@ -39,3 +39,14 @@ bounded HUD diagnostic slot. B prepares config lifecycle/timing coverage; C revi
 setup restoration; R reviews SDK 1.2 evidence/contract coverage. Those three remain offline until explicitly assigned.
 Prepared lane tips: B `e7cf0f1`, C `0c6d3ed`, D `b955948`, R `c282095`. These identify milestones, not task completion.
 No remaster implementation is assigned. Functional menus/HUD/storage and supporting gameplay features remain priority.
+
+## Latest resume and schedule
+
+The owner approved the reviewed plan with "Yes let's do that. Orchestrate efficiently and optimally." The preceding
+build/edit hold is revoked. Reuse all four workers/settings and preserve B/D's dirty prepared patches.
+C's control `20261001-164156-844c6a1` finished/restored: 43 steps/0 failed, one shader dialog ERROR (NEEDS-REVIEW),
+not clean acceptance. C production build PASS, NoGame verifier 442/0/5, tools 285/0. Only the separate quick active
+comparison is now authorized for C, on the same source/config/plugins. No automatic effects/dismember follow-up.
+B and D finish their timing and held-weapon baseline patches with lightweight checks offline; R integrates current
+main and prepares the full SDK/material batch. The orchestrator fixes generated-input staging before verification,
+then checks it before dispatching R. One heavy/game slot at a time; caches avoid rebuilding unchanged source.
