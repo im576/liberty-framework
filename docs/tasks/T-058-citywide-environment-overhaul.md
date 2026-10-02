@@ -26,6 +26,10 @@ One integrated capture batch covers all five benchmark conditions at the station
 
 See `results-local/citywide-overhaul/` for generator, installer rollback, runtime and visual review receipts. Status stays IN-PROGRESS until runtime screenshots are inspected; NEEDS-PLAYTEST is not owner acceptance.
 
+Owner authorized restart on continuation. Three Steam candidate startup attempts failed before engine load and rolled back; a restored-baseline control reached gameplay with a FusionFix shader-warning acknowledgment. One controlled candidate retry and one direct-local launch also failed before gameplay and rolled back. Windows fault records report 0xc0000005/unknown module; the preserved module list includes MTLX/DXVK/ASI loader but no FusionFix. This suggests an early startup problem, not a proven timecycle cause. No candidate screenshots exist and visual acceptance remains unproven. Exact original timecycle hashes are restored; see final-mood-restoration.json. Do not mark the overhaul complete.
+
+The direct-local diagnostic's boot.txt contains the earlier baseline boot because its helper had no new session boundary. That receipt is explicitly invalid as candidate readiness evidence; its pending command failed after process exit. Subsequent runtime work must use Start-GameReady's session boundary or filter by the new launch timestamp.
+
 ## Human test steps
 
 1. Launch GTA IV with the installed candidate. Walk and drive through Broker and Algonquin in ordinary free roam.

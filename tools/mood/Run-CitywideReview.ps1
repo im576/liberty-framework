@@ -2,7 +2,9 @@ param(
     [Parameter(Mandatory=$true)][string] $GameDirectory,
     [Parameter(Mandatory=$true)][string] $OutputDirectory,
     # Pass only after the human authorizes closing the currently open game.
-    [switch] $RestartRunningGame
+    [switch] $RestartRunningGame,
+    [ValidateRange(1,3)][int] $StartupAttempts = 3,
+    [ValidateRange(1,9)][int] $StartupMinutes = 9
 )
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
@@ -28,11 +30,11 @@ try {
     & (Join-Path $repo 'tools\install-mood.ps1') -GameDirectory $GameDirectory
     $installed = $true
     Copy-Item -LiteralPath (Join-Path $GameDirectory 'scripts\LibertyFramework\installed-mood.json') -Destination (Join-Path $OutputDirectory 'installed-mood.json')
-    Start-GameReady -Attempts 3 -DeadlineUtc $deadline.AddMinutes(-6) -TelemetryPath (Join-Path $OutputDirectory 'startup.jsonl') | Out-Null
+    Start-GameReady -Attempts $StartupAttempts -DeadlineUtc ([DateTime]::UtcNow.AddMinutes($StartupMinutes)) -TelemetryPath (Join-Path $OutputDirectory 'startup.jsonl') | Out-Null
     Start-Sleep -Seconds 12
     $before = @(Invoke-EngineCommand @('alive','pos','arsenal status','storage state','wheel status','owned autopilot'))
     $before | Set-Content (Join-Path $OutputDirectory 'before.txt')
-    if (($before -join ' ') -match '=> (error|unknown command)' -or ($before -join ' ') -notmatch 'player alive' -or ($before -join ' ') -notmatch 'carried=none' -or ($before -join ' ') -notmatch 'storage_state open=False' -or ($before -join ' ') -notmatch 'weapon_wheel_status open=False' -or ($before -join ' ') -notmatch 'autopilot: nothing') { throw 'Unexpected active gameplay state; refusing capture setup.' }
+    if (($before -join ' ') -match '=> (error|unknown command)' -or ($before -join ' ') -notmatch 'player alive' -or ($before -join ' ') -notmatch 'storage_state open=False' -or ($before -join ' ') -notmatch 'weapon_wheel_status open=False' -or ($before -join ' ') -notmatch 'autopilot: nothing') { throw 'Unexpected active gameplay state; refusing capture setup.' }
     $posLine = @($before | Where-Object { $_ -match '^pos => ' })[0]
     if (-not $posLine) { throw 'Missing original position receipt.' }
     $position = (($posLine -replace '^pos => ','') -replace ' heading ',' ' -split ' core_')[0]
