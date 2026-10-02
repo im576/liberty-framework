@@ -57,3 +57,7 @@ finished history, all NEEDS-PLAYTEST or owner-verified: [T-007](T-007-weapon-slo
 [T-022](T-022-combat-effects.md), [T-023](T-023-lvs-body-variants.md), [T-025](T-025-physical-weapons.md).
 
 All other finished cards (T-000..T-003, T-008..T-010) are in [../archive/tasks/](../archive/tasks/).
+
+## Owner-directed citywide visual overhaul
+
+T-058 — [Citywide environment overhaul](T-058-citywide-environment-overhaul.md) — IN-PROGRESS (2026-10-02). Corrected candidate v3 captured at all 20 scenes; original/AI target/actual together on one page. NEEDS-REVIEW: startup stall evidence and remaining night/material/local-light gaps. Final bounded relaunch failed; exact original appearance restored. No new lane dispatch or automatic retry loop. This owner-directed work supersedes the earlier remaster hold for this task.

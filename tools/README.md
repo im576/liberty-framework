@@ -31,7 +31,7 @@ stopping or restoring the current game. New runs record full commit identity and
 ## Package, install, rollback
 
 - `package-phase2.ps1` builds the whole stack (DLL, core, models, config) into `staging/phase2`; `install-phase2.ps1 -GameDirectory <GTAIV>` installs it with a backup; `rollback-phase2.ps1` restores the newest backup; `test-phase2-install.ps1` dry-runs install and rollback on a mock game folder.
-- Optional companions: `install-violent-liberty.ps1` / `rollback-violent-liberty.ps1` (owner-downloaded archive, hash-checked), `install-weapon-pack.ps1` / `rollback-weapon-pack.ps1` (Realistic Weapon Overhaul), `install-mood.ps1` (timecycle from `config/mood.json`, `-Restore` undoes it).
+- Optional companions: `install-violent-liberty.ps1` / `rollback-violent-liberty.ps1` (owner-downloaded archive, hash-checked), `install-weapon-pack.ps1` / `rollback-weapon-pack.ps1` (Realistic Weapon Overhaul), `install-mood.ps1` (citywide timecycle from `config/mood.json`; `-Rollback` restores the exact previous look, `-Restore` restores pristine FusionFix).
 
 ## Cloud tests
 

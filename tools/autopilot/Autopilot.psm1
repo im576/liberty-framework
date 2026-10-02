@@ -207,8 +207,17 @@ function Invoke-EngineCommand([string[]] $Lines, [int] $TimeoutSeconds = 20) {
     [IO.File]::WriteAllLines((Join-Path $inbox "$name.tmp"), $Lines)
     Move-Item -LiteralPath (Join-Path $inbox "$name.tmp") -Destination (Join-Path $inbox "$name.cmd")
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    $expectedReplies = @($Lines | Where-Object { -not [string]::IsNullOrWhiteSpace($_) -and -not $_.TrimStart().StartsWith('#') }).Count
     while ((Get-Date) -lt $deadline) {
-        if (Test-Path -LiteralPath $reply) { Start-Sleep -Milliseconds 100; $text = Get-Content -LiteralPath $reply; Remove-Item -LiteralPath $reply; return $text }
+        # File.WriteAllText creates the reply before finishing its write. An empty/partial file is not a completed reply.
+        if (Test-Path -LiteralPath $reply) {
+            $published = Get-Content -LiteralPath $reply -Raw
+            $text = @($published -split '\r?\n' | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+            if ($published -and $published.EndsWith("`n") -and $text.Count -ge $expectedReplies) {
+                Remove-Item -LiteralPath $reply
+                return $text
+            }
+        }
         if (-not (Get-GameProcess)) { throw 'GTA IV exited while a command was pending' }
         Start-Sleep -Milliseconds 250
     }

@@ -11,10 +11,15 @@ The chat folder `Documents/ChatGPT/GTA4-Reborn` contains earlier research eviden
 Main and GitHub main were both `65e2726` at the start of this review; newer feature work also exists
 on separate local branches. The installed preview is its own worktree, not main.
 
-The owner's October 2 request expands the immediate work to repository cleanup, agent/testing
-reliability, deeper engine research, and a stronger foundation for gore, vehicle ownership and
-future overhauls. Gameplay features remain the next playable milestone; environment remaster
-comes later. Research can proceed now when it answers a concrete gameplay or engine question.
+The owner's October 2 scope includes repository/tooling reliability, deeper engine research,
+gore, vehicle ownership and the citywide visual overhaul. Current work reviews and combines local
+changes into a tested source baseline; the next playable priority is being clarified with the owner.
+
+The visual candidate v3 has 20 actual captures and a single original/target/actual comparison.
+It remains NEEDS-REVIEW: startup/stall failures and night/local-light/material fidelity are open.
+The prior visual session restored the exact original appearance. See the
+[visual report](reports/2026-10-02-citywide-environment-overhaul.md).
+
 
 ## Current capabilities and limits
 

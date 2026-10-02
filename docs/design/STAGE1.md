@@ -45,8 +45,9 @@ blood, inventory, audio, ambience) must read as one product.
   wherever that materially improves the game.
 - Rendering technology (FusionFix, DXVK, the game's shaders) is reused where it already solves a problem; Liberty does
   not rewrite it. Reuse never limits the creative scope of the art.
-- Target look: cold daylight, heavy overcast, a strong wet-city atmosphere, very dark but readable nights, warm artificial
-  light against cold surroundings, dirty glass, wet asphalt, dense urban depth, still recognizably GTA IV.
+- Target look (owner-approved references, 2026-10-02): cold daylight, heavy overcast, a strong wet-city atmosphere,
+  brighter/readable nights with rich existing light/sign colors, muted worn architecture, dirty glass, wet asphalt
+  and dense urban depth, still recognizably GTA IV. Preserve natural surface color rather than blanket desaturation.
 - Not a blanket 4K pass: good materials, correct mipmaps, fixed assets and better lighting beat raw resolution.
 
 ### Asset policy

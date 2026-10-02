@@ -88,6 +88,16 @@ try {
             throw "the installed build is not from this worktree ($repoRoot) but from '$($build.repo)' $($build.note); install yours first (tools/verify-local.ps1 -Only LOOP-package-install,<checks>)"
         }
     }
+    if ($realGame -and $name -eq 'citywide-environment') {
+        $moodPath = Join-Path $GameDirectory 'scripts\LibertyFramework\installed-mood.json'
+        if (-not (Test-Path -LiteralPath $moodPath)) { throw 'Citywide review requires an installed mood candidate; run tools/mood/Run-CitywideReview.ps1.' }
+        $moodReceipt = Get-Content -LiteralPath $moodPath -Raw | ConvertFrom-Json
+        if ($moodReceipt.mode -ne 'citywide-mood' -or $moodReceipt.configSha256 -ne (Get-FileHash -LiteralPath (Join-Path $repoRoot 'config\mood.json')).Hash) { throw 'Installed mood candidate does not match this configuration.' }
+        foreach ($row in $moodReceipt.installedFiles) {
+            if ((Get-FileHash -LiteralPath (Join-Path $GameDirectory ('update\pc\data\' + $row.name))).Hash -ne $row.sha256) { throw "Installed mood file has changed: $($row.name)" }
+        }
+        Copy-Item -LiteralPath $moodPath -Destination (Join-Path $report 'installed-mood.json')
+    }
     Import-Module $AutopilotModule -Force 3>$null
     Set-AutopilotGame $GameDirectory
     $lines = @(Get-Content -LiteralPath $Scenario)

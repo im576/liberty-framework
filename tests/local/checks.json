@@ -45,6 +45,64 @@
   ],
   "checks": [
     {
+      "id": "T058-citywide-environment",
+      "task": "T-058",
+      "title": "Citywide approved environment look, four sites and five conditions",
+      "kind": "scenario",
+      "run": {
+        "scenario": "citywide-environment"
+      },
+      "proves": "Candidate boots on the existing preview; matched camera captures at four sites under five weather/time conditions; final camera/owned-prop cleanup.",
+      "pass": "Twenty captures produced without failed steps; screenshots reviewed against approved direction; cleanup succeeds.",
+      "unproven": "Owner acceptance, moving performance, interiors/missions and target material/local-light fidelity.",
+      "reference": "docs/tasks/T-058-citywide-environment-overhaul.md",
+      "status": "NEEDS-REVIEW",
+      "lastRun": "results-local/citywide-overhaul/run-20261002-06/citywide-environment-20261002-040338",
+      "evidence": ["result.json", "report.md", "run.log", "../settled-cleanup.txt", "results-local/citywide-overhaul/review-manifest-v03.json", "results-local/citywide-overhaul/final-ready-v03/startup.jsonl", "results-local/citywide-overhaul/final-v03-baseline-restoration.json"],
+      "review": { "screenshots": {
+        "01-station-cloudy-day": "Grey sky and legible platform shade; compare original and approved target.",
+        "01-station-clear-day": "Natural daylight and surface colors without blown station detail.",
+        "01-station-rain-day": "Wet grey depth with legible station/road surfaces.",
+        "01-station-dusk": "Distinct dusk lighting; inspect warm/cool separation.",
+        "01-station-cloudy-night": "Compare unlit readability and warm local illumination against approved target; remaining gap recorded.",
+        "02-star-junction-cloudy-day": "Overcast architecture, sky detail and sign color against approved target.",
+        "02-star-junction-clear-day": "Daylight sign and surface color; inspect highlight clipping.",
+        "02-star-junction-rain-day": "Rain depth, worn surfaces and sign color against approved target.",
+        "02-star-junction-dusk": "Dusk architecture and existing light separation.",
+        "02-star-junction-cloudy-night": "Night C: readable shadows and rich sign colors; remaining local-light gap recorded.",
+        "03-hove-street-cloudy-day": "Shared grade in deep elevated-track shade; original/actual only.",
+        "03-hove-street-clear-day": "Readable road/shop shade and distinct sunlight.",
+        "03-hove-street-rain-day": "Wet road depth and pedestrian/storefront readability.",
+        "03-hove-street-dusk": "Dusk transition in shaded storefronts.",
+        "03-hove-street-cloudy-night": "Road/storefront readability and existing colored accents.",
+        "04-east-hook-cloudy-day": "Grey skyline separation and water detail; original/actual only.",
+        "04-east-hook-clear-day": "Sky/water daylight and distant city readability.",
+        "04-east-hook-rain-day": "Wet skyline/fog depth and water detail.",
+        "04-east-hook-dusk": "Dusk sky/water separation and city silhouette.",
+        "04-east-hook-cloudy-night": "Night skyline and water readability without blanket black crush."
+      } },
+      "addedIn": "Owner-authorized citywide overhaul 2026-10-02"
+    },
+    {
+      "id": "T040-feature-preview-smoke",
+      "task": "T-040",
+      "title": "Limited gameplay preview functional smoke",
+      "kind": "scenario",
+      "run": { "scenario": "feature-preview-smoke" },
+      "proves": "Limited preview catalog, wheel selection, shoulder probes and trunk store/take/close together; original task and performance gates unchanged.",
+      "pass": "Full smoke has zero failed steps and log errors; four captures reviewed for readable wheel/storage and closed controls.",
+      "unproven": "Original UI budgets, swap/capacity, controller, real save/load, missions/cutscenes, long stability and feel; experimental gore/HUD excluded.",
+      "reference": "docs/testing/FEATURE_PREVIEW.md",
+      "status": "QUEUED",
+      "addedIn": "owner-requested limited preview 2026-10-01",
+      "review": { "screenshots": {
+        "preview_wheel": "Pistol and two long guns; empty melee/thrown slots.",
+        "preview_trunk_open": "Empty eight-slot trunk and carried loadout.",
+        "preview_trunk_stored": "AK stored with one used slot, absent from carried guns.",
+        "preview_storage_closed": "Trunk closed and normal HUD restored."
+      } }
+    },
+    {
       "id": "LOOP-build",
       "task": "LOOP",
       "title": "Engine, SDK, mods and native core build on Windows",
