@@ -43,7 +43,10 @@ Logs: `results-local/offline/radial-snapshot-current.log`, `radial-snapshot-curr
 Initial runner path-resolution error was corrected before these receipts; no game or installed config was touched.
 Diff whitespace check PASS. No heavy/full build, package, verifier, install, rollback or game run authorized/performed.
 
-Commit this scoped patch before safely merging pinned main `5901230`; parent owns the host verifier ordering repair.
+Scoped source/tests/cards/dashboard patch committed as `b3db1bc`; clean lane then integrated pinned main
+`5901230` in merge `7ceb350` without conflicts. Merge changed only five documentation files; production/test sources
+are byte-identical to the focused receipts, so no redundant compile was run. Reviewed the dashboard auto-merge;
+both parent's integration state and this pending radial entry remain. Parent owns the host verifier ordering repair.
 Next exact scheduled full IDs (split to retain <=30 game minutes):
 `LOOP-package-install,T045-weapon-wheel,T046-trunk-ui,SDK-ui-review` for affected shared radial callers;
 `LOOP-package-install,T045-config-watch-reload,T045-config-watch-restart` for the separate watcher lifecycle gates.
