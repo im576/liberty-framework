@@ -9,6 +9,30 @@ This section supersedes the historical next-step instructions below. The finishe
 
 ### Initial radial snapshot fix — offline source milestone, latest
 
+Ready-to-test update: parent independently reviewed `b3db1bc`/`b6da19e`, including the actual-source harness and
+negative control. Clean B then fetched origin and merged pushed main `689bac5` as `85faad7` without conflicts.
+Both sets of documentation retained. Merge changes only host VerifyLocal staging/reuse, verifier phase2 input lookup,
+host tests and coordinator docs; diff confirms radial production/harness/SDK/config/scenarios/queue unchanged.
+No redundant focused tests, full build, verifier, package/install or game launched. R owns the current slot; B waits.
+
+Proposed slot production checks: `tools/build.ps1 -ScriptHookDotNetReference
+'C:\Games\Grand Theft Auto IV\GTAIV\ScriptHookDotNet.asi'`, `tools/verify.ps1 -NoGame`, and
+`tools/tests/Run-Tests.ps1`. These are PLANNED, not executed/passed for this patch. Full batch A IDs:
+`LOOP-verify,LOOP-package-install,T045-weapon-wheel,T046-trunk-ui,SDK-ui-review`; includes generated-input verification
+under parent's corrected Build -> Stage -> Verify -> Install ordering. Full batch B IDs:
+`LOOP-package-install,T045-config-watch-reload,T045-config-watch-restart`.
+Both use `tools/verify-local.ps1 -GameDirectory 'C:\Games\Grand Theft Auto IV\GTAIV' -AnyBranch -NoPush -Restore
+-NoManual -MaxGameMinutes 30 -Only <IDs>` with real PowerShell comma-separated arguments; no Quick acceptance.
+Do not run either until B is assigned a slot. Recheck shared state before installing; always record restoration.
+
+Estimate A: 12–18 minutes of lock/game allowance including stage/verify/startup/captures; B: 5–8 minutes including
+startup/callback waits/cleanup. These are estimates, not reserved slots or promises. Prior full receipt measured wheel
+300 s and trunk 142 s; SDK UI scripted waits total about 9 s plus launch/capture overhead. Heavy compilation is
+separately scheduled outside these estimates. If generated-input verification consumes the cap, record remaining
+checks NOT-RUN and request a bounded follow-up rather than removing gates. Review every fresh capture and original
+budget/<=1-frame result; repeated identical crash stops retries and preserves logs/dumps. Watcher invalid-config
+rejection errors stay visible, and byte/state finally restoration must be checked separately from outer install restore.
+
 Owner resumed the four preserved dirty source files from `2544b12`; no work was discarded. The scoped fix prepares
 an input-free RadialMenuView snapshot under owner RunAs before publishing the menu. Capture/ledger cleanup is
 registered before callbacks; the new view stays out of the menu list until preparation succeeds, so even callback
