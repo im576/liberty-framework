@@ -11,6 +11,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
 Import-Module (Join-Path $PSScriptRoot 'local\GameLock.psm1') -Force
+Import-Module (Join-Path $PSScriptRoot 'mood\MoodReceipt.psm1') -Force
 $game = (Resolve-Path -LiteralPath $GameDirectory).Path
 $gameLock = Enter-GameLock "Liberty Mood ($repoRoot)" -TimeoutMinutes 0
 $work = $null
@@ -21,10 +22,7 @@ $data = Join-Path $game 'update\pc\data'
 $files = @('timecyc.dat', 'timecycext.dat')
 $receiptPath = Join-Path $game 'scripts\LibertyFramework\installed-mood.json'
 if ($Rollback) {
-    $receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json
-    foreach ($row in $receipt.previousFiles) {
-        if ((Get-FileHash -LiteralPath (Join-Path $receipt.backup $row.name)).Hash -ne $row.sha256) { throw "Backup hash mismatch: $($row.name)" }
-    }
+    $receipt = Read-VerifiedMoodReceipt -GameDirectory $game -Purpose Rollback
     foreach ($row in $receipt.previousFiles) {
         Copy-Item -LiteralPath (Join-Path $receipt.backup $row.name) -Destination (Join-Path $data $row.name) -Force
         if ((Get-FileHash -LiteralPath (Join-Path $data $row.name)).Hash -ne $row.sha256) { throw "Rollback verification failed: $($row.name)" }
@@ -80,5 +78,10 @@ try {
     }
     Write-Host 'Liberty Mood installed. FusionFix originals: update\pc\data\*.fusionfix (restore with -Restore).'
 }
-finally { Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue }
+finally {
+    $resolvedWork = [IO.Path]::GetFullPath($work)
+    $tempRoot = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\','/')
+    if ((Split-Path -Parent $resolvedWork) -ine $tempRoot -or (Split-Path -Leaf $resolvedWork) -notlike 'lf-mood-*') { throw 'Mood scratch path escaped its temporary directory.' }
+    Remove-Item -LiteralPath $resolvedWork -Recurse -Force -ErrorAction SilentlyContinue
+}
 } finally { Exit-GameLock $gameLock }

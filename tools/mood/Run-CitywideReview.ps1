@@ -11,13 +11,13 @@ $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 Import-Module (Join-Path $repo 'tools\local\GameLock.psm1') -Force
 Import-Module (Join-Path $repo 'tools\autopilot\Autopilot.psm1') -Force 3>$null
 Set-AutopilotGame $GameDirectory
-$lock = Enter-GameLock "T-058 integrated citywide review ($repo)" -TimeoutMinutes 0
+$lock = Enter-GameLock "T-059 integrated citywide review ($repo)" -TimeoutMinutes 0
 $installed = $false
 $success = $false
 $position = $null
-New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 $deadline = [DateTime]::UtcNow.AddMinutes(15)
 try {
+    New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
     $process = Get-GameProcess
     if ($process) {
         if (-not $RestartRunningGame) { throw 'GTA IV is open; human authorization is required before restarting this session.' }
@@ -45,13 +45,13 @@ try {
     $result = Get-Content -LiteralPath ($resultLine -replace '^AUTOPILOT_RESULT ','') -Raw | ConvertFrom-Json
     if ($result.status -ne 'PASS' -or @($result.screenshots).Count -ne 20) { throw "Runtime review failed: $($result.status), screenshots=$(@($result.screenshots).Count)" }
     $success = $true
-    Write-Host 'Twenty citywide candidate captures ready for visual inspection; candidate remains installed.'
 } catch {
     $_ | Out-String | Set-Content (Join-Path $OutputDirectory 'review-error.txt')
     throw
 } finally {
     try {
-        if ($position -and (Get-GameProcess)) {
+        if ($position) {
+            if (-not (Get-GameProcess)) { throw 'Game exited before capture cleanup could restore the player state.' }
             $cleanup = @(Invoke-EngineCommand @('cam off','clear','hud on','restart autopilot',"tp $position",'owned autopilot','pos'))
             $cleanup | Set-Content (Join-Path $OutputDirectory 'cleanup.txt')
             if (($cleanup -join ' ') -match '=> (error|unknown command)' -or ($cleanup -join ' ') -notmatch 'autopilot: nothing') { $success = $false; throw 'Capture cleanup failed; see cleanup.txt.' }
@@ -83,3 +83,4 @@ try {
         } finally { Exit-GameLock $lock }
     }
 }
+Write-Host 'Twenty citywide candidate captures ready for visual inspection; cleanup verified and candidate remains installed.'

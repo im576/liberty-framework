@@ -45,8 +45,8 @@
   ],
   "checks": [
     {
-      "id": "T058-citywide-environment",
-      "task": "T-058",
+      "id": "T059-citywide-environment",
+      "task": "T-059",
       "title": "Citywide approved environment look, four sites and five conditions",
       "kind": "scenario",
       "run": {
@@ -55,10 +55,8 @@
       "proves": "Candidate boots on the existing preview; matched camera captures at four sites under five weather/time conditions; final camera/owned-prop cleanup.",
       "pass": "Twenty captures produced without failed steps; screenshots reviewed against approved direction; cleanup succeeds.",
       "unproven": "Owner acceptance, moving performance, interiors/missions and target material/local-light fidelity.",
-      "reference": "docs/tasks/T-058-citywide-environment-overhaul.md",
-      "status": "NEEDS-REVIEW",
-      "lastRun": "results-local/citywide-overhaul/run-20261002-06/citywide-environment-20261002-040338",
-      "evidence": ["result.json", "report.md", "run.log", "../settled-cleanup.txt", "results-local/citywide-overhaul/review-manifest-v03.json", "results-local/citywide-overhaul/final-ready-v03/startup.jsonl", "results-local/citywide-overhaul/final-v03-baseline-restoration.json"],
+      "reference": "docs/tasks/T-059-citywide-environment-overhaul.md",
+      "status": "QUEUED",
       "review": { "screenshots": {
         "01-station-cloudy-day": "Grey sky and legible platform shade; compare original and approved target.",
         "01-station-clear-day": "Natural daylight and surface colors without blown station detail.",

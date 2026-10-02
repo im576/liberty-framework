@@ -33,6 +33,12 @@ stopping or restoring the current game. New runs record full commit identity and
 - `package-phase2.ps1` builds the whole stack (DLL, core, models, config) into `staging/phase2`; `install-phase2.ps1 -GameDirectory <GTAIV>` installs it with a backup; `rollback-phase2.ps1` restores the newest backup; `test-phase2-install.ps1` dry-runs install and rollback on a mock game folder.
 - Optional companions: `install-violent-liberty.ps1` / `rollback-violent-liberty.ps1` (owner-downloaded archive, hash-checked), `install-weapon-pack.ps1` / `rollback-weapon-pack.ps1` (Realistic Weapon Overhaul), `install-mood.ps1` (citywide timecycle from `config/mood.json`; `-Rollback` restores the exact previous look, `-Restore` restores pristine FusionFix).
 
+Citywide review is T-059 (historical preview receipts called it T-058). `mood/Run-CitywideReview.ps1` requires the
+gameplay build from its own worktree and a matching two-file mood receipt; failed capture/cleanup rolls back the
+candidate. `mood/check-citywide.py <GTAIV>` checks the built generator against pristine source files without writing
+to the game. `MoodReceipt` and `CitywideCleanup` test suites exercise incomplete receipts and cleanup failure paths.
+The reviewed integration and proposed next game batch are described in [NEXT_MILESTONE.md](../docs/workflow/NEXT_MILESTONE.md).
+
 ## Cloud tests
 
 `.claude/hooks/session-start.sh` runs `cloud/setup.sh` (mono, PowerShell 7, Roslyn, llvm-mingw, Blender `bpy`). `cloud/test-all.sh` runs every offline check and prints PASS / FAIL / NOT-RUN. Anything NOT-RUN is covered on the PC by the local verifier. Details: [CLOUD_LOCAL_LOOP.md](../docs/workflow/CLOUD_LOCAL_LOOP.md).

@@ -32,7 +32,8 @@ The prior visual session restored the exact original appearance. See the
 | Materials (lane R) | SDK 1.2 material API integrated; partial surface correlations | Effective mapping, direct glass/water/object evidence and stall-free coverage; SDK 1.3 separate |
 | Vehicle ownership | External LVS integration keys Arsenal trunks to owned IDs | Selective MIT source port, durable ownership transactions and save reconciliation |
 | Content/physics | Single-geometry models and collision proxies | Second geometry crashes at spawn; authored collision and deeper renderer/audio/frontend control unproven |
-| Test host | Startup deadline/telemetry and audio preflight exist | October 2 review hardens resume evidence and tests; host fixes are not gore fixes |
+| Visual overhaul | V3 lighting/weather candidate, generator and reversible capture tools integrated | Startup stability, night/local lights/material fidelity, moving scenes and owner approval |
+| Test host | Reviewed resume/restore fixes, command reply publication and complete mood receipt/cleanup validation | Fresh combined runtime evidence; host fixes are not gore fixes |
 
 ## Installed owner preview
 
@@ -54,6 +55,13 @@ startup tests, fingerprint scanning and handoff generation are repaired; the pre
 [Review report](reports/2026-10-02-repository-review.md) records scope, findings, tests and limitations.
 [Research program](research/RESEARCH_PROGRAM.md) connects engine questions to controlled experiments
 and concrete gore/vehicle outcomes. Historical test statistics describe multiple versions, not current acceptance.
+
+[T-060](tasks/T-060-local-integration.md) combines the preserved preview/visual branch and B's reviewed radial
+snapshot/diagnostic work with these tools. Offline build PASS; verifier 441/0/5 not-run; PowerShell 5.1 and 7 each
+312/0; radial and metrics harnesses each 25/0; all 88 mood rows and isolated installer/rollback checks PASS.
+[Integration report](reports/2026-10-02-local-integration.md) records merge decisions and remaining branch blockers.
+Visual work is now [T-059](tasks/T-059-citywide-environment-overhaul.md), resolving a duplicate T-058 ID.
+[Proposed next milestone and team](workflow/NEXT_MILESTONE.md) awaits owner priorities; no agents dispatched.
 
 Entry points: [task queue](tasks/README.md), [engine](architecture/ENGINE.md), [SDK](sdk/README.md),
 [tools](../tools/README.md), [design](design/STAGE1.md), [third-party sources](../third_party/README.md).

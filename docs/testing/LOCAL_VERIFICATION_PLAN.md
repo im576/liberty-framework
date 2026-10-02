@@ -16,7 +16,7 @@
 |---|---|---|
 | pc-offline | 13 | automatically (builds and tests that need Windows or the game's files) |
 | probe | 4 | automatically (read-only questions about the game's files; structure only) |
-| scenario | 43 | automatically (autopilot drives the game; about 2-4 minutes each) |
+| scenario | 45 | automatically (autopilot drives the game; about 2-4 minutes each) |
 | manual | 20 | you play and judge; about 187 minutes in total, grouped below |
 
 Statuses: QUEUED (never run on the current code), PASS, FAIL, ERROR, CRASH, NOT-RUN, NEEDS-REVIEW (a person or the review session must judge screenshots or log errors).
@@ -223,7 +223,7 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 
 | Id | Task | Kind | What passes | Status |
 |---|---|---|---|---|
-| `T058-citywide-environment` | T-058 | scenario | Twenty captures produced without failed steps; screenshots reviewed against approved direction; cleanup succeeds. | NEEDS-REVIEW |
+| `T059-citywide-environment` | T-059 | scenario | Twenty captures produced without failed steps; screenshots reviewed against approved direction; cleanup succeeds. | QUEUED |
 | `T040-feature-preview-smoke` | T-040 | scenario | Full smoke has zero failed steps and log errors; four captures reviewed for readable wheel/storage and closed controls. | QUEUED |
 | `LOOP-build` | LOOP | pc-offline | exit code 0; build.ps1 and build-core.ps1 report no errors and ray_walk_test passes as a Windows .exe | QUEUED |
 | `LOOP-verify` | LOOP | pc-offline | exit code 0 and 'RESULT passed=N failed=0' with no NOT-RUN | QUEUED |
@@ -289,7 +289,7 @@ Free roam; the build from this run installed (the test wall stands at East Park)
 
 ## What each check proves, and what stays unproven
 
-- `T058-citywide-environment`: Candidate boots on the existing preview; matched camera captures at four sites under five weather/time conditions; final camera/owned-prop cleanup. **Still unproven:** Owner acceptance, moving performance, interiors/missions and target material/local-light fidelity.
+- `T059-citywide-environment`: Candidate boots on the existing preview; matched camera captures at four sites under five weather/time conditions; final camera/owned-prop cleanup. **Still unproven:** Owner acceptance, moving performance, interiors/missions and target material/local-light fidelity.
 - `T040-feature-preview-smoke`: Limited preview catalog, wheel selection, shoulder probes and trunk store/take/close together; original task and performance gates unchanged. **Still unproven:** Original UI budgets, swap/capacity, controller, real save/load, missions/cutscenes, long stability and feel; experimental gore/HUD excluded.
 - `LOOP-build`: The Windows toolchain builds the same sources the cloud built; the native unit tests pass on the game's target (i686 Windows).
 - `LOOP-verify`: Every verifier section, including the 7 the cloud reports NOT-RUN: address resolution against GTAIV.exe, native names and CE hashes, the core native table, vehicle extras, gore particles in gta_core.wpfl, WeaponInfo.xml accuracies and the collapse engine's x86 hook code.

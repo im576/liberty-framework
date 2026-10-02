@@ -1,4 +1,6 @@
-# T-058: Citywide environment overhaul
+# T-059: Citywide environment overhaul
+
+Integration note (2026-10-02): this card was T-058 on the preserved preview branch. It is now T-059 to avoid the repository-review ID collision; historical commits and receipts retain their original IDs.
 
 Status: IN-PROGRESS
 

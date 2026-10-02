@@ -1,9 +1,14 @@
 # Task queue for agents
 
-Current owner-requested repo/tooling review: [T-058](T-058-repository-review.md). Current scheduling and the installed
-preview are in [ORCHESTRATOR.md](../workflow/ORCHESTRATOR.md); older cloud/lane instructions below are context.
+Current work: [T-060 local integration and plan](T-060-local-integration.md), following
+[T-058 repo/tooling review](T-058-repository-review.md) and
+[T-059 citywide visual work](T-059-citywide-environment-overhaul.md).
+[Proposed next milestone/team](../workflow/NEXT_MILESTONE.md) awaits the owner's priorities.
+Current scheduling and installed preview: [ORCHESTRATOR.md](../workflow/ORCHESTRATOR.md).
 
-Development runs in cloud sessions; every check that needs the game is queued in `tests/local/checks.json` and run by `tools/verify-local.ps1` when the PC is available ([workflow](../workflow/CLOUD_LOCAL_LOOP.md), [plan](../testing/LOCAL_VERIFICATION_PLAN.md), [next sessions](../workflow/NEXT_SESSIONS.md)). Current state: [PROJECT_STATE.md](../PROJECT_STATE.md).
+Development can run locally or in cloud sessions. Every game check is queued in `tests/local/checks.json`
+and runs through the shared local host. See [workflow](../workflow/CLOUD_LOCAL_LOOP.md),
+[verification plan](../testing/LOCAL_VERIFICATION_PLAN.md) and [current state](../PROJECT_STATE.md).
 
 Statuses: `READY` = agent can start; `NEEDS-PLAYTEST` = agent implementation awaits human test; `BLOCKED` = named dependency missing; `DONE` = human verified. Only the project owner marks a card `DONE`. Track each task's scope and evidence separately; batch compatible offline work into one game session.
 
@@ -12,10 +17,8 @@ Statuses: `READY` = agent can start; `NEEDS-PLAYTEST` = agent implementation awa
 Design and acceptance criteria: [STAGE1.md](../design/STAGE1.md). Slice A (P0) plus the parallel research track. Slices
 B and C get their cards after Slice A's audit (T-040) and the relevant spikes.
 
-Owner priority update 2026-10-01: all existing/in-progress gameplay and functional UI modules come first, followed by
-an integrated feature test build and owner playtest. The environment remaster and atmosphere/art polish are later;
-art direction may continue in parallel. Slice C's functional HUD/menu work is not deferred with its final styling.
-Builds/tests are resumed, centrally scheduled; see [feature playtest plan](../testing/FEATURE_PLAYTEST.md).
+The October 2 scope includes both gameplay and the citywide visual overhaul. This table describes
+feature areas, not permission to start old lane assignments. Use the current coordination file.
 
 **Lanes.** Tasks in one lane touch the same files, so a lane runs in order in one session or worktree at a time.
 Different lanes can run in parallel sessions; the game is shared, and `tools/verify-local.ps1` makes parallel runs
@@ -31,7 +34,7 @@ in-game checks passing (or `DONE`); owner sign-offs can come later.
 | D | [T-049](T-049-stage1-hud.md) | Basic Liberty HUD |
 | R | [T-050](T-050-r2-hit-material.md), [T-051](T-051-r3-blood-decals.md), [T-052](T-052-r4-screen-effect-cost.md), [T-053](T-053-r1-weapon-audio.md), [T-054](T-054-r5-custom-radar.md), [T-055](T-055-r6-frontend-hooks.md) | Research spikes R2, R3, R4, R1, R5, R6 (in that priority) |
 
-All Stage 1 cards start `READY`; T-040 is `NEEDS-PLAYTEST` (2026-09-30), so lanes A to D and R may start.
+Read each current card and the coordination file before starting; historical READY labels do not dispatch agents.
 
 ## Active cards (engine phase)
 
@@ -60,4 +63,4 @@ All other finished cards (T-000..T-003, T-008..T-010) are in [../archive/tasks/]
 
 ## Owner-directed citywide visual overhaul
 
-T-058 — [Citywide environment overhaul](T-058-citywide-environment-overhaul.md) — IN-PROGRESS (2026-10-02). Corrected candidate v3 captured at all 20 scenes; original/AI target/actual together on one page. NEEDS-REVIEW: startup stall evidence and remaining night/material/local-light gaps. Final bounded relaunch failed; exact original appearance restored. No new lane dispatch or automatic retry loop. This owner-directed work supersedes the earlier remaster hold for this task.
+T-058 — [Citywide environment overhaul](T-059-citywide-environment-overhaul.md) — IN-PROGRESS (2026-10-02). Corrected candidate v3 captured at all 20 scenes; original/AI target/actual together on one page. NEEDS-REVIEW: startup stall evidence and remaining night/material/local-light gaps. Final bounded relaunch failed; exact original appearance restored. No new lane dispatch or automatic retry loop. This owner-directed work supersedes the earlier remaster hold for this task.
