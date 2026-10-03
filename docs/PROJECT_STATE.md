@@ -45,3 +45,8 @@ repository separation and verification, not development of unfinished showcase
 features. Do not start feature agents or game runs without a current assignment.
 Read AGENTS.md; game ownership is in [ORCHESTRATOR](workflow/ORCHESTRATOR.md).
 The pre-split dashboard/schedule/schema are under `docs/archive/pre-split/`.
+
+Current planning assignment: [T-063](tasks/T-063-showcase-development-plan.md).
+Reusable feature-delivery, presentation and persistence skills are prepared.
+Next Liberty+ focus is grounded/severe gore and full day/night/weather atmosphere
+tuning plus a cloud overhaul. Feature implementation/game runs remain paused.

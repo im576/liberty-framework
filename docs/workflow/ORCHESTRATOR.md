@@ -3,9 +3,11 @@
 Updated 2026-10-02. Supersedes historical lane schedules, which are archived under
 docs/archive/pre-split/ORCHESTRATOR.md.
 
-The owner authorized a clean two-repository split into Liberty Framework and Liberty+.
+The two-repository split and publication are complete. Current assignment is
+T-063: development planning and reusable skill preparation. Next feature focus is
+grounded/severe gore and full day/night/weather atmosphere plus a cloud overhaul.
 No agent has been dispatched, no game slot has been claimed, and no game process
-should be launched/installed for the extraction. The installed preview is preserved.
+should be launched/installed for this planning assignment. The installed preview is preserved.
 
 Unfinished showcase development remains paused. Future assignments must name the
 repository, feature contract, source revisions and affected checks. One coordinator

@@ -4,6 +4,13 @@ Updated 2026-10-02 for the owner's request for deeper reverse engineering, harsh
 owned vehicles and a much broader overhaul. Research supports the vision now; it is not
 blocked by a historical rule that all Phase 3 work must wait. Runtime changes still need evidence.
 
+Current next focus is grounded/severe gore and tuning the existing atmosphere across
+day/night and weather, plus a cloud overhaul. Rain was an example, not the whole
+scope. Use the current Liberty+ `docs/design/GORE_AND_ATMOSPHERE.md` brief. The
+experiments below remain evidence-backed starting points; their historical numbering
+does not require vehicle/audio work to finish before atmosphere research. Research
+and feature implementation are not automatically dispatched by this document.
+
 ## What is already here
 
 `native/LibertyCore` supplies native invocation, world snapshots, hooks and ray queries. C# engine

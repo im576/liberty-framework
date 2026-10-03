@@ -22,7 +22,11 @@ belong there; generic UI/native/SDK services, research and reusable skills stay 
 Task-specific project skills: `.agents/skills/liberty-evidence/SKILL.md` for test/failure review;
 `.agents/skills/liberty-research/SKILL.md` for reverse engineering and mod adaptation. Load only
 what the task needs. Claude uses this file through `CLAUDE.md`; these skills are also linked here
-so either agent can use the same instructions.
+so either agent can use the same instructions. Additional focused workflows:
+`.agents/skills/liberty-feature-delivery/SKILL.md` for feature briefs/integration,
+`.agents/skills/liberty-presentation/SKILL.md` for HUD/reticles/atmosphere, and
+`.agents/skills/liberty-persistence/SKILL.md` for ownership/transfers/save recovery.
+Load only the workflow relevant to the assignment; mod decisions stay in Liberty+.
 
 ## Engine invariants
 
