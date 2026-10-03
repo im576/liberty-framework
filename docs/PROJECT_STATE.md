@@ -5,7 +5,7 @@ Updated 2026-10-02. This is the authoritative framework dashboard.
 ## Repositories
 
 - Framework: `C:/Users/IM576/GTAIV-Reborn`, existing `im576/liberty-framework` remote.
-- Showcase: [Liberty+](../../LibertyPlus/README.md), `C:/Users/IM576/LibertyPlus`, new local Git repository.
+- Showcase: [Liberty+](https://github.com/im576/liberty-plus), `C:/Users/IM576/LibertyPlus`, GitHub repository `im576/liberty-plus`.
 - Chat folder: earlier research/raw evidence; preserved, not the source checkout.
 
 [Repository ownership and compatibility](architecture/REPOSITORIES.md) defines the boundary.

@@ -21,3 +21,4 @@ Current status is in [PROJECT_STATE.md](../PROJECT_STATE.md). These cards retain
 - [T-058-repository-review](T-058-repository-review.md)
 - [T-060-local-integration](T-060-local-integration.md)
 - [T-061-repository-split](T-061-repository-split.md)
+- [T-062-publish-repositories](T-062-publish-repositories.md)

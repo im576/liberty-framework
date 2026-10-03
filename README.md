@@ -4,7 +4,7 @@ Reusable mod runtime and research toolkit for GTA IV Complete Edition 1.2.0.59.
 GTA IV remains the underlying game engine. Liberty supplies a native bridge,
 shared services, a public SDK, content tools and automated verification.
 
-The showcase overhaul is now **[Liberty+](../LibertyPlus/README.md)**, in its own Git
+The showcase overhaul is now **[Liberty+](https://github.com/im576/liberty-plus)**, in its own Git
 repository. Weapons, inventory, holsters, wheel, trunk storage, gore, custom HUD,
 vehicle gameplay, AI artwork and visual tuning belong there.
 

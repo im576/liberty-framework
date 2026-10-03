@@ -17,7 +17,7 @@ Current architecture boundary, 2026-10-02. Supersedes the combined repository la
 | Assembled overhaul scenarios, acceptance queue, gameplay and packaging tests | Liberty+ |
 
 Source locations: `C:/Users/IM576/GTAIV-Reborn` (existing framework Git repository)
-and `C:/Users/IM576/LibertyPlus` (new local Liberty+ Git repository). Neither source
+and `C:/Users/IM576/LibertyPlus` ([Liberty+ on GitHub](https://github.com/im576/liberty-plus)). Neither source
 tree contains a copy of the other. No submodule, automatic fetch or floating remote dependency.
 
 ## Current compatibility boundary
