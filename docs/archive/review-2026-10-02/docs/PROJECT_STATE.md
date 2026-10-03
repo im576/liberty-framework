@@ -21,7 +21,7 @@ Current dispatch: [agent roster](../../../handoffs/sol/AGENT-ROSTER.md). Feature
 
 - **Phase 1 = Liberty Engine: complete (2026-09-30), except the items under "Known limits".** Native core, SDK, content
   pipeline and hot reload are verified in game. The full regression pass ran on 2026-09-30 and passes ([report](../../../reports/2026-09-30-regression.md)).
-- **Next: the first complex mod**, Liberty Vanilla+ Stage 1 ([design](../../../design/STAGE1.md)), built on the engine. Task cards T-040 to T-055 (lanes in [tasks/README.md](../../../tasks/README.md)); art requests ART-001 to ART-012 in the [art queue](../../../art/README.md) (uses the SDK and content compiler, gameplay code stays in `mods/`).
+- **Next: the first complex mod**, Liberty Vanilla+ Stage 1 ([design](../../../../../LibertyPlus/docs/design/STAGE1.md)), built on the engine. Task cards T-040 to T-055 (lanes in [tasks/README.md](../../../tasks/README.md)); art requests ART-001 to ART-012 in the [art queue](../../../../../LibertyPlus/docs/art/README.md) (uses the SDK and content compiler, gameplay code stays in `mods/`).
 - **Stage 1 lane 0 (T-040) is done, awaiting playtest (2026-09-30):** [reuse audit](../../../reports/2026-09-29-stage1-reuse-audit.md), 12 capture points, measurement scenarios/tooling (	ools/perf), and the [mod-on/mod-off baseline](../../../reports/2026-09-30-stage1-baseline.md). Headline: the current build already exceeds the gunplay/combat/script-cost budgets, the density governor thins the city to 0.55, and combat effects only react to the player's own violence.
 - **Stage 1 lane A (T-041 arsenal, T-042 gunplay, T-043 reticles) is done, awaiting playtest (2026-09-30):** six catalog weapons (Glock 17, .44 AutoMag, Street Sweeper, Remington 1100, IMI Uzi, AK-47) on vanilla ids with Liberty profiles behind a catalog gate (`config/weapon-catalog.json` tiers, availability and stats; `stage1Weapons` switch; restricted ids 13/15/16/17 stay vanilla), class targets with a model simulation, range/swap/aim/reticle test commands, per-class reticles (cross, bracket, ring) over the old crosshair. In game: all four lane scenarios pass (run 20260930-134422-33e503f); reticle drawing costs about 0.10 ms per frame (proposal 0.1 ms); delivered first-shot spread sits inside the written cone for pistols, shotguns and the AK. Open: P90/MP5 slot, availability levers without script control (research/WeaponAvailability.md), feel and look sign-off.
 - **Then Phase 3: reverse engineering** toward FiveM-level control (authored collision, structure writing, deeper hooks).
@@ -71,7 +71,7 @@ C/D/R prepared patches remain unmerged pending their scheduled runtime evidence.
 through rotation gaps and empty unread tails, and lock self-tests use isolated holder notes. Details and failed/full
 runtime receipts: [orchestrator integration review](../../../reports/2026-10-01-orchestrator-integration.md).
 
-- **T-044 physical loadout (lane B), NEEDS-PLAYTEST (2026-09-30):** 1 sidearm + 2 long guns (SMGs slung), ammo caps, holster props react in the event frame, outfit classes; in game: 100 vehicle enter/exit cycles with 0 orphaned props, 50 death cycles with 0 lost owned weapons (a death with no known safehouse now goes to an unassigned stash), save/load state identical. Card: [T-044](../../../tasks/T-044-stage1-physical-weapons.md).
+- **T-044 physical loadout (lane B), NEEDS-PLAYTEST (2026-09-30):** 1 sidearm + 2 long guns (SMGs slung), ammo caps, holster props react in the event frame, outfit classes; in game: 100 vehicle enter/exit cycles with 0 orphaned props, 50 death cycles with 0 lost owned weapons (a death with no known safehouse now goes to an unassigned stash), save/load state identical. Card: [T-044](../../../../../LibertyPlus/docs/tasks/T-044-stage1-physical-weapons.md).
 
 ## Cleanup and fixes in progress
 
@@ -120,7 +120,7 @@ runtime receipts: [orchestrator integration review](../../../reports/2026-10-01-
 
 - Task cards: [tasks/README.md](../../../tasks/README.md) (active); finished cards in [archive/tasks/](../../tasks).
 - Architecture: [architecture/OVERVIEW.md](../../../architecture/OVERVIEW.md), [architecture/ENGINE.md](../../../architecture/ENGINE.md), [architecture/CONFIG_SCHEMA.md](../../../architecture/CONFIG_SCHEMA.md).
-- Cloud/local loop and the PC check queue: [workflow/CLOUD_LOCAL_LOOP.md](../../../workflow/CLOUD_LOCAL_LOOP.md), `tests/local/checks.json`, [testing/LOCAL_VERIFICATION_PLAN.md](../../../testing/LOCAL_VERIFICATION_PLAN.md).
+- Cloud/local loop and the PC check queue: [workflow/CLOUD_LOCAL_LOOP.md](../../../workflow/CLOUD_LOCAL_LOOP.md), `tests/local/checks.json`, [testing/LOCAL_VERIFICATION_PLAN.md](../../../../../LibertyPlus/docs/testing/LOCAL_VERIFICATION_PLAN.md).
 - Research and game API: [research/](../../../research/README.md), [game-api/NATIVES.md](../../../game-api/NATIVES.md), [game-api/MEMORY.md](../../../game-api/MEMORY.md).
 - Reports: `docs/reports/`; tool index: [../tools/README.md](../../../../tools/README.md).
 - History and the original spec: [docs/archive/](../..) (`HANDOFF.md`, `PHASE2_PLAN.md`, `PHASE2_PATCHNOTES.md`, agent reports).

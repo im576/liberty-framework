@@ -58,7 +58,7 @@ function Get-InstalledBuildPath([string] $GameDirectory) { Join-Path $GameDirect
 
 function Write-InstalledBuild {
     # -Commit/-Dirty: what the package was built from (its manifest), when that is known; otherwise the worktree's state now.
-    param([Parameter(Mandatory = $true)][string] $GameDirectory, [string] $RepoRoot = '', [string] $Note = '', [string] $Commit = '', $Dirty = $null)
+    param([Parameter(Mandatory = $true)][string] $GameDirectory, [string] $RepoRoot = '', [string] $Note = '', [string] $Commit = '', $Dirty = $null, $Repositories = $null)
     $build = [ordered]@{ repo = $RepoRoot; branch = ''; commit = ''; dirty = $false; note = $Note; utc = [DateTime]::UtcNow.ToString('o') }
     if ($RepoRoot) {
         try {
@@ -70,9 +70,10 @@ function Write-InstalledBuild {
     }
     if ($Commit) { $build.commit = $Commit.Substring(0, [Math]::Min(7, $Commit.Length)) }
     if ($null -ne $Dirty) { $build.dirty = [bool]$Dirty }
+    if ($null -ne $Repositories) { $build.repositories = $Repositories }
     $path = Get-InstalledBuildPath $GameDirectory
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $path) | Out-Null
-    [IO.File]::WriteAllText($path, ($build | ConvertTo-Json), (New-Object Text.UTF8Encoding($false)))
+    [IO.File]::WriteAllText($path, ($build | ConvertTo-Json -Depth 9), (New-Object Text.UTF8Encoding($false)))
 }
 
 function Read-InstalledBuild([string] $GameDirectory) {

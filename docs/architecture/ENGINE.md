@@ -1,3 +1,5 @@
+> Current repository boundary: [REPOSITORIES.md](REPOSITORIES.md). Gameplay examples below were originally in the combined assembly; their maintained source is now Liberty+. Generic services remain here.
+
 # Liberty Engine: developer guide
 
 This guide explains how to add a mechanic. The design rationale is in [ADR-0006](decisions/ADR-0006-engine.md).
@@ -89,7 +91,7 @@ engine internals; only code moved over from `GTA.Script` needs that.
 
 Health is on SHDN's `Ped.Health` scale.
 
-**Rule:** read facts from the snapshot rather than calling natives for them. The core reads them once per frame, taking about 10 µs in total. A single SHDN native call costs 30–180 µs.
+**Rule:** read facts from the snapshot rather than calling natives for them. The core reads them once per frame, taking about 10 Âµs in total. A single SHDN native call costs 30â€“180 Âµs.
 
 The core only uses natives that match SHDN's result at startup (`engine_verify accepted=21/21`). A spot check compares the player's position every 300 frames. A frame-counter guard proves the game thread is parked while the core runs. A native that faults once is never called again that session. Any failure switches that session to the SHDN fallback, which provides the player only, with no ped list or ped events; the core is then shut down, which also removes its hooks.
 

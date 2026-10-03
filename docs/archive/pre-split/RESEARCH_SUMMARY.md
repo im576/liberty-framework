@@ -1,8 +1,6 @@
-> Historical September 24 research snapshot. Current capabilities/status are in [PROJECT_STATE.md](../PROJECT_STATE.md); current investigation priorities are in [RESEARCH_PROGRAM.md](RESEARCH_PROGRAM.md).
+# Research summary — pass 1 (2026-09-24)
 
-# Research summary â€” pass 1 (2026-09-24)
-
-> **Status update (after T-010, 2026-09-24).** The unknowns below are answered: (1) SHDN loads on CE â€” verified T-001; (2) separate IDs 58/59/60 â€” verified T-007, but each shares its vanilla weapon's inventory slot; (3) free aim â€” answered offline as a *universal* switch (Auto-Aim pref + `DISABLE_PLAYER_LOCKON` + hud.dat globals), accepted by the owner; (4) aim camera â€” `CCamAimWeapon` pitch/heading fields found by pattern and validated at runtime (ADR-0004); (5) Real Recoil Enhanced CE permission â€” **still open**. Mafia III ideas now appear only as the B/C presets (lighter/heavier kick and recovery). Items 3â€“4 await the T-010 playtest. Below is the original pass-1 text.
+> **Status update (after T-010, 2026-09-24).** The unknowns below are answered: (1) SHDN loads on CE — verified T-001; (2) separate IDs 58/59/60 — verified T-007, but each shares its vanilla weapon's inventory slot; (3) free aim — answered offline as a *universal* switch (Auto-Aim pref + `DISABLE_PLAYER_LOCKON` + hud.dat globals), accepted by the owner; (4) aim camera — `CCamAimWeapon` pitch/heading fields found by pattern and validated at runtime (ADR-0004); (5) Real Recoil Enhanced CE permission — **still open**. Mafia III ideas now appear only as the B/C presets (lighter/heavier kick and recovery). Items 3–4 await the T-010 playtest. Below is the original pass-1 text.
 
 This is a source review, not an in-game verification. No game behavior or runtime compatibility has been tested by the project.
 
@@ -18,7 +16,7 @@ This is a source review, not an in-game verification. No game behavior or runtim
 
 ## Transferable combat principles
 
-Mafia III is a feel reference: responsive aim, distinct first-shot and sustained-fire behavior, synchronized camera/audio/impact feedback, and quick recovery. These are design hypotheses from the handoff, **not measured facts about Mafia III**. See [Mafia3Combat.md](Mafia3Combat.md) for the test plan and documented Mafia III modding references. This original research snapshot predates the gameplay implementation now maintained in Liberty+. These feel observations remain hypotheses unless supported by later evidence.
+Mafia III is a feel reference: responsive aim, distinct first-shot and sustained-fire behavior, synchronized camera/audio/impact feedback, and quick recovery. These are design hypotheses from the handoff, **not measured facts about Mafia III**. See [Mafia3Combat.md](Mafia3Combat.md) for the test plan and documented Mafia III modding references. No Mafia III concept has been incorporated into code because no gameplay code exists.
 
 Other references are catalogued in [OtherReferences.md](OtherReferences.md). No third-party code, assets, or binaries are in this repository.
 

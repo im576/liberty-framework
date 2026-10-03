@@ -1,7 +1,7 @@
 # Limited gameplay preview ready — October 1, 2026, 10:00 p.m. Pacific
 
 Installed for the owner's manual test. Launch GTA IV normally; F10 opens DevTools.
-Contents, exact controls and short checklist: [FEATURE_PREVIEW.md](../testing/FEATURE_PREVIEW.md).
+Contents, exact controls and short checklist: [FEATURE_PREVIEW.md](../../../LibertyPlus/docs/testing/FEATURE_PREVIEW.md).
 
 Tested source `36901ab062a8a4ad93b864db2d48457d78c186ee`, branch `codex/feature-preview-2026-10-01`,
 base main `aa6d463`. Worktree `C:\Users\IM576\GTAIV-Reborn-feature-preview`. The separate preview disables

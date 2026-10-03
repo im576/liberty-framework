@@ -1,4 +1,4 @@
-# Liberty SDK 1.1 — writing mods
+# Liberty SDK 1.1 â€” writing mods
 
 The Liberty SDK (`Liberty.Sdk.dll`) is the public API of the Liberty engine for GTA IV: The Complete Edition 1.2.0.59.
 A mod is a .NET Framework 4 class library that references **only** `Liberty.Sdk.dll`. It never references
@@ -80,7 +80,7 @@ public sealed class MyModule : LibertyModule
 | `input.capture` | `Input.Capture` (menus capture automatically, no capability needed) |
 | `memory.patch` | `Memory.*` (reads and patches; patches are restored automatically) |
 | `developer` | test/world commands (convention) |
-| `engine.internal` | everything, including `Natives.*` — engine modules only |
+| `engine.internal` | everything, including `Natives.*` â€” engine modules only |
 
 ## 4. Services (`Liberty.*`)
 
@@ -88,7 +88,7 @@ public sealed class MyModule : LibertyModule
 |---|---|
 | `World` | per-frame snapshot: `Player`, `Peds`, `Vehicles`, `Info` (time, weather, pause, fade, mission, cutscene), nearest queries |
 | `Query` | snapshot radius/cone queries, ground and water height, perception (`HasSpotted`), on-screen tests; **raycast and line of sight** (SDK 1.1, below) |
-| `Events` | typed events (`Liberty.Sdk.Events`): see §5; your own struct events too |
+| `Events` | typed events (`Liberty.Sdk.Events`): see Â§5; your own struct events too |
 | `Scheduler` | coroutines: `yield return Wait.Milliseconds(500)`, `Wait.Until(cond, timeout)`, `Wait.NextFrame()` |
 | `Player` | ped, money, wanted level, control lock, teleport (streams the area first), invincibility |
 | `Peds` / `Vehicles` / `Props` | spawn (streams the model, non-blocking), delete/release, position, heading, health, bones, doors, extras, attach (rotations in **degrees**) |
@@ -123,7 +123,7 @@ Liberty.Animation.Choreography(this, "trunk")
 
 - Every step ends by its own rule or a maximum time, so a clip that never loads cannot trap the sequence.
 - The sequence cancels itself if a ped taking part disappears or dies.
-- The Arsenal trunk (`src/LibertyFramework/Arsenal/Ui/TrunkSequence.cs`) is a real example.
+- The Arsenal trunk (`LibertyPlus/src/LibertyPlus/Arsenal/Ui/TrunkSequence.cs`) is a real example.
 
 ### Menus
 
@@ -175,7 +175,7 @@ bool sees = Liberty.Query.HasLineOfSight(guard, Liberty.Player.Ped);    // head 
 | `PlayerWeaponChanged` | `Previous`, `Current` |
 | `PlayerEnteredVehicle` / `PlayerExitedVehicle` | `Vehicle` |
 | `PlayerDamaged` | health and armour before/after |
-| `PlayerDied` | — |
+| `PlayerDied` | â€” |
 | **Vehicles** | |
 | `VehicleAppeared` / `VehicleRemoved` / `VehicleDestroyed` | `Vehicle` |
 | `VehicleDamaged` | body and engine before/after |

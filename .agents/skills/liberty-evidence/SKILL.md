@@ -6,6 +6,9 @@ description: Diagnose Liberty Framework GTA IV test failures, review lane eviden
 # Liberty evidence workflow
 
 Use the current checkout and `docs/workflow/ORCHESTRATOR.md` in the primary repository.
+Liberty+ owns gameplay and its combined check queue. From its checkout use
+`tools/prepare-workspace.ps1` for existing integration/scenario tools; never edit that
+generated workspace. Record both repository revisions and dirty input hashes.
 The attached ChatGPT folder may contain only research; use git root/remote and the handoff paths
 to locate the actual source. Do not reset local branches to the remote.
 

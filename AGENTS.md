@@ -1,8 +1,11 @@
 # Working on Liberty
 
-Liberty is the engine and mod project for GTA IV Complete Edition 1.2.0.59: FusionFix,
+Liberty is the reusable framework for GTA IV Complete Edition 1.2.0.59: FusionFix,
 ScriptHookDotNet 1.7.1.8, C# 7.3 / .NET Framework 4 x86 and a C++20 x86 native core.
 One SHDN host drives modules, the public SDK, content tools and automated game scenarios.
+The showcase mod is Liberty+ in `C:/Users/IM576/LibertyPlus`. Read
+`docs/architecture/REPOSITORIES.md` for ownership. Gameplay, HUD layout, art and tuning
+belong there; generic UI/native/SDK services, research and reusable skills stay here.
 
 ## Start with the current assignment
 
@@ -23,18 +26,18 @@ so either agent can use the same instructions.
 
 ## Engine invariants
 
-- New mechanics use `[Module]` / `LibertyModule`, preferably SDK-only code in `mods/`.
+- New mechanics use `[Module]` / `LibertyModule`, preferably SDK-only code in their mod repo.
   Use snapshots and events before adding per-frame native calls. The draw thread must not call natives.
-- Keep gameplay tuning in `config/`, document new fields in `docs/architecture/CONFIG_SCHEMA.md`,
-  and support disable/unload/config-off restoration. Outside the Stage 1 catalog, weapons stay vanilla.
+- Keep tuning and its schema in the owning mod repo; framework settings stay in `config/`.
+  Support disable/unload/config-off restoration. Do not add product policy to framework services.
 - Never invent natives, offsets or layouts. Record native CE status in `docs/game-api/NATIVES.md`;
   memory access uses validated resolution with `docs/game-api/MEMORY.md` and an ADR. A failed
   resolver disables its capability. Offline decoding is not in-game proof.
 - Resource ownership, exception isolation and hot-reload cleanup are mandatory. Important failures
   use the project logger. Do not hide errors, swallow exceptions, or weaken acceptance thresholds.
-- Owner decisions: density governor OFF; 2 long guns plus 1 sidearm (SMGs are long guns);
-  grounded severe gore with bounded 3–5 minute body retention; vanilla HUD stays until replacement
-  and restoration are proven. Preserve mission/cutscene/save compatibility and the original baseline.
+- Preserve mission/cutscene/save compatibility and the original baseline. Liberty+ owns
+  the player's loadout, gore, HUD and visual decisions; read its current PRODUCT.md.
+  A replacement must prove hide/restore before taking over existing game presentation.
 - Use source where its recorded license permits adaptation; retain notices and per-file provenance.
   Consult `third_party/README.md`. The locally inspected LVS source is MIT and a candidate for a
   selective port. Closed binaries can inform documented research; they do not establish reusable source.
@@ -67,13 +70,15 @@ Do not stop another agent's processes or replace an owner preview based on an ol
 
 ## Finish the assignment
 
-Track changes and exact evidence on its task card. Add game checks to `tests/local/checks.json`
-when runtime behavior changes; regenerate with `python tools/checks/checks.py plan`.
+Track changes and exact evidence on its task card. The combined game check queue is in
+Liberty+; assemble its integration workspace before invoking existing queue/scenario tools.
+Framework-only tests/builds do not require the mod checkout.
 Separate offline PASS, full gameplay PASS, quick observations, NOT-RUN and owner visual/feel sign-off.
 A screenshot path is not visual review. Only the owner declares gameplay DONE.
 Update the short dashboard only if current state changes; keep long evidence in reports or task cards.
 Commit locally with `T-0xx: <change>` after validation; do not push or message other tasks unless requested.
 
-Architecture: `docs/architecture/ENGINE.md`; design/budgets: `docs/design/STAGE1.md`;
+Architecture: `docs/architecture/ENGINE.md` and `docs/architecture/REPOSITORIES.md`;
+product design/budgets: Liberty+ `docs/PRODUCT.md` and historical `docs/design/STAGE1.md`;
 research priorities: `docs/research/RESEARCH_PROGRAM.md`. Historical rules are under
 `docs/archive/review-2026-10-02/` and must not override current user instructions.

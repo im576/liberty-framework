@@ -19,7 +19,7 @@ When a spike confirms or disproves something, **edit the note** and change the t
 
 | File | Topic |
 |---|---|
-| [SUMMARY.md](SUMMARY.md) | Research deliverable (handoff §48) — read this first |
+| [SUMMARY.md](SUMMARY.md) | Research deliverable (handoff Â§48) â€” read this first |
 | [GameVersionAndLoaders.md](GameVersionAndLoaders.md) | Exe versions, loaders, script hooks, what runs on CE |
 | [FusionFix.md](FusionFix.md) | FusionFix features, config, source layout, overlap with us |
 | [LibertyTweaks.md](LibertyTweaks.md) | Liberty Tweaks features + techniques (reference only, no license) |

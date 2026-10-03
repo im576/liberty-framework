@@ -38,10 +38,10 @@ namespace LibertyFramework.GameApi
         }
 
         // The identity fields of every weapon entry (T-041): <data timebetweenshots clipsize ammomax> and <damage base>.
-        internal static Dictionary<string, LibertyFramework.Weapons.Logic.WeaponStats> ReadStats(string path)
+        internal static Dictionary<string, LibertyFramework.GameApi.WeaponStats> ReadStats(string path)
         {
-            Dictionary<string, LibertyFramework.Weapons.Logic.WeaponStats> result =
-                new Dictionary<string, LibertyFramework.Weapons.Logic.WeaponStats>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, LibertyFramework.GameApi.WeaponStats> result =
+                new Dictionary<string, LibertyFramework.GameApi.WeaponStats>(StringComparer.OrdinalIgnoreCase);
             XmlDocument document = new XmlDocument();
             document.XmlResolver = null;
             document.Load(path);
@@ -50,7 +50,7 @@ namespace LibertyFramework.GameApi
                 XmlAttribute type = weapon.Attributes["type"];
                 XmlNode data = weapon.SelectSingleNode("data");
                 if (type == null || data == null) { continue; }
-                LibertyFramework.Weapons.Logic.WeaponStats stats = new LibertyFramework.Weapons.Logic.WeaponStats();
+                LibertyFramework.GameApi.WeaponStats stats = new LibertyFramework.GameApi.WeaponStats();
                 stats.TimeBetweenShotsMilliseconds = IntAttribute(data, "timebetweenshots");
                 stats.ClipSize = IntAttribute(data, "clipsize");
                 stats.AmmoMax = IntAttribute(data, "ammomax");

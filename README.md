@@ -1,32 +1,30 @@
 # Liberty Framework
 
-Liberty is our engine and mod project for **GTA IV: The Complete Edition 1.2.0.59**.
-A C++ native core, C# SDK and module host support gunplay, physical weapons, storage,
-gore, UI and world features, with content tools, hot reload and automated game testing.
-The larger vision includes deeper gore, vehicle ownership and engine-level overhauls.
+Reusable mod runtime and research toolkit for GTA IV Complete Edition 1.2.0.59.
+GTA IV remains the underlying game engine. Liberty supplies a native bridge,
+shared services, a public SDK, content tools and automated verification.
 
-Start with [current project state](docs/PROJECT_STATE.md), [the mod design](docs/design/STAGE1.md)
-and [the research program](docs/research/RESEARCH_PROGRAM.md). The installed preview and
-unmerged feature lanes have different capabilities; a passing engine build is not full mod acceptance.
+The showcase overhaul is now **[Liberty+](../LibertyPlus/README.md)**, in its own Git
+repository. Weapons, inventory, holsters, wheel, trunk storage, gore, custom HUD,
+vehicle gameplay, AI artwork and visual tuning belong there.
 
-- Agents: [AGENTS.md](AGENTS.md), [current coordination](docs/workflow/ORCHESTRATOR.md).
-- Build/test commands: [tools index](tools/README.md).
-- Mod authors: [SDK](docs/sdk/README.md), [engine](docs/architecture/ENGINE.md), [content pipeline](docs/content/README.md).
-- Current review: [October 2 findings](docs/reports/2026-10-02-repository-review.md).
-- Playtesting: [feature test plan](docs/testing/FEATURE_PLAYTEST.md), [report template](docs/testing/PLAYTEST_REPORT_TEMPLATE.md).
+Start with [current status](docs/PROJECT_STATE.md), [repository ownership](docs/architecture/REPOSITORIES.md),
+[engine internals](docs/architecture/ENGINE.md), [SDK 1.2](docs/sdk/README.md),
+[research program](docs/research/RESEARCH_PROGRAM.md) and [tools](tools/README.md).
+Operating rules: [AGENTS.md](AGENTS.md).
 
-| Path | Purpose |
-|---|---|
-| `native/LibertyCore` | Native invocation, hooks, snapshots, ray queries and crash capture |
-| `src/LibertyFramework` | Engine host/services and reference gameplay modules |
-| `sdk/Liberty.Sdk` | Public mod API |
-| `mods/` | SDK-only mods and autopilot |
-| `config/` | Switches, gameplay tuning and data |
-| `content/`, `art/` | Authored assets and generation/approval provenance |
-| `tools/`, `tests/` | Build/content tools, offline checks and game test queue |
-| `.agents/skills/` | Project-specific evidence review and engine research skills |
-| `docs/research/`, `third_party/` | Engine findings and source/license provenance |
-| `docs/archive/` | Historical plans, completed sessions and superseded handoffs |
+## Build and verify the framework
 
-Downloaded mods, game files, generated packages and local run/crash evidence stay outside
-tracked source. Local worktrees can contain changes newer than GitHub; inspect them before integration.
+```powershell
+pwsh -NoProfile -File tools/build.ps1 -ScriptHookDotNetReference '<game>/ScriptHookDotNet.asi'
+pwsh -NoProfile -File tools/verify.ps1 -NoGame
+pwsh -NoProfile -File tools/tests/Run-Tests.ps1
+```
+
+These commands require the recorded compiler toolchain. They do not build the
+showcase gameplay or start the game. SDK example mods and compiler fixtures remain
+here. Combined gameplay verification and packaging start from Liberty+ tools.
+
+Original history and all old worktrees are preserved. The last combined source is
+tagged `archive/pre-liberty-plus-split`. Historical reports describe their own
+revisions and are not acceptance of the split build. No game binaries are tracked.

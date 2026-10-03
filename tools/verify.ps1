@@ -39,16 +39,12 @@ $sources = @(
     (Join-Path $src 'Engine\EngineConfig.cs')
     (Join-Path $src 'Core\Math3\Vec3.cs')
     (Join-Path $src 'GameApi\WeaponInfoXml.cs')
-    (Join-Path $src 'DevTools\Teleport\LocationFile.cs')
-    (Join-Path $src 'DevTools\Teleport\TeleportLocation.cs')
-    (Get-ChildItem -LiteralPath (Join-Path $src 'Gunplay\Profiles') -Filter '*.cs').FullName
-    (Get-ChildItem -LiteralPath (Join-Path $src 'Gunplay\Recoil') -Filter '*.cs').FullName
-    (Get-ChildItem -LiteralPath (Join-Path $src 'Gunplay\Spread') -Filter '*.cs').FullName
-    (Get-ChildItem -LiteralPath (Join-Path $src 'Arsenal\Contracts') -Filter '*.cs').FullName
+    (Join-Path $src 'GameApi\WeaponStats.cs')
+    (Join-Path $src 'Engine\Locations\LocationFile.cs')
+    (Join-Path $src 'Engine\Locations\TeleportLocation.cs')
     # T-023 vehicle extras catalog (reads the installed vehicles.img through the finishes IMG/RSC readers).
     (Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tools\finishes') -Filter '*.cs' | Where-Object { $_.Name -ne 'Program.cs' }).FullName
     (Join-Path $repoRoot 'tools\vehicles\VehicleExtrasScanner.cs')
-    (Join-Path $src 'CombatEffects\CombatEffectsConfig.cs')
     (Join-Path $src 'GameApi\SkeletonCollapseEngine.cs')
     (Join-Path $src 'GameApi\DirectNatives.cs')
     # Engine plumbing without ScriptHookDotNet: event bus, scheduler, resource ledger, command registry (engine audit).

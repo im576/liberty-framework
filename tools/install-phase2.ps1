@@ -65,7 +65,7 @@ try {
         throw
     }
     if ($manifest.PSObject.Properties['source'] -and $manifest.source.commit) {
-        Write-InstalledBuild -GameDirectory $game -RepoRoot $repoRoot -Commit ([string]$manifest.source.commit) -Dirty ([bool]$manifest.source.dirty)
+        Write-InstalledBuild -GameDirectory $game -RepoRoot $repoRoot -Commit ([string]$manifest.source.commit) -Dirty ([bool]$manifest.source.dirty) -Repositories $manifest.source.repositories
     }
     else { Write-InstalledBuild -GameDirectory $game -RepoRoot $repoRoot }
     Write-Host "Phase 2 installed and verified. Backup: $backupRoot"

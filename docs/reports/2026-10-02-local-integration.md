@@ -82,7 +82,7 @@ fixtures remain preserved. These were fixture defects, not game evidence or conc
 
 No fresh combined in-game acceptance, screenshot suite, controller/mission/save-load test or cloud container run.
 Passing offline checks reduces integration risk; it cannot promise that the combined gameplay is regression-free.
-Next priority/team recommendations and owner questions: [NEXT_MILESTONE](../workflow/NEXT_MILESTONE.md).
+Next priority/team recommendations and owner questions: [NEXT_MILESTONE](../../../LibertyPlus/docs/workflow/NEXT_MILESTONE.md).
 
 Owner voice clarification later on October 2 is recorded in NEXT_MILESTONE: finish the first mod with targeted
 research, then expand framework research; begin with one coordinator, 1080p/60 FPS, more color in gloomy scenes,

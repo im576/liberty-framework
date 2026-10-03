@@ -22,7 +22,7 @@ forgotten and no false passes. Rules: [CLOUD_LOCAL_LOOP.md](../workflow/CLOUD_LO
 - **Autopilot results you can trust:** `result.json` per scenario, statuses PASS / NEEDS-REVIEW / FAIL / CRASH / ERROR,
   no stale or command-echo `expect` matches, crash on the last step is CRASH, the suite reads result files.
 - **Check queue:** `tests/local/checks.json` (44 checks covering every NEEDS-PLAYTEST task), validator and generated
-  [plan](../testing/LOCAL_VERIFICATION_PLAN.md).
+  [plan](../../../LibertyPlus/docs/testing/LOCAL_VERIFICATION_PLAN.md).
 - **`tools/verify-local.ps1`:** the owner's one command (preflight, build, tests, probes, install with backup,
   scenarios, manual prompts, keep/restore, scrubbed results pushed to `verification-results`).
 - **Probes:** `LibertyContent probe drawables|collision` (structure only) for the next content sessions.

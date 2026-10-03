@@ -14,7 +14,7 @@ Nothing here proves random hitches or the initial snapshot caused the percentile
 
 The fail-fast scenario ends at check41; store/take/swap/capacity/round-trip/close flows NOT-RUN. Initial snapshot
 capture is readable but cannot substitute for those actions or the failed budget. Full receipt/captures:
-[Lane-B-live](../handoffs/Lane-B-live.md), ignored results-local/20261001-202311-2297a17/{summary.json,T046-trunk-ui}.
+[Lane-B-live](../archive/pre-split/handoffs/Lane-B-live.md), ignored results-local/20261001-202311-2297a17/{summary.json,T046-trunk-ui}.
 
 ## Choreography is active browsing, not unfinished opening
 

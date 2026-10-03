@@ -78,7 +78,7 @@ Use the individual task cards for exact controls and observations. In one sessio
 
 ## 12. Liberty Arsenal (T-020) — loadout, trunks, safehouses, death/arrest
 
-Full steps are in [T-020](../tasks/T-020-arsenal-core.md#human-test-steps). Quick pass:
+Full steps are in [T-020](../../../LibertyPlus/docs/tasks/T-020-arsenal-core.md#human-test-steps). Quick pass:
 
 1. Safehouses are found automatically from the game's own safehouse map icons (log: `arsenal_safehouses_discovered count=N`, N > 0 once you have unlocked one). Walk to your safehouse door: log `arsenal_safehouse_enter`. If N stays 0, use DevTools > ARSENAL > **Mark safehouse here** at the door instead.
 2. Carry limit: give yourself a third long gun (shotgun, rifle, sniper, heavy). The least-recently-used long gun goes to your last car's trunk (`arsenal_overflow`). Stand behind that car, DevTools > ARSENAL: the boot opens and the weapon is listed under **Take** with its name and ammo.

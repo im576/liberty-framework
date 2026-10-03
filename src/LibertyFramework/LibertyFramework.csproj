@@ -28,6 +28,10 @@
       <HintPath>$(ScriptHookDotNetReference)</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Liberty.Sdk">
+      <HintPath>..\..\sdk\Liberty.Sdk\bin\Liberty.Sdk.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <!-- Same file set as tools/build.ps1, the authoritative build. -->

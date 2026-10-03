@@ -25,7 +25,7 @@ RAN-PASS / RAN-FAIL / NOT RUN (reason) / NEEDS LOCAL VERIFY. Stop and report ins
 | 5 | Collision: research, then writer | DONE up to the writer ([T-032](../../../../tasks/T-032-collision.md): layout probe, borrowed-collision experiment); **5b, the collision writer, waits for `PROBE-collision` and `PROBE-bounds-layout`** | `PROBE-collision` results (research may start before) |
 | 6 | Static world objects (IDE, placement, packaging) | DONE ([T-033](../../../../tasks/T-033-world-objects.md): world mod, `config/world/objects.json`, borrowed collision) | session 5 |
 | 7+ | SDK features for the mod pack | queued | session D |
-| D | Mod pack design document | DONE ([STAGE1.md](../../../../design/STAGE1.md)) | none |
+| D | Mod pack design document | DONE ([STAGE1.md](../../../../../../LibertyPlus/docs/design/STAGE1.md)) | none |
 
 ## Session 2: engine audit and hardening
 

@@ -117,10 +117,10 @@ else
 fi
 
 # 6b. Art-request queue (docs/art): the lifecycle self-test and every request in the repository.
-if [ -f tools/art/artq.py ] && python3 -c 'import PIL' 2>/dev/null; then
+if [ -f tools/art/artq.py ] && [ -d docs/art/requests ] && python3 -c 'import PIL' 2>/dev/null; then
     run "Art-request queue" art-queue.log '^art-queue' sh -c 'python3 tools/art/artq.py selftest && python3 tools/art/artq.py validate'
 else
-    record "Art-request queue" NOT-RUN "tools/art/artq.py or Pillow missing"
+    record "Art-request queue" NOT-RUN "consumer artwork lives in Liberty+; use its integration workspace (or Pillow missing)"
 fi
 
 # 7. Local check queue (tests/local/checks.json) is valid and the generated plan is current.
@@ -130,10 +130,14 @@ else
     record "Evidence audit tests" NOT-RUN "python3 missing"
 fi
 
-if [ -f tools/checks/checks.py ]; then
+if [ -f tools/checks/checks.py ] && [ -f tests/local/checks.json ]; then
     run "Check queue + plan in sync" checks.log '^checks:' python3 tools/checks/checks.py validate
 else
-    record "Check queue + plan in sync" NOT-RUN "tools/checks/checks.py missing"
+    record "Check queue + plan in sync" NOT-RUN "consumer check queue lives in Liberty+; use its integration workspace"
+fi
+
+if command -v python3 >/dev/null; then
+    run "Repository integration tests" repository-tests.log '^OK|^FAILED|^Ran' python3 -m unittest discover -s tools/repository -p 'test_*.py'
 fi
 
 echo

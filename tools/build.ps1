@@ -37,7 +37,20 @@ $sdkSources = @(Get-Sources $sdkRoot)
 $sourceRoot = Join-Path $repoRoot 'src\LibertyFramework'
 $outputDirectory = Join-Path $sourceRoot 'bin\Release'
 $output = Join-Path $outputDirectory 'LibertyFramework.net.dll'
-$sources = @(Get-Sources $sourceRoot)
+# Integration workspaces contain consumer mirrors for historical fixtures. Ownership,
+# not a list of gameplay names, controls what may enter the framework assembly.
+$workspaceInfo = $null
+if (Test-Path -LiteralPath (Join-Path $repoRoot 'workspace.json')) {
+    $workspaceInfo = Get-Content -LiteralPath (Join-Path $repoRoot 'workspace.json') -Raw | ConvertFrom-Json
+}
+$sources = @(Get-Sources $sourceRoot | Where-Object {
+    if (-not $workspaceInfo) { $true }
+    else {
+        $relative = $_.Substring($repoRoot.Length).TrimStart('\', '/').Replace('\', '/')
+        $owner = $workspaceInfo.ownership.PSObject.Properties[$relative]
+        $owner -and $owner.Value.repo -eq $workspaceInfo.repositories.framework.repo
+    }
+})
 $modsRoot = Join-Path $repoRoot 'mods'
 $mods = @(if (Test-Path -LiteralPath $modsRoot) { Get-ChildItem -LiteralPath $modsRoot -Directory | Where-Object { @(Get-Sources $_.FullName).Count -gt 0 } })
 

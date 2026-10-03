@@ -19,6 +19,20 @@ QUEUE = os.path.join(ROOT, "tests", "local", "checks.json")
 PLAN = os.path.join(ROOT, "docs", "testing", "LOCAL_VERIFICATION_PLAN.md")
 SCENARIOS = os.path.join(ROOT, "tools", "autopilot", "scenarios")
 
+
+def reference_link(path):
+    """Generated plans link to maintained owners, not disposable workspace copies."""
+    receipt = os.path.join(ROOT, "workspace.json")
+    if os.path.isfile(receipt):
+        with open(receipt, encoding="utf-8") as stream:
+            workspace = json.load(stream)
+        owner = workspace.get("ownership", {}).get(path)
+        if owner:
+            document = os.path.join(workspace["repositories"]["mod"]["repo"], "docs", "testing")
+            source = os.path.join(owner["repo"], owner["path"])
+            return os.path.relpath(source, document).replace(os.sep, "/")
+    return "../../" + path
+
 KINDS = ("pc-offline", "probe", "scenario", "manual")
 STATUSES = ("QUEUED", "PASS", "FAIL", "ERROR", "CRASH", "NOT-RUN", "NEEDS-REVIEW", "RETIRED")
 # Named steps tools/verify-local.ps1 knows how to run (Invoke-LocalTool). Nothing else can be queued: a check never
@@ -169,7 +183,7 @@ def plan_text(queue):
             add("")
             add("- Pass when: %s" % check["pass"])
             if check.get("reference"):
-                add("- Full steps: [%s](../../%s)" % (check["reference"], check["reference"]))
+                add("- Full steps: [%s](%s)" % (check["reference"], reference_link(check["reference"])))
     add("")
     add("## Automated checks")
     add("")

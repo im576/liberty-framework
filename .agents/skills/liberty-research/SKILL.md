@@ -7,6 +7,9 @@ description: Investigate GTA IV CE engine behavior or adapt existing mod source 
 
 Read the assigned gameplay question and `docs/research/RESEARCH_PROGRAM.md`. Deeper research
 supports concrete gore, vehicle, content, audio or UI capabilities; breadth alone is not progress.
+Liberty Framework owns reusable capabilities and verified game knowledge; Liberty+
+owns gameplay policy, HUD layout, visual tuning and assets. Follow
+`docs/architecture/REPOSITORIES.md`; do not vendor the framework into a mod repo.
 Check existing source, research and lane branches before rebuilding an already working mechanism.
 
 For each investigated binary/source archive record SHA-256, version/commit, source path, license

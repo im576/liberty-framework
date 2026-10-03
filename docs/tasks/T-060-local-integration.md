@@ -14,7 +14,7 @@ and questions at the end of the response. No new agent dispatch or game installa
 ## Evidence
 
 [Integration report](../reports/2026-10-02-local-integration.md) records source tips, tests and limitations.
-[First-mod milestone/team](../workflow/NEXT_MILESTONE.md) now records the owner's answers and remaining design detail.
+[First-mod milestone/team](../../../LibertyPlus/docs/workflow/NEXT_MILESTONE.md) now records the owner's answers and remaining design detail.
 
 Game acceptance, visual approval, controller/real save-load/mission checks remain separate from offline validation.
 Only the owner marks gameplay DONE. No remote push is requested.
